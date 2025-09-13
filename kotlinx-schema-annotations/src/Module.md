@@ -1,0 +1,1 @@
+# Module kotlinx-schema-annotations

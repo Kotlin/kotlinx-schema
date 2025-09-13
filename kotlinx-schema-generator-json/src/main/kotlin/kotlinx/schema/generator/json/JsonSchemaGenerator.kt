@@ -1,0 +1,28 @@
+package kotlinx.schema.generator.json
+
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+
+/**
+ * A utility class for generating JSON schema representations of Kotlin objects.
+ */
+public interface JsonSchemaGenerator {
+    /**
+     * Generates a JSON object representing the schema of the input target.
+     *
+     * @param target the object for which the JSON schema will be generated
+     * @return a JsonObject representing the schema of the provided object
+     */
+    public fun generateSchema(target: Any): JsonObject
+
+    /**
+     * Serializes the schema of the provided object into a JSON-formatted string.
+     *
+     * @param target the object for which the schema will be generated
+     * @return a JSON string representing the schema of the provided object
+     */
+    public fun generateSchemaString(target: Any): String =
+        Json.encodeToString(
+            generateSchema(target),
+        )
+}
