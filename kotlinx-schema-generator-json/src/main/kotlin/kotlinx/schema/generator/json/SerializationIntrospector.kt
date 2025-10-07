@@ -1,16 +1,28 @@
-package kotlinx.schema.generator.ir
+package kotlinx.schema.generator.json
 
-import kotlinx.schema.generator.ir.DefaultPresence.Absent
-import kotlinx.schema.generator.ir.DefaultPresence.Required
+import kotlinx.schema.Description
+import kotlinx.schema.generator.ir.DefaultPresence
+import kotlinx.schema.generator.ir.Discriminator
+import kotlinx.schema.generator.ir.ListNode
+import kotlinx.schema.generator.ir.ObjectNode
+import kotlinx.schema.generator.ir.PolymorphicNode
+import kotlinx.schema.generator.ir.PrimitiveNode
+import kotlinx.schema.generator.ir.Property
+import kotlinx.schema.generator.ir.SchemaIntrospector
+import kotlinx.schema.generator.ir.SubtypeRef
+import kotlinx.schema.generator.ir.TypeGraph
+import kotlinx.schema.generator.ir.TypeId
+import kotlinx.schema.generator.ir.TypeNode
+import kotlinx.schema.generator.ir.TypeRef
 import kotlinx.schema.generator.json.internal.getPolymorphicDescriptors
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PolymorphicKind
+import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.json.ClassDiscriminatorMode
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.descriptors.PrimitiveKind as SerialPrimitiveKind
 
 /**
  * Introspects kotlinx.serialization descriptors into Schema IR.
@@ -27,21 +39,22 @@ public class SerializationIntrospector(
 
         fun primitiveFor(d: SerialDescriptor): PrimitiveNode? =
             when (d.kind) {
-                SerialPrimitiveKind.STRING -> PrimitiveNode(PrimitiveKind.STRING)
-                SerialPrimitiveKind.BOOLEAN -> PrimitiveNode(PrimitiveKind.BOOLEAN)
-                SerialPrimitiveKind.BYTE, SerialPrimitiveKind.SHORT, SerialPrimitiveKind.INT ->
+                PrimitiveKind.STRING -> PrimitiveNode(kotlinx.schema.generator.ir.PrimitiveKind.STRING)
+                PrimitiveKind.BOOLEAN -> PrimitiveNode(kotlinx.schema.generator.ir.PrimitiveKind.BOOLEAN)
+                PrimitiveKind.BYTE, PrimitiveKind.SHORT, PrimitiveKind.INT ->
                     PrimitiveNode(
-                        PrimitiveKind.INT,
+                        kotlinx.schema.generator.ir.PrimitiveKind.INT,
                     )
-                SerialPrimitiveKind.LONG -> PrimitiveNode(PrimitiveKind.LONG)
-                SerialPrimitiveKind.FLOAT -> PrimitiveNode(PrimitiveKind.FLOAT)
-                SerialPrimitiveKind.DOUBLE -> PrimitiveNode(PrimitiveKind.DOUBLE)
-                SerialPrimitiveKind.CHAR -> PrimitiveNode(PrimitiveKind.STRING)
+
+                PrimitiveKind.LONG -> PrimitiveNode(kotlinx.schema.generator.ir.PrimitiveKind.LONG)
+                PrimitiveKind.FLOAT -> PrimitiveNode(kotlinx.schema.generator.ir.PrimitiveKind.FLOAT)
+                PrimitiveKind.DOUBLE -> PrimitiveNode(kotlinx.schema.generator.ir.PrimitiveKind.DOUBLE)
+                PrimitiveKind.CHAR -> PrimitiveNode(kotlinx.schema.generator.ir.PrimitiveKind.STRING)
                 else -> null
             }
 
         fun SerialDescriptor.readDescription(): String? =
-            annotations.filterIsInstance<kotlinx.schema.Description>().firstOrNull()?.value
+            annotations.filterIsInstance<Description>().firstOrNull()?.value
 
         fun elementDescription(
             parent: SerialDescriptor,
@@ -49,7 +62,7 @@ public class SerializationIntrospector(
         ): String? =
             parent
                 .getElementAnnotations(index)
-                .filterIsInstance<kotlinx.schema.Description>()
+                .filterIsInstance<Description>()
                 .firstOrNull()
                 ?.value
 
@@ -71,7 +84,12 @@ public class SerializationIntrospector(
                     if (id !in nodes.keys && d !in visiting) {
                         visiting += d
                         val entries = (0 until d.elementsCount).map { d.getElementName(it) }
-                        val node = EnumNode(name = d.serialName, entries = entries, description = d.readDescription())
+                        val node =
+                            kotlinx.schema.generator.ir.EnumNode(
+                                name = d.serialName,
+                                entries = entries,
+                                description = d.readDescription(),
+                            )
                         nodes[id] = node
                         visiting -= d
                     }
@@ -85,7 +103,9 @@ public class SerializationIntrospector(
                     if (d.kind == StructureKind.MAP) {
                         val keyDesc = d.getElementDescriptor(0)
                         val valDesc = d.getElementDescriptor(1)
-                        val node = MapNode(key = toRef(keyDesc), value = toRef(valDesc))
+                        val node =
+                            kotlinx.schema.generator.ir
+                                .MapNode(key = toRef(keyDesc), value = toRef(valDesc))
                         val ref = TypeRef.Inline(node, nullable)
                         cache[d] = ref
                         ref
@@ -101,7 +121,7 @@ public class SerializationIntrospector(
                                 val pDesc = elementDescription(d, i)
                                 val typeRef = toRef(ed)
                                 val hasDefault = d.isElementOptional(i)
-                                val presence = if (hasDefault) Absent else Required
+                                val presence = if (hasDefault) DefaultPresence.Absent else DefaultPresence.Required
                                 if (!hasDefault) required += name
                                 props +=
                                     Property(

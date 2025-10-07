@@ -1,6 +1,5 @@
 plugins {
     kotlin("jvm")
-    kotlin("plugin.serialization") apply true
 }
 
 kotlin {
@@ -9,8 +8,6 @@ kotlin {
     dependencies {
         // production dependencies
         api(project(":kotlinx-schema-annotations"))
-        api(project(":kotlinx-schema-generator-core"))
-        api(libs.kotlinx.serialization.json)
 
         // test dependencies
         testImplementation(libs.kotlin.test)

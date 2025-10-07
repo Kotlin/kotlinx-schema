@@ -9,6 +9,7 @@ plugins {
 
 dependencies {
     kover(project(":kotlinx-schema-annotations"))
+    kover(project(":kotlinx-schema-generator-core"))
     kover(project(":kotlinx-schema-generator-json"))
     kover(project(":kotlinx-schema-ksp"))
     kover(project(":ksp-integration-tests"))
