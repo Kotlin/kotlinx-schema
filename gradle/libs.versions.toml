@@ -1,6 +1,6 @@
 [versions]
 agp = "8.10.1"
-kotest = "6.0.0.M4"
+kotest = "6.0.4"
 kotlin = "2.2.20"
 kotlinxSerialization = "1.8.1"
 kover = "0.9.1"
