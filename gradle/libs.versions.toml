@@ -1,6 +1,5 @@
 [versions]
 agp = "8.10.1"
-kctfork = "0.9.0"
 kotest = "6.0.0.M4"
 kotlin = "2.2.20"
 kotlinxSerialization = "1.8.1"
@@ -9,7 +8,6 @@ ksp = "2.2.20-2.0.3"
 vanniktechMavenPublish = "0.34.0"
 
 [libraries]
-kctfork-ksp = { module = "dev.zacsweers.kctfork:ksp", version.ref = "kctfork" }
 kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 kotest-assertions-json = { module = "io.kotest:kotest-assertions-json", version.ref = "kotest" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
