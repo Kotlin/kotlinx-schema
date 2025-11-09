@@ -9,24 +9,27 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.Nullability
 import kotlinx.schema.Description
-import kotlinx.schema.generator.ir.DefaultPresence
-import kotlinx.schema.generator.ir.EnumNode
-import kotlinx.schema.generator.ir.ListNode
-import kotlinx.schema.generator.ir.MapNode
-import kotlinx.schema.generator.ir.ObjectNode
-import kotlinx.schema.generator.ir.PrimitiveKind
-import kotlinx.schema.generator.ir.PrimitiveNode
-import kotlinx.schema.generator.ir.Property
-import kotlinx.schema.generator.ir.SchemaIntrospector
-import kotlinx.schema.generator.ir.TypeGraph
-import kotlinx.schema.generator.ir.TypeId
-import kotlinx.schema.generator.ir.TypeNode
-import kotlinx.schema.generator.ir.TypeRef
+import kotlinx.schema.generator.core.ir.DefaultPresence
+import kotlinx.schema.generator.core.ir.EnumNode
+import kotlinx.schema.generator.core.ir.ListNode
+import kotlinx.schema.generator.core.ir.MapNode
+import kotlinx.schema.generator.core.ir.ObjectNode
+import kotlinx.schema.generator.core.ir.PrimitiveKind
+import kotlinx.schema.generator.core.ir.PrimitiveNode
+import kotlinx.schema.generator.core.ir.Property
+import kotlinx.schema.generator.core.ir.SchemaIntrospector
+import kotlinx.schema.generator.core.ir.TypeGraph
+import kotlinx.schema.generator.core.ir.TypeId
+import kotlinx.schema.generator.core.ir.TypeNode
+import kotlinx.schema.generator.core.ir.TypeRef
 
 /**
  * KSP-backed Schema IR introspector. Focuses on classes and enums; generics use star-projection.
  */
 public class KspIntrospector : SchemaIntrospector<KSClassDeclaration> {
+    fun AAA() {
+    }
+
     override fun introspect(root: KSClassDeclaration): TypeGraph {
         val nodes = LinkedHashMap<TypeId, TypeNode>()
         val visiting = HashSet<KSClassDeclaration>()

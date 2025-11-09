@@ -1,4 +1,4 @@
-package kotlinx.schema.generator
+package kotlinx.schema.generator.core
 
 public interface SchemaGenerator<T : Any, R> {
     /**

@@ -1,17 +1,17 @@
 package kotlinx.schema.generator.json.internal
 
-import kotlinx.schema.generator.ir.EnumNode
-import kotlinx.schema.generator.ir.ListNode
-import kotlinx.schema.generator.ir.MapNode
-import kotlinx.schema.generator.ir.ObjectNode
-import kotlinx.schema.generator.ir.PolymorphicNode
-import kotlinx.schema.generator.ir.PrimitiveKind
-import kotlinx.schema.generator.ir.PrimitiveNode
-import kotlinx.schema.generator.ir.SchemaEmitter
-import kotlinx.schema.generator.ir.TypeGraph
-import kotlinx.schema.generator.ir.TypeId
-import kotlinx.schema.generator.ir.TypeNode
-import kotlinx.schema.generator.ir.TypeRef
+import kotlinx.schema.generator.core.ir.EnumNode
+import kotlinx.schema.generator.core.ir.ListNode
+import kotlinx.schema.generator.core.ir.MapNode
+import kotlinx.schema.generator.core.ir.ObjectNode
+import kotlinx.schema.generator.core.ir.PolymorphicNode
+import kotlinx.schema.generator.core.ir.PrimitiveKind
+import kotlinx.schema.generator.core.ir.PrimitiveNode
+import kotlinx.schema.generator.core.ir.SchemaEmitter
+import kotlinx.schema.generator.core.ir.TypeGraph
+import kotlinx.schema.generator.core.ir.TypeId
+import kotlinx.schema.generator.core.ir.TypeNode
+import kotlinx.schema.generator.core.ir.TypeRef
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -21,6 +21,7 @@ import kotlinx.serialization.json.put
 
 /** Emits JSON Schema from Schema IR following the Standard rules used previously. */
 public class IrStandardJsonSchemaEmitter : SchemaEmitter<JsonObject> {
+    @Suppress("CyclomaticComplexMethod", "LongMethod", "NestedBlockDepth")
     override fun emit(
         graph: TypeGraph,
         rootName: String,
@@ -96,12 +97,14 @@ public class IrStandardJsonSchemaEmitter : SchemaEmitter<JsonObject> {
                         )
                         node.description?.let { put(JsonSchemaConsts.Keys.DESCRIPTION, it) }
                     }
+
                 is EnumNode ->
                     buildJsonObject {
                         put(JsonSchemaConsts.Keys.TYPE, JsonSchemaConsts.Types.STRING)
                         put(JsonSchemaConsts.Keys.ENUM, JsonArray(node.entries.map { JsonPrimitive(it) }))
                         node.description?.let { put(JsonSchemaConsts.Keys.DESCRIPTION, it) }
                     }
+
                 is ObjectNode ->
                     buildJsonObject {
                         put(JsonSchemaConsts.Keys.TYPE, JsonSchemaConsts.Types.OBJECT)
@@ -109,12 +112,16 @@ public class IrStandardJsonSchemaEmitter : SchemaEmitter<JsonObject> {
                             buildJsonObject {
                                 for (p in node.properties) {
                                     val base = emitRef(p.type)
-                                    // Merge property-level description into the property's schema, overriding any inner description
-                                    val merged = if (p.description != null) {
-                                        val m = base.toMutableMap()
-                                        m[JsonSchemaConsts.Keys.DESCRIPTION] = JsonPrimitive(p.description)
-                                        JsonObject(m)
-                                    } else base
+                                    // Merge property-level description into the property's schema,
+                                    // overriding any inner description
+                                    val merged =
+                                        if (p.description != null) {
+                                            val m = base.toMutableMap()
+                                            m[JsonSchemaConsts.Keys.DESCRIPTION] = JsonPrimitive(p.description)
+                                            JsonObject(m)
+                                        } else {
+                                            base
+                                        }
                                     put(p.name, merged)
                                 }
                             }
@@ -123,18 +130,21 @@ public class IrStandardJsonSchemaEmitter : SchemaEmitter<JsonObject> {
                         put(JsonSchemaConsts.Keys.ADDITIONAL_PROPERTIES, JsonPrimitive(false))
                         node.description?.let { put(JsonSchemaConsts.Keys.DESCRIPTION, it) }
                     }
+
                 is ListNode ->
                     buildJsonObject {
                         put(JsonSchemaConsts.Keys.TYPE, JsonSchemaConsts.Types.ARRAY)
                         put(JsonSchemaConsts.Keys.ITEMS, emitRef(node.element))
                         node.description?.let { put(JsonSchemaConsts.Keys.DESCRIPTION, it) }
                     }
+
                 is MapNode ->
                     buildJsonObject {
                         put(JsonSchemaConsts.Keys.TYPE, JsonSchemaConsts.Types.OBJECT)
                         put(JsonSchemaConsts.Keys.ADDITIONAL_PROPERTIES, emitRef(node.value))
                         node.description?.let { put(JsonSchemaConsts.Keys.DESCRIPTION, it) }
                     }
+
                 is PolymorphicNode ->
                     buildJsonObject {
                         put(
@@ -193,6 +203,7 @@ public class IrStandardJsonSchemaEmitter : SchemaEmitter<JsonObject> {
                         }
                     }
                 }
+
                 is TypeRef.Inline ->
                     when (val n = ref.node) {
                         is PrimitiveNode -> primitiveWithNullability(n, ref.nullable)
@@ -203,6 +214,7 @@ public class IrStandardJsonSchemaEmitter : SchemaEmitter<JsonObject> {
                             val base = emitNode(TypeId(n.name), n)
                             if (ref.nullable) wrapNullableType(base) else base
                         }
+
                         is PolymorphicNode -> {
                             val base = emitNode(TypeId(n.baseName), n)
                             if (ref.nullable) {

@@ -22,6 +22,7 @@ import kotlinx.serialization.json.put
  * instead of creating new instances manually.
  */
 @OptIn(ExperimentalSerializationApi::class)
+@Suppress("TooManyFunctions")
 public open class StandardJsonSchemaGenerator : GenericJsonSchemaGenerator() {
     /**
      * Default instance of [StandardJsonSchemaGenerator].
@@ -34,6 +35,7 @@ public open class StandardJsonSchemaGenerator : GenericJsonSchemaGenerator() {
     /**
      * Generates generic [LLMParams.Schema.JSON.Standard]
      */
+    @Suppress("ForbiddenComment", "UnusedPrivateMember")
     override fun generate(
         json: Json,
         name: String,
@@ -102,7 +104,8 @@ public open class StandardJsonSchemaGenerator : GenericJsonSchemaGenerator() {
     }
 
     /**
-     * Checks if current type is nullable and updates "type" key value to the union of the actual type and "null" per JSON schema.
+     * Checks if current type is nullable and updates "type" key value to the union of the actual type
+     * and `null` per JSON schema.
      */
     protected fun JsonObject.asNullableType(context: GenerationContext): JsonObject {
         val schema = toMutableMap()
@@ -145,7 +148,8 @@ public open class StandardJsonSchemaGenerator : GenericJsonSchemaGenerator() {
         buildJsonObject {
             /*
              Check if this type is already on the processing stack to prevent infinite recursion.
-             Only put a ref in this case without triggering the processing again, since the object itself is already being processed anyway.
+             Only put a ref in this case without triggering the processing again,
+             since the object itself is already being processed anyway.
              */
             if (context.descriptor !in context.currentDefPath) {
                 super.processObject(context)

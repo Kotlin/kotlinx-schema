@@ -16,6 +16,7 @@ import kotlinx.serialization.json.JsonObject
  * This generator creates JSON schemas that can be included in LLM prompts to encourage structured outputs
  * that match your Kotlin data models. The generated schemas help LLMs understand the expected response format.
  */
+@Suppress("TooManyFunctions")
 public abstract class AbstractJsonSchemaGenerator {
     /**
      * Generates a JSON schema representation based on the provided input parameters.
@@ -25,7 +26,7 @@ public abstract class AbstractJsonSchemaGenerator {
      * is not available in [SerialDescriptor]
      * @param name The name of the schema.
      * @param serializer The serializer for the type for which the schema has to be generated.
-     * @param descriptionOverrides A map containing overrides for [LLMDescription].
+     * @param descriptionOverrides A map containing overrides for description.
      * @param excludedProperties A set of property names to exclude from the schema generation.
      */
     public abstract fun generate(
@@ -70,8 +71,8 @@ public abstract class AbstractJsonSchemaGenerator {
 }
 
 /**
- * Utility function to get all subtype serial descriptors from a given polymorphic serial descriptor, that can handle both
- * [PolymorphicKind.OPEN] and [PolymorphicKind.SEALED] kinds.
+ * Utility function to get all subtype serial descriptors from a given polymorphic serial descriptor,
+ * that can handle both [PolymorphicKind.OPEN] and [PolymorphicKind.SEALED] kinds.
  *
  * @param this Serial descriptor of a polymorphic type.
  * @param json [Json] instance
@@ -87,8 +88,8 @@ public fun SerialDescriptor.getPolymorphicDescriptors(json: Json): List<SerialDe
     val subclassDescriptor =
         when (kind) {
             /*
-              Sealed descriptor contains fixed fields: TYPE_KEY on the first position (not interesting for us here) and "value"
-              on the second — collection of subtype descriptors.
+              Sealed descriptor contains fixed fields: TYPE_KEY on the first position (not interesting for us here)
+              and "value" on the second — collection of subtype descriptors.
               The latter is what we need.
               Spent more time on this than I want to admit…
              */

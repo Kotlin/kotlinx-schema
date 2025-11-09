@@ -25,9 +25,10 @@ import kotlinx.serialization.json.put
  * Note: it does not handle nullability because these might be different in different schema specs.
  * Implementations must handle these themselves.
  */
+@Suppress("TooManyFunctions")
 public abstract class GenericJsonSchemaGenerator : AbstractJsonSchemaGenerator() {
     /**
-     * Generic implementation that provides basic routing to appropriate visit method and adds description.
+     * Generic implementation that provides basic routing to the appropriate visit method and adds description.
      */
     override fun process(context: GenerationContext): JsonObject =
         when (context.descriptor.kind) {
@@ -140,6 +141,7 @@ public abstract class GenericJsonSchemaGenerator : AbstractJsonSchemaGenerator()
             putDescription(context.currentDescription)
         }
 
+    @Suppress("LongMethod")
     override fun processObject(context: GenerationContext): JsonObject {
         check(context.descriptor !in context.currentDefPath) {
             """
@@ -151,9 +153,11 @@ public abstract class GenericJsonSchemaGenerator : AbstractJsonSchemaGenerator()
             1. Use other JSON schema generator that supports such classes and if the format it produces is supported by the LLM you're using.
             2. Remove recursive type references.
             
-            Current definition is ${context.descriptor.serialName} at path ${context.currentDefPath.map {
-                it.serialName
-            }}
+            Current definition is ${context.descriptor.serialName} at path ${
+                context.currentDefPath.map {
+                    it.serialName
+                }
+            }
             """.trimIndent()
         }
 
@@ -172,10 +176,8 @@ public abstract class GenericJsonSchemaGenerator : AbstractJsonSchemaGenerator()
                             // Check if the property is excluded
                             val lookupKey = "${context.descriptor.serialName}.$propertyName"
                             if (context.excludedProperties.contains(lookupKey)) {
-                                if (!context.descriptor.isElementOptional(i)) {
-                                    throw IllegalArgumentException(
-                                        "Property '$lookupKey' is marked as excluded, but it is required in the schema.",
-                                    )
+                                require(context.descriptor.isElementOptional(i)) {
+                                    "Property '$lookupKey' is marked as excluded, but it is required in the schema."
                                 }
                                 continue
                             }
@@ -186,7 +188,8 @@ public abstract class GenericJsonSchemaGenerator : AbstractJsonSchemaGenerator()
                                     context.copy(
                                         descriptor = propertyDescriptor,
                                         currentDefPath = context.currentDefPath + context.descriptor,
-                                        // Put description for a property or fallback to the description for a type of the property
+                                        // Put a description for a property or fallback to the description
+                                        // for a type of the property
                                         currentDescription =
                                             context.getElementDescription(i)
                                                 ?: context.copy(descriptor = propertyDescriptor).getTypeDescription(),

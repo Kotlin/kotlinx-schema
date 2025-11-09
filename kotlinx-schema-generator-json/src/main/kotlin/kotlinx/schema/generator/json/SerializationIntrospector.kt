@@ -1,19 +1,21 @@
 package kotlinx.schema.generator.json
 
 import kotlinx.schema.Description
-import kotlinx.schema.generator.ir.DefaultPresence
-import kotlinx.schema.generator.ir.Discriminator
-import kotlinx.schema.generator.ir.ListNode
-import kotlinx.schema.generator.ir.ObjectNode
-import kotlinx.schema.generator.ir.PolymorphicNode
-import kotlinx.schema.generator.ir.PrimitiveNode
-import kotlinx.schema.generator.ir.Property
-import kotlinx.schema.generator.ir.SchemaIntrospector
-import kotlinx.schema.generator.ir.SubtypeRef
-import kotlinx.schema.generator.ir.TypeGraph
-import kotlinx.schema.generator.ir.TypeId
-import kotlinx.schema.generator.ir.TypeNode
-import kotlinx.schema.generator.ir.TypeRef
+import kotlinx.schema.generator.core.ir.DefaultPresence
+import kotlinx.schema.generator.core.ir.Discriminator
+import kotlinx.schema.generator.core.ir.EnumNode
+import kotlinx.schema.generator.core.ir.ListNode
+import kotlinx.schema.generator.core.ir.MapNode
+import kotlinx.schema.generator.core.ir.ObjectNode
+import kotlinx.schema.generator.core.ir.PolymorphicNode
+import kotlinx.schema.generator.core.ir.PrimitiveNode
+import kotlinx.schema.generator.core.ir.Property
+import kotlinx.schema.generator.core.ir.SchemaIntrospector
+import kotlinx.schema.generator.core.ir.SubtypeRef
+import kotlinx.schema.generator.core.ir.TypeGraph
+import kotlinx.schema.generator.core.ir.TypeId
+import kotlinx.schema.generator.core.ir.TypeNode
+import kotlinx.schema.generator.core.ir.TypeRef
 import kotlinx.schema.generator.json.internal.getPolymorphicDescriptors
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PolymorphicKind
@@ -30,6 +32,7 @@ import kotlinx.serialization.json.Json
 public class SerializationIntrospector(
     private val json: Json,
 ) : SchemaIntrospector<KSerializer<*>> {
+    @Suppress("CyclomaticComplexMethod", "NestedBlockDepth")
     override fun introspect(root: KSerializer<*>): TypeGraph {
         val nodes = LinkedHashMap<TypeId, TypeNode>()
         val visiting = HashSet<SerialDescriptor>()
@@ -39,17 +42,17 @@ public class SerializationIntrospector(
 
         fun primitiveFor(d: SerialDescriptor): PrimitiveNode? =
             when (d.kind) {
-                PrimitiveKind.STRING -> PrimitiveNode(kotlinx.schema.generator.ir.PrimitiveKind.STRING)
-                PrimitiveKind.BOOLEAN -> PrimitiveNode(kotlinx.schema.generator.ir.PrimitiveKind.BOOLEAN)
+                PrimitiveKind.STRING -> PrimitiveNode(kotlinx.schema.generator.core.ir.PrimitiveKind.STRING)
+                PrimitiveKind.BOOLEAN -> PrimitiveNode(kotlinx.schema.generator.core.ir.PrimitiveKind.BOOLEAN)
                 PrimitiveKind.BYTE, PrimitiveKind.SHORT, PrimitiveKind.INT ->
                     PrimitiveNode(
-                        kotlinx.schema.generator.ir.PrimitiveKind.INT,
+                        kotlinx.schema.generator.core.ir.PrimitiveKind.INT,
                     )
 
-                PrimitiveKind.LONG -> PrimitiveNode(kotlinx.schema.generator.ir.PrimitiveKind.LONG)
-                PrimitiveKind.FLOAT -> PrimitiveNode(kotlinx.schema.generator.ir.PrimitiveKind.FLOAT)
-                PrimitiveKind.DOUBLE -> PrimitiveNode(kotlinx.schema.generator.ir.PrimitiveKind.DOUBLE)
-                PrimitiveKind.CHAR -> PrimitiveNode(kotlinx.schema.generator.ir.PrimitiveKind.STRING)
+                PrimitiveKind.LONG -> PrimitiveNode(kotlinx.schema.generator.core.ir.PrimitiveKind.LONG)
+                PrimitiveKind.FLOAT -> PrimitiveNode(kotlinx.schema.generator.core.ir.PrimitiveKind.FLOAT)
+                PrimitiveKind.DOUBLE -> PrimitiveNode(kotlinx.schema.generator.core.ir.PrimitiveKind.DOUBLE)
+                PrimitiveKind.CHAR -> PrimitiveNode(kotlinx.schema.generator.core.ir.PrimitiveKind.STRING)
                 else -> null
             }
 
@@ -66,6 +69,7 @@ public class SerializationIntrospector(
                 .firstOrNull()
                 ?.value
 
+        @Suppress("LongMethod", "ReturnCount")
         fun toRef(d: SerialDescriptor): TypeRef {
             cache[d]?.let { return it }
 
@@ -85,7 +89,7 @@ public class SerializationIntrospector(
                         visiting += d
                         val entries = (0 until d.elementsCount).map { d.getElementName(it) }
                         val node =
-                            kotlinx.schema.generator.ir.EnumNode(
+                            EnumNode(
                                 name = d.serialName,
                                 entries = entries,
                                 description = d.readDescription(),
@@ -104,8 +108,7 @@ public class SerializationIntrospector(
                         val keyDesc = d.getElementDescriptor(0)
                         val valDesc = d.getElementDescriptor(1)
                         val node =
-                            kotlinx.schema.generator.ir
-                                .MapNode(key = toRef(keyDesc), value = toRef(valDesc))
+                            MapNode(key = toRef(keyDesc), value = toRef(valDesc))
                         val ref = TypeRef.Inline(node, nullable)
                         cache[d] = ref
                         ref

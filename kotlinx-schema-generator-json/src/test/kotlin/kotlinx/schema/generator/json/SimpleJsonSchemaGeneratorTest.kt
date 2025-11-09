@@ -36,8 +36,8 @@ class SimpleJsonSchemaGeneratorTest {
     fun generateJsonSchema() {
         val schema = SimpleJsonSchemaGenerator.generateSchema(Person::class)
 
-        println("schema = $schema")
-        println("schema = $personSchema")
+        println("Expected schema = $personSchema")
+        println("Actual schema = $schema")
 
         schema shouldBe personSchema
     }

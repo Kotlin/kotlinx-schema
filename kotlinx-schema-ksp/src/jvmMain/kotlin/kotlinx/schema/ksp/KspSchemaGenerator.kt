@@ -1,9 +1,9 @@
 package kotlinx.schema.ksp
 
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import kotlinx.schema.generator.SchemaGenerator
-import kotlinx.schema.generator.ir.SchemaEmitter
-import kotlinx.schema.generator.ir.SchemaIntrospector
+import kotlinx.schema.generator.core.SchemaGenerator
+import kotlinx.schema.generator.core.ir.SchemaEmitter
+import kotlinx.schema.generator.core.ir.SchemaIntrospector
 import kotlinx.schema.generator.json.internal.IrStandardJsonSchemaEmitter
 import kotlinx.schema.ksp.ir.KspIntrospector
 import kotlinx.serialization.json.Json

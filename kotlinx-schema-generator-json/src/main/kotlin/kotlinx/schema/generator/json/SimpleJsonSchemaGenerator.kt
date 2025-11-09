@@ -12,7 +12,7 @@ import kotlin.reflect.KClass
  * A utility class for generating JSON schema representations of Kotlin objects.
  */
 public object SimpleJsonSchemaGenerator : JsonSchemaGenerator<KClass<out Any>> {
-    private val standardGenerator = StandardJsonSchemaGenerator.Default
+//    private val standardGenerator = StandardJsonSchemaGenerator.Default
     private val basicGenerator = BasicJsonSchemaGenerator.Default
 
     @OptIn(InternalSerializationApi::class)

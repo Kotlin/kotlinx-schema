@@ -1,6 +1,6 @@
 package kotlinx.schema.generator.json
 
-import kotlinx.schema.generator.SchemaGenerator
+import kotlinx.schema.generator.core.SchemaGenerator
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 

@@ -36,7 +36,8 @@ public open class BasicJsonSchemaGenerator : GenericJsonSchemaGenerator() {
         val descriptorKind = serializer.descriptor.kind
 
         require(descriptorKind in listOf(StructureKind.CLASS, StructureKind.OBJECT, StructureKind.MAP)) {
-            "Only object-like and no polymorphic types are supported for ${this::class.simpleName} generator, got $descriptorKind"
+            "Only object-like and no polymorphic types are supported for ${this::class.simpleName} " +
+                "generator, got $descriptorKind"
         }
 
         val context =

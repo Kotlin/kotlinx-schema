@@ -1,4 +1,4 @@
-package kotlinx.schema.generator.ir
+package kotlinx.schema.generator.core.ir
 
 /** A stable identifier for a type definition used for deduplication and $ref linking. */
 public data class TypeId(
@@ -108,16 +108,3 @@ public data class Discriminator(
 
 /** How a property default behaves relative to required-ness. */
 public enum class DefaultPresence { Absent, HasDefault, Required }
-
-/** A facade for building [TypeGraph] from a particular source (e.g. KSP or Serialization). */
-public interface SchemaIntrospector<T> {
-    public fun introspect(root: T): TypeGraph
-}
-
-/** Emitter that converts a [TypeGraph] to a target representation (e.g., JSON Schema). */
-public interface SchemaEmitter<R> {
-    public fun emit(
-        graph: TypeGraph,
-        rootName: String,
-    ): R
-}

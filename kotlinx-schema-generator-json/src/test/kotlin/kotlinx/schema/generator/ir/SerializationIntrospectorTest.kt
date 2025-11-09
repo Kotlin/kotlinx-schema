@@ -5,6 +5,15 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.schema.Description
+import kotlinx.schema.generator.core.ir.EnumNode
+import kotlinx.schema.generator.core.ir.ListNode
+import kotlinx.schema.generator.core.ir.MapNode
+import kotlinx.schema.generator.core.ir.ObjectNode
+import kotlinx.schema.generator.core.ir.PolymorphicNode
+import kotlinx.schema.generator.core.ir.PrimitiveKind
+import kotlinx.schema.generator.core.ir.PrimitiveNode
+import kotlinx.schema.generator.core.ir.TypeId
+import kotlinx.schema.generator.core.ir.TypeRef
 import kotlinx.schema.generator.json.SerializationIntrospector
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.ClassDiscriminatorMode

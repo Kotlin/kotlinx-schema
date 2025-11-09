@@ -1,7 +1,7 @@
 package kotlinx.schema.integration
 
-import kotlinx.schema.Schema
 import kotlinx.schema.Description
+import kotlinx.schema.Schema
 
 /**
  * Simple test model to verify basic KSP processing
@@ -90,8 +90,10 @@ data class Container<T>(
 enum class Status {
     @Description("Entity is active and usable")
     ACTIVE,
+
     @Description("Entity is inactive or disabled")
     INACTIVE,
+
     @Description("Entity is pending activation or approval")
     PENDING,
 }
