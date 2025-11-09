@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform) apply false
     alias(libs.plugins.vanniktech.mavenPublish) apply false
     alias(libs.plugins.kover)
+    alias(libs.plugins.detekt) apply false
 }
 
 dependencies {
@@ -17,6 +18,7 @@ dependencies {
 
 subprojects {
     apply(plugin = "org.jetbrains.kotlinx.kover")
+    apply(plugin = "io.gitlab.arturbosch.detekt")
 }
 
 kover {
