@@ -4,6 +4,12 @@ import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    `dokka-convention`
+}
+
+dokka {
+    dokkaSourceSets.configureEach {
+    }
 }
 
 kotlin {

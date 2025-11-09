@@ -1,5 +1,11 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    `dokka-convention`
+}
+
+dokka {
+    dokkaSourceSets.configureEach {
+    }
 }
 
 kotlin {
@@ -21,7 +27,6 @@ kotlin {
                 implementation(libs.kotlin.test)
                 implementation(libs.kotest.assertions.core)
                 implementation(kotlin("reflect"))
-                // implementation(libs.kctfork.ksp)
             }
         }
     }

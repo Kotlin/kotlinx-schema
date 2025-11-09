@@ -19,6 +19,5 @@ include(
     ":kotlinx-schema-generator-json",
     ":kotlinx-schema-ksp",
     ":ksp-integration-tests",
-    // ":kotlinx-schema-compiler-plugin",
-    // ":integration-tests",
+    ":docs",
 )

@@ -1,6 +1,12 @@
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization") apply true
+    `dokka-convention`
+}
+
+dokka {
+    dokkaSourceSets.configureEach {
+    }
 }
 
 kotlin {
