@@ -3,12 +3,9 @@ package kotlinx.schema.ksp.ir
 import com.google.devtools.ksp.getDeclaredProperties
 import com.google.devtools.ksp.isPublic
 import com.google.devtools.ksp.symbol.ClassKind
-import com.google.devtools.ksp.symbol.KSAnnotated
-import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.Nullability
-import kotlinx.schema.Description
 import kotlinx.schema.generator.core.ir.DefaultPresence
 import kotlinx.schema.generator.core.ir.EnumNode
 import kotlinx.schema.generator.core.ir.ListNode
@@ -28,6 +25,7 @@ import kotlinx.schema.generator.core.ir.TypeRef
  */
 @Suppress("ReturnCount", "MaxLineLength", "NestedBlockDepth", "LongMethod", "MaxLineLength")
 internal class KspIntrospector : SchemaIntrospector<KSClassDeclaration> {
+    @Suppress("CyclomaticComplexMethod")
     override fun introspect(root: KSClassDeclaration): TypeGraph {
         val nodes = LinkedHashMap<TypeId, TypeNode>()
         val visiting = HashSet<KSClassDeclaration>()
@@ -35,24 +33,6 @@ internal class KspIntrospector : SchemaIntrospector<KSClassDeclaration> {
         fun TypeId.ensure(node: TypeNode) {
             if (!nodes.containsKey(this)) nodes[this] = node
         }
-
-        fun KSAnnotation.tryDescription(): String? =
-            if ((
-                    annotationType
-                        .resolve()
-                        .declaration.qualifiedName
-                        ?.asString() == Description::class.qualifiedName
-                )
-            ) {
-                (arguments.firstOrNull { it.name?.asString() == "value" }?.value as? String)
-            } else {
-                null
-            }
-
-        fun KSAnnotated.descriptionOrNull(): String? = annotations.mapNotNull { it.tryDescription() }.firstOrNull()
-
-        fun typeIdFor(decl: KSClassDeclaration): TypeId =
-            TypeId(decl.qualifiedName?.asString() ?: decl.simpleName.asString())
 
         fun primitiveFor(type: KSType): PrimitiveNode? {
             val qn = type.declaration.qualifiedName?.asString()
@@ -149,7 +129,7 @@ internal class KspIntrospector : SchemaIntrospector<KSClassDeclaration> {
                 (type.declaration as KSClassDeclaration).classKind == ClassKind.ENUM_CLASS
             ) {
                 val decl = type.declaration as KSClassDeclaration
-                val id = typeIdFor(decl)
+                val id = decl.typeId()
                 if (!nodes.containsKey(id) && decl !in visiting) {
                     visiting += decl
                     val entries =
@@ -173,7 +153,7 @@ internal class KspIntrospector : SchemaIntrospector<KSClassDeclaration> {
             // Objects/classes
             val decl = type.declaration as? KSClassDeclaration
             if (decl != null) {
-                val id = typeIdFor(decl)
+                val id = decl.typeId()
                 if (!nodes.containsKey(id) && decl !in visiting) {
                     visiting += decl
                     val props = ArrayList<Property>()
@@ -185,7 +165,7 @@ internal class KspIntrospector : SchemaIntrospector<KSClassDeclaration> {
                         params.forEach { p ->
                             val name = p.name?.asString() ?: return@forEach
                             val pType = p.type.resolve()
-                            val desc = p.annotations.mapNotNull { it.tryDescription() }.firstOrNull()
+                            val desc = p.annotations.mapNotNull { it.descriptionOrNull() }.firstOrNull()
                             val tref = toRef(pType)
                             val presence = if (p.hasDefault) DefaultPresence.Absent else DefaultPresence.Required
                             if (!p.hasDefault) required += name
@@ -195,7 +175,7 @@ internal class KspIntrospector : SchemaIntrospector<KSClassDeclaration> {
                         decl.getDeclaredProperties().filter { it.isPublic() }.forEach { prop ->
                             val name = prop.simpleName.asString()
                             val pType = prop.type.resolve()
-                            val desc = prop.annotations.mapNotNull { it.tryDescription() }.firstOrNull()
+                            val desc = prop.annotations.mapNotNull { it.descriptionOrNull() }.firstOrNull()
                             val tref = toRef(pType)
                             // KSP doesn't easily provide default presence here; treat as required conservatively
                             val presence = DefaultPresence.Required
@@ -221,7 +201,7 @@ internal class KspIntrospector : SchemaIntrospector<KSClassDeclaration> {
             return TypeRef.Inline(PrimitiveNode(PrimitiveKind.STRING), nullable)
         }
 
-        val rootRef = TypeRef.Ref(typeIdFor(root))
+        val rootRef = TypeRef.Ref(root.typeId())
         // ensure root node is populated
         toRef(root.asType(emptyList()))
         return TypeGraph(root = rootRef, nodes = nodes)

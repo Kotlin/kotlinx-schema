@@ -1,6 +1,6 @@
 plugins {
-    kotlin("jvm")
     `dokka-convention`
+    `kotlin-jvm-convention`
 }
 
 dokka {
@@ -9,7 +9,6 @@ dokka {
 }
 
 kotlin {
-    jvmToolchain(17)
 
     dependencies {
         // production dependencies
@@ -19,12 +18,5 @@ kotlin {
         testImplementation(libs.kotlin.test)
         testImplementation(libs.kotest.assertions.core)
         testImplementation(libs.kotest.assertions.json)
-    }
-
-    explicitApi()
-
-    compilerOptions {
-        javaParameters = true
-        optIn.set(listOf("kotlinx.serialization.ExperimentalSerializationApi"))
     }
 }

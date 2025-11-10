@@ -9,7 +9,7 @@ import com.google.devtools.ksp.processing.SymbolProcessorProvider
  *
  * This class is registered as a service in META-INF/services to be discovered by KSP.
  */
-public class SchemaExtensionProcessorProvider : SymbolProcessorProvider {
+internal class SchemaExtensionProcessorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor =
         SchemaExtensionProcessor(
             codeGenerator = environment.codeGenerator,

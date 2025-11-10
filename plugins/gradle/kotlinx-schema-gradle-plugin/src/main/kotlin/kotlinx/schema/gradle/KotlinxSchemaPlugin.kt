@@ -3,6 +3,7 @@ package kotlinx.schema.gradle
 import com.google.devtools.ksp.gradle.KspExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.logging.LogLevel
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 
@@ -63,7 +64,10 @@ public class KotlinxSchemaPlugin : Plugin<Project> {
         project: Project,
         extension: KotlinxSchemaExtension,
     ) {
-        if (!extension.enabled.get()) return
+        if (!extension.enabled.get()) {
+            project.logger.log(LogLevel.DEBUG, "Kotlin schema plugin is disabled")
+            return
+        }
 
         val ksp = project.extensions.getByType(KspExtension::class.java)
         val root =
@@ -81,6 +85,7 @@ public class KotlinxSchemaPlugin : Plugin<Project> {
         extension: KotlinxSchemaExtension,
     ) {
         if (!extension.enabled.get()) {
+            project.logger.log(LogLevel.DEBUG, "Kotlin schema plugin is disabled")
             return
         }
 
@@ -88,7 +93,6 @@ public class KotlinxSchemaPlugin : Plugin<Project> {
         // These are already declared as api dependencies of the plugin
         // Prefer local project dependencies when developing inside the monorepo
         val kspProject = project.rootProject.findProject(":kotlinx-schema-ksp")
-        val annotationsProject = project.rootProject.findProject(":kotlinx-schema-annotations")
 
         // Add KSP processor dependency
         val kspConfiguration =
@@ -96,7 +100,6 @@ public class KotlinxSchemaPlugin : Plugin<Project> {
                 isMultiplatformProject(project) -> "kspCommonMainMetadata"
                 else -> "ksp"
             }
-
         if (kspProject != null) {
             project.dependencies.add(kspConfiguration, project.project(":kotlinx-schema-ksp"))
         } else {
@@ -104,59 +107,6 @@ public class KotlinxSchemaPlugin : Plugin<Project> {
                 kspConfiguration,
                 mapOf("group" to "org.jetbrains.kotlinx", "name" to "kotlinx-schema-ksp"),
             )
-        }
-
-        // Add annotations dependency to main source set
-        val annotationsConfig =
-            when {
-                isMultiplatformProject(project) -> "commonMainImplementation"
-                else -> "implementation"
-            }
-
-        if (annotationsProject != null) {
-            project.dependencies.add(annotationsConfig, project.project(":kotlinx-schema-annotations"))
-        } else {
-            project.dependencies.add(
-                annotationsConfig,
-                mapOf("group" to "org.jetbrains.kotlinx", "name" to "kotlinx-schema-annotations"),
-            )
-        }
-    }
-
-    private fun getDependencyFromClasspath(
-        classLoader: ClassLoader,
-        moduleName: String,
-    ): Map<String, String> {
-        // Verify the dependency is on the classpath
-        val className =
-            when (moduleName) {
-                "kotlinx-schema-ksp" -> "kotlinx.schema.ksp.SchemaExtensionProcessorProvider"
-                "kotlinx-schema-annotations" -> "kotlinx.schema.Schema"
-                else -> throw IllegalArgumentException("Unknown module: $moduleName")
-            }
-
-        try {
-            Class.forName(className, false, classLoader)
-        } catch (e: ClassNotFoundException) {
-            throw IllegalStateException(
-                "Could not find $moduleName on plugin classpath. " +
-                    "This indicates a plugin configuration issue.",
-                e,
-            )
-        }
-
-        // Return dependency notation as a map that Gradle can resolve
-        // Since these are api dependencies, Gradle will use the version from the plugin's dependency graph
-        return mapOf(
-            "group" to "org.jetbrains.kotlinx",
-            "name" to moduleName,
-        )
-    }
-
-    private fun configureSourceSets(project: Project) {
-        when {
-            isMultiplatformProject(project) -> configureMultiplatformSourceSets(project)
-            isKotlinJvmProject(project) -> configureJvmSourceSets(project)
         }
     }
 
@@ -206,9 +156,6 @@ public class KotlinxSchemaPlugin : Plugin<Project> {
 
     private fun isMultiplatformProject(project: Project): Boolean =
         project.pluginManager.hasPlugin("org.jetbrains.kotlin.multiplatform")
-
-    private fun isKotlinJvmProject(project: Project): Boolean =
-        project.pluginManager.hasPlugin("org.jetbrains.kotlin.jvm")
 
     private companion object {
         private const val EXTENSION_NAME = "kotlinxSchema"

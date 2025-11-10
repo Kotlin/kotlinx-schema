@@ -29,6 +29,7 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(libs.kotlinx.serialization.json)
+                implementation(project(":kotlinx-schema-annotations"))
             }
         }
 

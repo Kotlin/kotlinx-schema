@@ -20,7 +20,7 @@ private const val KOTLINX_SCHEMA_ANNOTATION = "kotlinx.schema.Schema"
  * val MyClass.jsonSchemaString: String get() = "..."
  * ```
  */
-public class SchemaExtensionProcessor(
+internal class SchemaExtensionProcessor(
     private val codeGenerator: CodeGenerator,
     private val logger: KSPLogger,
     private val options: Map<String, String>,
@@ -32,8 +32,14 @@ public class SchemaExtensionProcessor(
         val symbols = resolver.getSymbolsWithAnnotation(schemaAnnotationName)
         val ret = mutableListOf<KSAnnotated>()
 
+        val enabled = options["kotlinx.schema.enabled"]?.trim()?.takeIf { it.isNotEmpty() } != "false"
         val rootPackage = options["kotlinx.schema.rootPackage"]?.trim()?.takeIf { it.isNotEmpty() }
         logger.info("[kotlinx-schema] Options: ${options.entries.joinToString()} | rootPackage=$rootPackage")
+
+        if (!enabled) {
+            logger.info("[kotlinx-schema] Plugin disabled")
+            return emptyList()
+        }
 
         symbols.filterIsInstance<KSClassDeclaration>().forEach { classDeclaration ->
             if (!classDeclaration.validate()) {
@@ -47,17 +53,20 @@ public class SchemaExtensionProcessor(
                 val inRoot = pkg == rootPackage || pkg.startsWith("$rootPackage.")
                 if (!inRoot) {
                     logger.info(
-                        "[kotlinx-schema] Skipping ${classDeclaration.qualifiedName?.asString()} as it is outside rootPackage '$rootPackage'",
+                        "[kotlinx-schema] Skipping ${classDeclaration.qualifiedName?.asString()} " +
+                            "as it is outside rootPackage '$rootPackage'",
                     )
                     return@forEach
                 }
             }
 
+            @Suppress("TooGenericExceptionCaught")
             try {
                 generateSchemaExtension(classDeclaration)
             } catch (e: Exception) {
                 logger.error(
-                    "Failed to generate schema extension for ${classDeclaration.qualifiedName?.asString()}: ${e.message}",
+                    "Failed to generate schema extension " +
+                        "for ${classDeclaration.qualifiedName?.asString()}: ${e.message}",
                 )
                 e.printStackTrace()
             }

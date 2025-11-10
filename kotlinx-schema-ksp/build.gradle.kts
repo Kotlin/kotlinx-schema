@@ -1,6 +1,6 @@
 plugins {
-    kotlin("jvm")
     `dokka-convention`
+    `kotlin-jvm-convention`
 }
 
 dokka {
@@ -9,10 +9,6 @@ dokka {
 }
 
 kotlin {
-
-    compilerOptions {
-        optIn.set(listOf("kotlinx.serialization.ExperimentalSerializationApi"))
-    }
 
     dependencies {
         implementation(project(":kotlinx-schema-generator-json"))

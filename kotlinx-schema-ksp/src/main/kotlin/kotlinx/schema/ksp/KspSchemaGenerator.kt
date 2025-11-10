@@ -14,7 +14,7 @@ import kotlinx.serialization.json.JsonObject
  * This demonstrates that generators can be generalized to consume abstract metadata
  * (here: KSP symbols) and emit JSON Schema without coupling to KSP or Serialization specifics.
  */
-object KspSchemaGenerator : SchemaGenerator<KSClassDeclaration, JsonObject> {
+internal object KspSchemaGenerator : SchemaGenerator<KSClassDeclaration, JsonObject> {
     private val json =
         Json {
             prettyPrint = true
