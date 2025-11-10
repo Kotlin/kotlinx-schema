@@ -14,5 +14,6 @@ public class SchemaExtensionProcessorProvider : SymbolProcessorProvider {
         SchemaExtensionProcessor(
             codeGenerator = environment.codeGenerator,
             logger = environment.logger,
+            options = environment.options,
         )
 }
