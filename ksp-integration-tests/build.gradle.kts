@@ -3,7 +3,7 @@
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
+    kotlin("multiplatform")
     alias(libs.plugins.google.ksp)
 }
 
@@ -37,14 +37,15 @@ kotlin {
                 implementation(libs.kotlinx.serialization.json)
                 // Ensure generated sources are included in compilation
                 kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
+
+                implementation(libs.kotest.assertions.core)
+                implementation(libs.kotest.assertions.json)
             }
         }
 
         commonTest {
             dependencies {
                 implementation(kotlin("test"))
-                implementation(libs.kotest.assertions.core)
-                implementation(libs.kotest.assertions.json)
             }
         }
     }

@@ -1,11 +1,17 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
-    kotlin("jvm") version "2.2.21"
+    alias(libs.plugins.kotlinJvm)
     `java-gradle-plugin`
+    id("maven-publish")
 }
 
 repositories {
     mavenCentral()
 }
+
+group = "kotlinx.schema"
+version = "0.1.0"
 
 gradlePlugin {
     plugins {
@@ -19,11 +25,26 @@ gradlePlugin {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.21")
-    implementation("com.google.devtools.ksp:symbol-processing-gradle-plugin:2.3.2")
-    compileOnly("com.google.devtools.ksp:symbol-processing-api:2.3.2")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:${libs.versions.kotlin.get()}")
+    implementation(libs.ksp.gradlePlugin)
+    compileOnly(libs.ksp.api)
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test:2.2.21")
-    testImplementation("io.kotest:kotest-assertions-core:6.0.4")
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.kotest.assertions.core)
     testImplementation(gradleTestKit())
+}
+
+kotlin {
+    jvmToolchain(17)
+    explicitApi()
+    compilerOptions {
+        javaParameters = true
+        jvmTarget = JvmTarget.JVM_17
+    }
+}
+
+publishing {
+    repositories {
+        maven { url = uri(layout.buildDirectory.dir("local-repo")) }
+    }
 }

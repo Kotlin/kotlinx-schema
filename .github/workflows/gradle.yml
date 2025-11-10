@@ -62,7 +62,8 @@ jobs:
                     ./gradlew \
                       --rerun-tasks --no-daemon \
                       -Dorg.gradle.maven.repo.local=.m2-local \
-                      clean build koverXmlReport
+                      clean build koverXmlReport \
+                      :kotlinx-schema-gradle-plugin:publishToMavenLocal
 
             -   name: Publish Test Report
                 uses: mikepenz/action-junit-report@v6
