@@ -26,6 +26,12 @@ clean:
 	@./gradlew clean
 	@echo "✅ Clean complete!"
 
+.PHONY: lint
+lint:
+	@echo "🕵️‍♀️ Inspecting code..."
+	@./gradlew detekt
+	@echo "✅ Code inspection complete!"
+
 .PHONY: publish
 publish:
 	@echo "📦 Publishing to local Maven repository..."
