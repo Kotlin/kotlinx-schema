@@ -4,14 +4,13 @@ build:clean
 	@echo "🔨 Building project with coverage reports..."
 	@./gradlew --rerun-tasks \
 		build \
-		koverLog koverXmlReport \
-		:kotlinx-schema-gradle-plugin:publishToMavenLocal
+		koverLog koverXmlReport
 	@echo "✅ Build complete!"
 
 .PHONY: test
 test:
 	@echo "🧪 Running tests..."
-	@./gradlew test --rerun-tasks
+	@./gradlew test wasmJsTest --rerun-tasks
 	@echo "✅ Tests complete!"
 
 .PHONY: apidocs
