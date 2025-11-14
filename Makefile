@@ -37,3 +37,10 @@ publish:
 	@echo "📦 Publishing to local Maven repository..."
 	@./gradlew publishToMavenLocal
 	@echo "✅ Published to ~/.m2/repository!"
+
+.PHONY: q
+q:
+	@echo "🔨 Building project with coverage reports..."
+	@./gradlew --debug \
+		build
+	@echo "✅ Build complete!"

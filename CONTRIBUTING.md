@@ -30,16 +30,7 @@ The [`Makefile`](Makefile) includes several helpful targets to make your develop
   - Runs all tests, verifies the project, and generates site documentation.
 
 - **`apidocs`**:
-  - Generates API documentation using Dokka and places it in `target/docs/api`.
+  - Generates API documentation using Dokka and places it in [`docs/public/apidocs`](docs/public/apidocs).
 
 - **`lint`**:
-  - Prepares the environment and checks code style using `ktlint` and Maven `spotless:check`.
-
-- **`format`**:
-  - Formats the code using `ktlint --format` and applies `spotless` and OpenRewrite best practices.
-
-- **`prepare`**:
-  - Installs `ktlint` via Homebrew if not already installed.
-
-- **`all`**:
-  - Executes `format`, `lint`, and `build` sequentially.
+  - Prepares the environment and checks code style using `detekt`.
