@@ -5,6 +5,13 @@ import kotlin.reflect.full.declaredMembers
 import kotlin.test.Test
 
 class DescriptionAnnotationTest {
+    @Schema
+    @Description("Personal information")
+    private data class Person(
+        @property:Description("Person's first name")
+        val firstName: String,
+    )
+
     @Test
     fun `Class should have @Description annotation`() {
         val classAnnotations =

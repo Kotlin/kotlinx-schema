@@ -1,5 +1,6 @@
 @file:OptIn(ExperimentalWasmDsl::class)
 
+import org.gradle.kotlin.dsl.invoke
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
@@ -26,7 +27,7 @@ kotlin {
         browser()
         nodejs()
     }
-    macosArm64()
+    // macosArm64()
     iosArm64()
     iosSimulatorArm64()
 
@@ -38,14 +39,15 @@ kotlin {
                 // Ensure generated sources are included in compilation
                 kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
 
-                implementation(libs.kotest.assertions.core)
-                implementation(libs.kotest.assertions.json)
+                implementation(libs.koog.agents.tools)
             }
         }
 
         commonTest {
             dependencies {
                 implementation(kotlin("test"))
+                implementation(libs.kotest.assertions.core)
+                implementation(libs.kotest.assertions.json)
             }
         }
     }

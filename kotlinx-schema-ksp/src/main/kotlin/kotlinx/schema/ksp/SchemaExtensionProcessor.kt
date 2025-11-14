@@ -161,7 +161,7 @@ internal class SchemaExtensionProcessor(
         parameters: Map<String, Any?>,
         schemaString: String,
     ): String =
-        if (false && parameters["withSchemaObject"] == true) {
+        if (parameters["withSchemaObject"] == true) {
             @Suppress("RedundantVisibilityModifier")
             // language=kotlin
             """

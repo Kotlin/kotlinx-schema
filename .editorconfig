@@ -12,6 +12,9 @@ tab_width = 4
 [{*.har,*.jsb2,*.jsb3,*.json,*.jsonc,*.postman_collection,*.postman_collection.json,*.postman_environment,*.postman_environment.json,*.swift-format,.babelrc,.eslintrc,.prettierrc,.stylelintrc,.ws-context,jest.config}]
 indent_size = 2
 
+[{*.yaml,*.yml}]
+indent_size = 2
+
 [*.{kt,kts}]
 ij_kotlin_code_style_defaults = KOTLIN_OFFICIAL
 

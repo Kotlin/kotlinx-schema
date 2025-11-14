@@ -10,6 +10,7 @@ kotlin {
 
     compilerOptions {
         javaParameters = true
+        freeCompilerArgs.addAll("-Xdebug")
         optIn.set(listOf("kotlinx.serialization.ExperimentalSerializationApi"))
     }
 }

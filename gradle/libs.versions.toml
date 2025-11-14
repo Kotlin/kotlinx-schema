@@ -1,13 +1,14 @@
 [versions]
 agp = "8.10.1"
+detekt = "1.23.8"
+dokka = "2.1.0"
+koog = "0.5.3"
 kotest = "6.0.4"
 kotlin = "2.2.21"
 kotlinxSerialization = "1.9.0"
 kover = "0.9.3"
 ksp = "2.3.2"
 vanniktechMavenPublish = "0.34.0"
-detekt = "1.23.8"
-dokka = "2.1.0"
 
 [libraries]
 dokka-gradle-plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
@@ -19,6 +20,7 @@ kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotl
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 ksp-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
 ksp-gradlePlugin = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp" }
+koog-agents-tools = { module = "ai.koog:agents-tools", version.ref = "koog" }
 
 
 [plugins]
