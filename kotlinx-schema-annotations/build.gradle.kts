@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 plugins {
     kotlin("multiplatform")
     `dokka-convention`
+    `publishing-convention`
 }
 
 dokka {

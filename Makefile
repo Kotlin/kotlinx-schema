@@ -1,20 +1,34 @@
 
 .PHONY: build
 build:clean
-	./gradlew --rerun-tasks \
+	@echo "🔨 Building project with coverage reports..."
+	@./gradlew --rerun-tasks \
 		build \
 		koverLog koverXmlReport \
 		:kotlinx-schema-gradle-plugin:publishToMavenLocal
+	@echo "✅ Build complete!"
 
 .PHONY: test
 test:
-	./gradlew test --rerun-tasks
+	@echo "🧪 Running tests..."
+	@./gradlew test --rerun-tasks
+	@echo "✅ Tests complete!"
 
 .PHONY: apidocs
 apidocs:
-	rm -rf docs/public/apidocs && \
+	@echo "📚 Generating API documentation..."
+	@rm -rf docs/public/apidocs && \
 	./gradlew clean :docs:dokkaGenerate
+	@echo "✅ API docs generated!"
 
 .PHONY: clean
 clean:
-	./gradlew clean
+	@echo "🧹 Cleaning build artifacts..."
+	@./gradlew clean
+	@echo "✅ Clean complete!"
+
+.PHONY: publish
+publish:
+	@echo "📦 Publishing to local Maven repository..."
+	@./gradlew publishToMavenLocal
+	@echo "✅ Published to ~/.m2/repository!"

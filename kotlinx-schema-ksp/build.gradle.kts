@@ -1,6 +1,7 @@
 plugins {
     `dokka-convention`
     `kotlin-jvm-convention`
+    `publishing-convention`
 }
 
 dokka {

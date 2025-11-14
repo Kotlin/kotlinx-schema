@@ -8,4 +8,5 @@ repositories {
 dependencies {
     implementation(libs.dokka.gradle.plugin)
     implementation(libs.kotlin.gradle)
+    implementation(libs.gradle.maven.publish.plugin)
 }

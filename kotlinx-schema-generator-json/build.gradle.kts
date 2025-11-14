@@ -2,6 +2,7 @@ plugins {
     kotlin("plugin.serialization") apply true
     `dokka-convention`
     `kotlin-jvm-convention`
+    `publishing-convention`
 }
 
 dokka {
