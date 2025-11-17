@@ -96,7 +96,7 @@ public class KotlinxSchemaPlugin : Plugin<Project> {
         extension: KotlinxSchemaExtension,
     ) {
         if (!extension.enabled.get()) {
-            project.logger.log(LogLevel.DEBUG, "Kotlin schema plugin is disabled")
+            project.logger.log(LogLevel.INFO, "Kotlin schema plugin is disabled")
             return
         }
 
