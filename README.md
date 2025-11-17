@@ -532,6 +532,29 @@ Top-level modules you might interact with:
   consume the Gradle plugin
 - **ksp-integration-tests** — KSP end‑to‑end tests for generation without the Gradle plugin
 
+### Workflow
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant G as SchemaGenerator
+    participant I as SchemaIntrospector
+    participant E as SchemaEmitter
+    
+    C->>G: generate(target) : R?
+
+    G->>I: introspect(target)
+    I-->>G: TypeGraph
+
+    G->>E: emit(graph = TypeGraph, rootName)
+    E-->>G: schema (R)
+    G-->>C: schema (R)
+```
+1. _Client_ (KSP Processor or Java class) calls _SchemaGenerator_ to generate a Schema string representation, 
+and, optionally, object a Schema string representation.
+2. SchemaGenerator invokes SchemaIntrospector to convert an object into _TypeGraph_
+3. _Emitter_ converts a _TypeGraph_ to a target representation (e.g., JSON Schema) and returns to SchemaGenerator
+
 ## Building and testing
 
 - Build all: `./gradlew build`
