@@ -483,10 +483,42 @@ present on the same element, `@Description` takes precedence.
 
 ## Project architecture
 
+```mermaid
+C4Context
+    title kotlinx-schema
+
+    Boundary(lib, "kotlinx-schema") {
+
+        System(kxsGenCore, "kotlinx-schema-generator-core")
+        System(kxsAnnotations, "kotlinx-schema-annotations")
+        System(kxsGenJson, "kotlinx-schema-generator-json")
+        System(kxsKsp, "kotlinx-schema-ksp")
+        
+        System(kxsGradle, "kotlinx-schema-gradle-plugin")
+    }
+
+
+    Rel(kxsGenJson, kxsGenCore, "uses")
+    Rel(kxsGenCore, kxsAnnotations, "knows")
+    Rel(kxsKsp, kxsGenJson, "uses")
+    
+    Rel(kxsGradle, kxsKsp, "uses")
+
+    Boundary(userCode, "User's Application Code") {
+        System_Ext(userModels, "User Domain Models")
+        System_Ext(userModelsExt, "User Models Extensions")
+        Rel(userModelsExt, userModels, "uses")
+    }
+
+    Rel(userModels, kxsAnnotations, "uses")
+    Rel(kxsKsp, userModelsExt, "generates")
+
+```
+
 Top-level modules you might interact with:
 
 - **kotlinx-schema-annotations** — runtime annotations: @Schema and @Description
-- **kotlinx-schema-generator-core** — internal representation (IR) for schema descriptions
+- **kotlinx-schema-generator-core** — internal representation (IR) for schema descriptions, introspection utils, generator interfaces
 - **kotlinx-schema-generator-json** — JSON Schema emitter from the IR
 - **kotlinx-schema-ksp** — KSP processor that scans your code and generates the extension properties:
     - `KClass<T>.jsonSchema: JsonObject`
