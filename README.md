@@ -483,10 +483,42 @@ present on the same element, `@Description` takes precedence.
 
 ## Project architecture
 
+```mermaid
+C4Context
+    title kotlinx-schema
+
+    Boundary(lib, "kotlinx-schema") {
+
+        System(kxsGenCore, "kotlinx-schema-generator-core")
+        System(kxsAnnotations, "kotlinx-schema-annotations")
+        System(kxsGenJson, "kotlinx-schema-generator-json")
+        System(kxsKsp, "kotlinx-schema-ksp")
+        
+        System(kxsGradle, "kotlinx-schema-gradle-plugin")
+    }
+
+
+    Rel(kxsGenJson, kxsGenCore, "uses")
+    Rel(kxsGenCore, kxsAnnotations, "knows")
+    Rel(kxsKsp, kxsGenJson, "uses")
+    
+    Rel(kxsGradle, kxsKsp, "uses")
+
+    Boundary(userCode, "User's Application Code") {
+        System_Ext(userModels, "User Domain Models")
+        System_Ext(userModelsExt, "User Models Extensions")
+        Rel(userModelsExt, userModels, "uses")
+    }
+
+    Rel(userModels, kxsAnnotations, "uses")
+    Rel(kxsKsp, userModelsExt, "generates")
+
+```
+
 Top-level modules you might interact with:
 
 - **kotlinx-schema-annotations** — runtime annotations: @Schema and @Description
-- **kotlinx-schema-generator-core** — internal representation (IR) for schema descriptions
+- **kotlinx-schema-generator-core** — internal representation (IR) for schema descriptions, introspection utils, generator interfaces
 - **kotlinx-schema-generator-json** — JSON Schema emitter from the IR
 - **kotlinx-schema-ksp** — KSP processor that scans your code and generates the extension properties:
     - `KClass<T>.jsonSchema: JsonObject`
@@ -499,6 +531,29 @@ Top-level modules you might interact with:
 - **plugins/gradle/gradle-plugin-integration-tests** — a real MPP sample used as integration tests, showing how users
   consume the Gradle plugin
 - **ksp-integration-tests** — KSP end‑to‑end tests for generation without the Gradle plugin
+
+### Workflow
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant G as SchemaGenerator
+    participant I as SchemaIntrospector
+    participant E as SchemaEmitter
+    
+    C->>G: generate(target) : R?
+
+    G->>I: introspect(target)
+    I-->>G: TypeGraph
+
+    G->>E: emit(graph = TypeGraph, rootName)
+    E-->>G: schema (R)
+    G-->>C: schema (R)
+```
+1. _Client_ (KSP Processor or Java class) calls _SchemaGenerator_ to generate a Schema string representation, 
+and, optionally, object a Schema string representation.
+2. SchemaGenerator invokes SchemaIntrospector to convert an object into _TypeGraph_
+3. _Emitter_ converts a _TypeGraph_ to a target representation (e.g., JSON Schema) and returns to SchemaGenerator
 
 ## Building and testing
 
