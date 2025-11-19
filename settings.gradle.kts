@@ -19,6 +19,7 @@ dependencyResolutionManagement {
 rootProject.name = "kotlinx-schema"
 include(
     ":kotlinx-schema-annotations",
+    ":kotlinx-schema-json",
     ":kotlinx-schema-generator-core",
     ":kotlinx-schema-generator-json",
     ":plugins:gradle:gradle-plugin-integration-tests",
