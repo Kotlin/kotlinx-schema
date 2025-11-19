@@ -22,8 +22,7 @@ public interface JsonSchemaGenerator<T : Any> : SchemaGenerator<T, JsonObject> {
      * @param target the object for which the schema will be generated
      * @return a JSON string representing the schema of the provided object
      */
-    public override fun generateSchemaString(target: T): String =
-        Json.encodeToString(
-            generateSchema(target),
-        )
+    public override fun generateSchemaString(target: T): String = encodeToString(generateSchema(target))
+
+    override fun encodeToString(schema: JsonObject): String = Json.encodeToString(schema)
 }

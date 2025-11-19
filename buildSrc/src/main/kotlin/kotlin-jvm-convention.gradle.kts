@@ -14,3 +14,7 @@ kotlin {
         optIn.set(listOf("kotlinx.serialization.ExperimentalSerializationApi"))
     }
 }
+
+tasks.test {
+    useJUnitPlatform()
+}
