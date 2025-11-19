@@ -23,7 +23,7 @@ apidocs:
 .PHONY: clean
 clean:
 	@echo "🧹 Cleaning build artifacts..."
-	@./gradlew clean
+	@./gradlew clean && rm -rf kotlin-js-store
 	@echo "✅ Clean complete!"
 
 .PHONY: lint

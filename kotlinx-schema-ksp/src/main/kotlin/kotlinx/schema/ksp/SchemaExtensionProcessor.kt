@@ -8,7 +8,7 @@ import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.validate
-import kotlinx.schema.generator.core.SchemaGenerator
+import kotlinx.schema.generator.core.SchemaGeneratorService
 
 private const val KOTLINX_SCHEMA_ANNOTATION = "kotlinx.schema.Schema"
 
@@ -25,7 +25,15 @@ internal class SchemaExtensionProcessor(
     private val logger: KSPLogger,
     private val options: Map<String, String>,
 ) : SymbolProcessor {
-    private val schemaGenerator: SchemaGenerator<KSClassDeclaration, out Any> = KspSchemaGenerator
+    private val schemaGenerator = KspSchemaGenerator()
+
+    override fun finish() {
+        logger.info("✅ Done!")
+    }
+
+    override fun onError() {
+        logger.error("💥 Error!")
+    }
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val schemaAnnotationName = KOTLINX_SCHEMA_ANNOTATION
@@ -124,10 +132,9 @@ internal class SchemaExtensionProcessor(
 
     private fun getSchemaParameters(classDeclaration: KSClassDeclaration): Map<String, Any?> {
         val schemaAnnotation =
-            classDeclaration.annotations
-                .firstOrNull {
-                    it.shortName.getShortName() == "Schema"
-                }
+            classDeclaration.annotations.firstOrNull {
+                it.shortName.getShortName() == "Schema"
+            }
         if (schemaAnnotation == null) {
             return mapOf()
         }
@@ -136,12 +143,9 @@ internal class SchemaExtensionProcessor(
         val defaultParameters = getSchemaAnnotationDefaults()
 
         val parameters =
-            schemaAnnotation
-                .arguments
-                .filter { it.name != null }
-                .associate {
-                    it.name!!.getShortName() to it.value
-                }
+            schemaAnnotation.arguments.filter { it.name != null }.associate {
+                it.name!!.getShortName() to it.value
+            }
         return defaultParameters.plus(parameters)
     }
 
@@ -224,10 +228,7 @@ internal class SchemaExtensionProcessor(
      * Escapes a string for use as a Kotlin raw string literal, preserving $ and triple quotes.
      */
     private fun String.escapeForKotlinString(): String {
-        val escaped =
-            this
-                .replace("$", "\${'$'}")
-                .replace("\"\"\"", "\\\"\\\"\\\"")
+        val escaped = this.replace("$", "\${'$'}").replace("\"\"\"", "\\\"\\\"\\\"")
         return "\"\"\"" + escaped + "\"\"\""
     }
 }

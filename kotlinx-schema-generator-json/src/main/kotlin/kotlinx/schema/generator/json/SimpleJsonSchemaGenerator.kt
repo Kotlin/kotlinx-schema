@@ -1,7 +1,6 @@
 package kotlinx.schema.generator.json
 
 import kotlinx.schema.generator.json.internal.BasicJsonSchemaGenerator
-import kotlinx.schema.generator.json.internal.StandardJsonSchemaGenerator
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -12,8 +11,12 @@ import kotlin.reflect.KClass
  * A utility class for generating JSON schema representations of Kotlin objects.
  */
 public object SimpleJsonSchemaGenerator : JsonSchemaGenerator<KClass<out Any>> {
-//    private val standardGenerator = StandardJsonSchemaGenerator.Default
+    //    private val standardGenerator = StandardJsonSchemaGenerator.Default
     private val basicGenerator = BasicJsonSchemaGenerator.Default
+
+    override fun targetType(): KClass<KClass<out Any>> = KClass::class
+
+    override fun schemaType(): KClass<JsonObject> = JsonObject::class
 
     @OptIn(InternalSerializationApi::class)
     public override fun generateSchema(target: KClass<out Any>): JsonObject =
