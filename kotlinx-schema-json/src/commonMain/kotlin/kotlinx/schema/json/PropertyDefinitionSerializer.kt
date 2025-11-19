@@ -35,9 +35,8 @@ public class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
         }
 
         // Determine the type
-        val typeElement = jsonElement["type"]
         val types =
-            when (typeElement) {
+            when (val typeElement = jsonElement["type"]) {
                 null -> null
                 is JsonObject -> listOf(typeElement.toString())
                 else -> {

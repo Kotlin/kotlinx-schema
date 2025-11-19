@@ -40,18 +40,18 @@ public data class JsonSchema(
  */
 @Serializable
 @Suppress("LongParameterList")
-public open class JsonSchemaDefinition(
-    @EncodeDefault
-    public val type: String = "object",
+public data class JsonSchemaDefinition(
     @SerialName($$"$id")
     public val id: String? = null,
     @SerialName($$"$schema")
     public val schema: String? = null,
+    @EncodeDefault
+    public val type: String = "object",
     public val properties: Map<String, PropertyDefinition> = emptyMap(),
     public val required: List<String> = emptyList(),
     public val additionalProperties: Boolean? = null,
     public val description: String? = null,
-    public val items: ObjectPropertyDefinition? = null,
+    public val items: PropertyDefinition? = null,
 )
 
 /**

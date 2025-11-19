@@ -1,6 +1,7 @@
 package kotlinx.schema.json
 
 import io.kotest.assertions.json.shouldEqualJson
+import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.nulls.shouldNotBeNull
 import kotlinx.serialization.json.Json
 
@@ -26,4 +27,19 @@ inline fun <reified T : Any> deserializeAndSerialize(
 
     encoded shouldEqualJson payload
     return model
+}
+
+inline fun <reified T : Any> serializeAndDeserialize(
+    value: T,
+    expectedPayload: String,
+    jsonParser: Json = Json,
+): T {
+    val encoded: String = jsonParser.encodeToString(value)
+
+    encoded shouldEqualJson expectedPayload
+
+    val decoded = jsonParser.decodeFromString<T>(encoded)
+
+    decoded shouldBeEqual value
+    return decoded
 }
