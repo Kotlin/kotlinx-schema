@@ -14,9 +14,10 @@ kotlin {
 
     dependencies {
         // production dependencies
+        api(libs.kotlinx.serialization.json)
         api(project(":kotlinx-schema-annotations"))
         api(project(":kotlinx-schema-generator-core"))
-        api(libs.kotlinx.serialization.json)
+        api(project(":kotlinx-schema-json"))
 
         // test dependencies
         testImplementation(libs.kotlin.test)

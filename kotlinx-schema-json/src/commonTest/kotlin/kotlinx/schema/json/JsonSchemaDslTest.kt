@@ -1,6 +1,5 @@
 package kotlinx.schema.json
 
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
@@ -565,7 +564,7 @@ internal class JsonSchemaDslTest {
                         array {
                             description = "Processing steps"
                             ofObject {
-                                additionalProperties = false
+                                additionalProperties = kotlinx.serialization.json.JsonPrimitive(false)
                                 property("explanation") {
                                     required = true
                                     string {
@@ -622,7 +621,7 @@ internal class JsonSchemaDslTest {
         val stepsProp = deserialized.schema.properties["steps"] as ArrayPropertyDefinition
         val itemsObj = stepsProp.items as ObjectPropertyDefinition
         itemsObj.required shouldBe listOf("explanation", "output")
-        itemsObj.additionalProperties shouldBe false
+        itemsObj.additionalProperties shouldBe kotlinx.serialization.json.JsonPrimitive(false)
     }
 
     @Test

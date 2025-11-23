@@ -202,6 +202,8 @@ public class JsonSchemaBuilder {
  *
  * ## Example with Multiple Properties
  * ```kotlin
+ * import kotlinx.serialization.json.JsonPrimitive
+ *
  * schema {
  *     additionalProperties = false
  *     property("id") {
@@ -230,13 +232,30 @@ public class JsonSchemaDefinitionBuilder {
      */
     public var schema: String? = null
 
+    private var _additionalProperties: JsonElement? = null
+
     /**
      * Whether additional properties beyond those defined are allowed.
-     * - `true`: Additional properties allowed
-     * - `false`: Only defined properties allowed
+     * - `JsonPrimitive(true)`: Additional properties allowed
+     * - `JsonPrimitive(false)`: Only defined properties allowed
+     * - `JsonObject`: Schema for additional properties (e.g., for maps)
      * - `null`: No constraint (default)
      */
-    public var additionalProperties: Boolean? = null
+    public var additionalProperties: Any?
+        get() = _additionalProperties
+        set(value) {
+            _additionalProperties =
+                when (value) {
+                    is JsonObject -> value
+                    is Boolean -> JsonPrimitive(value)
+                    null -> null
+                    else ->
+                        error(
+                            "additionalProperties  must be Boolean, JsonElement, or null, " +
+                                "but got: ${value::class.simpleName}",
+                        )
+                }
+        }
 
     /**
      * Optional human-readable description.
@@ -289,7 +308,7 @@ public class JsonSchemaDefinitionBuilder {
             schema = schema,
             properties = properties,
             required = requiredFields.toList(),
-            additionalProperties = additionalProperties,
+            additionalProperties = _additionalProperties,
             description = description,
             items = items,
         )
@@ -1194,11 +1213,12 @@ public class ObjectPropertyBuilder internal constructor() {
 
     /**
      * Whether additional properties beyond those defined are allowed.
-     * - `true`: Additional properties allowed
-     * - `false`: Only defined properties allowed
+     * - `JsonPrimitive(true)`: Additional properties allowed
+     * - `JsonPrimitive(false)`: Only defined properties allowed
+     * - `JsonObject`: Schema for additional properties (e.g., for maps)
      * - `null`: No constraint (default)
      */
-    public var additionalProperties: Boolean? = null
+    public var additionalProperties: JsonElement? = null
 
     private val properties: MutableMap<String, PropertyDefinition> = mutableMapOf()
     private val requiredFields: MutableSet<String> = mutableSetOf()

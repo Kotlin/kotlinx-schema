@@ -568,6 +568,7 @@ C4Context
 
 
     Rel(kxsGenJson, kxsGenCore, "uses")
+    Rel(kxsGenJson, kxsJsn, "uses")
     Rel(kxsGenCore, kxsAnnotations, "knows")
     Rel(kxsKsp, kxsGenJson, "uses")
     

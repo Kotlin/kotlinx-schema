@@ -1,3 +1,7 @@
+@file:OptIn(ExperimentalWasmDsl::class)
+
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+
 plugins {
     kotlin("multiplatform")
 }
@@ -10,7 +14,6 @@ kotlin {
         freeCompilerArgs =
             listOf(
                 "-Wextra",
-                "-Xjvm-default=all",
                 "-Xmulti-dollar-interpolation",
             )
     }
@@ -22,13 +25,6 @@ kotlin {
     explicitApi()
 
     jvm {
-        //    jvmToolchain(17)
-//        compilerOptions {
-//            javaParameters = true
-//            freeCompilerArgs.addAll("-Xdebug")
-//            optIn.set(listOf("kotlinx.serialization.ExperimentalSerializationApi"))
-//        }
-
         testRuns["test"].executionTask.configure {
             useJUnitPlatform()
         }
@@ -38,6 +34,7 @@ kotlin {
         browser()
         nodejs()
     }
+
     wasmJs {
         binaries.library()
         browser {}
