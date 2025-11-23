@@ -344,6 +344,35 @@ public class ArrayPropertyBuilder internal constructor() {
         itemsDefinition = PropertyBuilder().block()
     }
 
+    // Convenience methods for directly specifying item types without items { } wrapper
+    public fun ofString(block: StringPropertyBuilder.() -> Unit = {}) {
+        itemsDefinition = StringPropertyBuilder().apply(block).build()
+    }
+
+    public fun ofInteger(block: NumericPropertyBuilder.() -> Unit = {}) {
+        itemsDefinition = NumericPropertyBuilder(type = "integer").apply(block).build()
+    }
+
+    public fun ofNumber(block: NumericPropertyBuilder.() -> Unit = {}) {
+        itemsDefinition = NumericPropertyBuilder(type = "number").apply(block).build()
+    }
+
+    public fun ofBoolean(block: BooleanPropertyBuilder.() -> Unit = {}) {
+        itemsDefinition = BooleanPropertyBuilder().apply(block).build()
+    }
+
+    public fun ofArray(block: ArrayPropertyBuilder.() -> Unit = {}) {
+        itemsDefinition = ArrayPropertyBuilder().apply(block).build()
+    }
+
+    public fun ofObject(block: ObjectPropertyBuilder.() -> Unit = {}) {
+        itemsDefinition = ObjectPropertyBuilder().apply(block).build()
+    }
+
+    public fun ofReference(ref: String) {
+        itemsDefinition = ReferencePropertyDefinition(ref)
+    }
+
     public fun build(): ArrayPropertyDefinition =
         ArrayPropertyDefinition(
             type = type,

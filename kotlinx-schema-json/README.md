@@ -156,9 +156,7 @@ val schema = jsonSchema {
                 description = "User tags"
                 minItems = 1
                 maxItems = 10
-                items {
-                    string()
-                }
+                ofString()
             }
         }
 
@@ -184,21 +182,19 @@ val schema = jsonSchema {
         property("activities") {
             array {
                 description = "User activity log"
-                items {
-                    obj {
-                        additionalProperties = false
-                        property("action") {
-                            required = true
-                            string {
-                                description = "Action performed"
-                            }
+                ofObject {
+                    additionalProperties = false
+                    property("action") {
+                        required = true
+                        string {
+                            description = "Action performed"
                         }
-                        property("timestamp") {
-                            required = true
-                            string {
-                                format = "date-time"
-                                description = "When action occurred"
-                            }
+                    }
+                    property("timestamp") {
+                        required = true
+                        string {
+                            format = "date-time"
+                            description = "When action occurred"
                         }
                     }
                 }

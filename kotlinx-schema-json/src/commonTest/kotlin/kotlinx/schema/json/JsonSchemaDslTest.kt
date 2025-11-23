@@ -18,28 +18,6 @@ internal class JsonSchemaDslTest {
 
     @Test
     fun `simple string schema serialization round-trip`() {
-        val schema2 =
-            jsonSchema {
-                name = "User"
-                schema {
-                    property("id") {
-                        required = true
-                        string { format = "uuid" }
-                    }
-                    property("email") {
-                        required = true
-                        string { format = "email" }
-                    }
-                    property("age") {
-                        integer { minimum = 0.0 }
-                    }
-                }
-            }
-
-// Serialize to JSON
-        val jsonString = json.encodeToString(schema2)
-        println(jsonString)
-
         val schema =
             jsonSchema {
                 name = "UserEmail"
@@ -170,9 +148,7 @@ internal class JsonSchemaDslTest {
                             description = "List of tags"
                             minItems = 1
                             maxItems = 10
-                            items {
-                                string()
-                            }
+                            ofString()
                         }
                     }
                 }
@@ -465,9 +441,7 @@ internal class JsonSchemaDslTest {
                     property("tags") {
                         array {
                             description = "List of tags"
-                            items {
-                                string()
-                            }
+                            ofString()
                         }
                     }
 
@@ -589,20 +563,18 @@ internal class JsonSchemaDslTest {
                     property("steps") {
                         array {
                             description = "Processing steps"
-                            items {
-                                obj {
-                                    additionalProperties = false
-                                    property("explanation") {
-                                        required = true
-                                        string {
-                                            description = "Step explanation"
-                                        }
+                            ofObject {
+                                additionalProperties = false
+                                property("explanation") {
+                                    required = true
+                                    string {
+                                        description = "Step explanation"
                                     }
-                                    property("output") {
-                                        required = true
-                                        string {
-                                            description = "Step output"
-                                        }
+                                }
+                                property("output") {
+                                    required = true
+                                    string {
+                                        description = "Step output"
                                     }
                                 }
                             }
