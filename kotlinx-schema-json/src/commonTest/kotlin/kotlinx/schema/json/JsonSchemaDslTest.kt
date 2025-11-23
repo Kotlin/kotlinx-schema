@@ -168,8 +168,8 @@ internal class JsonSchemaDslTest {
                     property("tags") {
                         array {
                             description = "List of tags"
-                            minItems = 1u
-                            maxItems = 10u
+                            minItems = 1
+                            maxItems = 10
                             items {
                                 string()
                             }
@@ -347,19 +347,19 @@ internal class JsonSchemaDslTest {
                     property("enabled") {
                         boolean {
                             description = "Feature enabled"
-                            defaultValue(true)
+                            default = true
                         }
                     }
                     property("name") {
                         string {
                             description = "Config name"
-                            defaultValue("default")
+                            default = "default"
                         }
                     }
                     property("count") {
                         integer {
                             description = "Item count"
-                            defaultValue(10)
+                            default = 10
                         }
                     }
                 }
@@ -661,13 +661,13 @@ internal class JsonSchemaDslTest {
                     property("version") {
                         string {
                             description = "API version"
-                            constValue("v1.0")
+                            constValue = "v1.0"
                         }
                     }
                     property("flag") {
                         boolean {
                             description = "Constant flag"
-                            constValue(false)
+                            constValue = false
                         }
                     }
                 }
@@ -711,7 +711,7 @@ internal class JsonSchemaDslTest {
                             description = "Precision value"
                             exclusiveMinimum = 0.0
                             exclusiveMaximum = 1.0
-                            constValue(0.5)
+                            constValue = 0.5
                         }
                     }
                 }

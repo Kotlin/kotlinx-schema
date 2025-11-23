@@ -130,7 +130,7 @@ val schema = jsonSchema {
         property("verified") {
             boolean {
                 description = "Email verification status"
-                defaultValue(false)
+                default = false
             }
         }
 
@@ -146,7 +146,7 @@ val schema = jsonSchema {
         property("apiVersion") {
             string {
                 description = "API version"
-                constValue("v1.0")
+                constValue = "v1.0"
             }
         }
 
@@ -154,8 +154,8 @@ val schema = jsonSchema {
         property("tags") {
             array {
                 description = "User tags"
-                minItems = 1u
-                maxItems = 10u
+                minItems = 1
+                maxItems = 10
                 items {
                     string()
                 }
@@ -217,9 +217,9 @@ This comprehensive example includes:
 - **Required fields**: `id`, `email` (with `required = true`)
 - **String constraints**: `format`, `minLength`, `maxLength`, `enum`, `pattern`
 - **Numeric constraints**: `minimum`, `maximum`, `multipleOf`, `exclusiveMinimum`, `exclusiveMaximum`
-- **Default values**: Using `defaultValue()` helper
+- **Default values**: Direct assignment `default = value` (automatically wrapped in `JsonPrimitive`)
 - **Nullable properties**: Using `nullable = true`
-- **Constant values**: Using `constValue()` helper
+- **Constant values**: Direct assignment `constValue = value` (automatically wrapped in `JsonPrimitive`)
 - **Arrays**: With `minItems`, `maxItems`, and typed `items`
 - **Nested objects**: Using `obj { }` with nested properties
 - **Array of objects**: Complex array items with their own schemas
@@ -281,8 +281,8 @@ val productSchema = jsonSchema {
 
 - `required = true` - Mark a property as required (set within the property block)
 - `nullable = true` - Allow null values
-- `defaultValue(value)` - Set default value
-- `constValue(value)` - Set constant value
+- `default = value` - Set default value (automatically wrapped in `JsonPrimitive`, or use `JsonElement` directly)
+- `constValue = value` - Set constant value (automatically wrapped in `JsonPrimitive`, or use `JsonElement` directly)
 - `enum = listOf(...)` - Enumerate allowed values
 - `minimum`, `maximum` - Numeric bounds
 - `minLength`, `maxLength` - String length constraints

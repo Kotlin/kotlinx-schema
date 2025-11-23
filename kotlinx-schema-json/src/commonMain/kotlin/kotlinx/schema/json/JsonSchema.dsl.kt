@@ -4,8 +4,6 @@ package kotlinx.schema.json
 
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.buildJsonArray
-import kotlinx.serialization.json.buildJsonObject
 
 /**
  * Marker annotation for the JSON Schema DSL.
@@ -173,22 +171,33 @@ public class StringPropertyBuilder internal constructor() {
     public var minLength: Int? = null
     public var maxLength: Int? = null
     public var pattern: String? = null
-    public var default: JsonElement? = null
-    public var constValue: JsonElement? = null
 
-    /**
-     * Sets the default value as a String, automatically converting it to JsonPrimitive.
-     */
-    public fun defaultValue(value: String) {
-        default = JsonPrimitive(value)
-    }
+    private var _default: JsonElement? = null
+    private var _constValue: JsonElement? = null
 
-    /**
-     * Sets the const value as a String, automatically converting it to JsonPrimitive.
-     */
-    public fun constValue(value: String) {
-        constValue = JsonPrimitive(value)
-    }
+    public var default: Any?
+        get() = _default
+        set(value) {
+            _default =
+                when (value) {
+                    is JsonElement -> value
+                    is String -> JsonPrimitive(value)
+                    null -> null
+                    else -> JsonPrimitive(value.toString())
+                }
+        }
+
+    public var constValue: Any?
+        get() = _constValue
+        set(value) {
+            _constValue =
+                when (value) {
+                    is JsonElement -> value
+                    is String -> JsonPrimitive(value)
+                    null -> null
+                    else -> JsonPrimitive(value.toString())
+                }
+        }
 
     public fun build(): StringPropertyDefinition =
         StringPropertyDefinition(
@@ -200,8 +209,8 @@ public class StringPropertyBuilder internal constructor() {
             minLength = minLength,
             maxLength = maxLength,
             pattern = pattern,
-            default = default,
-            constValue = constValue,
+            default = _default,
+            constValue = _constValue,
         )
 }
 
@@ -223,22 +232,33 @@ public class NumericPropertyBuilder internal constructor(
     public var exclusiveMinimum: Double? = null
     public var maximum: Double? = null
     public var exclusiveMaximum: Double? = null
-    public var default: JsonElement? = null
-    public var constValue: JsonElement? = null
 
-    /**
-     * Sets the default value as a Number, automatically converting it to JsonPrimitive.
-     */
-    public fun defaultValue(value: Number) {
-        default = JsonPrimitive(value)
-    }
+    private var _default: JsonElement? = null
+    private var _constValue: JsonElement? = null
 
-    /**
-     * Sets the const value as a Number, automatically converting it to JsonPrimitive.
-     */
-    public fun constValue(value: Number) {
-        constValue = JsonPrimitive(value)
-    }
+    public var default: Any?
+        get() = _default
+        set(value) {
+            _default =
+                when (value) {
+                    is JsonElement -> value
+                    is Number -> JsonPrimitive(value)
+                    null -> null
+                    else -> JsonPrimitive(value.toString())
+                }
+        }
+
+    public var constValue: Any?
+        get() = _constValue
+        set(value) {
+            _constValue =
+                when (value) {
+                    is JsonElement -> value
+                    is Number -> JsonPrimitive(value)
+                    null -> null
+                    else -> JsonPrimitive(value.toString())
+                }
+        }
 
     public fun build(): NumericPropertyDefinition =
         NumericPropertyDefinition(
@@ -250,8 +270,8 @@ public class NumericPropertyBuilder internal constructor(
             exclusiveMinimum = exclusiveMinimum,
             maximum = maximum,
             exclusiveMaximum = exclusiveMaximum,
-            default = default,
-            constValue = constValue,
+            default = _default,
+            constValue = _constValue,
         )
 }
 
@@ -266,30 +286,41 @@ public class BooleanPropertyBuilder internal constructor() {
     public var type: List<String> = listOf("boolean")
     public var description: String? = null
     public var nullable: Boolean? = null
-    public var default: JsonElement? = null
-    public var constValue: JsonElement? = null
 
-    /**
-     * Sets the default value as a Boolean, automatically converting it to JsonPrimitive.
-     */
-    public fun defaultValue(value: Boolean) {
-        default = JsonPrimitive(value)
-    }
+    private var _default: JsonElement? = null
+    private var _constValue: JsonElement? = null
 
-    /**
-     * Sets the const value as a Boolean, automatically converting it to JsonPrimitive.
-     */
-    public fun constValue(value: Boolean) {
-        constValue = JsonPrimitive(value)
-    }
+    public var default: Any?
+        get() = _default
+        set(value) {
+            _default =
+                when (value) {
+                    is JsonElement -> value
+                    is Boolean -> JsonPrimitive(value)
+                    null -> null
+                    else -> JsonPrimitive(value.toString())
+                }
+        }
+
+    public var constValue: Any?
+        get() = _constValue
+        set(value) {
+            _constValue =
+                when (value) {
+                    is JsonElement -> value
+                    is Boolean -> JsonPrimitive(value)
+                    null -> null
+                    else -> JsonPrimitive(value.toString())
+                }
+        }
 
     public fun build(): BooleanPropertyDefinition =
         BooleanPropertyDefinition(
             type = type,
             description = description,
             nullable = nullable,
-            default = default,
-            constValue = constValue,
+            default = _default,
+            constValue = _constValue,
         )
 }
 
@@ -304,33 +335,13 @@ public class ArrayPropertyBuilder internal constructor() {
     public var type: List<String> = listOf("array")
     public var description: String? = null
     public var nullable: Boolean? = null
-    public var minItems: UInt? = null
-    public var maxItems: UInt? = null
+    public var minItems: Int? = null
+    public var maxItems: Int? = null
     public var default: JsonElement? = null
     private var itemsDefinition: PropertyDefinition? = null
 
     public fun items(block: PropertyBuilder.() -> PropertyDefinition) {
         itemsDefinition = PropertyBuilder().block()
-    }
-
-    /**
-     * Sets the default value as a List, automatically converting it to JsonArray.
-     * Each element in the list is converted to JsonPrimitive.
-     */
-    public fun defaultValue(value: List<Any?>) {
-        default =
-            buildJsonArray {
-                value.forEach { item ->
-                    when (item) {
-                        null -> add(JsonPrimitive(null as String?))
-                        is String -> add(JsonPrimitive(item))
-                        is Number -> add(JsonPrimitive(item))
-                        is Boolean -> add(JsonPrimitive(item))
-                        is JsonElement -> add(item)
-                        else -> add(JsonPrimitive(item.toString()))
-                    }
-                }
-            }
     }
 
     public fun build(): ArrayPropertyDefinition =
@@ -339,8 +350,8 @@ public class ArrayPropertyBuilder internal constructor() {
             description = description,
             nullable = nullable,
             items = itemsDefinition,
-            minItems = minItems,
-            maxItems = maxItems,
+            minItems = minItems?.toUInt(),
+            maxItems = maxItems?.toUInt(),
             default = default,
         )
 }
@@ -370,39 +381,6 @@ public class ObjectPropertyBuilder internal constructor() {
         if (builder.required) {
             requiredFields.add(name)
         }
-    }
-
-    /**
-     * Sets the default value as a Map, automatically converting it to JsonObject.
-     * Each value in the map is converted to JsonPrimitive.
-     */
-    public fun defaultValue(value: Map<String, Any?>) {
-        default =
-            buildJsonObject {
-                value.forEach { (key, item) ->
-                    when (item) {
-                        null -> put(key, JsonPrimitive(null as String?))
-                        is String -> put(key, JsonPrimitive(item))
-                        is Number -> put(key, JsonPrimitive(item))
-                        is Boolean -> put(key, JsonPrimitive(item))
-                        is JsonElement -> put(key, item)
-                        else -> put(key, JsonPrimitive(item.toString()))
-                    }
-                }
-            }
-    }
-
-    /**
-     * Sets the default value using vararg pairs, automatically converting it to JsonObject.
-     * Each value in the pairs is converted to JsonPrimitive.
-     *
-     * Example:
-     * ```kotlin
-     * defaultValue("foo" to "bar", "baz" to 2)
-     * ```
-     */
-    public fun defaultValue(vararg pairs: Pair<String, Any?>) {
-        defaultValue(pairs.toMap())
     }
 
     public fun build(): ObjectPropertyDefinition =
