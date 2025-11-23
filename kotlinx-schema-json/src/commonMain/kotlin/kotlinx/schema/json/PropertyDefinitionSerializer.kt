@@ -1,6 +1,7 @@
 package kotlinx.schema.json
 
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
@@ -124,7 +125,7 @@ public class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
     ) {
         val jsonEncoder =
             encoder as? JsonEncoder
-                ?: throw IllegalArgumentException("This serializer can only be used with JSON")
+                ?: throw SerializationException("This serializer can only be used with JSON")
 
         when (value) {
             is StringPropertyDefinition ->

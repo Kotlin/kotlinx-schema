@@ -1,5 +1,6 @@
 package kotlinx.schema.json
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.json.Json
 import kotlin.test.Test

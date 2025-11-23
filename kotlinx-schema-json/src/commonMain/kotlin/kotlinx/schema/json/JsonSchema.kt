@@ -14,6 +14,8 @@ import kotlinx.serialization.json.JsonElement
  * @property name The name of the schema.
  * @property strict Whether to enable strict schema adherence.
  * @property schema The actual JSON schema definition.
+ *
+ * @author Konstantin Pavlov
  */
 @Serializable
 public data class JsonSchema(

@@ -2,7 +2,11 @@
 
 package kotlinx.schema.json
 
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
 /**
@@ -16,6 +20,8 @@ import kotlinx.serialization.json.JsonPrimitive
  * by restricting the scope of the annotated receivers within the DSL usage.
  *
  * @see DslMarker
+ *
+ * @author Konstantin Pavlov
  */
 @DslMarker
 public annotation class JsonSchemaDsl
@@ -183,7 +189,11 @@ public class StringPropertyBuilder internal constructor() {
                     is JsonElement -> value
                     is String -> JsonPrimitive(value)
                     null -> null
-                    else -> JsonPrimitive(value.toString())
+                    else ->
+                        error(
+                            "String property default must be String, JsonElement, or null, " +
+                                "but got: ${value::class.simpleName}",
+                        )
                 }
         }
 
@@ -195,7 +205,11 @@ public class StringPropertyBuilder internal constructor() {
                     is JsonElement -> value
                     is String -> JsonPrimitive(value)
                     null -> null
-                    else -> JsonPrimitive(value.toString())
+                    else ->
+                        error(
+                            "String property constValue must be String, JsonElement, or null, " +
+                                "but got: ${value::class.simpleName}",
+                        )
                 }
         }
 
@@ -244,7 +258,11 @@ public class NumericPropertyBuilder internal constructor(
                     is JsonElement -> value
                     is Number -> JsonPrimitive(value)
                     null -> null
-                    else -> JsonPrimitive(value.toString())
+                    else ->
+                        error(
+                            "Numeric property default must be Number, JsonElement, or null, " +
+                                "but got: ${value::class.simpleName}",
+                        )
                 }
         }
 
@@ -256,7 +274,11 @@ public class NumericPropertyBuilder internal constructor(
                     is JsonElement -> value
                     is Number -> JsonPrimitive(value)
                     null -> null
-                    else -> JsonPrimitive(value.toString())
+                    else ->
+                        error(
+                            "Numeric property constValue must be Number, JsonElement, or null, " +
+                                "but got: ${value::class.simpleName}",
+                        )
                 }
         }
 
@@ -298,7 +320,11 @@ public class BooleanPropertyBuilder internal constructor() {
                     is JsonElement -> value
                     is Boolean -> JsonPrimitive(value)
                     null -> null
-                    else -> JsonPrimitive(value.toString())
+                    else ->
+                        error(
+                            "Boolean property default must be Boolean, JsonElement, or null, " +
+                                "but got: ${value::class.simpleName}",
+                        )
                 }
         }
 
@@ -310,7 +336,11 @@ public class BooleanPropertyBuilder internal constructor() {
                     is JsonElement -> value
                     is Boolean -> JsonPrimitive(value)
                     null -> null
-                    else -> JsonPrimitive(value.toString())
+                    else ->
+                        error(
+                            "Boolean property constValue must be Boolean, JsonElement, or null, " +
+                                "but got: ${value::class.simpleName}",
+                        )
                 }
         }
 
@@ -337,8 +367,41 @@ public class ArrayPropertyBuilder internal constructor() {
     public var nullable: Boolean? = null
     public var minItems: Int? = null
     public var maxItems: Int? = null
-    public var default: JsonElement? = null
     private var itemsDefinition: PropertyDefinition? = null
+
+    private var _default: JsonElement? = null
+
+    @OptIn(ExperimentalSerializationApi::class)
+    public var default: Any?
+        get() = _default
+        set(value) {
+            _default =
+                when (value) {
+                    is JsonElement -> value
+                    is List<*> ->
+                        JsonArray(
+                            value.map { item ->
+                                when (item) {
+                                    is JsonElement -> item
+                                    is String -> JsonPrimitive(item)
+                                    is Number -> JsonPrimitive(item)
+                                    is Boolean -> JsonPrimitive(item)
+                                    null -> JsonNull
+                                    else ->
+                                        error(
+                                            "Array property default list item must be JsonElement, String, Number, Boolean, or null, but got: ${item::class.simpleName}",
+                                        )
+                                }
+                            },
+                        )
+
+                    null -> null
+                    else ->
+                        error(
+                            "Array property default must be List, JsonElement, or null, but got: ${value::class.simpleName}",
+                        )
+                }
+        }
 
     public fun items(block: PropertyBuilder.() -> PropertyDefinition) {
         itemsDefinition = PropertyBuilder().block()
@@ -381,7 +444,7 @@ public class ArrayPropertyBuilder internal constructor() {
             items = itemsDefinition,
             minItems = minItems?.toUInt(),
             maxItems = maxItems?.toUInt(),
-            default = default,
+            default = _default,
         )
 }
 
@@ -397,9 +460,42 @@ public class ObjectPropertyBuilder internal constructor() {
     public var description: String? = null
     public var nullable: Boolean? = null
     public var additionalProperties: Boolean? = null
-    public var default: JsonElement? = null
     private val properties: MutableMap<String, PropertyDefinition> = mutableMapOf()
     private val requiredFields: MutableSet<String> = mutableSetOf()
+
+    private var _default: JsonElement? = null
+
+    @OptIn(ExperimentalSerializationApi::class)
+    public var default: Any?
+        get() = _default
+        set(value) {
+            _default =
+                when (value) {
+                    is JsonElement -> value
+                    is Map<*, *> ->
+                        JsonObject(
+                            value.mapKeys { it.key.toString() }.mapValues { (_, v) ->
+                                when (v) {
+                                    is JsonElement -> v
+                                    is String -> JsonPrimitive(v)
+                                    is Number -> JsonPrimitive(v)
+                                    is Boolean -> JsonPrimitive(v)
+                                    null -> JsonNull
+                                    else ->
+                                        error(
+                                            "Object property default map value must be JsonElement, String, Number, Boolean, or null, but got: ${v::class.simpleName}",
+                                        )
+                                }
+                            },
+                        )
+
+                    null -> null
+                    else ->
+                        error(
+                            "Object property default must be Map, JsonElement, or null, but got: ${value::class.simpleName}",
+                        )
+                }
+        }
 
     public fun property(
         name: String,
@@ -420,6 +516,6 @@ public class ObjectPropertyBuilder internal constructor() {
             properties = properties.ifEmpty { null },
             required = if (requiredFields.isEmpty()) null else requiredFields.toList(),
             additionalProperties = additionalProperties,
-            default = default,
+            default = _default,
         )
 }
