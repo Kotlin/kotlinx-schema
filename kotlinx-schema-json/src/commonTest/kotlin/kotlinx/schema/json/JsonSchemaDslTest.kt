@@ -14,17 +14,39 @@ import kotlin.test.Test
  */
 @Suppress("LargeClass", "LongMethod")
 internal class JsonSchemaDslTest {
-    private val json = Json { prettyPrint = false }
+    private val json = Json { prettyPrint = true }
 
     @Test
     fun `simple string schema serialization round-trip`() {
+        val schema2 =
+            jsonSchema {
+                name = "User"
+                schema {
+                    property("id") {
+                        required = true
+                        string { format = "uuid" }
+                    }
+                    property("email") {
+                        required = true
+                        string { format = "email" }
+                    }
+                    property("age") {
+                        integer { minimum = 0.0 }
+                    }
+                }
+            }
+
+// Serialize to JSON
+        val jsonString = json.encodeToString(schema2)
+        println(jsonString)
+
         val schema =
             jsonSchema {
                 name = "UserEmail"
                 strict = false
                 schema {
-                    required("email")
                     property("email") {
+                        required = true
                         string {
                             description = "Email address"
                             format = "email"
@@ -194,8 +216,8 @@ internal class JsonSchemaDslTest {
                     property("metadata") {
                         obj {
                             description = "User metadata"
-                            required("createdAt")
                             property("createdAt") {
+                                required = true
                                 string {
                                     format = "date-time"
                                 }
@@ -421,9 +443,9 @@ internal class JsonSchemaDslTest {
                 description = "A complex schema with various field types"
                 schema {
                     additionalProperties = false
-                    required("id", "email")
 
                     property("id") {
+                        required = true
                         string {
                             format = "uuid"
                             description = "Unique identifier"
@@ -431,6 +453,7 @@ internal class JsonSchemaDslTest {
                     }
 
                     property("email") {
+                        required = true
                         string {
                             format = "email"
                             description = "Email address"
@@ -568,14 +591,15 @@ internal class JsonSchemaDslTest {
                             description = "Processing steps"
                             items {
                                 obj {
-                                    required("explanation", "output")
                                     additionalProperties = false
                                     property("explanation") {
+                                        required = true
                                         string {
                                             description = "Step explanation"
                                         }
                                     }
                                     property("output") {
+                                        required = true
                                         string {
                                             description = "Step output"
                                         }

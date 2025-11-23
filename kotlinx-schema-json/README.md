@@ -33,10 +33,10 @@ val userSchema = jsonSchema {
     description = "User profile schema"
 
     schema {
-        required("id", "email", "name")
         additionalProperties = false
 
         property("id") {
+            required = true
             string {
                 format = "uuid"
                 description = "Unique user identifier"
@@ -44,6 +44,7 @@ val userSchema = jsonSchema {
         }
 
         property("email") {
+            required = true
             string {
                 format = "email"
                 minLength = 5
@@ -52,6 +53,7 @@ val userSchema = jsonSchema {
         }
 
         property("name") {
+            required = true
             string {
                 description = "User's full name"
             }
@@ -100,9 +102,9 @@ val productSchema = jsonSchema {
         property("metadata") {
             obj {
                 description = "Product metadata"
-                required("createdAt")
 
                 property("createdAt") {
+                    required = true
                     string { format = "date-time" }
                 }
 
@@ -126,13 +128,13 @@ val stepsSchema = jsonSchema {
             array {
                 items {
                     obj {
-                        required("explanation", "output")
-
                         property("explanation") {
+                            required = true
                             string { description = "Step explanation" }
                         }
 
                         property("output") {
+                            required = true
                             string { description = "Step output" }
                         }
                     }
@@ -189,7 +191,7 @@ val configSchema = jsonSchema {
 
 ### Constraints
 
-- `required(vararg fields)` - Mark fields as required
+- `required = true` - Mark a property as required (set within the property block)
 - `nullable = true` - Allow null values
 - `defaultValue(value)` - Set default value
 - `constValue(value)` - Set constant value
@@ -198,6 +200,8 @@ val configSchema = jsonSchema {
 - `minLength`, `maxLength` - String length constraints
 - `minItems`, `maxItems` - Array size constraints
 - `additionalProperties` - Allow/disallow additional properties
+
+**Note**: The legacy `required(vararg fields: String)` function is still available for backward compatibility, but using `required = true` within property blocks is the recommended approach.
 
 ## DSL Safety
 

@@ -500,15 +500,51 @@ Example:
 val schema = jsonSchema {
     name = "User"
     schema {
-        required("id", "email")
-        property("id") { string { format = "uuid" } }
-        property("email") { string { format = "email" } }
-        property("age") { integer { minimum = 0.0 } }
+        property("id") {
+            required = true
+            string { format = "uuid" }
+        }
+        property("email") {
+            required = true
+            string { format = "email" }
+        }
+        property("age") {
+            integer { minimum = 0.0 }
+        }
     }
 }
 
 // Serialize to JSON
-val jsonString = Json.encodeToString(JsonSchema.serializer(), schema)
+val jsonString = Json.encodeToString(schema)
+println(jsonString)
+```
+The result will be the following JSON Schema string:
+```json
+{
+    "name": "User",
+    "strict": false,
+    "schema": {
+        "type": "object",
+        "properties": {
+            "id": {
+                "type": "string",
+                "format": "uuid"
+            },
+            "email": {
+                "type": "string",
+                "format": "email"
+            },
+            "age": {
+                "type": "integer",
+                "minimum": 0.0
+            }
+        },
+        "required": [
+            "id",
+            "email"
+        ]
+    }
+}
 ```
 
 See [kotlinx-schema-json/README.md](kotlinx-schema-json/README.md) for full documentation and examples.

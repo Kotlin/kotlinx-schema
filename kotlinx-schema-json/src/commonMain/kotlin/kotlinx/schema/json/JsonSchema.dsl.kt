@@ -33,14 +33,15 @@ public annotation class JsonSchemaDsl
  *     description = "A person schema"
  *     schema {
  *         type = "object"
- *         required("name", "age")
  *         property("name") {
+ *             required = true
  *             string {
  *                 description = "Person's name"
  *                 minLength = 1
  *             }
  *         }
  *         property("age") {
+ *             required = true
  *             integer {
  *                 description = "Person's age"
  *                 minimum = 0.0
@@ -89,17 +90,17 @@ public class JsonSchemaDefinitionBuilder {
     public var description: String? = null
     public var items: ObjectPropertyDefinition? = null
     private val properties: MutableMap<String, PropertyDefinition> = mutableMapOf()
-    private val requiredFields: MutableList<String> = mutableListOf()
+    private val requiredFields: MutableSet<String> = mutableSetOf()
 
     public fun property(
         name: String,
         block: PropertyBuilder.() -> PropertyDefinition,
     ) {
-        properties[name] = PropertyBuilder().block()
-    }
-
-    public fun required(vararg fields: String) {
-        requiredFields.addAll(fields)
+        val builder = PropertyBuilder()
+        properties[name] = builder.block()
+        if (builder.required) {
+            requiredFields.add(name)
+        }
     }
 
     public fun build(): JsonSchemaDefinition =
@@ -107,7 +108,7 @@ public class JsonSchemaDefinitionBuilder {
             id = id,
             schema = schema,
             properties = properties,
-            required = requiredFields,
+            required = requiredFields.toList(),
             additionalProperties = additionalProperties,
             description = description,
             items = items,
@@ -119,6 +120,22 @@ public class JsonSchemaDefinitionBuilder {
  */
 @JsonSchemaDsl
 public class PropertyBuilder {
+    /**
+     * Marks this property as required in the parent schema.
+     *
+     * When set to true, the property name will be included in the parent's
+     * "required" array. This should be set before defining the property type.
+     *
+     * Example:
+     * ```kotlin
+     * property("email") {
+     *     required = true
+     *     string { format = "email" }
+     * }
+     * ```
+     */
+    public var required: Boolean = false
+
     public fun string(block: StringPropertyBuilder.() -> Unit = {}): StringPropertyDefinition =
         StringPropertyBuilder().apply(block).build()
 
@@ -342,17 +359,17 @@ public class ObjectPropertyBuilder internal constructor() {
     public var additionalProperties: Boolean? = null
     public var default: JsonElement? = null
     private val properties: MutableMap<String, PropertyDefinition> = mutableMapOf()
-    private val requiredFields: MutableList<String> = mutableListOf()
+    private val requiredFields: MutableSet<String> = mutableSetOf()
 
     public fun property(
         name: String,
         block: PropertyBuilder.() -> PropertyDefinition,
     ) {
-        properties[name] = PropertyBuilder().block()
-    }
-
-    public fun required(vararg fields: String) {
-        requiredFields.addAll(fields)
+        val builder = PropertyBuilder()
+        properties[name] = builder.block()
+        if (builder.required) {
+            requiredFields.add(name)
+        }
     }
 
     /**
@@ -394,7 +411,7 @@ public class ObjectPropertyBuilder internal constructor() {
             description = description,
             nullable = nullable,
             properties = properties.ifEmpty { null },
-            required = if (requiredFields.isEmpty()) null else requiredFields,
+            required = if (requiredFields.isEmpty()) null else requiredFields.toList(),
             additionalProperties = additionalProperties,
             default = default,
         )
