@@ -8,6 +8,7 @@
 name: Build with Gradle
 
 on:
+  merge_group:
   push:
     branches: [ "main" ]
     paths-ignore:
@@ -34,10 +35,10 @@ jobs:
       - name: Fetch main branch
         run: git fetch origin main
 
-      - name: Set up JDK 17
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v5
         with:
-          java-version: 17
+          java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
 
       # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
@@ -86,10 +87,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-      - name: Set up JDK 17
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v5
         with:
-          java-version: 17
+          java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
 
       # Generates and submits a dependency graph, enabling Dependabot Alerts for all project dependencies.
