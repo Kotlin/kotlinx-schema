@@ -9,18 +9,19 @@ import kotlinx.schema.generator.core.ir.TypeGraphTransformer
  * @param T the type of the object for which the schema is being generated
  * @param R the type of the resulting schema representation
  * @property introspector the component responsible for introspecting the input and producing a type graph
- * @property emitter the component responsible for converting the type graph into the desired schema representation
+ * @property typeGraphTransformer the component responsible for converting the type graph
+ * into the desired schema representation
  */
 public abstract class AbstractSchemaGenerator<T : Any, R : Any>(
     protected val introspector: SchemaIntrospector<T>,
-    protected val emitter: TypeGraphTransformer<R>,
+    protected val typeGraphTransformer: TypeGraphTransformer<R>,
 ) : SchemaGenerator<T, R> {
     protected abstract fun getRootName(target: T): String
 
     override fun generateSchema(target: T): R {
         val graph = introspector.introspect(target)
 
-        return emitter.transform(graph, getRootName(target))
+        return typeGraphTransformer.transform(graph, getRootName(target))
     }
 
     override fun generateSchemaString(target: T): String {

@@ -23,7 +23,7 @@ import kotlin.reflect.KClass
 internal class KspSchemaGenerator :
     AbstractSchemaGenerator<KSClassDeclaration, JsonObject>(
         introspector = KspIntrospector(),
-        emitter = IrStandardJsonSchemaEmitter(),
+        typeGraphTransformer = IrStandardJsonSchemaEmitter(),
     ) {
     private val json =
         Json {

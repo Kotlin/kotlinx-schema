@@ -3,16 +3,20 @@ package kotlinx.schema.generator.json
 import kotlinx.schema.generator.core.AbstractSchemaGenerator
 import kotlinx.schema.generator.reflect.ReflectionIntrospector
 import kotlinx.schema.json.JsonSchema
+import kotlinx.schema.json.ToolSchema
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.jsonObject
 import kotlin.reflect.KClass
 
 public class ReflectionJsonSchemaGenerator
     @JvmOverloads
     public constructor(
-        jsonSchemaConfig: JsonSchemaConfig = JsonSchemaConfig.Default,
+        private val jsonSchemaConfig: JsonSchemaConfig = JsonSchemaConfig.Default,
     ) : AbstractSchemaGenerator<KClass<out Any>, JsonSchema>(
             introspector = ReflectionIntrospector,
-            emitter = TypeGraphToJsonSchemaTransformer(config = jsonSchemaConfig),
+            typeGraphTransformer = TypeGraphToJsonSchemaTransformer(config = jsonSchemaConfig),
         ) {
         override fun getRootName(target: KClass<out Any>): String = target.qualifiedName ?: "Anonymous"
 
@@ -20,7 +24,9 @@ public class ReflectionJsonSchemaGenerator
 
         override fun schemaType(): KClass<JsonSchema> = JsonSchema::class
 
-        override fun encodeToString(schema: JsonSchema): String = Json.encodeToString(schema)
+        override fun encodeToString(schema: JsonSchema): String = jsonSchemaConfig.json.encodeToString(schema)
+
+        public fun encodeToJsonObject(schema: ToolSchema): JsonObject = Json.encodeToJsonElement(schema).jsonObject
 
         public companion object {
             /**
