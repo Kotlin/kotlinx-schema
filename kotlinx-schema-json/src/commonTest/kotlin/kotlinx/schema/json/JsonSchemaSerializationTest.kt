@@ -242,7 +242,7 @@ internal class JsonSchemaSerializationTest {
         // Schema validation
         val schemaDefinition = schema.schema
         schemaDefinition.type shouldBe "object"
-        schemaDefinition.additionalProperties shouldBe false
+        schemaDefinition.additionalProperties shouldBe kotlinx.serialization.json.JsonPrimitive(false)
         schemaDefinition.required shouldHaveSize 3
         schemaDefinition.required shouldBe listOf("id", "email", "status")
 
@@ -344,7 +344,7 @@ internal class JsonSchemaSerializationTest {
                         this as StringPropertyDefinition
                         type shouldBe listOf("string")
                     }
-                    additionalProperties shouldBe false
+                    additionalProperties shouldBe kotlinx.serialization.json.JsonPrimitive(false)
                 }
             }
         }

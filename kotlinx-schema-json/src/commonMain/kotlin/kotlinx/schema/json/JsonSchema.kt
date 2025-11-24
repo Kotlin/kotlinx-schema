@@ -51,7 +51,15 @@ public data class JsonSchemaDefinition(
     public val type: String = "object",
     public val properties: Map<String, PropertyDefinition> = emptyMap(),
     public val required: List<String> = emptyList(),
-    public val additionalProperties: Boolean? = null,
+    /**
+     * Defines whether additional properties are allowed and their schema.
+     * Can be:
+     * - `null`: not specified (defaults to true in JSON Schema)
+     * - `JsonPrimitive(true)`: allow any additional properties
+     * - `JsonPrimitive(false)`: disallow additional properties
+     * - `JsonObject`: a schema defining the type of additional properties (e.g., for Maps)
+     */
+    public val additionalProperties: JsonElement? = null,
     public val description: String? = null,
     public val items: PropertyDefinition? = null,
 )
@@ -160,8 +168,16 @@ public data class ObjectPropertyDefinition(
     override val nullable: Boolean? = null,
     val properties: Map<String, PropertyDefinition>? = null,
     val required: List<String>? = null,
+    /**
+     * Defines whether additional properties are allowed and their schema.
+     * Can be:
+     * - `null`: not specified (defaults to true in JSON Schema)
+     * - `JsonPrimitive(true)`: allow any additional properties
+     * - `JsonPrimitive(false)`: disallow additional properties
+     * - `JsonObject`: a schema defining the type of additional properties (e.g., for Maps)
+     */
     @SerialName("additionalProperties")
-    val additionalProperties: Boolean? = null,
+    val additionalProperties: JsonElement? = null,
     val default: JsonElement? = null,
 ) : ValuePropertyDefinition
 
