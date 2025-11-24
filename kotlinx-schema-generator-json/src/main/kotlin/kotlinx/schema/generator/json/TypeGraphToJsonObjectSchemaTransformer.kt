@@ -1,4 +1,4 @@
-package kotlinx.schema.generator.json.internal
+package kotlinx.schema.generator.json
 
 import kotlinx.schema.generator.core.ir.EnumNode
 import kotlinx.schema.generator.core.ir.ListNode
@@ -12,6 +12,7 @@ import kotlinx.schema.generator.core.ir.TypeGraphTransformer
 import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeNode
 import kotlinx.schema.generator.core.ir.TypeRef
+import kotlinx.schema.generator.json.internal.JsonSchemaConsts
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -20,7 +21,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
 /** Emits JSON Schema from Schema IR following the Standard rules used previously. */
-public class IrStandardJsonSchemaEmitter : TypeGraphTransformer<JsonObject> {
+public class TypeGraphToJsonObjectSchemaTransformer : TypeGraphTransformer<JsonObject> {
     @Suppress("CyclomaticComplexMethod", "LongMethod", "NestedBlockDepth")
     override fun transform(
         graph: TypeGraph,
