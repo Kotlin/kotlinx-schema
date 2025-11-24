@@ -10,6 +10,7 @@ dependencies {
     kover(project(":kotlinx-schema-generator-core"))
     kover(project(":kotlinx-schema-generator-json"))
     kover(project(":kotlinx-schema-ksp"))
+    kover(project(":kotlinx-schema-json"))
     kover(project(":ksp-integration-tests"))
 }
 
@@ -28,7 +29,7 @@ kover {
             }
             verify {
                 rule {
-                    minBound(48)
+                    minBound(55)
                 }
             }
         }
