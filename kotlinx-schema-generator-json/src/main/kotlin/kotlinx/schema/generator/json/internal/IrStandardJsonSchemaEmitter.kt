@@ -7,8 +7,8 @@ import kotlinx.schema.generator.core.ir.ObjectNode
 import kotlinx.schema.generator.core.ir.PolymorphicNode
 import kotlinx.schema.generator.core.ir.PrimitiveKind
 import kotlinx.schema.generator.core.ir.PrimitiveNode
-import kotlinx.schema.generator.core.ir.SchemaEmitter
 import kotlinx.schema.generator.core.ir.TypeGraph
+import kotlinx.schema.generator.core.ir.TypeGraphTransformer
 import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeNode
 import kotlinx.schema.generator.core.ir.TypeRef
@@ -20,9 +20,9 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
 /** Emits JSON Schema from Schema IR following the Standard rules used previously. */
-public class IrStandardJsonSchemaEmitter : SchemaEmitter<JsonObject> {
+public class IrStandardJsonSchemaEmitter : TypeGraphTransformer<JsonObject> {
     @Suppress("CyclomaticComplexMethod", "LongMethod", "NestedBlockDepth")
-    override fun emit(
+    override fun transform(
         graph: TypeGraph,
         rootName: String,
     ): JsonObject {

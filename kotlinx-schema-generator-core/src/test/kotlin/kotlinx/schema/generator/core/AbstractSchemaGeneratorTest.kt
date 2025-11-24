@@ -4,9 +4,9 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import kotlinx.schema.generator.core.ir.SchemaEmitter
 import kotlinx.schema.generator.core.ir.SchemaIntrospector
 import kotlinx.schema.generator.core.ir.TypeGraph
+import kotlinx.schema.generator.core.ir.TypeGraphTransformer
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -18,7 +18,7 @@ class AbstractSchemaGeneratorTest {
     private lateinit var introspector: SchemaIntrospector<KClass<*>>
 
     @MockK
-    private lateinit var emitter: SchemaEmitter<Map<String, String>>
+    private lateinit var emitter: TypeGraphTransformer<Map<String, String>>
 
     @MockK
     private lateinit var typeGraph: TypeGraph
@@ -46,7 +46,7 @@ class AbstractSchemaGeneratorTest {
     fun generateSchema() {
         every { introspector.introspect(AbstractSchemaGeneratorTest::class) } returns typeGraph
         val expectedSchema = mapOf("schema" to "{}")
-        every { emitter.emit(typeGraph, rootName) } returns expectedSchema
+        every { emitter.transform(typeGraph, rootName) } returns expectedSchema
 
         val result = generator.generateSchema(AbstractSchemaGeneratorTest::class)
 
@@ -57,7 +57,7 @@ class AbstractSchemaGeneratorTest {
     fun generateSchemaString() {
         every { introspector.introspect(AbstractSchemaGeneratorTest::class) } returns typeGraph
         val expectedSchema = mapOf("schema" to "{}")
-        every { emitter.emit(typeGraph, rootName) } returns expectedSchema
+        every { emitter.transform(typeGraph, rootName) } returns expectedSchema
 
         val result = generator.generateSchemaString(AbstractSchemaGeneratorTest::class)
 
