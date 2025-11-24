@@ -448,6 +448,47 @@ val schemaString: String = generator.generateSchemaString(User::class)
 - **Compile-time (KSP)**: Recommended for most cases - zero runtime overhead, multiplatform support
 - **Runtime API**: Use when schemas need to be generated dynamically, or for prototyping
 
+## Function call schema generation
+
+For LLM function calling APIs (OpenAI, Anthropic, etc.), use `ReflectionToolSchemaGenerator` to generate tool schemas from Kotlin functions:
+
+```kotlin
+fun processData(
+    @Description("Person's name") name: String,
+    age: Int,
+    optional: String?,
+): String = name
+
+val generator = kotlinx.schema.generator.json.ReflectionToolSchemaGenerator.Default
+val schema: String = generator.generateSchemaString(::processData)
+```
+
+Produces OpenAI-compatible tool schema:
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Person's name"
+    },
+    "age": {
+      "type": "integer"
+    },
+    "optional": {
+      "type": ["string", "null"]
+    }
+  },
+  "required": ["name", "age", "optional"]
+}
+```
+
+**Key differences from regular JSON Schema**:
+- All parameters are marked as required (OpenAI structured outputs requirement)
+- Nullable parameters use union types: `["string", "null"]` instead of `nullable: true`
+
+For more details on tool schemas and OpenAI compatibility, see [kotlinx-schema-json/README.md](kotlinx-schema-json/README.md#tool-schema-for-llm-function-calling).
+
 ## Koog annotation integration
 
 In addition to the standard `@Description` annotation, kotlinx-schema also supports extracting descriptions from Koog's

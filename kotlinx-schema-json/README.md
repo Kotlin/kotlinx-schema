@@ -291,3 +291,50 @@ val productSchema = jsonSchema {
 
 The DSL uses Kotlin's `@DslMarker` annotation to prevent scope pollution and ensure type-safe schema construction.
 Builder classes have internal constructors, enforcing DSL usage through the `jsonSchema { }` entry point.
+
+## Tool Schema for LLM Function Calling
+
+For LLM function calling APIs (OpenAI, Anthropic), use `ToolSchema` to represent function parameters:
+
+```kotlin
+import kotlinx.schema.json.ToolSchema
+
+val schema = ToolSchema(
+    properties = mapOf(
+        "query" to StringPropertyDefinition(
+            type = listOf("string"),
+            description = "Search query"
+        ),
+        "limit" to NumericPropertyDefinition(
+            type = listOf("integer"),
+            description = "Max results"
+        )
+    ),
+    required = listOf("query", "limit")
+)
+```
+
+### OpenAI Structured Outputs Compatibility
+
+Tool schemas follow OpenAI's structured outputs 
+ [requirements](https://platform.openai.com/docs/guides/function-calling?strict-mode=disabled#strict-mode):
+- All fields must be in the `required` array
+- Nullable fields use union types: `["string", "null"]`
+- The `nullable: true` flag is not used (it's ignored by OpenAI models)
+
+Example with nullable parameter:
+```kotlin
+val schema = ToolSchema(
+    properties = mapOf(
+        "name" to StringPropertyDefinition(
+            type = listOf("string")
+        ),
+        "description" to StringPropertyDefinition(
+            type = listOf("string", "null")
+        )
+    ),
+    required = listOf("name", "description")
+)
+```
+
+For generating tool schemas from Kotlin functions at runtime, see `ReflectionToolSchemaGenerator` in the `kotlinx-schema-generator-json` module.

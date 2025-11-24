@@ -129,6 +129,7 @@ internal class KspIntrospector : SchemaIntrospector<KSClassDeclaration> {
                 (type.declaration as KSClassDeclaration).classKind == ClassKind.ENUM_CLASS
             ) {
                 val decl = type.declaration as KSClassDeclaration
+
                 val id = decl.typeId()
                 if (!nodes.containsKey(id) && decl !in visiting) {
                     visiting += decl
@@ -142,7 +143,7 @@ internal class KspIntrospector : SchemaIntrospector<KSClassDeclaration> {
                         EnumNode(
                             name = decl.qualifiedName?.asString() ?: decl.simpleName.asString(),
                             entries = entries,
-                            description = decl.descriptionOrNull(),
+                            description = decl.descriptionOrDefault(decl.docString),
                         )
                     nodes[id] = node
                     visiting -= decl
@@ -175,7 +176,9 @@ internal class KspIntrospector : SchemaIntrospector<KSClassDeclaration> {
                         decl.getDeclaredProperties().filter { it.isPublic() }.forEach { prop ->
                             val name = prop.simpleName.asString()
                             val pType = prop.type.resolve()
-                            val desc = prop.annotations.mapNotNull { it.descriptionOrNull() }.firstOrNull()
+                            val desc =
+                                prop.annotations.mapNotNull { it.descriptionOrNull() }.firstOrNull()
+                                    ?: prop.docString
                             val tref = toRef(pType)
                             // KSP doesn't easily provide default presence here; treat as required conservatively
                             val presence = DefaultPresence.Required
@@ -189,7 +192,7 @@ internal class KspIntrospector : SchemaIntrospector<KSClassDeclaration> {
                             name = decl.qualifiedName?.asString() ?: decl.simpleName.asString(),
                             properties = props,
                             required = required,
-                            description = decl.descriptionOrNull(),
+                            description = decl.descriptionOrDefault(decl.docString),
                         )
                     nodes[id] = node
                     visiting -= decl

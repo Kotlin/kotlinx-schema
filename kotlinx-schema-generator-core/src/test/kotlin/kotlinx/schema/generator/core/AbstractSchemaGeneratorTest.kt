@@ -35,6 +35,7 @@ class AbstractSchemaGeneratorTest {
 
                 override fun targetType(): KClass<KClass<*>> = KClass::class
 
+                @Suppress("UNCHECKED_CAST")
                 override fun schemaType(): KClass<Map<String, String>> =
                     mapOf<String, String>()::class as KClass<Map<String, String>>
 

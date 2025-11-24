@@ -31,4 +31,5 @@ internal fun KSAnnotation.descriptionOrNull(): String? {
     )
 }
 
-internal fun KSAnnotated.descriptionOrNull(): String? = annotations.mapNotNull { it.descriptionOrNull() }.firstOrNull()
+internal fun KSAnnotated.descriptionOrDefault(defaultValue: String? = null): String? =
+    annotations.mapNotNull { it.descriptionOrNull() }.firstOrNull() ?: defaultValue
