@@ -429,28 +429,21 @@ constructor-declared properties.
 
 ## Runtime schema generation
 
-For scenarios where you need to generate schemas dynamically at runtime (without KSP compile-time generation), you can
-use `SimpleJsonSchemaGenerator`:
+For scenarios where you need to generate schemas dynamically at runtime (without KSP compile-time generation), 
+you can use `ReflectionJsonSchemaGenerator`. It uses Kotlin reflection at runtime and works on JVM only:
 
 ```kotlin
-import kotlinx.schema.generator.json.SimpleJsonSchemaGenerator
-import kotlinx.serialization.Serializable
-
-@Serializable
 data class User(val name: String, val email: String)
 
 // Generate schema at runtime
-val schema: JsonObject = SimpleJsonSchemaGenerator.generateSchema(User::class)
-val schemaString: String = SimpleJsonSchemaGenerator.generateSchemaString(User::class)
+val generator = kotlinx.schema.generator.json.ReflectionJsonSchemaGenerator.Default
+val schema: JsonObject = generator.generateSchema(User::class)
+val schemaString: String = generator.generateSchemaString(User::class)
 ```
 
-**Requirements for runtime generation**:
+**You should add the dependency: `org.jetbrains.kotlinx:kotlinx-schema-generator-json:<version>`
 
-- Add dependency: `org.jetbrains.kotlinx:kotlinx-schema-generator-json:<version>`
-- Classes must be annotated with `@Serializable` from kotlinx-serialization
-- Uses Kotlin reflection at runtime (JVM only)
-
-**When to use**:
+**What to choose**:
 
 - **Compile-time (KSP)**: Recommended for most cases - zero runtime overhead, multiplatform support
 - **Runtime API**: Use when schemas need to be generated dynamically, or for prototyping
@@ -461,16 +454,14 @@ In addition to the standard `@Description` annotation, kotlinx-schema also suppo
 `@LLMDescription` annotation. This makes it easy to use kotlinx-schema alongside Koog-based AI agent systems.
 
 ```kotlin
-import ai.koog.agents.core.tools.annotations.LLMDescription
-
-@LLMDescription(description = "A purchasable product with pricing and inventory info.")
+@ai.koog.agents.core.tools.annotations.LLMDescription(description = "A purchasable product with pricing and inventory info.")
 @Schema
 data class KoogProduct(
-    @LLMDescription(description = "Unique identifier for the product")
+    @ai.koog.agents.core.tools.annotations.LLMDescription(description = "Unique identifier for the product")
     val id: Long,
-    @LLMDescription("Human-readable product name")
+    @ai.koog.agents.core.tools.annotations.LLMDescription("Human-readable product name")
     val name: String,
-    @LLMDescription("Unit price expressed as a decimal number")
+    @ai.koog.agents.core.tools.annotations.LLMDescription("Unit price expressed as a decimal number")
     val price: Double,
 )
 ```
@@ -590,7 +581,7 @@ Top-level modules you might interact with:
 - **kotlinx-schema-annotations** — runtime annotations: @Schema and @Description
 - **kotlinx-schema-json** — type-safe models and DSL for building JSON Schema definitions programmatically
 - **kotlinx-schema-generator-core** — internal representation (IR) for schema descriptions, introspection utils, generator interfaces
-- **kotlinx-schema-generator-json** — JSON Schema emitter from the IR
+- **kotlinx-schema-generator-json** — JSON Schema transformer from the IR
 - **kotlinx-schema-ksp** — KSP processor that scans your code and generates the extension properties:
     - `KClass<T>.jsonSchema: JsonObject`
     - `KClass<T>.jsonSchemaString: String`
@@ -611,7 +602,7 @@ sequenceDiagram
     participant S as SchemaGeneratorService
     participant G as SchemaGenerator
     participant I as SchemaIntrospector
-    participant E as SchemaEmitter
+    participant T as TypeGraphTransformer
     
     C->>S: getGenerator(T::class, R::class)
     S-->>G: find
@@ -622,8 +613,8 @@ sequenceDiagram
     G->>I: introspect(T)
     I-->>G: TypeGraph
 
-    G->>E: emit(graph = TypeGraph, rootName)
-    E-->>G: schema (R)
+    G->>T: transform(graph = TypeGraph, rootName)
+    T-->>G: schema (R)
     G-->>C: schema (R)
     deactivate G
 ```
@@ -632,7 +623,8 @@ sequenceDiagram
 2. _Client_ (KSP Processor or Java class) calls _SchemaGenerator_ to generate a Schema string representation, 
 and, optionally, object a Schema string representation.
 3. SchemaGenerator invokes SchemaIntrospector to convert an object into _TypeGraph_
-4. _Emitter_ converts a _TypeGraph_ to a target representation (e.g., JSON Schema) and returns to SchemaGenerator
+4. _TypeGraphTransformer_ converts a _TypeGraph_ to a target representation (e.g., JSON Schema)
+   and returns it to SchemaGenerator
 
 ## Building and testing
 

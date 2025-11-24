@@ -7,8 +7,8 @@ import kotlinx.schema.generator.core.ir.MapNode
 import kotlinx.schema.generator.core.ir.ObjectNode
 import kotlinx.schema.generator.core.ir.PrimitiveKind
 import kotlinx.schema.generator.core.ir.PrimitiveNode
-import kotlinx.schema.generator.core.ir.SchemaEmitter
 import kotlinx.schema.generator.core.ir.TypeGraph
+import kotlinx.schema.generator.core.ir.TypeGraphTransformer
 import kotlinx.schema.generator.core.ir.TypeNode
 import kotlinx.schema.generator.core.ir.TypeRef
 import kotlinx.schema.json.ArrayPropertyDefinition
@@ -38,18 +38,25 @@ public data class JsonSchemaConfig(
     val json: Json = Json,
 ) {
     public companion object {
-        public val DEFAULT: JsonSchemaConfig = JsonSchemaConfig()
+        /**
+         * Default configuration instance for JSON Schema generation.
+         *
+         * Provides a preconfigured instance of [JsonSchemaConfig] with the default settings.
+         *
+         * Can be used as a baseline configuration or as a convenient default for most use cases.
+         */
+        public val Default: JsonSchemaConfig = JsonSchemaConfig()
     }
 }
 
 @Suppress("TooManyFunctions")
-public class JsonSchemaEmitter
+public class TypeGraphToJsonSchemaTransformer
     @JvmOverloads
     public constructor(
-        public val config: JsonSchemaConfig = JsonSchemaConfig.DEFAULT,
+        public val config: JsonSchemaConfig = JsonSchemaConfig.Default,
         private val json: Json = Json { encodeDefaults = false },
-    ) : SchemaEmitter<JsonSchema> {
-        override fun emit(
+    ) : TypeGraphTransformer<JsonSchema> {
+        override fun transform(
             graph: TypeGraph,
             rootName: String,
         ): JsonSchema {
@@ -200,9 +207,8 @@ public class JsonSchemaEmitter
             // Convert all properties
             val properties =
                 node.properties.associate { property ->
-                    val typeRef = property.type
                     val isNullable =
-                        when (typeRef) {
+                        when (val typeRef = property.type) {
                             is TypeRef.Inline -> typeRef.nullable
                             is TypeRef.Ref -> typeRef.nullable
                         }

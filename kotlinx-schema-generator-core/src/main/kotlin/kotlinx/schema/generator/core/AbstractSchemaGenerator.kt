@@ -1,7 +1,7 @@
 package kotlinx.schema.generator.core
 
-import kotlinx.schema.generator.core.ir.SchemaEmitter
 import kotlinx.schema.generator.core.ir.SchemaIntrospector
+import kotlinx.schema.generator.core.ir.TypeGraphTransformer
 
 /**
  * Abstract base class for generating schemas by combining introspection and representation logic.
@@ -13,14 +13,14 @@ import kotlinx.schema.generator.core.ir.SchemaIntrospector
  */
 public abstract class AbstractSchemaGenerator<T : Any, R : Any>(
     protected val introspector: SchemaIntrospector<T>,
-    protected val emitter: SchemaEmitter<R>,
+    protected val emitter: TypeGraphTransformer<R>,
 ) : SchemaGenerator<T, R> {
     protected abstract fun getRootName(target: T): String
 
     override fun generateSchema(target: T): R {
         val graph = introspector.introspect(target)
 
-        return emitter.emit(graph, getRootName(target))
+        return emitter.transform(graph, getRootName(target))
     }
 
     override fun generateSchemaString(target: T): String {

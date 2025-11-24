@@ -1,15 +1,7 @@
 package kotlinx.schema.generator.json
 
 import io.kotest.assertions.json.shouldEqualJson
-import io.kotest.matchers.booleans.shouldBeTrue
-import io.kotest.matchers.nulls.shouldNotBeNull
-import io.kotest.matchers.shouldBe
 import kotlinx.schema.Description
-import kotlinx.schema.json.ArrayPropertyDefinition
-import kotlinx.schema.json.NumericPropertyDefinition
-import kotlinx.schema.json.ObjectPropertyDefinition
-import kotlinx.schema.json.StringPropertyDefinition
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 
@@ -42,7 +34,7 @@ class ReflectionJsonSchemaGeneratorTest {
         )
 
         val schema =
-            ReflectionJsonSchemaGenerator().generateSchema(Person::class)
+            ReflectionJsonSchemaGenerator.Default.generateSchema(Person::class)
 
         // language=json
         val expectedSchema = """ 
