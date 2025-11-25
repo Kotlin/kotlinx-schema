@@ -448,46 +448,56 @@ val schemaString: String = generator.generateSchemaString(User::class)
 - **Compile-time (KSP)**: Recommended for most cases - zero runtime overhead, multiplatform support
 - **Runtime API**: Use when schemas need to be generated dynamically, or for prototyping
 
-## Function call schema generation
+## Function calling schema generation
 
-For LLM function calling APIs (OpenAI, Anthropic, etc.), use `ReflectionToolSchemaGenerator` to generate tool schemas from Kotlin functions:
+For LLM function calling APIs (OpenAI, Anthropic, etc.), use `ReflectionFunctionCallingSchemaGenerator` to generate function calling schemas from Kotlin functions:
 
 ```kotlin
+@Description("Process user data")
 fun processData(
     @Description("Person's name") name: String,
     age: Int,
     optional: String?,
 ): String = name
 
-val generator = kotlinx.schema.generator.json.ReflectionToolSchemaGenerator.Default
+val generator = kotlinx.schema.generator.json.ReflectionFunctionCallingSchemaGenerator.Default
 val schema: String = generator.generateSchemaString(::processData)
 ```
 
-Produces OpenAI-compatible tool schema:
+Produces OpenAI-compatible function calling schema:
 ```json
 {
-  "type": "object",
-  "properties": {
-    "name": {
-      "type": "string",
-      "description": "Person's name"
+  "type": "function",
+  "name": "processData",
+  "description": "Process user data",
+  "strict": true,
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "Person's name"
+      },
+      "age": {
+        "type": "integer"
+      },
+      "optional": {
+        "type": ["string", "null"]
+      }
     },
-    "age": {
-      "type": "integer"
-    },
-    "optional": {
-      "type": ["string", "null"]
-    }
-  },
-  "required": ["name", "age", "optional"]
+    "required": ["name", "age", "optional"],
+    "additionalProperties": false
+  }
 }
 ```
 
-**Key differences from regular JSON Schema**:
+**Key features**:
+- Follows [OpenAI function calling format](https://platform.openai.com/docs/guides/function-calling)
 - All parameters are marked as required (OpenAI structured outputs requirement)
 - Nullable parameters use union types: `["string", "null"]` instead of `nullable: true`
+- Function name and description extracted from function metadata and `@Description` annotation
 
-For more details on tool schemas and OpenAI compatibility, see [kotlinx-schema-json/README.md](kotlinx-schema-json/README.md#tool-schema-for-llm-function-calling).
+For more details on function calling schemas and OpenAI compatibility, see [kotlinx-schema-json/README.md](kotlinx-schema-json/README.md#function-calling-schema-for-llm-apis).
 
 ## Koog annotation integration
 

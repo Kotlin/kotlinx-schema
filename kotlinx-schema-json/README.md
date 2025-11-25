@@ -292,49 +292,132 @@ val productSchema = jsonSchema {
 The DSL uses Kotlin's `@DslMarker` annotation to prevent scope pollution and ensure type-safe schema construction.
 Builder classes have internal constructors, enforcing DSL usage through the `jsonSchema { }` entry point.
 
-## Tool Schema for LLM Function Calling
+## Function Calling Schema for LLM APIs
 
-For LLM function calling APIs (OpenAI, Anthropic), use `ToolSchema` to represent function parameters:
+For LLM function calling APIs (OpenAI, Anthropic), use `FunctionCallingSchema` to represent function/tool definitions:
 
 ```kotlin
-import kotlinx.schema.json.ToolSchema
+import kotlinx.schema.json.*
 
-val schema = ToolSchema(
-    properties = mapOf(
-        "query" to StringPropertyDefinition(
-            type = listOf("string"),
-            description = "Search query"
+val schema = FunctionCallingSchema(
+    name = "search",
+    description = "Search for items in the database",
+    parameters = ParametersDefinition(
+        properties = mapOf(
+            "query" to StringPropertyDefinition(
+                type = listOf("string"),
+                description = "Search query"
+            ),
+            "limit" to NumericPropertyDefinition(
+                type = listOf("integer"),
+                description = "Max results"
+            )
         ),
-        "limit" to NumericPropertyDefinition(
-            type = listOf("integer"),
-            description = "Max results"
-        )
-    ),
-    required = listOf("query", "limit")
+        required = listOf("query", "limit")
+    )
 )
+```
+
+This produces the following JSON schema compatible with OpenAI's function calling format:
+
+```json
+{
+  "type": "function",
+  "name": "search",
+  "description": "Search for items in the database",
+  "strict": true,
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "query": {
+        "type": "string",
+        "description": "Search query"
+      },
+      "limit": {
+        "type": "integer",
+        "description": "Max results"
+      }
+    },
+    "required": ["query", "limit"],
+    "additionalProperties": false
+  }
+}
 ```
 
 ### OpenAI Structured Outputs Compatibility
 
-Tool schemas follow OpenAI's structured outputs 
- [requirements](https://platform.openai.com/docs/guides/function-calling?strict-mode=disabled#strict-mode):
+Function calling schemas follow OpenAI's [structured outputs requirements](https://platform.openai.com/docs/guides/function-calling):
+- Functions must have a `name` and `description`
 - All fields must be in the `required` array
 - Nullable fields use union types: `["string", "null"]`
 - The `nullable: true` flag is not used (it's ignored by OpenAI models)
+- `additionalProperties` is set to `false` by default
 
 Example with nullable parameter:
 ```kotlin
-val schema = ToolSchema(
-    properties = mapOf(
-        "name" to StringPropertyDefinition(
-            type = listOf("string")
+val schema = FunctionCallingSchema(
+    name = "updateProfile",
+    description = "Update user profile information",
+    parameters = ParametersDefinition(
+        properties = mapOf(
+            "name" to StringPropertyDefinition(
+                type = listOf("string"),
+                description = "User's full name"
+            ),
+            "bio" to StringPropertyDefinition(
+                type = listOf("string", "null"),
+                description = "Optional biography"
+            )
         ),
-        "description" to StringPropertyDefinition(
-            type = listOf("string", "null")
-        )
-    ),
-    required = listOf("name", "description")
+        required = listOf("name", "bio")
+    )
 )
 ```
 
-For generating tool schemas from Kotlin functions at runtime, see `ReflectionToolSchemaGenerator` in the `kotlinx-schema-generator-json` module.
+### Runtime Generation from Functions
+
+For generating function calling schemas from Kotlin functions at runtime, use `ReflectionFunctionCallingSchemaGenerator` in the `kotlinx-schema-generator-json` module:
+
+```kotlin
+import kotlinx.schema.Description
+import kotlinx.schema.generator.json.ReflectionFunctionCallingSchemaGenerator
+
+@Description("Search for users by name")
+fun searchUsers(
+    @Description("Name to search for") query: String,
+    @Description("Maximum number of results") limit: Int = 10
+): List<User> = TODO()
+
+val generator = ReflectionFunctionCallingSchemaGenerator.Default
+val schema = generator.generateSchema(::searchUsers)
+```
+
+This automatically generates a `FunctionCallingSchema` with the function name, description, 
+and properly typed parameters:
+
+```json
+{
+    "type": "function",
+    "name": "searchUsers",
+    "description": "Search for users by name",
+    "strict": true,
+    "parameters": {
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": "Name to search for"
+            },
+            "limit": {
+                "type": "integer",
+                "description": "Maximum number of results"
+            }
+        },
+        "required": [
+            "query",
+            "limit"
+        ],
+        "additionalProperties": false,
+        "type": "object"
+    }
+}
+```
