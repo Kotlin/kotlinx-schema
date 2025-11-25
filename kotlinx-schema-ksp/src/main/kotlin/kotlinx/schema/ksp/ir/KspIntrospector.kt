@@ -143,7 +143,7 @@ internal class KspIntrospector : SchemaIntrospector<KSClassDeclaration> {
                         EnumNode(
                             name = decl.qualifiedName?.asString() ?: decl.simpleName.asString(),
                             entries = entries,
-                            description = decl.descriptionOrDefault(decl.docString),
+                            description = decl.descriptionOrDefault(decl.descriptionFromKdoc()),
                         )
                     nodes[id] = node
                     visiting -= decl
@@ -166,7 +166,8 @@ internal class KspIntrospector : SchemaIntrospector<KSClassDeclaration> {
                         params.forEach { p ->
                             val name = p.name?.asString() ?: return@forEach
                             val pType = p.type.resolve()
-                            val desc = p.annotations.mapNotNull { it.descriptionOrNull() }.firstOrNull()
+                            val desc =
+                                p.annotations.mapNotNull { it.descriptionOrNull() }.firstOrNull() // todo: gen kdoc
                             val tref = toRef(pType)
                             val presence = if (p.hasDefault) DefaultPresence.Absent else DefaultPresence.Required
                             if (!p.hasDefault) required += name
@@ -178,7 +179,7 @@ internal class KspIntrospector : SchemaIntrospector<KSClassDeclaration> {
                             val pType = prop.type.resolve()
                             val desc =
                                 prop.annotations.mapNotNull { it.descriptionOrNull() }.firstOrNull()
-                                    ?: prop.docString
+                                    ?: prop.descriptionFromKdoc()
                             val tref = toRef(pType)
                             // KSP doesn't easily provide default presence here; treat as required conservatively
                             val presence = DefaultPresence.Required
@@ -192,7 +193,7 @@ internal class KspIntrospector : SchemaIntrospector<KSClassDeclaration> {
                             name = decl.qualifiedName?.asString() ?: decl.simpleName.asString(),
                             properties = props,
                             required = required,
-                            description = decl.descriptionOrDefault(decl.docString),
+                            description = decl.descriptionOrDefault(decl.descriptionFromKdoc()),
                         )
                     nodes[id] = node
                     visiting -= decl
