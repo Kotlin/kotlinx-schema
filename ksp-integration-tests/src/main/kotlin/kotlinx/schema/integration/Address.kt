@@ -4,9 +4,14 @@ import kotlinx.schema.Description
 import kotlinx.schema.Schema
 
 /**
- * Nested class structure to test complex scenarios
+ * A postal address for deliveries and billing.
+ *
+ * @author Konstantin Pavlov
+ * @see [String]
+ * @since 1.0
+ * @param street This `@param` description should be ignored
+ * @property street This `@property` description should be ignored
  */
-@Description("A postal address for deliveries and billing.")
 @Schema
 data class Address(
     @Description("Street address, including house number")
