@@ -2,10 +2,15 @@ package kotlinx.schema.generator.json
 
 import io.kotest.assertions.json.shouldEqualJson
 import kotlinx.schema.Description
+import kotlinx.schema.generator.core.SchemaGeneratorService
+import kotlinx.schema.json.JsonSchema
+import kotlinx.schema.json.encodeToString
 import kotlinx.serialization.json.Json
+import kotlin.reflect.KClass
 import kotlin.test.Test
 
 class ReflectionJsonSchemaGeneratorTest {
+    @Suppress("unused")
     @Description("Available colors")
     enum class Color {
         RED,
@@ -23,18 +28,25 @@ class ReflectionJsonSchemaGeneratorTest {
             prettyPrint = true
         }
 
-    // language=json
+    @Description("Personal information")
+    data class Person(
+        @property:Description("Person's first name")
+        val firstName: String,
+    )
+
+    private val generator =
+        requireNotNull(
+            SchemaGeneratorService.getGenerator(
+                KClass::class,
+                JsonSchema::class,
+            ),
+        ) {
+            "ReflectionJsonSchemaGenerator must be registered"
+        }
 
     @Test
     fun generateJsonSchema() {
-        @Description("Personal information")
-        data class Person(
-            @property:Description("Person's first name")
-            val firstName: String,
-        )
-
-        val schema =
-            ReflectionJsonSchemaGenerator.Default.generateSchema(Person::class)
+        val schema = generator.generateSchema(Person::class)
 
         // language=json
         val expectedSchema = """ 
@@ -55,9 +67,11 @@ class ReflectionJsonSchemaGeneratorTest {
             }
         }
         """
-        val actualSchemaString = json.encodeToString(schema)
+        val actualSchema = schema.encodeToString(json)
         println("Expected schema = $expectedSchema")
-        println("Actual schema = $actualSchemaString")
+        println("Actual schema = $actualSchema")
+
+        actualSchema shouldEqualJson expectedSchema
     }
 
     @Test
@@ -72,7 +86,7 @@ class ReflectionJsonSchemaGeneratorTest {
             val attributes: Map<String, Int>?,
         )
 
-        val schema = ReflectionJsonSchemaGenerator().generateSchema(User::class)
+        val schema = generator.generateSchema(User::class)
 
         // language=json
         val expectedSchema = """
@@ -112,14 +126,14 @@ class ReflectionJsonSchemaGeneratorTest {
         }
         """
 
-        val actualSchemaString = json.encodeToString(schema)
+        val actualSchemaString = schema.encodeToString(json)
 
         actualSchemaString shouldEqualJson expectedSchema
     }
 
     @Test
     fun generateJsonSchema_forEnumProperty() {
-        val schema = ReflectionJsonSchemaGenerator().generateSchema(WithEnum::class)
+        val schema = generator.generateSchema(WithEnum::class)
 
         // language=json
         val expectedSchema = """
@@ -141,7 +155,7 @@ class ReflectionJsonSchemaGeneratorTest {
         }
         """
 
-        val actualSchemaString = json.encodeToString(schema)
+        val actualSchemaString = schema.encodeToString(json)
 
         actualSchemaString shouldEqualJson expectedSchema
     }

@@ -3,11 +3,6 @@ package kotlinx.schema.generator.json
 import kotlinx.schema.generator.core.AbstractSchemaGenerator
 import kotlinx.schema.generator.reflect.ReflectionIntrospector
 import kotlinx.schema.json.JsonSchema
-import kotlinx.schema.json.ToolSchema
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.encodeToJsonElement
-import kotlinx.serialization.json.jsonObject
 import kotlin.reflect.KClass
 
 public class ReflectionJsonSchemaGenerator
@@ -25,8 +20,6 @@ public class ReflectionJsonSchemaGenerator
         override fun schemaType(): KClass<JsonSchema> = JsonSchema::class
 
         override fun encodeToString(schema: JsonSchema): String = jsonSchemaConfig.json.encodeToString(schema)
-
-        public fun encodeToJsonObject(schema: ToolSchema): JsonObject = Json.encodeToJsonElement(schema).jsonObject
 
         public companion object {
             /**

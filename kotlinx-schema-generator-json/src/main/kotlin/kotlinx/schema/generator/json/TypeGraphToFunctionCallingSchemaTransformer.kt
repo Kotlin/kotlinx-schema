@@ -12,17 +12,18 @@ import kotlinx.schema.generator.core.ir.TypeNode
 import kotlinx.schema.generator.core.ir.TypeRef
 import kotlinx.schema.json.ArrayPropertyDefinition
 import kotlinx.schema.json.BooleanPropertyDefinition
+import kotlinx.schema.json.FunctionCallingSchema
 import kotlinx.schema.json.NumericPropertyDefinition
 import kotlinx.schema.json.ObjectPropertyDefinition
+import kotlinx.schema.json.ParametersDefinition
 import kotlinx.schema.json.PropertyDefinition
 import kotlinx.schema.json.StringPropertyDefinition
-import kotlinx.schema.json.ToolSchema
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.encodeToJsonElement
 
 /**
- * Transforms a [TypeGraph] into a [ToolSchema] for tool/function schema representation.
+ * Transforms a [TypeGraph] into a [FunctionCallingSchema] for tool/function schema representation.
  *
  * This transformer converts the IR representation of a function's parameters
  * into a tool schema suitable for LLM function calling APIs.
@@ -33,15 +34,15 @@ import kotlinx.serialization.json.encodeToJsonElement
  * See
  */
 @Suppress("TooManyFunctions")
-public class TypeGraphToToolSchemaTransformer
+public class TypeGraphToFunctionCallingSchemaTransformer
     @JvmOverloads
     public constructor(
         private val json: Json = Json { encodeDefaults = false },
-    ) : TypeGraphTransformer<ToolSchema> {
+    ) : TypeGraphTransformer<FunctionCallingSchema> {
         override fun transform(
             graph: TypeGraph,
             rootName: String,
-        ): ToolSchema {
+        ): FunctionCallingSchema {
             val rootRef = graph.root
 
             return when (rootRef) {
@@ -70,7 +71,7 @@ public class TypeGraphToToolSchemaTransformer
         private fun convertObjectNodeToToolSchema(
             node: ObjectNode,
             graph: TypeGraph,
-        ): ToolSchema {
+        ): FunctionCallingSchema {
             val properties =
                 node.properties.associate { property ->
                     val propertyDef = convertTypeRef(property.type, graph)
@@ -88,9 +89,14 @@ public class TypeGraphToToolSchemaTransformer
                 }
 
             // All properties must be required for OpenAI structured outputs compatibility
-            return ToolSchema(
-                properties = properties,
-                required = node.properties.map { it.name },
+            return FunctionCallingSchema(
+                name = node.name,
+                description = node.description ?: "",
+                parameters =
+                    ParametersDefinition(
+                        properties = properties,
+                        required = node.properties.map { it.name },
+                    ),
             )
         }
 

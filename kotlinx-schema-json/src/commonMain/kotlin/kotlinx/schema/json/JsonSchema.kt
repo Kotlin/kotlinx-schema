@@ -6,7 +6,11 @@ import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.jsonObject
 
 /**
  * Represents a JSON Schema definition
@@ -20,11 +24,26 @@ import kotlinx.serialization.json.JsonElement
 @Serializable
 public data class JsonSchema(
     val name: String,
-    @EncodeDefault
-    val strict: Boolean = false,
+    @EncodeDefault val strict: Boolean = false,
     val description: String? = null,
     val schema: JsonSchemaDefinition,
 )
+
+/**
+ * Encodes the given [JsonSchema] instance into a [JsonObject] representation.
+ *
+ * @param json The [Json] instance to use for serialization. Defaults to [Json] instance with default configuration.
+ * @return A [JsonObject] representing the serialized form of the [JsonSchema].
+ */
+public fun JsonSchema.encodeToJsonObject(json: Json = Json): JsonObject = json.encodeToJsonElement(this).jsonObject
+
+/**
+ * Encodes the [JsonSchema] instance into its JSON string representation.
+ *
+ * @param json The [Json] instance to use for serialization. Defaults to [Json] instance with default configuration.
+ * @return The JSON string representation of the [JsonSchema] instance.
+ */
+public fun JsonSchema.encodeToString(json: Json = Json): String = json.encodeToString(this)
 
 /**
  * Represents a JSON Schema definition.
@@ -43,10 +62,8 @@ public data class JsonSchema(
 @Serializable
 @Suppress("LongParameterList")
 public data class JsonSchemaDefinition(
-    @SerialName($$"$id")
-    public val id: String? = null,
-    @SerialName($$"$schema")
-    public val schema: String? = null,
+    @SerialName($$"$id") public val id: String? = null,
+    @SerialName($$"$schema") public val schema: String? = null,
     @EncodeDefault
     public val type: String = "object",
     public val properties: Map<String, PropertyDefinition> = emptyMap(),
@@ -106,9 +123,8 @@ public sealed interface ValuePropertyDefinition : PropertyDefinition {
  */
 @Serializable
 public data class StringPropertyDefinition(
-    @Serializable(with = StringOrListSerializer::class)
-    @EncodeDefault
-    override val type: List<String> = listOf("string"),
+    @Serializable(with = StringOrListSerializer::class) @EncodeDefault override val type: List<String> =
+        listOf("string"),
     override val description: String? = null,
     override val nullable: Boolean? = null,
     val format: String? = null,
@@ -117,8 +133,7 @@ public data class StringPropertyDefinition(
     val maxLength: Int? = null,
     val pattern: String? = null,
     val default: JsonElement? = null,
-    @SerialName("const")
-    val constValue: JsonElement? = null,
+    @SerialName("const") val constValue: JsonElement? = null,
 ) : ValuePropertyDefinition
 
 /**
@@ -126,8 +141,7 @@ public data class StringPropertyDefinition(
  */
 @Serializable
 public data class NumericPropertyDefinition(
-    @Serializable(with = StringOrListSerializer::class)
-    override val type: List<String>,
+    @Serializable(with = StringOrListSerializer::class) override val type: List<String>,
     override val description: String? = null,
     override val nullable: Boolean? = null,
     val multipleOf: Double? = null,
@@ -136,8 +150,7 @@ public data class NumericPropertyDefinition(
     val maximum: Double? = null,
     val exclusiveMaximum: Double? = null,
     val default: JsonElement? = null,
-    @SerialName("const")
-    val constValue: JsonElement? = null,
+    @SerialName("const") val constValue: JsonElement? = null,
 ) : ValuePropertyDefinition
 
 /**
@@ -145,9 +158,8 @@ public data class NumericPropertyDefinition(
  */
 @Serializable
 public data class ArrayPropertyDefinition(
-    @Serializable(with = StringOrListSerializer::class)
-    @EncodeDefault
-    override val type: List<String> = listOf("array"),
+    @Serializable(with = StringOrListSerializer::class) @EncodeDefault override val type: List<String> =
+        listOf("array"),
     override val description: String? = null,
     override val nullable: Boolean? = null,
     val items: PropertyDefinition? = null,
@@ -161,9 +173,8 @@ public data class ArrayPropertyDefinition(
  */
 @Serializable
 public data class ObjectPropertyDefinition(
-    @Serializable(with = StringOrListSerializer::class)
-    @EncodeDefault
-    override val type: List<String> = listOf("object"),
+    @Serializable(with = StringOrListSerializer::class) @EncodeDefault override val type: List<String> =
+        listOf("object"),
     override val description: String? = null,
     override val nullable: Boolean? = null,
     val properties: Map<String, PropertyDefinition>? = null,
@@ -176,8 +187,7 @@ public data class ObjectPropertyDefinition(
      * - `JsonPrimitive(false)`: disallow additional properties
      * - `JsonObject`: a schema defining the type of additional properties (e.g., for Maps)
      */
-    @SerialName("additionalProperties")
-    val additionalProperties: JsonElement? = null,
+    @SerialName("additionalProperties") val additionalProperties: JsonElement? = null,
     val default: JsonElement? = null,
 ) : ValuePropertyDefinition
 
@@ -186,14 +196,12 @@ public data class ObjectPropertyDefinition(
  */
 @Serializable
 public data class BooleanPropertyDefinition(
-    @Serializable(with = StringOrListSerializer::class)
-    @EncodeDefault
-    override val type: List<String> = listOf("boolean"),
+    @Serializable(with = StringOrListSerializer::class) @EncodeDefault override val type: List<String> =
+        listOf("boolean"),
     override val description: String? = null,
     override val nullable: Boolean? = null,
     val default: JsonElement? = null,
-    @SerialName("const")
-    val constValue: JsonElement? = null,
+    @SerialName("const") val constValue: JsonElement? = null,
 ) : ValuePropertyDefinition
 
 /**
@@ -201,6 +209,5 @@ public data class BooleanPropertyDefinition(
  */
 @Serializable
 public data class ReferencePropertyDefinition(
-    @SerialName($$"$ref")
-    val ref: String,
+    @SerialName($$"$ref") val ref: String,
 ) : PropertyDefinition
