@@ -4,15 +4,48 @@
 
 # kotlinx-schema
 
-Kotlin Multiplatform toolkit for generating JSON Schemas from your Kotlin models at compile time using KSP (Kotlin
-Symbol Processing).
+**Generate JSON Schemas and LLM function calling schemas from Kotlin code — including classes you don't own.**
 
-- Zero reflection at runtime
-- Multiplatform support: annotations work on JVM, JS, iOS, macOS, Wasm; generated extensions work everywhere
-- Supports enums, collections, maps, nested objects, nullability, and generics (with star-projection)
-- Extract descriptions from `@Description`-alike annotations on classes and properties to the emitted schema
-- Ships with a Gradle plugin for a one‑line setup in JVM or Multiplatform projects
-- Optional runtime schema generation API available for dynamic use cases
+## Why kotlinx-schema?
+
+This library solves three key challenges:
+
+1. **🤖 LLM Function Calling Integration**: Generate OpenAI/Anthropic-compatible function schemas directly from Kotlin functions with proper type definitions and descriptions
+2. **📦 Third-Party Class Support**: Create schemas for library classes without modifying their source code (Spring entities, Ktor models, etc.)
+3. **🔄 Multi-Framework Compatibility**: Works with existing annotations from Jackson, LangChain4j, Koog, and more — no code changes needed
+
+### When to Use
+
+* 🤖 Building LLM-powered applications with structured function calling (OpenAI, Anthropic, Claude, MCP)
+* 👽 Need schemas for third-party library classes you cannot modify
+* ✅ Already using `@Description`-like annotations from other frameworks
+* 👌 Want zero runtime overhead with compile-time generation **(Multiplatform!!!)**
+* ☕️ Need dynamic schema generation at runtime via reflection (JVM)
+
+## Key Features
+
+**Dual Generation Modes:**
+- **Compile-time (KSP)**: Zero runtime overhead, multiplatform, for your annotated classes
+- **Runtime (Reflection)**: JVM-only, for any class including third-party libraries
+
+**LLM Integration:**
+- First-class support for OpenAI/Anthropic function calling format
+- Automatic strict mode and parameter validation
+- Function name and description extraction
+
+**Flexible Annotation Support:**
+- Recognizes `@Description`, `@LLMDescription`, `@JsonPropertyDescription`, `@P`, and more
+- Works with annotations from Jackson, LangChain4j, Koog without code changes
+
+**Comprehensive Type Support:**
+- Enums, collections, maps, nested objects, nullability, generics (with star-projection)
+- Proper union types for nullable parameters (`["string", "null"]`)
+- Type constraints (min/max, patterns, formats)
+
+**Developer Experience:**
+- Gradle plugin for one-line setup
+- Type-safe Kotlin DSL for programmatic schema construction
+- Works everywhere: JVM, JS, iOS, macOS, Wasm
 
 ## Quick start
 
@@ -136,7 +169,9 @@ sourceSets.main {
 ### 2) Annotate your models
 
 ```kotlin
-@Description("A postal address for deliveries and billing.")
+/** 
+ * A postal address for deliveries and billing.
+ */
 @Schema
 data class Address(
     @Description("Street address, including house number") val street: String,
@@ -145,6 +180,7 @@ data class Address(
     @Description("Two-letter ISO country code; defaults to US") val country: String = "US",
 )
 ```
+**Note!** for classes KDoc can also be used as a description.
 
 ### 3) Use the generated extensions
 
@@ -429,100 +465,281 @@ constructor-declared properties.
 
 ## Runtime schema generation
 
-For scenarios where you need to generate schemas dynamically at runtime (without KSP compile-time generation), 
-you can use `ReflectionJsonSchemaGenerator`. It uses Kotlin reflection at runtime and works on JVM only:
+For scenarios where compile-time generation isn't possible, use `ReflectionJsonSchemaGenerator` with Kotlin reflection (JVM only).
+
+### Why Runtime Generation?
+
+**Primary use case: Third-party library classes**
+
+The compile-time approach requires you to annotate classes with `@Schema`, which isn't possible for:
+- Library classes (Spring entities, Ktor models, database classes)
+- Framework-provided models
+- Classes from dependencies you don't control
+
+Runtime generation solves this by using reflection to analyze any class at runtime.
+
+### Usage
 
 ```kotlin
-data class User(val name: String, val email: String)
+// Works with ANY class, even from third-party libraries
+import com.thirdparty.library.User  // Not your code!
 
-// Generate schema at runtime
 val generator = kotlinx.schema.generator.json.ReflectionJsonSchemaGenerator.Default
 val schema: JsonObject = generator.generateSchema(User::class)
 val schemaString: String = generator.generateSchemaString(User::class)
 ```
 
-**You should add the dependency: `org.jetbrains.kotlinx:kotlinx-schema-generator-json:<version>`
+**Add dependency**: `org.jetbrains.kotlinx:kotlinx-schema-generator-json:<version>`
 
-**What to choose**:
+### Choosing Your Approach
 
-- **Compile-time (KSP)**: Recommended for most cases - zero runtime overhead, multiplatform support
-- **Runtime API**: Use when schemas need to be generated dynamically, or for prototyping
+| Approach                 | Best For                               | Pros                                               | Cons                                |
+|--------------------------|----------------------------------------|----------------------------------------------------|-------------------------------------|
+| **Compile-time (KSP)**   | Your own annotated classes             | Zero runtime cost, multiplatform                   | Only works for classes you own      |
+| **Runtime (Reflection)** | Third-party classes, dynamic scenarios | Works with any class, supports foreign annotations | JVM only, small reflection overhead |
 
-## Function calling schema generation
+**Decision guide**:
+- ✅ Use **KSP** for your domain models in multiplatform projects
+- ✅ Use **Reflection** for third-party library classes or when you need dynamic generation
 
-For LLM function calling APIs (OpenAI, Anthropic, etc.), use `ReflectionFunctionCallingSchemaGenerator` to generate function calling schemas from Kotlin functions:
+## Function calling schema generation for LLMs
+
+Modern LLMs (OpenAI GPT-4, Anthropic Claude, etc.) use structured function calling to interact with your code. They require a specific JSON schema format that describes available functions, their parameters, and types.
+
+### Why This Format?
+
+LLM APIs need to know:
+- What functions are available and what they do
+- Parameter names, types, and descriptions
+- Which parameters are required
+- Type constraints (enums, formats, ranges)
+
+This library automatically generates schemas that comply with the [OpenAI function calling specification](https://platform.openai.com/docs/guides/function-calling), making it easy to expose Kotlin functions to LLMs.
+
+### Basic Usage
 
 ```kotlin
-@Description("Process user data")
-fun processData(
-    @Description("Person's name") name: String,
-    age: Int,
-    optional: String?,
-): String = name
+@Description("Get current weather for a location")
+fun getWeather(
+    @Description("City and country, e.g. 'London, UK'")
+    location: String,
 
-val generator = kotlinx.schema.generator.json.ReflectionFunctionCallingSchemaGenerator.Default
-val schema: String = generator.generateSchemaString(::processData)
+    @Description("Temperature unit")
+    unit: String = "celsius"
+): WeatherInfo {
+    // Implementation...
+}
+
+val generator = ReflectionFunctionCallingSchemaGenerator.Default
+val schema = generator.generateSchema(::getWeather)
 ```
 
-Produces OpenAI-compatible function calling schema:
+### Generated Schema
+
+The generated schema follows the LLM function calling format:
+
 ```json
 {
   "type": "function",
-  "name": "processData",
-  "description": "Process user data",
+  "name": "getWeather",
+  "description": "Get current weather for a location",
   "strict": true,
   "parameters": {
     "type": "object",
     "properties": {
-      "name": {
+      "location": {
         "type": "string",
-        "description": "Person's name"
+        "description": "City and country, e.g. 'London, UK'"
       },
-      "age": {
-        "type": "integer"
-      },
-      "optional": {
-        "type": ["string", "null"]
+      "unit": {
+        "type": "string",
+        "description": "Temperature unit"
       }
     },
-    "required": ["name", "age", "optional"],
+    "required": ["location", "unit"],
     "additionalProperties": false
   }
 }
 ```
 
-**Key features**:
-- Follows [OpenAI function calling format](https://platform.openai.com/docs/guides/function-calling)
-- All parameters are marked as required (OpenAI structured outputs requirement)
-- Nullable parameters use union types: `["string", "null"]` instead of `nullable: true`
-- Function name and description extracted from function metadata and `@Description` annotation
+### Key Features
+
+- **Automatic extraction**: Function name and descriptions from `@Description` annotations
+- **Strict mode**: `strict: true` enables OpenAI's [strict mode](https://platform.openai.com/docs/guides/function-calling#strict-mode) for reliable parsing
+- **Union types**: Nullable parameters use `["string", "null"]` instead of `nullable: true`
+- **Required by default**: All parameters marked as required (OpenAI structured outputs requirement)
+- **Type safety**: Proper JSON Schema types from Kotlin types (Int → integer, String → string, etc.)
+
+### Working with Multiple Functions
+
+```kotlin
+// Define your functions
+@Description("Search the knowledge base")
+fun searchKnowledge(
+    @Description("Search query") query: String,
+    @Description("Max results") limit: Int = 10
+): String = TODO()
+
+@Description("Calculate order total with tax")
+fun calculateTotal(
+    @Description("Item prices") prices: List<Double>,
+    @Description("Tax rate as decimal") taxRate: Double = 0.0
+): Double = TODO()
+
+// Generate schemas
+val generator = ReflectionFunctionCallingSchemaGenerator.Default
+val schemas = listOf(::searchKnowledge, ::calculateTotal)
+    .map { generator.generateSchema(it) }
+
+// Serialize to JSON
+val jsonSchemas = schemas.map { Json.encodeToString(it) }
+
+// Or get as JsonObject
+val schemaObjects = schemas.map { it.encodeToJsonObject() }
+```
+
+The generated schemas can be sent to any LLM API that supports function calling (OpenAI, Anthropic, etc.). 
+Integration with specific LLM providers requires their respective client libraries.
+
+### Nullable Parameters
+
+Nullable parameters are represented as union types:
+
+```kotlin
+@Description("Update user profile")
+fun updateProfile(
+    @Description("User ID") userId: String,
+    @Description("New name, if changing") name: String? = null,
+    @Description("New email, if changing") email: String? = null
+): User = TODO("does not matter")// ...
+```
+
+Generates:
+
+```json
+{
+    "properties": {
+        "userId": {
+            "type": "string",
+            "description": "User ID"
+        },
+        "name": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "description": "New name, if changing"
+        },
+        "email": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "description": "New email, if changing"
+        }
+    },
+    "required": [
+        "userId",
+        "name",
+        "email"
+    ]
+}
+```
+
+**Note**: Even nullable parameters are in `required` array. The `null` type in the union indicates optionality.
 
 For more details on function calling schemas and OpenAI compatibility, see [kotlinx-schema-json/README.md](kotlinx-schema-json/README.md#function-calling-schema-for-llm-apis).
 
-## Koog annotation integration
+## Multi-Framework Annotation Support
 
-In addition to the standard `@Description` annotation, kotlinx-schema also supports extracting descriptions from Koog's
-`@LLMDescription` annotation. This makes it easy to use kotlinx-schema alongside Koog-based AI agent systems.
+**You don't need to change your existing code!**
+
+kotlinx-schema recognizes description annotations from multiple frameworks by their **simple name**, allowing you to generate schemas from code that uses annotations from other libraries.
+
+### Supported Annotations
+
+The library automatically recognizes these description annotations:
+
+| Annotation                                                 | Simple Name               | Library/Framework | Example                               |
+|------------------------------------------------------------|---------------------------|-------------------|---------------------------------------|
+| `kotlinx.schema.Description`                               | `Description`             | kotlinx-schema    | `@Description("User name")`           |
+| `ai.koog.agents.core.tools.annotations.LLMDescription`     | `LLMDescription`          | Koog AI agents    | `@LLMDescription("Query text")`       |
+| `com.fasterxml.jackson.annotation.JsonPropertyDescription` | `JsonPropertyDescription` | Jackson           | `@JsonPropertyDescription("Email")`   |
+| `com.fasterxml.jackson.annotation.JsonClassDescription`    | `JsonClassDescription`    | Jackson           | `@JsonClassDescription("User model")` |
+| `dev.langchain4j.model.output.structured.P`                | `P`                       | LangChain4j       | `@P("Search query")`                  |
+
+### How It Works
+
+The introspector matches annotations by their **simple name only**, not the fully qualified name. This means:
+- ✅ No code changes needed to generate schemas from existing annotated classes
+- ✅ Can migrate between annotation libraries without modifying code
+- ✅ Generate schemas for third-party code that uses different annotations
+- ✅ Use your preferred annotation library while still getting schema generation
+
+### Example: Reusing Jackson Annotations
 
 ```kotlin
-@ai.koog.agents.core.tools.annotations.LLMDescription(description = "A purchasable product with pricing and inventory info.")
-@Schema
-data class KoogProduct(
-    @ai.koog.agents.core.tools.annotations.LLMDescription(description = "Unique identifier for the product")
+// Existing code with Jackson annotations - NO CHANGES NEEDED!
+@JsonClassDescription("Customer profile data")
+data class Customer(
+    @JsonPropertyDescription("Unique customer ID")
     val id: Long,
-    @ai.koog.agents.core.tools.annotations.LLMDescription("Human-readable product name")
+
+    @JsonPropertyDescription("Full name")
     val name: String,
-    @ai.koog.agents.core.tools.annotations.LLMDescription("Unit price expressed as a decimal number")
+
+    @JsonPropertyDescription("Contact email")
+    val email: String
+)
+
+// Generate JSON schema without modifying the code
+val generator = ReflectionJsonSchemaGenerator.Default
+val schema = generator.generateSchema(Customer::class)
+
+// Schema includes all Jackson descriptions!
+```
+
+### Example: LangChain4j Integration
+
+```kotlin
+// Code using LangChain4j annotations
+data class SearchQuery(
+    @P("Search terms")
+    val query: String,
+
+    @P("Maximum results to return")
+    val limit: Int = 10
+)
+
+// Generate schema for LLM function calling
+val schema = ReflectionFunctionCallingSchemaGenerator.Default
+    .generateSchema(SearchQuery::class)
+```
+
+### Example: Koog AI Agents
+
+```kotlin
+@LLMDescription(description = "Product with pricing information")
+@Schema
+data class Product(
+    @LLMDescription(description = "Product identifier")
+    val id: Long,
+
+    @LLMDescription("Product name")
+    val name: String,
+
+    @LLMDescription("Unit price")
     val price: Double,
 )
 ```
 
-The generated JSON schema will include the descriptions from `@LLMDescription` annotations in the same way as
-`@Description` annotations. This allows you to use a single set of annotations for both AI agent tooling and JSON schema
-generation.
+### Precedence Rules
 
-**Note**: You can mix both annotation types in the same project. If both `@Description` and `@LLMDescription` are
-present on the same element, `@Description` takes precedence.
+If multiple description annotations are present on the same element, the library uses this precedence order:
+1. `@Description` (kotlinx-schema's own annotation)
+2. Other annotations in alphabetical order by simple name
+
+**Tip**: For best compatibility, prefer `@Description` from kotlinx-schema when writing new code, but existing annotations from other libraries work seamlessly.
 
 ## JSON Schema DSL
 
