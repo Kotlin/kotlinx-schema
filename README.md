@@ -662,7 +662,7 @@ kotlinx-schema recognizes description annotations from multiple frameworks by th
 
 ### Supported Annotations
 
-The library automatically recognizes these description annotations:
+The library automatically recognizes these description annotations by default:
 
 | Annotation                                                 | Simple Name               | Library/Framework | Example                               |
 |------------------------------------------------------------|---------------------------|-------------------|---------------------------------------|
@@ -679,6 +679,55 @@ The introspector matches annotations by their **simple name only**, not the full
 - ✅ Can migrate between annotation libraries without modifying code
 - ✅ Generate schemas for third-party code that uses different annotations
 - ✅ Use your preferred annotation library while still getting schema generation
+
+### Customizing Annotation Detection
+
+Annotation detection is configurable via `kotlinx-schema.properties` loaded from the classpath.
+The configuration file is **optional** — if not provided or fails to load, the library uses sensible defaults.
+
+#### Default Configuration
+
+By default, the library recognizes:
+
+**Annotation names**: Description, LLMDescription, JsonPropertyDescription, JsonClassDescription, P
+**Attribute names**: value, description
+
+#### Adding Custom Annotations
+
+To customize, place `kotlinx-schema.properties` in your project's resources:
+
+```properties
+# Add your custom annotations to the defaults
+introspector.annotations.description.names=Description,MyCustomAnnotation,DocString
+introspector.annotations.description.attributes=value,description,text
+```
+
+**Note**: The library falls back to built-in defaults if the configuration file is missing or cannot be loaded.
+
+#### Example: Adding Support for a Custom Framework
+
+```kotlin
+// Your custom annotation
+package com.mycompany.annotations
+
+annotation class ApiDoc(val text: String)
+
+// Usage in your models
+@ApiDoc(text = "Customer profile information")
+data class Customer(
+    @ApiDoc(text = "Unique customer identifier")
+    val id: Long,
+    val name: String
+)
+```
+
+Update `kotlinx-schema.properties`:
+```properties
+introspector.annotations.description.names=Description,ApiDoc
+introspector.annotations.description.attributes=value,description,text
+```
+
+Now the schema generator will recognize `@ApiDoc` and extract descriptions from its `text` parameter.
 
 ### Example: Reusing Jackson Annotations
 

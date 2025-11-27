@@ -4,9 +4,10 @@ import kotlinx.schema.Description
 import kotlinx.schema.Schema
 
 /**
- * Simple test model to verify basic KSP processing
+ * A person with a first and last name and age.
+ *
+ * @since 1.0
  */
-@Description("A person with a first and last name and age.")
 @Schema(withSchemaObject = true)
 data class Person(
     @Description("Given name of the person")
