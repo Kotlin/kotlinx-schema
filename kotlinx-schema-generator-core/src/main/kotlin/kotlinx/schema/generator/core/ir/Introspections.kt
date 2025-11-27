@@ -1,64 +1,107 @@
 package kotlinx.schema.generator.core.ir
 
+import kotlinx.schema.generator.core.Config
+
 /**
  * Utility object for annotation-based introspection, providing methods to process annotations,
  * especially those related to descriptions.
+ *
+ * This object provides a configurable mechanism for recognizing description annotations from
+ * multiple frameworks (kotlinx-schema, Jackson, LangChain4j, Koog, etc.) by their simple names.
+ * Configuration is loaded from `kotlinx-schema.properties` on the classpath.
+ *
+ * ## Configuration
+ *
+ * The annotation detection behavior is controlled by two properties in `kotlinx-schema.properties`:
+ *
+ * - `introspector.annotations.description.names`: Comma-separated list of annotation simple names
+ *   to recognize as description providers (e.g., "Description,LLMDescription,P")
+ * - `introspector.annotations.description.attributes`: Comma-separated list of annotation parameter
+ *   names that contain description text (e.g., "value,description")
+ *
+ * ## Customizing Configuration
+ *
+ * To add support for custom annotations, create `kotlinx-schema.properties` in your project's
+ * `src/main/resources/` directory (or `src/commonMain/resources/` for multiplatform projects):
+ *
+ * ```properties
+ * introspector.annotations.description.names=Description,MyCustomDescription
+ * introspector.annotations.description.attributes=value,description,text
+ * ```
+ *
+ * Your project's properties file will take precedence over the library's default configuration.
+ *
+ * @see getDescriptionFromAnnotation
+ * @see Config
  */
 public object Introspections {
     /**
-     * A set of lowercase annotation names used for describing metadata or properties.
-     * These annotations may be used for documentation or schema generation purposes.
+     * Set of lowercase annotation simple names recognized as description providers.
+     *
+     * @see Config.descriptionAnnotationNames
      */
-    private val DESCRIPTION_ANNOTATIONS =
-        setOf(
-            "Description".lowercase(),
-            "LLMDescription".lowercase(), // Koog
-            "JsonPropertyDescription".lowercase(), // Jackson
-            "JsonClassDescription".lowercase(), // Jackson (for classes)
-            "P".lowercase(), // LangChain4j @P annotation
-        )
+    private val descriptionAnnotationNames: Set<String> = Config.descriptionAnnotationNames
 
     /**
-     * A predefined set of annotation argument keys used to extract descriptions or values.
+     * Set of lowercase annotation parameter names that may contain description text.
      *
-     * The set contains the following keys:
-     * - "value": Typically used to identify main or default values in annotations.
-     * - "description": Commonly used to provide textual descriptions within annotations.
-     *
-     * This set is used in inspection logic to filter and extract relevant information
-     * from annotation arguments based on the presence of these keys.
+     * @see Config.descriptionValueAttributes
      */
-    private val DESCRIPTION_VALUE_ATTRIBUTES = setOf("value", "description")
+    private val descriptionValueAttributes: Set<String> = Config.descriptionValueAttributes
 
     /**
-     * Extracts the description value from this annotation if it matches the predefined description annotations.
+     * Extracts the description text from an annotation if it matches a recognized description annotation.
      *
-     * The method checks if the annotation type's name matches any name in the `DESCRIPTION_ANNOTATIONS` set.
-     * If a match is found, it returns the first non-null description value from the annotation's arguments
-     * that matches the predefined `DESCRIPTION_VALUE_ATTRIBUTES`.
+     * This method performs case-insensitive matching of the annotation's simple name against
+     * [descriptionAnnotationNames]. If matched, it searches the annotation's arguments for any
+     * parameter names that match [descriptionValueAttributes] and returns the first non-null
+     * String value found.
      *
-     * Example:
+     * ## Recognition Logic
+     *
+     * 1. The annotation is matched by **simple name only** (not fully qualified name)
+     * 2. Matching is **case-insensitive** for both annotation names and parameter names
+     * 3. The first matching parameter with a non-null String value is returned
+     *
+     * ## Example Usage
+     *
      * ```kotlin
+     * // With @Description annotation
      * @Description("A purchasable product with pricing and inventory info.")
      * class Product
      *
-     * // Inside a symbol processor:
-     * val annotation: KSAnnotation = /* obtained from Product declaration */
-     * val description = annotation.descriptionOrNull()
+     * val description = Introspections.getDescriptionFromAnnotation(
+     *     annotationName = "Description",
+     *     annotationArguments = listOf("value" to "A purchasable product with pricing and inventory info.")
+     * )
      * // description == "A purchasable product with pricing and inventory info."
      * ```
-     * @param annotationName The name of the annotation to inspect for description values.
-     * @param annotationArguments A list of key-value pairs representing the arguments of the annotation.
-     * @return The first description value found from the annotation's arguments or null if no matching value is found.
+     *
+     * ```kotlin
+     * // With Jackson annotation
+     * @JsonPropertyDescription(description = "User's email address")
+     * val email: String
+     *
+     * val description = Introspections.getDescriptionFromAnnotation(
+     *     annotationName = "JsonPropertyDescription",
+     *     annotationArguments = listOf("description" to "User's email address")
+     * )
+     * // description == "User's email address"
+     * ```
+     *
+     * @param annotationName The simple name of the annotation to inspect (e.g., "Description", "P")
+     * @param annotationArguments List of key-value pairs representing the annotation's parameters
+     * @return The description text if found, or null if the annotation is not recognized or
+     *         contains no matching description parameter
      */
     @JvmStatic
     public fun getDescriptionFromAnnotation(
         annotationName: String,
         annotationArguments: List<Pair<String, Any?>>,
     ): String? =
-        if (annotationName.lowercase() in DESCRIPTION_ANNOTATIONS) {
+        if (annotationName.lowercase() in descriptionAnnotationNames) {
             annotationArguments
-                .filter { it.first.lowercase() in DESCRIPTION_VALUE_ATTRIBUTES }
+                .filter { it.first.lowercase() in descriptionValueAttributes }
                 .firstNotNullOfOrNull {
                     val value = it.second
                     return (value as? String)
