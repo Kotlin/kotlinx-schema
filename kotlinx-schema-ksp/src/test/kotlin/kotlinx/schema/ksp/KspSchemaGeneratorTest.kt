@@ -14,7 +14,7 @@ class KspSchemaGeneratorTest {
         val generator =
             SchemaGeneratorService.getGenerator<KSClassDeclaration, Any>(targetType = KSClassDeclaration::class)
         generator shouldNotBeNull {
-            assertTrue(this is KspSchemaGenerator)
+            assertTrue(this is KspClassSchemaGenerator)
         }
     }
 }

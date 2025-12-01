@@ -37,7 +37,7 @@ public class ReflectionFunctionCallingSchemaGenerator
 
         override fun encodeToString(schema: FunctionCallingSchema): String = Json.encodeToString(schema)
 
-        public companion object Companion {
+        public companion object {
             /**
              * A default instance of [ReflectionFunctionCallingSchemaGenerator] with default configuration.
              *

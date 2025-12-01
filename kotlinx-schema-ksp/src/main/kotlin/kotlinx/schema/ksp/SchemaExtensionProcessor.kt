@@ -8,7 +8,6 @@ import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.validate
-import kotlinx.schema.generator.core.SchemaGeneratorService
 
 private const val KOTLINX_SCHEMA_ANNOTATION = "kotlinx.schema.Schema"
 
@@ -25,7 +24,7 @@ internal class SchemaExtensionProcessor(
     private val logger: KSPLogger,
     private val options: Map<String, String>,
 ) : SymbolProcessor {
-    private val schemaGenerator = KspSchemaGenerator()
+    private val schemaGenerator = KspClassSchemaGenerator()
 
     override fun finish() {
         logger.info("✅ Done!")

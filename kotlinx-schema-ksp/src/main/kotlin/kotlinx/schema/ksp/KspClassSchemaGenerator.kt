@@ -3,7 +3,7 @@ package kotlinx.schema.ksp
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import kotlinx.schema.generator.core.AbstractSchemaGenerator
 import kotlinx.schema.generator.json.TypeGraphToJsonObjectSchemaTransformer
-import kotlinx.schema.ksp.ir.KspIntrospector
+import kotlinx.schema.ksp.ir.KspClassIntrospector
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlin.reflect.KClass
@@ -12,7 +12,7 @@ import kotlin.reflect.KClass
  * A concrete implementation of [AbstractSchemaGenerator] that generates JSON schema representations
  * for Kotlin classes using the Kotlin Symbol Processing (KSP) API.
  *
- * This object uses [KspIntrospector] to analyze Kotlin classes and produce a type graph, and
+ * This object uses [KspClassIntrospector] to analyze Kotlin classes and produce a type graph, and
  * [TypeGraphToJsonObjectSchemaTransformer] to generate a JSON schema representation from the type graph. The schema
  * is serialized into a JSON string using Kotlinx Serialization.
  *
@@ -20,9 +20,9 @@ import kotlin.reflect.KClass
  * - Pretty-printed JSON
  * - Default values included in the output
  */
-internal class KspSchemaGenerator :
+internal class KspClassSchemaGenerator :
     AbstractSchemaGenerator<KSClassDeclaration, JsonObject>(
-        introspector = KspIntrospector(),
+        introspector = KspClassIntrospector(),
         typeGraphTransformer = TypeGraphToJsonObjectSchemaTransformer(),
     ) {
     private val json =

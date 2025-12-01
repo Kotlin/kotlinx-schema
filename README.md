@@ -469,18 +469,24 @@ constructor-declared properties.
 
 ## Runtime schema generation
 
-For scenarios where compile-time generation isn't possible, use `ReflectionJsonSchemaGenerator` with Kotlin reflection (JVM only).
+For scenarios where compile-time generation isn't possible, use 
+[`ReflectionClassJsonSchemaGenerator`](kotlinx-schema-generator-json/src/main/kotlin/kotlinx/schema/generator/json/ReflectionClassJsonSchemaGenerator.kt) 
+and [`ReflectionFunctionCallingSchemaGenerator`](kotlinx-schema-generator-json/src/main/kotlin/kotlinx/schema/generator/json/ReflectionFunctionCallingSchemaGenerator.kt)
+with Kotlin reflection (JVM only).
 
 ### Why Runtime Generation?
 
 **Primary use case: Third-party library classes**
 
-The compile-time approach requires you to annotate classes with `@Schema`, which isn't possible for:
+The compile-time (KSP) approach requires you to annotate classes with `@Schema`, which isn't possible for:
 - Library classes (Spring entities, Ktor models, database classes)
 - Framework-provided models
 - Classes from dependencies you don't control
 
 Runtime generation solves this by using reflection to analyze any class at runtime.
+
+> [!IMPORTANT]
+> **Limitation:** KDoc annotations are not available at runtime 
 
 ### Usage
 
@@ -488,7 +494,7 @@ Runtime generation solves this by using reflection to analyze any class at runti
 // Works with ANY class, even from third-party libraries
 import com.thirdparty.library.User  // Not your code!
 
-val generator = kotlinx.schema.generator.json.ReflectionJsonSchemaGenerator.Default
+val generator = kotlinx.schema.generator.json.ReflectionClassJsonSchemaGenerator.Default
 val schema: JsonObject = generator.generateSchema(User::class)
 val schemaString: String = generator.generateSchemaString(User::class)
 ```
@@ -508,7 +514,8 @@ val schemaString: String = generator.generateSchemaString(User::class)
 
 ## Function calling schema generation for LLMs
 
-Modern LLMs (OpenAI GPT-4, Anthropic Claude, etc.) use structured function calling to interact with your code. They require a specific JSON schema format that describes available functions, their parameters, and types.
+Modern LLMs (OpenAI GPT-4, Anthropic Claude, etc.) use structured function calling to interact with your code. 
+They require a specific JSON schema format that describes available functions, their parameters, and types.
 
 ### Why This Format?
 

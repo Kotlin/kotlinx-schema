@@ -34,6 +34,19 @@ class ReflectionJsonSchemaGeneratorTest {
         val firstName: String,
     )
 
+    @Description("Pet information")
+    open class Pet(
+        @property:Description("Pet name")
+        val name: String,
+    )
+
+    @Description("Cat information")
+    open class Cat(
+        @property:Description("Most cats have 18 toes, 5 on each front foot and 4 on each hind paw")
+        val toes: Int,
+        name: String,
+    ) : Pet(name = name)
+
     private val generator =
         requireNotNull(
             SchemaGeneratorService.getGenerator(
@@ -41,11 +54,11 @@ class ReflectionJsonSchemaGeneratorTest {
                 JsonSchema::class,
             ),
         ) {
-            "ReflectionJsonSchemaGenerator must be registered"
+            "ReflectionClassJsonSchemaGenerator must be registered"
         }
 
     @Test
-    fun generateJsonSchema() {
+    fun `Should generate schema for simple data class`() {
         val schema = generator.generateSchema(Person::class)
 
         // language=json
@@ -75,7 +88,71 @@ class ReflectionJsonSchemaGeneratorTest {
     }
 
     @Test
-    fun generateJsonSchema_forUserWithVariousTypes() {
+    fun `Should generate schema for simple class`() {
+        val schema = generator.generateSchema(Pet::class)
+
+        // language=json
+        val expectedSchema = """ 
+        {
+            "name": "${Pet::class.qualifiedName}",
+            "strict": false,
+            "schema": {
+              "description": "Pet information",
+              "required": [ "name" ],
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Pet name"
+                }
+              },
+              "additionalProperties": false
+            }
+        }
+        """
+        val actualSchema = schema.encodeToString(json)
+        println("Expected schema = $expectedSchema")
+        println("Actual schema = $actualSchema")
+
+        actualSchema shouldEqualJson expectedSchema
+    }
+
+    @Test
+    fun `Should generate schema for simple class hierarchy`() {
+        val schema = generator.generateSchema(Cat::class)
+
+        // language=json
+        val expectedSchema = """ 
+        {
+            "name": "${Cat::class.qualifiedName}",
+            "strict": false,
+            "schema": {
+              "description": "Cat information",
+              "required": ["toes" , "name"],
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Pet name"
+                },
+                "toes": {
+                  "type": "integer",
+                  "description": "Most cats have 18 toes, 5 on each front foot and 4 on each hind paw"
+                }
+              },
+              "additionalProperties": false
+            }
+        }
+        """
+        val actualSchema = schema.encodeToString(json)
+        println("Expected schema = $expectedSchema")
+        println("Actual schema = $actualSchema")
+
+        actualSchema shouldEqualJson expectedSchema
+    }
+
+    @Test
+    fun `Should generate schema for data class with various properties`() {
         @Description("A user model")
         data class User(
             @property:Description("The name of the user")
@@ -132,7 +209,7 @@ class ReflectionJsonSchemaGeneratorTest {
     }
 
     @Test
-    fun generateJsonSchema_forEnumProperty() {
+    fun `Should generate schema with enum property`() {
         val schema = generator.generateSchema(WithEnum::class)
 
         // language=json

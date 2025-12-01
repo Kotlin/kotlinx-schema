@@ -1,3 +1,3 @@
 # Module kotlinx-schema-generator-json
 
-JSON-Schema generator
+JSON-Schema generators for classes and functions

@@ -5,7 +5,18 @@ import kotlinx.schema.generator.reflect.ReflectionIntrospector
 import kotlinx.schema.json.JsonSchema
 import kotlin.reflect.KClass
 
-public class ReflectionJsonSchemaGenerator
+/**
+ * A generator for producing JSON Schema representations of Kotlin classes using reflection.
+ *
+ * This class utilizes reflection-based introspection to analyze Kotlin `KClass` definitions
+ * and generate JSON Schema objects. It is built on top of the `AbstractSchemaGenerator` and works
+ * with a configurable `JsonSchemaConfig` to define schema generation behavior.
+ *
+ * @constructor Creates an instance of `ReflectionClassJsonSchemaGenerator`.
+ * @param jsonSchemaConfig Configuration for generating JSON Schemas, such as formatting details
+ * and handling of optional nullable properties. Defaults to [JsonSchemaConfig.Default].
+ */
+public class ReflectionClassJsonSchemaGenerator
     @JvmOverloads
     public constructor(
         private val jsonSchemaConfig: JsonSchemaConfig = JsonSchemaConfig.Default,
@@ -23,13 +34,13 @@ public class ReflectionJsonSchemaGenerator
 
         public companion object {
             /**
-             * A default instance of the [ReflectionJsonSchemaGenerator] class, preconfigured
+             * A default instance of the [ReflectionClassJsonSchemaGenerator] class, preconfigured
              * with the default settings defined in [JsonSchemaConfig.Default].
              *
              * This instance can be used to generate JSON schema representations of Kotlin
              * objects using reflection-based introspection. It simplifies the creation
              * of schemas without requiring explicit configuration.
              */
-            public val Default: ReflectionJsonSchemaGenerator = ReflectionJsonSchemaGenerator()
+            public val Default: ReflectionClassJsonSchemaGenerator = ReflectionClassJsonSchemaGenerator()
         }
     }

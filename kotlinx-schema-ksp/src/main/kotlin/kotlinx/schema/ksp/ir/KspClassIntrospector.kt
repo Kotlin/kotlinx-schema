@@ -24,7 +24,7 @@ import kotlinx.schema.generator.core.ir.TypeRef
  * KSP-backed Schema IR introspector. Focuses on classes and enums; generics use star-projection.
  */
 @Suppress("ReturnCount", "MaxLineLength", "NestedBlockDepth", "LongMethod", "MaxLineLength")
-internal class KspIntrospector : SchemaIntrospector<KSClassDeclaration> {
+internal class KspClassIntrospector : SchemaIntrospector<KSClassDeclaration> {
     @Suppress("CyclomaticComplexMethod")
     override fun introspect(root: KSClassDeclaration): TypeGraph {
         val nodes = LinkedHashMap<TypeId, TypeNode>()
