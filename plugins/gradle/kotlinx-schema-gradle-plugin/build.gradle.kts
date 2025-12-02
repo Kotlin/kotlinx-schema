@@ -10,13 +10,10 @@ repositories {
     mavenCentral()
 }
 
-group = "kotlinx.schema"
-version = "0.1.0"
-
 gradlePlugin {
     plugins {
         create("kotlinxSchemaPlugin") {
-            id = "kotlinx.schema"
+            id = "org.jetbrains.kotlinx.schema.ksp"
             implementationClass = "kotlinx.schema.gradle.KotlinxSchemaPlugin"
             displayName = "Kotlinx Schema Gradle Plugin"
             description = "Gradle plugin for generating JSON schemas using KSP"

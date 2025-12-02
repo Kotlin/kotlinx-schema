@@ -43,7 +43,7 @@ For JVM-only projects:
 ```kotlin
 plugins {
     kotlin("jvm") version "2.2.21"
-    id("kotlinx.schema") version "0.1.0"  // KSP is auto-applied
+    id("org.jetbrains.kotlinx.schema.ksp") version "0.1.0"  // KSP is auto-applied
 }
 
 kotlinxSchema {
@@ -61,7 +61,7 @@ dependencies {
 ```kotlin
 plugins {
     kotlin("multiplatform") version "2.2.21"
-    id("kotlinx.schema") version "0.1.0"  // KSP is auto-applied
+    id("org.jetbrains.kotlinx.schema.ksp") version "0.1.0"  // KSP is auto-applied
 }
 
 kotlin {
