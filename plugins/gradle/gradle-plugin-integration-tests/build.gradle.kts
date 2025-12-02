@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
     kotlin("multiplatform")
-    id("kotlinx.schema")
+    id("org.jetbrains.kotlinx.schema.ksp")
 }
 
 kotlinxSchema {

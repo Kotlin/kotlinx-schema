@@ -64,7 +64,7 @@ Kotlin Multiplatform (Kotlin DSL):
 plugins {
     kotlin("multiplatform")
     // Published plugin id:
-    id("kotlinx.schema") // version "<x.y.z>" if used outside this repository
+    id("org.jetbrains.kotlinx.schema.ksp") // version "<x.y.z>" if used outside this repository
 }
 
 // Optional configuration
@@ -105,7 +105,7 @@ Single-target JVM setup:
 ```kotlin
 plugins {
     kotlin("jvm")
-    id("kotlinx.schema") // version "<x.y.z>" if used outside this repository
+    id("org.jetbrains.kotlinx.schema.ksp") // version "<x.y.z>" if used outside this repository
 }
 
 kotlinxSchema {
