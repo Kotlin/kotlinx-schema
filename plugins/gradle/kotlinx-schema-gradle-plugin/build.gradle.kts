@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.kotlinJvm)
     `java-gradle-plugin`
+    signing
     id("maven-publish")
 }
 
@@ -32,6 +33,11 @@ dependencies {
 }
 
 kotlin {
+    java {
+        withJavadocJar()
+        withSourcesJar()
+    }
+
     jvmToolchain(17)
     explicitApi()
     compilerOptions {

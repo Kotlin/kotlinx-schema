@@ -1,5 +1,3 @@
-import com.vanniktech.maven.publish.MavenPublishBaseExtension
-
 /**
  * Convention plugin to enable and configure publishing with Maven Publish.
  * - Configures Maven Central publishing with automatic release
@@ -8,14 +6,13 @@ import com.vanniktech.maven.publish.MavenPublishBaseExtension
  * - Automatically publishes sources and documentation (KDoc)
  */
 plugins {
-    `maven-publish`
     id("com.vanniktech.maven.publish")
     signing
+    `maven-publish`
 }
 
 mavenPublishing {
     publishToMavenCentral(automaticRelease = false)
-    configureSigning(this)
 
     pom {
         name = providers.gradleProperty("POM_NAME").orElse(project.name).get()
@@ -45,10 +42,11 @@ mavenPublishing {
 
         developers {
             developer {
-                id = "kotlin"
-                name = "Kotlin Team"
+                id = "kpavlov"
+                name = "Konstantin Pavlov"
+                email = "k.pavlov@jetbrains.com"
                 organization = "JetBrains"
-                organizationUrl = "https://kotlinlang.org/"
+                organizationUrl = "https://jetbrains.com/"
             }
         }
 
@@ -60,20 +58,13 @@ mavenPublishing {
     }
 }
 
-private fun Project.configureSigning(mavenPublishing: MavenPublishBaseExtension) {
-    val gpgKeyName = "GPG_SECRET_KEY"
-    val gpgPassphraseName = "SIGNING_PASSPHRASE"
-    val signingKey =
-        providers
-            .environmentVariable(gpgKeyName)
-            .orElse(providers.gradleProperty(gpgKeyName))
-    val signingPassphrase =
-        providers
-            .environmentVariable(gpgPassphraseName)
-            .orElse(providers.gradleProperty(gpgPassphraseName))
-
-    if (signingKey.isPresent) {
+afterEvaluate {
+    signing {
+        val signingKeyId: String? by project
+        val signingKey: String? by project
+        val signingPassword: String? by project
+        useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
         mavenPublishing.signAllPublications()
-        signing.useInMemoryPgpKeys(signingKey.get(), signingPassphrase.orNull)
+        isRequired = !signingKey.isNullOrBlank() // don't fail if no key
     }
 }

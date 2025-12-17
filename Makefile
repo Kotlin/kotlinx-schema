@@ -10,7 +10,7 @@ build:clean
 .PHONY: test
 test:
 	@echo "🧪 Running tests..."
-	@./gradlew test wasmJsTest --rerun-tasks
+	@./gradlew allTest --rerun-tasks
 	@echo "✅ Tests complete!"
 
 .PHONY: apidocs

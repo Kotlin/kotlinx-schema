@@ -1,6 +1,9 @@
 @file:OptIn(ExperimentalWasmDsl::class)
 
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsBrowserDsl
+import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsNodeDsl
+import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsSubTargetDsl
 
 plugins {
     kotlin("multiplatform")
@@ -30,14 +33,25 @@ kotlin {
         }
     }
 
+    fun KotlinJsSubTargetDsl.configureJsTesting() {
+        testTask {
+            useMocha {
+                timeout = "30s"
+            }
+        }
+    }
+
     js(IR) {
-        browser()
-        nodejs()
+        browser {
+            configureJsTesting()
+        }
+        nodejs {
+            configureJsTesting()
+        }
     }
 
     wasmJs {
         binaries.library()
-        browser {}
         nodejs()
     }
 
