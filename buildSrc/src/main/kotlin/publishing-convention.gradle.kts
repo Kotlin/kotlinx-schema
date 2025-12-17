@@ -12,7 +12,7 @@ plugins {
 }
 
 mavenPublishing {
-    publishToMavenCentral(automaticRelease = false)
+    publishToMavenCentral(automaticRelease = true)
 
     pom {
         name = providers.gradleProperty("POM_NAME").orElse(project.name).get()
