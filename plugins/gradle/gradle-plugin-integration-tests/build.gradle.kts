@@ -16,15 +16,9 @@ kotlin {
         freeCompilerArgs.add("-Xannotation-default-target=param-property")
     }
 
-    // For plugin integration tests simplification, only configure JVM target.
-    // This ensures both common and JVM schemas are generated in JVM source route,
-    // and avoids running kspCommonMainMetadata/deduplication in this project.
     jvm()
-    js {
+    js(IR) {
         nodejs()
-    }
-    wasmJs {
-        browser()
     }
     iosSimulatorArm64()
 
