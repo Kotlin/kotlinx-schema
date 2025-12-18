@@ -26,6 +26,10 @@ dependencies {
     ksp(project(":kotlinx-schema-ksp"))
 }
 
+ksp {
+    arg("kotlinx.schema.withSchemaObject", "true")
+}
+
 // KSP generates sources to build/generated/ksp/main/kotlin
 // This is automatically added to the source sets by KSP plugin
 kotlin.sourceSets.main {

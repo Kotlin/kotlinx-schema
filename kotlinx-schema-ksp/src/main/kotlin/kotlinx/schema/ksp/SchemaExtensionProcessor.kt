@@ -9,8 +9,6 @@ import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.validate
 
-private const val KOTLINX_SCHEMA_ANNOTATION = "kotlinx.schema.Schema"
-
 /**
  * KSP processor that generates extension properties for classes annotated with @Schema.
  *
@@ -21,17 +19,65 @@ private const val KOTLINX_SCHEMA_ANNOTATION = "kotlinx.schema.Schema"
  */
 internal class SchemaExtensionProcessor(
     private val codeGenerator: CodeGenerator,
+    private val sourceCoGenerator: SourceCodeGenerator,
     private val logger: KSPLogger,
     private val options: Map<String, String>,
 ) : SymbolProcessor {
+    private companion object {
+        private const val KOTLINX_SCHEMA_ANNOTATION = "kotlinx.schema.Schema"
+
+        private const val PARAM_WITH_SCHEMA_OBJECT = "withSchemaObject"
+
+        /**
+         * A constant representing a configuration key used to specify whether schema generation should include
+         * an extension property that provides a schema as a Kotlin object,e.g. `JsonObject`.
+         *
+         * When enabled (set to "true"), the generated code will include an additional extension property for
+         * the target class, allowing direct access to the schema as Kotlin object. Otherwise, only the stringified
+         * JSON schema will be generated.
+         *
+         * This value is typically expected to be provided as an option to the KSP processor and defaults to "false".
+         */
+        private const val OPTION_WITH_SCHEMA_OBJECT = "kotlinx.schema.$PARAM_WITH_SCHEMA_OBJECT"
+
+        /**
+         * Key used to enable or disable the functionality of the schema generation plugin.
+         *
+         * If this constant is set to "false" in the processor options, the plugin will be disabled and
+         * schema generation will be skipped. Any other value or the absence of this key in the options
+         * will default to enabling the plugin.
+         *
+         * This parameter can be configured in the KSP processor's options.
+         */
+        private const val OPTION_ENABLED = "kotlinx.schema.enabled"
+
+        /**
+         * Represents the key used to retrieve the root package name for schema generation
+         * from the compiler options passed to the plugin. This option allows users to specify
+         * a base package, restricting schema processing to classes contained within it or its subpackages.
+         *
+         * Usage of this parameter is optional; if not provided, no package-based filtering is applied.
+         * When specified, only classes within the defined root package or its subpackages will be processed.
+         */
+        private const val OPTION_ROOT_PACKAGE = "kotlinx.schema.rootPackage"
+    }
+
     private val schemaGenerator = KspClassSchemaGenerator()
 
     override fun finish() {
-        logger.info("✅ Done!")
+        logger.info("[kotlinx-schema] ✅ Done!")
     }
 
     override fun onError() {
-        logger.error("💥 Error!")
+        logger.error(
+            "[kotlinx-schema] 💥 Error! KSP Processor Options: ${
+                options.entries.joinToString(
+                    prefix = "[",
+                    separator = ", ",
+                    postfix = "]",
+                ) { it.toString() }
+            }",
+        )
     }
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
@@ -39,8 +85,8 @@ internal class SchemaExtensionProcessor(
         val symbols = resolver.getSymbolsWithAnnotation(schemaAnnotationName)
         val ret = mutableListOf<KSAnnotated>()
 
-        val enabled = options["kotlinx.schema.enabled"]?.trim()?.takeIf { it.isNotEmpty() } != "false"
-        val rootPackage = options["kotlinx.schema.rootPackage"]?.trim()?.takeIf { it.isNotEmpty() }
+        val enabled = options[OPTION_ENABLED]?.trim()?.takeIf { it.isNotEmpty() } != "false"
+        val rootPackage = options[OPTION_ROOT_PACKAGE]?.trim()?.takeIf { it.isNotEmpty() }
         logger.info("[kotlinx-schema] Options: ${options.entries.joinToString()} | rootPackage=$rootPackage")
 
         if (!enabled) {
@@ -95,9 +141,9 @@ internal class SchemaExtensionProcessor(
         val classNameWithGenerics =
             if (typeParameters.isNotEmpty()) {
                 val starProjections = typeParameters.joinToString(", ") { "*" }
-                "$className<$starProjections>"
+                "$qualifiedName<$starProjections>"
             } else {
-                className
+                qualifiedName
             }
 
         // Generate class-specific schema string
@@ -113,12 +159,12 @@ internal class SchemaExtensionProcessor(
             )
 
         file.use { outputStream ->
-            val writer = outputStream.writer()
+            val writer = outputStream.bufferedWriter(Charsets.UTF_8)
             writer.write(
-                generateCode(
+                sourceCoGenerator.generateCode(
                     packageName = packageName,
-                    className = className,
                     classNameWithGenerics = classNameWithGenerics,
+                    options = options,
                     parameters = parameters,
                     schemaString = schemaString,
                 ),
@@ -154,80 +200,6 @@ internal class SchemaExtensionProcessor(
     private fun getSchemaAnnotationDefaults(): Map<String, Any?> =
         mapOf(
             "value" to "json", // Default from Schema annotation
-            "withSchemaObject" to false, // Default from Schema annotation
+            OPTION_WITH_SCHEMA_OBJECT to false, // Default from Schema annotation
         )
-
-    private fun generateCode(
-        packageName: String,
-        className: String,
-        classNameWithGenerics: String,
-        parameters: Map<String, Any?>,
-        schemaString: String,
-    ): String =
-        if (parameters["withSchemaObject"] == true) {
-            @Suppress("RedundantVisibilityModifier")
-            // language=kotlin
-            """
-            |@file:Suppress("UnusedReceiverParameter", "MaxLineLength")
-            |
-            |package $packageName
-            |
-            |import kotlinx.serialization.json.Json
-            |import kotlinx.serialization.json.JsonObject
-            |import kotlin.reflect.KClass
-            |
-            |/**
-            | * Generated extension property providing JSON schema for $className.
-            | * Generated by kotlinx-schema-ksp processor.
-            | */
-            |public val KClass<$classNameWithGenerics>.jsonSchemaString: String
-            |    get() =
-            |        // language=JSON
-            |        ${schemaString.escapeForKotlinString()}
-            |    
-            |/**
-            | * Generated extension property providing JSON schema as JsonObject for $className.
-            | * Generated by kotlinx-schema-ksp processor.
-            | */
-            |public val KClass<$classNameWithGenerics>.jsonSchema: JsonObject
-            |    get() = Json.decodeFromString<JsonObject>(jsonSchemaString)
-            |
-            """.trimMargin()
-        } else {
-            // language=kotlin
-            """
-            |@file:Suppress("UnusedReceiverParameter", "MaxLineLength")
-            |
-            |package $packageName
-            |
-            |import kotlinx.serialization.json.Json
-            |import kotlinx.serialization.json.JsonObject
-            |import kotlin.reflect.KClass
-            |
-            |/**
-            | * Generated extension property providing JSON schema for $className.
-            | * Generated by kotlinx-schema-ksp processor.
-            | */
-            |public val KClass<$classNameWithGenerics>.jsonSchemaString: String
-            |    get() =
-            |        // language=JSON
-            |        ${schemaString.escapeForKotlinString()}
-            |
-            |/**
-            | * Generated extension property providing JSON schema as JsonObject for $className.
-            | * Generated by kotlinx-schema-ksp processor.
-            | */
-            |public val KClass<$classNameWithGenerics>.jsonSchema: JsonObject
-            |    get() = Json.decodeFromString<JsonObject>(jsonSchemaString)
-            |
-            """.trimMargin()
-        }
-
-    /**
-     * Escapes a string for use as a Kotlin raw string literal, preserving $ and triple quotes.
-     */
-    private fun String.escapeForKotlinString(): String {
-        val escaped = this.replace("$", "\${'$'}").replace("\"\"\"", "\\\"\\\"\\\"")
-        return "\"\"\"" + escaped + "\"\"\""
-    }
 }

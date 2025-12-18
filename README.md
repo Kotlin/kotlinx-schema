@@ -77,6 +77,9 @@ plugins {
 
 // Optional configuration
 kotlinxSchema {
+    // Enable or disable schema generation (default: true)
+    enabled.set(true)
+
     // Limit processing to this package and its subpackages (speeds up builds)
     // Omit to process all packages
     rootPackage.set("com.example.models")
@@ -116,8 +119,10 @@ plugins {
     id("org.jetbrains.kotlinx.schema.ksp") // version "<x.y.z>" if used outside this repository
 }
 
+// Optional configuration
 kotlinxSchema {
-    rootPackage.set("com.example.models") // optional
+    enabled.set(true)  // optional, default: true
+    rootPackage.set("com.example.models")  // optional
 }
 
 dependencies {
@@ -201,9 +206,70 @@ val schemaString: String = Address::class.jsonSchemaString
 val schemaObject: kotlinx.serialization.json.JsonObject = Address::class.jsonSchema
 ```
 
+## Advanced Configuration
+
+### KSP Processor Options
+
+Configure via the `kotlinxSchema` extension or directly via `ksp { arg(...) }`:
+
+#### kotlinx.schema.enabled
+Enable/disable schema generation. Default: `true`
+
+```kotlin
+kotlinxSchema {
+    enabled.set(false)
+}
+```
+
+#### kotlinx.schema.rootPackage
+Process only classes in the specified package and subpackages. Speeds up large builds. Default: all packages
+
+```kotlin
+kotlinxSchema {
+    rootPackage.set("com.example.models")
+}
+```
+
+#### kotlinx.schema.withSchemaObject
+Generate `jsonSchema: JsonObject` property in addition to `jsonSchemaString: String`. Default: `false`
+
+**Precedence (highest to lowest):**
+1. **Global KSP option** (if set): `ksp { arg("kotlinx.schema.withSchemaObject", "true") }`
+2. **Per-class annotation** (fallback): `@Schema(withSchemaObject = true)`
+
+When the global KSP option is set, it overrides all annotation settings. 
+When not set, per-class annotation values are used.
+
+**Examples:**
+
+```kotlin
+// Global setting overrides all annotations
+ksp {
+    arg("kotlinx.schema.withSchemaObject", "true")
+}
+
+@Schema(withSchemaObject = false)  // IGNORED - global setting takes precedence
+data class User(val name: String)  // ✅ Generates both (due to global setting)
+
+@Schema  // IGNORED - global setting takes precedence
+data class Product(val id: Long)  // ✅ Generates both (due to global setting)
+```
+
+```kotlin
+// Without global setting, annotations control behavior
+@Schema(withSchemaObject = true)   // ✅ Generates both extensions
+data class User(val name: String)
+
+@Schema(withSchemaObject = false)  // ✅ Only generates jsonSchemaString
+data class Address(val street: String)
+
+@Schema  // ✅ Only generates jsonSchemaString (annotation default)
+data class Product(val id: Long)
+```
+
 ## What gets generated
 
-Schemas follow a $id/$defs/$ref layout. Example (pretty-printed):
+Schemas follow a `$id/$defs/$ref` layout. Example (pretty-printed):
 
 ```json
 {
@@ -449,12 +515,11 @@ data class Address(val street: String, val city: String)
 data class Person(val name: String, val age: Int)
 ```
 
-The `@Schema` annotation has an optional `value` parameter (defaults to `"json"`) that specifies the schema type.
-Currently, only JSON Schema generation is supported, but this parameter allows for future extensibility to other schema
-formats (e.g., OpenAPI, Avro).
+**@Schema parameters:**
+- `value = "json"`: Schema type (only JSON currently supported)
+- `withSchemaObject = false`: Generate `jsonSchema: JsonObject` property (see [Advanced Configuration](#advanced-configuration))
 
-**Note**: Both `jsonSchemaString: String` and `jsonSchema: JsonObject` extension properties are always generated for all
-`@Schema`-annotated classes, regardless of annotation parameters.
+**Note**: `jsonSchemaString` is always generated. `jsonSchema` requires `withSchemaObject = true`.
 
 ### @Description annotation
 

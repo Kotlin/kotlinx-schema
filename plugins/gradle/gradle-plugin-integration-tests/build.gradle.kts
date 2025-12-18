@@ -47,3 +47,7 @@ kotlin {
         }
     }
 }
+
+ksp {
+    arg("kotlinx.schema.withSchemaObject", "true")
+}
