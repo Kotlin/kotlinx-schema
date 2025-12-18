@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 pluginManagement {
     includeBuild("plugins/gradle/kotlinx-schema-gradle-plugin")
     repositories {
@@ -6,7 +8,7 @@ pluginManagement {
         gradlePluginPortal()
     }
     plugins {
-        id("com.google.devtools.ksp") version "2.3.2"
+        id("com.google.devtools.ksp") version "2.3.4"
     }
 }
 
