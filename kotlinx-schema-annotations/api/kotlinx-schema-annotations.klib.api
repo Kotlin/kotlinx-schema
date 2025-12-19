@@ -1,0 +1,23 @@
+// Klib ABI Dump
+// Targets: [androidNativeArm32, androidNativeArm64, androidNativeX64, androidNativeX86, iosArm64, iosSimulatorArm64, iosX64, js, linuxArm64, linuxX64, macosArm64, macosX64, mingwX64, tvosArm64, tvosSimulatorArm64, tvosX64, wasmJs, watchosArm32, watchosArm64, watchosDeviceArm64, watchosSimulatorArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <org.jetbrains.kotlinx:kotlinx-schema-annotations>
+open annotation class kotlinx.schema/Description : kotlin/Annotation { // kotlinx.schema/Description|null[0]
+    constructor <init>(kotlin/String) // kotlinx.schema/Description.<init>|<init>(kotlin.String){}[0]
+
+    final val value // kotlinx.schema/Description.value|{}value[0]
+        final fun <get-value>(): kotlin/String // kotlinx.schema/Description.value.<get-value>|<get-value>(){}[0]
+}
+
+open annotation class kotlinx.schema/Schema : kotlin/Annotation { // kotlinx.schema/Schema|null[0]
+    constructor <init>(kotlin/String = ..., kotlin/Boolean = ...) // kotlinx.schema/Schema.<init>|<init>(kotlin.String;kotlin.Boolean){}[0]
+
+    final val value // kotlinx.schema/Schema.value|{}value[0]
+        final fun <get-value>(): kotlin/String // kotlinx.schema/Schema.value.<get-value>|<get-value>(){}[0]
+    final val withSchemaObject // kotlinx.schema/Schema.withSchemaObject|{}withSchemaObject[0]
+        final fun <get-withSchemaObject>(): kotlin/Boolean // kotlinx.schema/Schema.withSchemaObject.<get-withSchemaObject>|<get-withSchemaObject>(){}[0]
+}
