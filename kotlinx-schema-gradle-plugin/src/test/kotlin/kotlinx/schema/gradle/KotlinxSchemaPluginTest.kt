@@ -5,6 +5,10 @@ import io.kotest.matchers.shouldNotBe
 import org.gradle.testfixtures.ProjectBuilder
 import kotlin.test.Test
 
+private const val PLUGIN_ID = "org.jetbrains.kotlinx.schema.ksp"
+
+private const val EXTENSION_NAME = "kotlinxSchema"
+
 /**
  * Unit tests for KotlinxSchemaPlugin.
  *
@@ -16,7 +20,7 @@ class KotlinxSchemaPluginTest {
     fun `plugin registers extension with default values`() {
         val project = ProjectBuilder.builder().build()
         project.pluginManager.apply("org.jetbrains.kotlin.jvm")
-        project.pluginManager.apply("kotlinx.schema")
+        project.pluginManager.apply(PLUGIN_ID)
 
         val extension = project.extensions.getByType(KotlinxSchemaExtension::class.java)
 
@@ -28,7 +32,7 @@ class KotlinxSchemaPluginTest {
     fun `plugin extension allows custom configuration`() {
         val project = ProjectBuilder.builder().build()
         project.pluginManager.apply("org.jetbrains.kotlin.jvm")
-        project.pluginManager.apply("kotlinx.schema")
+        project.pluginManager.apply(PLUGIN_ID)
 
         val extension = project.extensions.getByType(KotlinxSchemaExtension::class.java)
         extension.enabled.set(false)
@@ -40,27 +44,27 @@ class KotlinxSchemaPluginTest {
     fun `plugin can be applied to JVM project`() {
         val project = ProjectBuilder.builder().build()
         project.pluginManager.apply("org.jetbrains.kotlin.jvm")
-        project.pluginManager.apply("kotlinx.schema")
+        project.pluginManager.apply(PLUGIN_ID)
 
-        project.pluginManager.hasPlugin("kotlinx.schema") shouldBe true
+        project.pluginManager.hasPlugin(PLUGIN_ID) shouldBe true
     }
 
     @Test
     fun `plugin can be applied to multiplatform project`() {
         val project = ProjectBuilder.builder().build()
         project.pluginManager.apply("org.jetbrains.kotlin.multiplatform")
-        project.pluginManager.apply("kotlinx.schema")
+        project.pluginManager.apply(PLUGIN_ID)
 
-        project.pluginManager.hasPlugin("kotlinx.schema") shouldBe true
+        project.pluginManager.hasPlugin(PLUGIN_ID) shouldBe true
     }
 
     @Test
-    fun `extension name is kotlinxSchema`() {
+    fun `Check extension name`() {
         val project = ProjectBuilder.builder().build()
         project.pluginManager.apply("org.jetbrains.kotlin.jvm")
-        project.pluginManager.apply("kotlinx.schema")
+        project.pluginManager.apply(PLUGIN_ID)
 
-        val extension = project.extensions.findByName("kotlinxSchema")
+        val extension = project.extensions.findByName(EXTENSION_NAME)
         extension shouldNotBe null
         extension shouldBe project.extensions.getByType(KotlinxSchemaExtension::class.java)
     }

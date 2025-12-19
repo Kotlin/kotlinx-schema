@@ -7,8 +7,14 @@ plugins {
     id("org.jetbrains.kotlinx.schema.ksp")
 }
 
+// Configure the kotlinx-schema plugin
 kotlinxSchema {
     rootPackage.set("kotlinx.schema.integration")
+}
+
+// Configure KSP arguments
+ksp {
+    arg("kotlinx.schema.withSchemaObject", "true")
 }
 
 kotlin {
@@ -26,7 +32,8 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(libs.kotlinx.serialization.json)
-                implementation(project(":kotlinx-schema-annotations"))
+                // Gradle automatically substitutes this with the project from the included build
+                implementation(libs.kotlinx.schema.annotations)
             }
         }
 
@@ -46,8 +53,4 @@ kotlin {
             }
         }
     }
-}
-
-ksp {
-    arg("kotlinx.schema.withSchemaObject", "true")
 }

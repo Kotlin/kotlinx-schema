@@ -11,14 +11,14 @@ Gradle plugin that simplifies the integration of kotlinx-schema-ksp into Kotlin 
 
 ## Plugin ID
 
-`kotlinx.schema`
+`org.jetbrains.kotlinx.schema.ksp`
 
 ## Usage
 
 ```kotlin
 plugins {
     kotlin("jvm") version "2.2.21"
-    id("kotlinx.schema") version "0.1.0"
+    id("org.jetbrains.kotlinx.schema.ksp") version "0.1.0"
 }
 
 kotlinxSchema {
@@ -31,7 +31,7 @@ or with Kotlin Multiplatform:
 ```kotlin
 plugins {
     kotlin("multiplatform") version "2.2.21"
-    id("kotlinx.schema") version "0.1.0"
+    id("org.jetbrains.kotlinx.schema.ksp") version "0.1.0"
 }
 
 kotlinxSchema {

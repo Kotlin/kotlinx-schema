@@ -77,20 +77,45 @@ so do familiarize yourself with the following guidelines.
 - **Discuss Large Features**: Large features should be discussed with maintainers before implementation.
 - **Thread Safety**: Ensure that the code you write is thread-safe.
 
-## Using the Makefile
+## Building and Testing
 
-The [`Makefile`](Makefile) includes several helpful targets to make your development process more efficient:
+### Quick Commands
 
-- **`build`**:
-  - Runs all tests, verifies the project, and generates site documentation.
+```bash
+./gradlew build        # Build + test
+./gradlew test         # Tests only
+make build             # Build + verify + docs
+```
 
-- **`apidocs`**:
-  - Generates API documentation using Dokka and places it in [`docs/public/apidocs`](docs/public/apidocs).
+### Testing Specific Modules
 
-- **`lint`**:
-  - Prepares the environment and checks code style using `detekt`.
+```bash
+# KSP processor tests (no Gradle plugin)
+./gradlew :ksp-integration-tests:test
+
+# Gradle plugin integration tests (separate build)
+(cd gradle-plugin-integration-tests && ./gradlew build)
+```
+
+**How gradle plugin is tested**: `gradle-plugin-integration-tests` is an independent build 
+that includes the main build via [`includeBuild()`](https://docs.gradle.org/current/userguide/organizing_gradle_projects.html#sec:composite_builds).
+It applies the plugin to a real multiplatform project, runs KSP, and verifies generated schemas. 
+This tests the plugin exactly as external users would use it, 
+without requiring maven publication during development.
+
+### Generated Code
+
+```
+ksp-integration-tests/build/generated/ksp/metadata/commonMain/kotlin
+gradle-plugin-integration-tests/build/generated/ksp/metadata/commonMain/kotlin
+```
+
+### Makefile Targets
+
+- `make build` - Full build with verification and docs
+- `make apidocs` - Generate API docs (→ `docs/public/apidocs`)
+- `make lint` - Code style check with detekt
 
 ## Contacting maintainers
 
 * If something cannot be done, not convenient, or does not work &mdash; submit an [issue](#submitting-issues).
-* "How to do something" questions &mdash; [StackOverflow](https://stackoverflow.com).

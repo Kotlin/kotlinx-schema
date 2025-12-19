@@ -135,8 +135,7 @@ Notes:
 
 - You do NOT need to apply the KSP plugin yourself — the Gradle plugin does it.
 - You do NOT need to add generated source directories — the plugin does it.
-- For an example project using the plugin,
-  see [gradle-plugin-integration-tests](plugins/gradle/gradle-plugin-integration-tests).
+- For an example project using the plugin, see [gradle-plugin-integration-tests](gradle-plugin-integration-tests).
 
 Alternative: manual wiring without the Gradle plugin
 
@@ -986,13 +985,12 @@ Top-level modules you might interact with:
 - **kotlinx-schema-ksp** — KSP processor that scans your code and generates the extension properties:
     - `KClass<T>.jsonSchema: JsonObject`
     - `KClass<T>.jsonSchemaString: String`
-- **plugins/gradle/kotlinx-schema-gradle-plugin** — Gradle plugin (id: "kotlinx.schema") that:
+- **kotlinx-schema-gradle-plugin** — Gradle plugin (id: "org.jetbrains.kotlinx.schema.ksp") that:
     - Applies KSP automatically
     - Adds the KSP processor dependency
     - Wires generated sources into your source sets
     - Sets up multiplatform task dependencies
-- **plugins/gradle/gradle-plugin-integration-tests** — a real MPP sample used as integration tests, showing how users
-  consume the Gradle plugin
+- **gradle-plugin-integration-tests** — Independent build that includes the main project; demonstrates real MPP usage and integration testing
 - **ksp-integration-tests** — KSP end‑to‑end tests for generation without the Gradle plugin
 
 ### Workflow
@@ -1027,16 +1025,9 @@ and, optionally, object a Schema string representation.
 4. _TypeGraphTransformer_ converts a _TypeGraph_ to a target representation (e.g., JSON Schema)
    and returns it to SchemaGenerator
 
-## Building and testing
+## Building and Contributing
 
-- Build all: `./gradlew build`
-- Run all tests: `./gradlew test`
-- KSP integration tests (no Gradle plugin): `./gradlew :ksp-integration-tests:test`
-- Gradle plugin integration sample: `./gradlew :plugins:gradle:gradle-plugin-integration-tests:check`
-
-Generated code for tests can be found under:
-
-- `ksp-integration-tests/build/generated/ksp/metadata/commonMain/kotlin`
+For build instructions, development setup, and contribution guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Requirements
 
@@ -1044,13 +1035,9 @@ Generated code for tests can be found under:
 - KSP 2 (applied automatically when using the Gradle plugin)
 - _kotlinx-serialization-json_ for JsonObject support
 
-Tip: If you use @Description on primary constructor parameters, enable
+Tip: If you use `@Description` on primary constructor parameters, enable
 `-Xannotation-default-target=param-property` in Kotlin compiler options so the description applies to the backing
 property.
-
-## Contributing
-
-Read the [Contributing Guidelines](CONTRIBUTING.md).
 
 ## Code of Conduct
 

@@ -23,7 +23,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
  * ```kotlin
  * plugins {
  *     kotlin("jvm") version "2.2.21"
- *     id("kotlinx.schema") version "0.1.0"
+ *     id("org.jetbrains.kotlinx.schema.ksp") version "0.1.0"
  * }
  *
  * kotlinxSchema {
@@ -114,8 +114,8 @@ public class KotlinxSchemaPlugin : Plugin<Project> {
     /**
      * Adds the kotlinx-schema-ksp processor as a dependency.
      *
-     * For multiplatform projects, adds dependency only to [kspCommonMainMetadata].
-     * For JVM projects, adds to [ksp] configuration.
+     * For multiplatform projects, adds dependency only to "kspCommonMainMetadata".
+     * For JVM projects, adds to "ksp" configuration.
      *
      * Prefers local project dependencies when running inside the monorepo.
      */
@@ -165,7 +165,7 @@ public class KotlinxSchemaPlugin : Plugin<Project> {
             sourceSet.kotlin.srcDir(dirProvider)
             project.logger.log(
                 LogLevel.DEBUG,
-                "kotlinx-schema: Registered generated sources directory for 'commonMain' -> ${dirProvider.get().asFile.path}",
+                "kotlinx-schema: Registered generated sources dir for 'commonMain' -> ${dirProvider.get().asFile}",
             )
         }
     }
@@ -178,12 +178,12 @@ public class KotlinxSchemaPlugin : Plugin<Project> {
     private fun configureJvmSourceSets(project: Project) {
         val kotlin = project.extensions.getByType(KotlinProjectExtension::class.java)
         kotlin.sourceSets.named("main") { sourceSet ->
-            // Use Provider API so it works even if directory is created later
+            // Use Provider API so it works even if the directory is created later
             val dirProvider = project.layout.buildDirectory.dir("generated/ksp/main/kotlin")
             sourceSet.kotlin.srcDir(dirProvider)
             project.logger.log(
                 LogLevel.DEBUG,
-                "kotlinx-schema: Registered generated sources directory for JVM 'main' -> ${dirProvider.get().asFile.path}",
+                "kotlinx-schema: Registered generated sources dir for JVM 'main' -> ${dirProvider.get().asFile}",
             )
         }
     }

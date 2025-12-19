@@ -1,14 +1,8 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
-    alias(libs.plugins.kotlinJvm)
+    `dokka-convention`
+    `kotlin-jvm-convention`
     `java-gradle-plugin`
-    signing
-    id("maven-publish")
-}
-
-repositories {
-    mavenCentral()
+    `publishing-convention`
 }
 
 gradlePlugin {
@@ -32,22 +26,16 @@ dependencies {
     testImplementation(gradleTestKit())
 }
 
-kotlin {
-    java {
-        withJavadocJar()
-        withSourcesJar()
-    }
-
-    jvmToolchain(17)
-    explicitApi()
-    compilerOptions {
-        javaParameters = true
-        jvmTarget = JvmTarget.JVM_17
+publishing {
+    repositories {
+        maven {
+            name = "project"
+            url = uri(rootProject.layout.buildDirectory.dir("project-repo"))
+        }
     }
 }
 
-publishing {
-    repositories {
-        maven { url = uri(layout.buildDirectory.dir("local-repo")) }
-    }
+// Fix task dependency issue between dokka and publishing
+afterEvaluate {
+    tasks.findByName("generateMetadataFileForPluginMavenPublication")?.dependsOn("dokkaJavadocJar")
 }
