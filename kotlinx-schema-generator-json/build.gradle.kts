@@ -11,7 +11,6 @@ dokka {
 }
 
 kotlin {
-
     dependencies {
         // production dependencies
         api(libs.kotlinx.serialization.json)
@@ -26,6 +25,10 @@ kotlin {
     }
 
     compilerOptions {
-        optIn.set(listOf("kotlinx.serialization.ExperimentalSerializationApi"))
+        optIn.set(
+            listOf(
+                "kotlinx.serialization.ExperimentalSerializationApi",
+            ),
+        )
     }
 }

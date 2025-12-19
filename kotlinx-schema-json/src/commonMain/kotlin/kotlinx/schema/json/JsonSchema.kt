@@ -56,6 +56,8 @@ public fun JsonSchema.encodeToString(json: Json = Json): String = json.encodeToS
  * @property required List of required property names.
  * @property additionalProperties Whether to allow additional properties in the object.
  * @property description Optional description of the schema.
+ * @property oneOf List of alternative schemas for polymorphic types.
+ * @property discriminator Optional discriminator for polymorphic schemas.
  *
  * @author Konstantin Pavlov
  */
@@ -79,6 +81,8 @@ public data class JsonSchemaDefinition(
     public val additionalProperties: JsonElement? = null,
     public val description: String? = null,
     public val items: PropertyDefinition? = null,
+    public val oneOf: List<PropertyDefinition>? = null,
+    public val discriminator: Discriminator? = null,
 )
 
 /**

@@ -106,10 +106,22 @@ public object ReflectionIntrospector : SchemaIntrospector<KClass<*>> {
                 klass.sealedSubclasses.map { subclass ->
                     SubtypeRef(TypeId(subclass.simpleName ?: "Unknown"))
                 }
+
+            // Build discriminator mapping: discriminator value -> TypeId
+            val discriminatorMapping =
+                klass.sealedSubclasses.associate { subclass ->
+                    val simpleName = subclass.simpleName ?: "Unknown"
+                    simpleName to TypeId(simpleName)
+                }
+
             return PolymorphicNode(
                 baseName = klass.simpleName ?: "UnknownSealed",
                 subtypes = subtypes,
-                discriminator = Discriminator(name = "type", required = true, mapping = null),
+                discriminator = Discriminator(
+                    name = "type",
+                    required = true,
+                    mapping = discriminatorMapping
+                ),
                 description = extractDescription(klass.annotations),
             )
         }

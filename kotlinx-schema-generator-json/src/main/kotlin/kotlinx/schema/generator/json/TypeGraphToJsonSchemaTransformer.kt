@@ -5,18 +5,22 @@ import kotlinx.schema.generator.core.ir.EnumNode
 import kotlinx.schema.generator.core.ir.ListNode
 import kotlinx.schema.generator.core.ir.MapNode
 import kotlinx.schema.generator.core.ir.ObjectNode
+import kotlinx.schema.generator.core.ir.PolymorphicNode
 import kotlinx.schema.generator.core.ir.PrimitiveKind
 import kotlinx.schema.generator.core.ir.PrimitiveNode
 import kotlinx.schema.generator.core.ir.TypeGraph
 import kotlinx.schema.generator.core.ir.TypeGraphTransformer
 import kotlinx.schema.generator.core.ir.TypeNode
 import kotlinx.schema.generator.core.ir.TypeRef
+import kotlinx.schema.json.AnyOfPropertyDefinition
 import kotlinx.schema.json.ArrayPropertyDefinition
 import kotlinx.schema.json.BooleanPropertyDefinition
+import kotlinx.schema.json.Discriminator
 import kotlinx.schema.json.JsonSchema
 import kotlinx.schema.json.JsonSchemaDefinition
 import kotlinx.schema.json.NumericPropertyDefinition
 import kotlinx.schema.json.ObjectPropertyDefinition
+import kotlinx.schema.json.OneOfPropertyDefinition
 import kotlinx.schema.json.PropertyDefinition
 import kotlinx.schema.json.StringPropertyDefinition
 import kotlinx.serialization.json.Json
@@ -49,6 +53,16 @@ public data class JsonSchemaConfig(
     }
 }
 
+/**
+ * Transforms [TypeGraph] IR into JSON Schema Draft 2020-12 format.
+ *
+ * Converts type graphs from introspectors (reflection, KSP) into JSON Schema definitions.
+ * Supports primitives, collections, objects, enums, and sealed hierarchies with discriminators.
+ * Nullable sealed types use `anyOf` with null option.
+ *
+ * @property config JSON Schema generation configuration
+ * @param json JSON encoder for schema elements
+ */
 @Suppress("TooManyFunctions")
 public class TypeGraphToJsonSchemaTransformer
     @JvmOverloads
@@ -56,21 +70,39 @@ public class TypeGraphToJsonSchemaTransformer
         public val config: JsonSchemaConfig = JsonSchemaConfig.Default,
         private val json: Json = Json { encodeDefaults = false },
     ) : TypeGraphTransformer<JsonSchema> {
+        /**
+         * Transforms a type graph into a JSON Schema.
+         *
+         * @param graph Type graph with all type definitions
+         * @param rootName Schema name
+         * @return Complete JSON Schema definition
+         */
         override fun transform(
             graph: TypeGraph,
             rootName: String,
         ): JsonSchema {
-            val rootDefinition = convertTypeRef(graph.root, graph)
-
             // Extract the main schema definition
             val schemaDefinition =
-                when (rootDefinition) {
+                when (val rootDefinition = convertTypeRef(graph.root, graph)) {
                     is ObjectPropertyDefinition -> {
                         JsonSchemaDefinition(
                             properties = rootDefinition.properties ?: emptyMap(),
                             required = rootDefinition.required ?: emptyList(),
                             additionalProperties = rootDefinition.additionalProperties,
                             description = rootDefinition.description,
+                        )
+                    }
+
+                    is OneOfPropertyDefinition -> {
+                        // For polymorphic types, use oneOf at the schema definition level
+                        JsonSchemaDefinition(
+                            type = "object", // Keep type as object for compatibility
+                            properties = emptyMap(),
+                            required = emptyList(),
+                            additionalProperties = JsonPrimitive(false),
+                            description = rootDefinition.description,
+                            oneOf = rootDefinition.oneOf,
+                            discriminator = rootDefinition.discriminator,
                         )
                     }
 
@@ -92,12 +124,19 @@ public class TypeGraphToJsonSchemaTransformer
             )
         }
 
+        /**
+         * Converts a type reference to a property definition.
+         * Handles both inline types and named type references.
+         */
         private fun convertTypeRef(
             typeRef: TypeRef,
             graph: TypeGraph,
         ): PropertyDefinition =
             when (typeRef) {
-                is TypeRef.Inline -> convertInlineNode(typeRef.node, typeRef.nullable, graph)
+                is TypeRef.Inline -> {
+                    convertInlineNode(typeRef.node, typeRef.nullable, graph)
+                }
+
                 is TypeRef.Ref -> {
                     val node =
                         graph.nodes[typeRef.id]
@@ -110,23 +149,41 @@ public class TypeGraphToJsonSchemaTransformer
                 }
             }
 
+        /**
+         * Converts inline type nodes (primitives, lists, maps) to property definitions.
+         * Complex types must use named references.
+         */
         private fun convertInlineNode(
             node: TypeNode,
             nullable: Boolean,
             graph: TypeGraph,
         ): PropertyDefinition =
             when (node) {
-                is PrimitiveNode -> convertPrimitive(node, nullable)
-                is ListNode -> convertList(node, nullable, graph)
-                is MapNode -> convertMap(node, nullable, graph)
-                else ->
+                is PrimitiveNode -> {
+                    convertPrimitive(node, nullable)
+                }
+
+                is ListNode -> {
+                    convertList(node, nullable, graph)
+                }
+
+                is MapNode -> {
+                    convertMap(node, nullable, graph)
+                }
+
+                else -> {
                     throw IllegalArgumentException(
                         "Unsupported inline node type: ${node::class.simpleName}. " +
                             "Only PrimitiveNode, ListNode, and MapNode can be inlined. " +
                             "Complex types like ObjectNode and EnumNode must use TypeRef.Ref.",
                     )
+                }
             }
 
+        /**
+         * Converts any type node to a property definition.
+         * Dispatches to specialized converters based on node type.
+         */
         private fun convertNode(
             node: TypeNode,
             nullable: Boolean,
@@ -138,11 +195,7 @@ public class TypeGraphToJsonSchemaTransformer
                 is EnumNode -> convertEnum(node, nullable)
                 is ListNode -> convertList(node, nullable, graph)
                 is MapNode -> convertMap(node, nullable, graph)
-                else ->
-                    throw IllegalArgumentException(
-                        "Unsupported node type: ${node::class.simpleName}. " +
-                            "Expected one of: PrimitiveNode, ObjectNode, EnumNode, ListNode, MapNode.",
-                    )
+                is PolymorphicNode -> convertPolymorphic(node, nullable, graph)
             }
 
         private fun convertPrimitive(
@@ -150,42 +203,51 @@ public class TypeGraphToJsonSchemaTransformer
             nullable: Boolean,
         ): PropertyDefinition =
             when (node.kind) {
-                PrimitiveKind.STRING ->
+                PrimitiveKind.STRING -> {
                     StringPropertyDefinition(
                         type = listOf("string"),
                         description = null,
                         nullable = if (nullable) true else null,
                     )
+                }
 
-                PrimitiveKind.BOOLEAN ->
+                PrimitiveKind.BOOLEAN -> {
                     BooleanPropertyDefinition(
                         type = listOf("boolean"),
                         description = null,
                         nullable = if (nullable) true else null,
                     )
+                }
 
-                PrimitiveKind.INT ->
+                PrimitiveKind.INT -> {
                     NumericPropertyDefinition(
                         type = listOf("integer"),
                         description = null,
                         nullable = if (nullable) true else null,
                     )
+                }
 
-                PrimitiveKind.LONG ->
+                PrimitiveKind.LONG -> {
                     NumericPropertyDefinition(
                         type = listOf("integer"),
                         description = null,
                         nullable = if (nullable) true else null,
                     )
+                }
 
-                PrimitiveKind.FLOAT, PrimitiveKind.DOUBLE ->
+                PrimitiveKind.FLOAT, PrimitiveKind.DOUBLE -> {
                     NumericPropertyDefinition(
                         type = listOf("number"),
                         description = null,
                         nullable = if (nullable) true else null,
                     )
+                }
             }
 
+        /**
+         * Converts object nodes (classes, data classes) to object property definitions.
+         * Handles property mapping, required fields, and nullable optional properties based on config.
+         */
         private fun convertObject(
             node: ObjectNode,
             nullable: Boolean,
@@ -224,12 +286,16 @@ public class TypeGraphToJsonSchemaTransformer
                             config.treatNullableOptionalAsRequired && hasDefault && isNullable -> {
                                 addNullToTypeAndSetDefault(propertyDef)
                             }
+
                             // Property without default (required): remove nullable flag
                             !hasDefault -> {
                                 removeNullableFlag(propertyDef)
                             }
+
                             // Properties with defaults when config is false: keep as is
-                            else -> propertyDef
+                            else -> {
+                                propertyDef
+                            }
                         }
 
                     // Add the property description if available
@@ -255,37 +321,49 @@ public class TypeGraphToJsonSchemaTransformer
 
         private fun addNullToTypeAndSetDefault(propertyDef: PropertyDefinition): PropertyDefinition =
             when (propertyDef) {
-                is StringPropertyDefinition ->
+                is StringPropertyDefinition -> {
                     propertyDef.copy(
                         type = propertyDef.type + "null",
                         nullable = null,
                         default = null,
                     )
-                is NumericPropertyDefinition ->
+                }
+
+                is NumericPropertyDefinition -> {
                     propertyDef.copy(
                         type = propertyDef.type + "null",
                         nullable = null,
                         default = null,
                     )
-                is BooleanPropertyDefinition ->
+                }
+
+                is BooleanPropertyDefinition -> {
                     propertyDef.copy(
                         type = propertyDef.type + "null",
                         nullable = null,
                         default = null,
                     )
-                is ArrayPropertyDefinition ->
+                }
+
+                is ArrayPropertyDefinition -> {
                     propertyDef.copy(
                         type = propertyDef.type + "null",
                         nullable = null,
                         default = null,
                     )
-                is ObjectPropertyDefinition ->
+                }
+
+                is ObjectPropertyDefinition -> {
                     propertyDef.copy(
                         type = propertyDef.type + "null",
                         nullable = null,
                         default = null,
                     )
-                else -> propertyDef
+                }
+
+                else -> {
+                    propertyDef
+                }
             }
 
         private fun removeNullableFlag(propertyDef: PropertyDefinition): PropertyDefinition =
@@ -308,6 +386,8 @@ public class TypeGraphToJsonSchemaTransformer
                 is BooleanPropertyDefinition -> propertyDef.copy(description = description)
                 is ArrayPropertyDefinition -> propertyDef.copy(description = description)
                 is ObjectPropertyDefinition -> propertyDef.copy(description = description)
+                is AnyOfPropertyDefinition -> propertyDef.copy(description = description)
+                is OneOfPropertyDefinition -> propertyDef.copy(description = description)
                 else -> propertyDef
             }
 
@@ -352,5 +432,71 @@ public class TypeGraphToJsonSchemaTransformer
                 nullable = if (nullable) true else null,
                 additionalProperties = additionalPropertiesSchema,
             )
+        }
+
+        /**
+         * Converts sealed class hierarchies to JSON Schema oneOf with discriminator.
+         *
+         * Generates oneOf for each subtype with discriminator mapping. Nullable types are
+         * wrapped in anyOf with `null` option. The discriminator property itself is NOT added
+         * to subtype schemas - serialization layers (kotlinx.serialization) handle this.
+         *
+         * @param node Polymorphic node with subtypes and discriminator
+         * @param nullable Whether type reference is nullable
+         * @param graph Type graph with all definitions
+         * @return OneOfPropertyDefinition, or AnyOfPropertyDefinition if nullable
+         */
+        private fun convertPolymorphic(
+            node: PolymorphicNode,
+            nullable: Boolean,
+            graph: TypeGraph,
+        ): PropertyDefinition {
+            // Convert each subtype to a PropertyDefinition
+            val subtypeDefinitions =
+                node.subtypes.map { subtypeRef ->
+                    convertTypeRef(subtypeRef.ref, graph)
+                }
+
+            // Convert discriminator if present
+            val discriminator =
+                node.discriminator?.let { disc ->
+                    val mapping =
+                        disc.mapping?.mapValues { (_, typeId) ->
+                            // For the mapping, we need to provide the reference string
+                            // Typically this would be something like "#/definitions/ClassName"
+                            // For now, we'll use the typeId value
+                            typeId.value
+                        }
+                    Discriminator(
+                        propertyName = disc.name,
+                        mapping = mapping,
+                    )
+                }
+
+            val oneOfDef =
+                OneOfPropertyDefinition(
+                    oneOf = subtypeDefinitions,
+                    discriminator = discriminator,
+                    description = if (nullable) null else node.description, // Only set description if not nullable
+                )
+
+            // If nullable, wrap in anyOf with null option
+            // The description will be set at the anyOf level by setDescription in convertObject
+            return if (nullable) {
+                AnyOfPropertyDefinition(
+                    anyOf =
+                        listOf(
+                            oneOfDef,
+                            ObjectPropertyDefinition(
+                                type = listOf("null"),
+                                description = null,
+                                nullable = null,
+                            ),
+                        ),
+                    description = null, // Description will be set by setDescription
+                )
+            } else {
+                oneOfDef
+            }
         }
     }

@@ -1,4 +1,4 @@
-package kotlinx.schema.generator.json
+package kotlinx.schema.generator.reflect
 
 import io.kotest.assertions.json.shouldEqualJson
 import kotlinx.schema.Description
@@ -9,7 +9,7 @@ import kotlinx.serialization.json.Json
 import kotlin.reflect.KClass
 import kotlin.test.Test
 
-class ReflectionJsonSchemaGeneratorTest {
+class JsonSchemaGeneratorTest {
     @Suppress("unused")
     @Description("Available colors")
     enum class Color {
@@ -81,8 +81,6 @@ class ReflectionJsonSchemaGeneratorTest {
         }
         """
         val actualSchema = schema.encodeToString(json)
-        println("Expected schema = $expectedSchema")
-        println("Actual schema = $actualSchema")
 
         actualSchema shouldEqualJson expectedSchema
     }
@@ -145,8 +143,6 @@ class ReflectionJsonSchemaGeneratorTest {
         }
         """
         val actualSchema = schema.encodeToString(json)
-        println("Expected schema = $expectedSchema")
-        println("Actual schema = $actualSchema")
 
         actualSchema shouldEqualJson expectedSchema
     }
