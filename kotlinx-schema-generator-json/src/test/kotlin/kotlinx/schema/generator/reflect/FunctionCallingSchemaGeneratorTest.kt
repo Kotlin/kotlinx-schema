@@ -1,4 +1,4 @@
-package kotlinx.schema.generator.json
+package kotlinx.schema.generator.reflect
 
 import io.kotest.assertions.json.shouldEqualJson
 import kotlinx.schema.Description
@@ -7,7 +7,7 @@ import kotlinx.schema.json.FunctionCallingSchema
 import kotlin.reflect.KCallable
 import kotlin.test.Test
 
-class ReflectionFunctionCallingSchemaGeneratorTest {
+class FunctionCallingSchemaGeneratorTest {
     private val generator =
         requireNotNull(
             SchemaGeneratorService.getGenerator(

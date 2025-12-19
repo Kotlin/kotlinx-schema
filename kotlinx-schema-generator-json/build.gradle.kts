@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     kotlin("plugin.serialization") apply true
     `dokka-convention`
@@ -11,7 +13,6 @@ dokka {
 }
 
 kotlin {
-
     dependencies {
         // production dependencies
         api(libs.kotlinx.serialization.json)
@@ -26,6 +27,10 @@ kotlin {
     }
 
     compilerOptions {
-        optIn.set(listOf("kotlinx.serialization.ExperimentalSerializationApi"))
+        optIn.set(
+            listOf(
+                "kotlinx.serialization.ExperimentalSerializationApi",
+            ),
+        )
     }
 }

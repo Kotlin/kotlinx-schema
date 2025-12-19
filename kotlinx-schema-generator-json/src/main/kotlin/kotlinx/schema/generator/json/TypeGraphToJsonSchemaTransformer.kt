@@ -5,6 +5,7 @@ import kotlinx.schema.generator.core.ir.EnumNode
 import kotlinx.schema.generator.core.ir.ListNode
 import kotlinx.schema.generator.core.ir.MapNode
 import kotlinx.schema.generator.core.ir.ObjectNode
+import kotlinx.schema.generator.core.ir.PolymorphicNode
 import kotlinx.schema.generator.core.ir.PrimitiveKind
 import kotlinx.schema.generator.core.ir.PrimitiveNode
 import kotlinx.schema.generator.core.ir.TypeGraph
@@ -13,10 +14,12 @@ import kotlinx.schema.generator.core.ir.TypeNode
 import kotlinx.schema.generator.core.ir.TypeRef
 import kotlinx.schema.json.ArrayPropertyDefinition
 import kotlinx.schema.json.BooleanPropertyDefinition
+import kotlinx.schema.json.Discriminator
 import kotlinx.schema.json.JsonSchema
 import kotlinx.schema.json.JsonSchemaDefinition
 import kotlinx.schema.json.NumericPropertyDefinition
 import kotlinx.schema.json.ObjectPropertyDefinition
+import kotlinx.schema.json.OneOfPropertyDefinition
 import kotlinx.schema.json.PropertyDefinition
 import kotlinx.schema.json.StringPropertyDefinition
 import kotlinx.serialization.json.Json
@@ -71,6 +74,19 @@ public class TypeGraphToJsonSchemaTransformer
                             required = rootDefinition.required ?: emptyList(),
                             additionalProperties = rootDefinition.additionalProperties,
                             description = rootDefinition.description,
+                        )
+                    }
+
+                    is OneOfPropertyDefinition -> {
+                        // For polymorphic types, use oneOf at the schema definition level
+                        JsonSchemaDefinition(
+                            type = "object", // Keep type as object for compatibility
+                            properties = emptyMap(),
+                            required = emptyList(),
+                            additionalProperties = JsonPrimitive(false),
+                            description = rootDefinition.description,
+                            oneOf = rootDefinition.oneOf,
+                            discriminator = rootDefinition.discriminator,
                         )
                     }
 
@@ -138,10 +154,11 @@ public class TypeGraphToJsonSchemaTransformer
                 is EnumNode -> convertEnum(node, nullable)
                 is ListNode -> convertList(node, nullable, graph)
                 is MapNode -> convertMap(node, nullable, graph)
+                is PolymorphicNode -> convertPolymorphic(node, graph)
                 else ->
                     throw IllegalArgumentException(
                         "Unsupported node type: ${node::class.simpleName}. " +
-                            "Expected one of: PrimitiveNode, ObjectNode, EnumNode, ListNode, MapNode.",
+                            "Expected one of: PrimitiveNode, ObjectNode, EnumNode, ListNode, MapNode, PolymorphicNode.",
                     )
             }
 
@@ -351,6 +368,39 @@ public class TypeGraphToJsonSchemaTransformer
                 description = null,
                 nullable = if (nullable) true else null,
                 additionalProperties = additionalPropertiesSchema,
+            )
+        }
+
+        private fun convertPolymorphic(
+            node: PolymorphicNode,
+            graph: TypeGraph,
+        ): PropertyDefinition {
+            // Convert each subtype to a PropertyDefinition
+            val subtypeDefinitions =
+                node.subtypes.map { subtypeRef ->
+                    convertTypeRef(subtypeRef.ref, graph)
+                }
+
+            // Convert discriminator if present
+            val discriminator =
+                node.discriminator?.let { disc ->
+                    val mapping =
+                        disc.mapping?.mapValues { (_, typeId) ->
+                            // For the mapping, we need to provide the reference string
+                            // Typically this would be something like "#/definitions/ClassName"
+                            // For now, we'll use the typeId value
+                            typeId.value
+                        }
+                    Discriminator(
+                        propertyName = disc.name,
+                        mapping = mapping,
+                    )
+                }
+
+            return OneOfPropertyDefinition(
+                oneOf = subtypeDefinitions,
+                discriminator = discriminator,
+                description = node.description,
             )
         }
     }
