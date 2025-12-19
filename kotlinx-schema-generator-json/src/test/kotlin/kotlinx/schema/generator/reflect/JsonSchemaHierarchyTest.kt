@@ -117,4 +117,91 @@ class JsonSchemaHierarchyTest {
 
         actualSchema shouldEqualJson expectedSchema
     }
+
+    @Description("Container with nullable animal")
+    data class AnimalContainer(
+        @property:Description("Optional animal")
+        val animal: Animal?,
+    )
+
+    @Test
+    fun `Should generate schema for nullable sealed hierarchy`() {
+        val schema = generator.generateSchema(AnimalContainer::class)
+
+        // language=json
+        val expectedSchema = """
+        {
+            "name": "${AnimalContainer::class.qualifiedName}",
+            "strict": false,
+            "schema": {
+              "type": "object",
+              "description": "Container with nullable animal",
+              "properties": {
+                "animal": {
+                  "description": "Optional animal",
+                  "anyOf": [
+                    {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "description": "Represents a cat",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "color": {
+                              "type": "string",
+                              "description": "Cat's color"
+                            },
+                            "lives": {
+                              "type": "integer",
+                              "description": "Lives left"
+                            }
+                          },
+                          "required": ["name", "color"],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "description": "Represents a dog",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "breed": {
+                              "type": "string",
+                              "description": "Dog's breed"
+                            },
+                            "isTrained": {
+                              "type": "boolean",
+                              "description": "Trained or not"
+                            }
+                          },
+                          "required": ["name", "breed"],
+                          "additionalProperties": false
+                        }
+                      ],
+                      "discriminator": {
+                        "propertyName": "type",
+                        "mapping": {
+                          "Cat": "Cat",
+                          "Dog": "Dog"
+                        }
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": ["animal"],
+              "additionalProperties": false
+            }
+        }
+        """
+        val actualSchema = schema.encodeToString(json)
+
+        actualSchema shouldEqualJson expectedSchema
+    }
 }

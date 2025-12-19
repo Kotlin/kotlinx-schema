@@ -562,7 +562,7 @@ val generator = ReflectionFunctionCallingSchemaGenerator.Default
 val schema = generator.generateSchema(::searchUsers)
 ```
 
-This automatically generates a `FunctionCallingSchema` with the function name, description, 
+This automatically generates a `FunctionCallingSchema` with the function name, description,
 and properly typed parameters:
 
 ```json
@@ -591,3 +591,116 @@ and properly typed parameters:
     }
 }
 ```
+
+### Sealed Class Polymorphic Schema Generation
+
+The library automatically generates JSON schemas for Kotlin sealed class hierarchies using `oneOf` with discriminator support. This is perfect for representing polymorphic types in APIs and validation.
+
+#### Basic Sealed Class Example
+
+```kotlin
+import kotlinx.schema.Description
+import kotlinx.schema.generator.json.ReflectionClassJsonSchemaGenerator
+
+@Description("Represents an animal")
+sealed class Animal {
+    @Description("Animal's name")
+    abstract val name: String
+
+    @Description("Represents a dog")
+    data class Dog(
+        override val name: String,
+        @property:Description("Dog's breed")
+        val breed: String,
+        @property:Description("Whether the dog is trained")
+        val isTrained: Boolean = false
+    ) : Animal()
+
+    @Description("Represents a cat")
+    data class Cat(
+        override val name: String,
+        @property:Description("Cat's color")
+        val color: String,
+        @property:Description("Number of lives remaining")
+        val lives: Int = 9
+    ) : Animal()
+}
+
+val generator = ReflectionClassJsonSchemaGenerator.Default
+val schema = generator.generateSchema(Animal::class)
+```
+
+This generates a JSON schema with `oneOf` for the sealed hierarchy:
+
+```json
+{
+  "name": "Animal",
+  "strict": false,
+  "schema": {
+    "type": "object",
+    "description": "Represents an animal",
+    "additionalProperties": false,
+    "oneOf": [
+      {
+        "type": "object",
+        "description": "Represents a cat",
+        "properties": {
+          "name": { "type": "string" },
+          "color": {
+            "type": "string",
+            "description": "Cat's color"
+          },
+          "lives": {
+            "type": "integer",
+            "description": "Number of lives remaining"
+          }
+        },
+        "required": ["name", "color"],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "description": "Represents a dog",
+        "properties": {
+          "name": { "type": "string" },
+          "breed": {
+            "type": "string",
+            "description": "Dog's breed"
+          },
+          "isTrained": {
+            "type": "boolean",
+            "description": "Whether the dog is trained"
+          }
+        },
+        "required": ["name", "breed"],
+        "additionalProperties": false
+      }
+    ],
+    "discriminator": {
+      "propertyName": "type",
+      "mapping": {
+        "Cat": "Cat",
+        "Dog": "Dog"
+      }
+    }
+  }
+}
+```
+
+#### Key Features
+
+- **Automatic `oneOf` generation**: Each sealed subclass becomes an alternative in the `oneOf` array
+- **Discriminator support**: Automatically generates discriminator with explicit type mapping
+- **Property inheritance**: Properties from the sealed base class are included in each subtype
+- **Optional properties**: Properties with default values are correctly marked as optional
+- **Documentation**: `@Description` annotations are preserved in the schema
+- **Type safety**: Ensures each subtype has a unique schema structure
+
+#### Use Cases
+
+Sealed class schemas are ideal for:
+- **API payloads**: Representing different message or event types
+- **Configuration**: Defining different configuration variants
+- **State machines**: Modeling different states with specific properties
+- **Domain modeling**: Expressing algebraic data types in JSON Schema
+- **Validation**: Ensuring polymorphic data matches one of the allowed types
