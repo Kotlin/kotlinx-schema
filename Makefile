@@ -25,8 +25,11 @@ apidocs:
 .PHONY: clean
 clean:
 	@echo "🧹 Cleaning build artifacts..."
+	@./gradlew --stop
+	@rm -rf .gradle/configuration-cache
+	@rm -rf buildSrc/.gradle/configuration-cache
 	@rm -rf kotlin-js-store && ./gradlew clean
-	@(cd gradle-plugin-integration-tests && rm -rf kotlin-js-store && ./gradlew clean)
+	@(cd gradle-plugin-integration-tests && ./gradlew --stop && rm -rf .gradle/configuration-cache buildSrc/.gradle/configuration-cache kotlin-js-store && ./gradlew clean)
 	@echo "✅ Clean complete!"
 
 .PHONY: lint
