@@ -875,8 +875,8 @@ If multiple description annotations are present on the same element, the library
 
 ## JSON Schema DSL
 
-For manual schema construction, use the [**kotlinx-schema-json**](kotlinx-schema-json) module. 
-It provides type-safe Kotlin models and a DSL for building JSON Schema definitions programmatically, 
+For manual schema construction, use the [**kotlinx-schema-json**](kotlinx-schema-json) module.
+It provides type-safe Kotlin models and a DSL for building JSON Schema definitions programmatically,
 with full kotlinx-serialization support.
 
 ```kotlin
@@ -885,7 +885,7 @@ dependencies {
 }
 ```
 
-Example:
+**Quick Example:**
 
 ```kotlin
 val schema = jsonSchema {
@@ -899,46 +899,37 @@ val schema = jsonSchema {
             required = true
             string { format = "email" }
         }
-        property("age") {
-            integer { minimum = 0.0 }
+        // Polymorphic types with discriminators
+        property("role") {
+            oneOf {
+                discriminator(propertyName = "type") {
+                    "admin" mappedTo "#/definitions/AdminRole"
+                    "user" mappedTo {
+                        property("type") { string { constValue = "user" } }
+                        property("permissions") { array { ofString() } }
+                    }
+                }
+            }
         }
     }
 }
-
-// Serialize to JSON
-val jsonString = Json.encodeToString(schema)
-println(jsonString)
-```
-The result will be the following JSON Schema string:
-```json
-{
-    "name": "User",
-    "strict": false,
-    "schema": {
-        "type": "object",
-        "properties": {
-            "id": {
-                "type": "string",
-                "format": "uuid"
-            },
-            "email": {
-                "type": "string",
-                "format": "email"
-            },
-            "age": {
-                "type": "integer",
-                "minimum": 0.0
-            }
-        },
-        "required": [
-            "id",
-            "email"
-        ]
-    }
-}
 ```
 
-See [kotlinx-schema-json/README.md](kotlinx-schema-json/README.md) for full documentation and examples.
+**Features:**
+- ✅ Type-safe property definitions (string, number, integer, boolean, array, object, reference)
+- ✅ **Polymorphism**: oneOf, anyOf, allOf with elegant discriminator support
+- ✅ Constraints: required, nullable, enum, const, min/max, format validation
+- ✅ Nested schemas and arrays of complex types
+- ✅ Full kotlinx-serialization integration
+- ✅ Kotlin Multiplatform support
+
+**📖 See [kotlinx-schema-json/README.md](kotlinx-schema-json/README.md) for comprehensive documentation** including:
+- Complete DSL reference and API overview
+- Polymorphism patterns (oneOf, anyOf, allOf)
+- Discriminator usage with references and inline schemas
+- Working with nested objects and arrays
+- Serialization/deserialization examples
+- Function calling schema for LLM APIs
 
 ## Project architecture
 
@@ -957,7 +948,6 @@ C4Context
         System(kxsGradle, "kotlinx-schema-gradle-plugin")
     }
 
-
     Rel(kxsGenJson, kxsGenCore, "uses")
     Rel(kxsGenJson, kxsJsn, "uses")
     Rel(kxsGenCore, kxsAnnotations, "knows")
@@ -973,7 +963,7 @@ C4Context
 
     Rel(userModels, kxsAnnotations, "uses")
     Rel(kxsKsp, userModelsExt, "generates")
-
+    
 ```
 
 Top-level modules you might interact with:

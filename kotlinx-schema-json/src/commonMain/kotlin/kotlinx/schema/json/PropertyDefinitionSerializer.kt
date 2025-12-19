@@ -27,6 +27,28 @@ public class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
 
         val json = decoder.json
 
+        // Check for polymorphic composition types first (they take precedence)
+        if (jsonElement.containsKey("oneOf")) {
+            return json.decodeFromJsonElement(
+                OneOfPropertyDefinition.serializer(),
+                jsonElement,
+            )
+        }
+
+        if (jsonElement.containsKey("anyOf")) {
+            return json.decodeFromJsonElement(
+                AnyOfPropertyDefinition.serializer(),
+                jsonElement,
+            )
+        }
+
+        if (jsonElement.containsKey("allOf")) {
+            return json.decodeFromJsonElement(
+                AllOfPropertyDefinition.serializer(),
+                jsonElement,
+            )
+        }
+
         // Check if it's a reference
         if (jsonElement.containsKey($$"$ref")) {
             return json.decodeFromJsonElement(
@@ -161,6 +183,24 @@ public class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
             is BooleanPropertyDefinition ->
                 jsonEncoder.encodeSerializableValue(
                     BooleanPropertyDefinition.serializer(),
+                    value,
+                )
+
+            is OneOfPropertyDefinition ->
+                jsonEncoder.encodeSerializableValue(
+                    OneOfPropertyDefinition.serializer(),
+                    value,
+                )
+
+            is AnyOfPropertyDefinition ->
+                jsonEncoder.encodeSerializableValue(
+                    AnyOfPropertyDefinition.serializer(),
+                    value,
+                )
+
+            is AllOfPropertyDefinition ->
+                jsonEncoder.encodeSerializableValue(
+                    AllOfPropertyDefinition.serializer(),
                     value,
                 )
         }

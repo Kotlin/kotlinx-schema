@@ -211,3 +211,81 @@ public data class BooleanPropertyDefinition(
 public data class ReferencePropertyDefinition(
     @SerialName($$"$ref") val ref: String,
 ) : PropertyDefinition
+
+/**
+ * Represents a discriminator for polymorphic schemas.
+ *
+ * The discriminator is used with oneOf to efficiently determine which schema applies
+ * based on a property value in the instance data.
+ *
+ * @property propertyName The name of the property that holds the discriminator value
+ * @property mapping Optional explicit mapping from discriminator values to schema references.
+ *                   If null, implicit mapping is used (discriminator value matches schema name)
+ *
+ * @see <a href="https://spec.openapis.org/oas/v3.1.0#discriminator-object">
+ *     OpenAPI Discriminator Object</a>
+ */
+@Serializable
+public data class Discriminator(
+    val propertyName: String,
+    val mapping: Map<String, String>? = null,
+)
+
+/**
+ * Represents a oneOf schema composition.
+ *
+ * Validates that the instance matches exactly one of the provided schemas.
+ * Commonly used for polymorphic types with mutually exclusive alternatives.
+ *
+ * @property oneOf List of property definitions representing the alternatives.
+ *                 Must contain at least 2 options.
+ * @property discriminator Optional discriminator to efficiently determine which schema applies
+ * @property description Optional description of the property
+ *
+ * @see <a href="https://json-schema.org/understanding-json-schema/reference/combining.html#oneOf">
+ *     JSON Schema oneOf</a>
+ */
+@Serializable
+public data class OneOfPropertyDefinition(
+    val oneOf: List<PropertyDefinition>,
+    val discriminator: Discriminator? = null,
+    val description: String? = null,
+) : PropertyDefinition
+
+/**
+ * Represents an anyOf schema composition.
+ *
+ * Validates that the instance matches one or more of the provided schemas.
+ * Unlike oneOf, the instance can match multiple schemas simultaneously.
+ *
+ * @property anyOf List of property definitions representing the alternatives.
+ *                 Must contain at least 2 options.
+ * @property description Optional description of the property
+ *
+ * @see <a href="https://json-schema.org/understanding-json-schema/reference/combining.html#anyOf">
+ *     JSON Schema anyOf</a>
+ */
+@Serializable
+public data class AnyOfPropertyDefinition(
+    val anyOf: List<PropertyDefinition>,
+    val description: String? = null,
+) : PropertyDefinition
+
+/**
+ * Represents an allOf schema composition.
+ *
+ * Validates that the instance matches all of the provided schemas.
+ * Commonly used for schema composition and inheritance patterns.
+ *
+ * @property allOf List of property definitions that must all be satisfied.
+ *                 Must contain at least 1 schema.
+ * @property description Optional description of the property
+ *
+ * @see <a href="https://json-schema.org/understanding-json-schema/reference/combining.html#allOf">
+ *     JSON Schema allOf</a>
+ */
+@Serializable
+public data class AllOfPropertyDefinition(
+    val allOf: List<PropertyDefinition>,
+    val description: String? = null,
+) : PropertyDefinition

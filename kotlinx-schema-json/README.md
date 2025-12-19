@@ -9,6 +9,7 @@ support.
 - **Kotlin DSL** for declarative schema construction
 - **Kotlinx Serialization** integration for JSON serialization/deserialization
 - **Property types**: string, number, integer, boolean, array, object, reference
+- **Polymorphism**: `oneOf`, `anyOf`, `allOf` with discriminator support for elegant type unions
 - **Constraints**: required fields, additional properties, min/max, enum, const, nullable
 - **Nested schemas** with full object and array support
 
@@ -261,6 +262,172 @@ val productSchema = jsonSchema {
 }
 ```
 
+### Polymorphism with oneOf, anyOf, allOf
+
+JSON Schema supports polymorphic types through composition keywords. These enable flexible type definitions where a value can match one or more schemas.
+
+#### oneOf - Exactly One Match
+
+Use `oneOf` when a value must match exactly one of the provided schemas:
+
+```kotlin
+val schema = jsonSchema {
+    name = "FlexibleValue"
+    schema {
+        property("value") {
+            required = true
+            oneOf {
+                description = "String or number"
+                string { minLength = 1 }
+                number { minimum = 0.0 }
+            }
+        }
+    }
+}
+```
+
+#### anyOf - One or More Matches
+
+Use `anyOf` when a value must match at least one of the provided schemas:
+
+```kotlin
+val schema = jsonSchema {
+    name = "IdSchema"
+    schema {
+        property("id") {
+            required = true
+            anyOf {
+                description = "UUID or integer ID"
+                string { format = "uuid" }
+                integer { minimum = 1.0 }
+            }
+        }
+    }
+}
+```
+
+#### allOf - All Must Match
+
+Use `allOf` for schema composition where a value must match all provided schemas:
+
+```kotlin
+val schema = jsonSchema {
+    name = "AdminUserSchema"
+    schema {
+        property("user") {
+            required = true
+            allOf {
+                description = "Admin user extends base user"
+                reference("#/definitions/BaseUser")
+                obj {
+                    property("role") {
+                        required = true
+                        string { enum = listOf("admin", "superadmin") }
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+#### Discriminators for Efficient Type Resolution
+
+Discriminators enable efficient polymorphic type resolution by specifying which property determines the schema to use. The DSL provides two elegant forms:
+
+**Form 1: References with discriminator mapping**
+
+```kotlin
+val schema = jsonSchema {
+    name = "PetSchema"
+    schema {
+        property("pet") {
+            required = true
+            oneOf {
+                discriminator(propertyName = "petType") {
+                    "dog" mappedTo "#/definitions/Dog"
+                    "cat" mappedTo "#/definitions/Cat"
+                }
+                // Both mapping and references added automatically!
+            }
+        }
+    }
+}
+```
+
+**Form 2: Inline schemas (concise)**
+
+```kotlin
+val schema = jsonSchema {
+    name = "PaymentSchema"
+    schema {
+        property("payment") {
+            required = true
+            oneOf {
+                discriminator(propertyName = "type") {
+                    "credit_card" mappedTo {
+                        property("type") {
+                            required = true
+                            string { constValue = "credit_card" }
+                        }
+                        property("cardNumber") {
+                            required = true
+                            string()
+                        }
+                    }
+                    "paypal" mappedTo {
+                        property("type") {
+                            required = true
+                            string { constValue = "paypal" }
+                        }
+                        property("email") {
+                            required = true
+                            string { format = "email" }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+**Mixing references and inline schemas:**
+
+```kotlin
+oneOf {
+    discriminator(propertyName = "kind") {
+        "external" mappedTo "#/definitions/ExternalType"  // Reference
+        "inline" mappedTo {                               // Inline schema
+            property("kind") { string { constValue = "inline" } }
+            property("data") { string() }
+        }
+    }
+}
+```
+
+The `mappedTo` infix operator automatically:
+- **For references**: Adds entry to discriminator mapping AND adds reference to oneOf options
+- **For inline schemas**: Adds schema to oneOf options (no explicit mapping needed)
+
+This eliminates duplication - you only specify each mapping once!
+
+#### Nested Polymorphism
+
+Polymorphic types can be nested inside each other:
+
+```kotlin
+property("complex") {
+    allOf {
+        reference("#/definitions/Base")
+        oneOf {
+            string { description = "String variant" }
+            integer { description = "Integer variant" }
+        }
+    }
+}
+```
+
 ## API Overview
 
 ### Property Types
@@ -272,6 +439,9 @@ val productSchema = jsonSchema {
 - `array { }` - Array properties with `items` definition
 - `obj { }` - Nested object properties
 - `reference(ref)` - Schema references (`$ref`)
+- `oneOf { }` - Exactly one schema must match (with optional discriminator)
+- `anyOf { }` - One or more schemas must match
+- `allOf { }` - All schemas must match
 
 ### Constraints
 
