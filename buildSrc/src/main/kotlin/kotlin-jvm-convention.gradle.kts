@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -6,6 +7,12 @@ plugins {
 
 kotlin {
 
+    @OptIn(org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation::class)
+    abiValidation {
+        // Use the set() function to ensure compatibility with older Gradle versions
+        enabled.set(true)
+    }
+
     jvmToolchain(17)
 
     explicitApi()
@@ -13,7 +20,10 @@ kotlin {
     compilerOptions {
         jvmTarget = JvmTarget.JVM_17
         javaParameters = true
-        freeCompilerArgs.addAll("-Xdebug")
+        jvmDefault = JvmDefaultMode.ENABLE
+        freeCompilerArgs.addAll(
+            "-Xdebug",
+        )
     }
 }
 

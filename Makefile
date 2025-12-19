@@ -11,8 +11,8 @@ build:clean
 .PHONY: test
 test:
 	@echo "🧪 Running tests..."
+	@./gradlew check --rerun-tasks
 	@(cd gradle-plugin-integration-tests && ./gradlew allTest --rerun-tasks)
-	@./gradlew allTest --rerun-tasks
 	@echo "✅ Tests complete!"
 
 .PHONY: apidocs

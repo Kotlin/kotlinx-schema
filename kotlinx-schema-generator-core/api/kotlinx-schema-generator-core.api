@@ -1,0 +1,278 @@
+public abstract class kotlinx/schema/generator/core/AbstractSchemaGenerator : kotlinx/schema/generator/core/SchemaGenerator {
+	public fun <init> (Lkotlinx/schema/generator/core/ir/SchemaIntrospector;Lkotlinx/schema/generator/core/ir/TypeGraphTransformer;)V
+	public fun generateSchema (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun generateSchemaString (Ljava/lang/Object;)Ljava/lang/String;
+	protected final fun getIntrospector ()Lkotlinx/schema/generator/core/ir/SchemaIntrospector;
+	protected abstract fun getRootName (Ljava/lang/Object;)Ljava/lang/String;
+	protected final fun getTypeGraphTransformer ()Lkotlinx/schema/generator/core/ir/TypeGraphTransformer;
+}
+
+public abstract interface class kotlinx/schema/generator/core/SchemaGenerator {
+	public abstract fun encodeToString (Ljava/lang/Object;)Ljava/lang/String;
+	public abstract fun generateSchema (Ljava/lang/Object;)Ljava/lang/Object;
+	public abstract fun generateSchemaString (Ljava/lang/Object;)Ljava/lang/String;
+	public abstract fun schemaType ()Lkotlin/reflect/KClass;
+	public abstract fun targetType ()Lkotlin/reflect/KClass;
+}
+
+public final class kotlinx/schema/generator/core/SchemaGeneratorService {
+	public static final field INSTANCE Lkotlinx/schema/generator/core/SchemaGeneratorService;
+	public final fun getGenerator (Lkotlin/reflect/KClass;Lkotlin/reflect/KClass;)Lkotlinx/schema/generator/core/SchemaGenerator;
+	public static synthetic fun getGenerator$default (Lkotlinx/schema/generator/core/SchemaGeneratorService;Lkotlin/reflect/KClass;Lkotlin/reflect/KClass;ILjava/lang/Object;)Lkotlinx/schema/generator/core/SchemaGenerator;
+	public final fun registeredGenerators ()Ljava/util/Collection;
+}
+
+public final class kotlinx/schema/generator/core/ir/DefaultPresence : java/lang/Enum {
+	public static final field Absent Lkotlinx/schema/generator/core/ir/DefaultPresence;
+	public static final field HasDefault Lkotlinx/schema/generator/core/ir/DefaultPresence;
+	public static final field Required Lkotlinx/schema/generator/core/ir/DefaultPresence;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lkotlinx/schema/generator/core/ir/DefaultPresence;
+	public static fun values ()[Lkotlinx/schema/generator/core/ir/DefaultPresence;
+}
+
+public final class kotlinx/schema/generator/core/ir/Discriminator {
+	public fun <init> (Ljava/lang/String;ZLjava/util/Map;)V
+	public synthetic fun <init> (Ljava/lang/String;ZLjava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Z
+	public final fun component3 ()Ljava/util/Map;
+	public final fun copy (Ljava/lang/String;ZLjava/util/Map;)Lkotlinx/schema/generator/core/ir/Discriminator;
+	public static synthetic fun copy$default (Lkotlinx/schema/generator/core/ir/Discriminator;Ljava/lang/String;ZLjava/util/Map;ILjava/lang/Object;)Lkotlinx/schema/generator/core/ir/Discriminator;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getMapping ()Ljava/util/Map;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getRequired ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class kotlinx/schema/generator/core/ir/EnumNode : kotlinx/schema/generator/core/ir/TypeNode {
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/util/List;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/util/List;Ljava/lang/String;)Lkotlinx/schema/generator/core/ir/EnumNode;
+	public static synthetic fun copy$default (Lkotlinx/schema/generator/core/ir/EnumNode;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;ILjava/lang/Object;)Lkotlinx/schema/generator/core/ir/EnumNode;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getDescription ()Ljava/lang/String;
+	public final fun getEntries ()Ljava/util/List;
+	public final fun getName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class kotlinx/schema/generator/core/ir/Introspections {
+	public static final field INSTANCE Lkotlinx/schema/generator/core/ir/Introspections;
+	public static final fun getDescriptionFromAnnotation (Ljava/lang/String;Ljava/util/List;)Ljava/lang/String;
+}
+
+public final class kotlinx/schema/generator/core/ir/ListNode : kotlinx/schema/generator/core/ir/TypeNode {
+	public fun <init> (Lkotlinx/schema/generator/core/ir/TypeRef;Ljava/lang/String;)V
+	public synthetic fun <init> (Lkotlinx/schema/generator/core/ir/TypeRef;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lkotlinx/schema/generator/core/ir/TypeRef;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Lkotlinx/schema/generator/core/ir/TypeRef;Ljava/lang/String;)Lkotlinx/schema/generator/core/ir/ListNode;
+	public static synthetic fun copy$default (Lkotlinx/schema/generator/core/ir/ListNode;Lkotlinx/schema/generator/core/ir/TypeRef;Ljava/lang/String;ILjava/lang/Object;)Lkotlinx/schema/generator/core/ir/ListNode;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getDescription ()Ljava/lang/String;
+	public final fun getElement ()Lkotlinx/schema/generator/core/ir/TypeRef;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class kotlinx/schema/generator/core/ir/MapNode : kotlinx/schema/generator/core/ir/TypeNode {
+	public fun <init> (Lkotlinx/schema/generator/core/ir/TypeRef;Lkotlinx/schema/generator/core/ir/TypeRef;Ljava/lang/String;)V
+	public synthetic fun <init> (Lkotlinx/schema/generator/core/ir/TypeRef;Lkotlinx/schema/generator/core/ir/TypeRef;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lkotlinx/schema/generator/core/ir/TypeRef;
+	public final fun component2 ()Lkotlinx/schema/generator/core/ir/TypeRef;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (Lkotlinx/schema/generator/core/ir/TypeRef;Lkotlinx/schema/generator/core/ir/TypeRef;Ljava/lang/String;)Lkotlinx/schema/generator/core/ir/MapNode;
+	public static synthetic fun copy$default (Lkotlinx/schema/generator/core/ir/MapNode;Lkotlinx/schema/generator/core/ir/TypeRef;Lkotlinx/schema/generator/core/ir/TypeRef;Ljava/lang/String;ILjava/lang/Object;)Lkotlinx/schema/generator/core/ir/MapNode;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getDescription ()Ljava/lang/String;
+	public final fun getKey ()Lkotlinx/schema/generator/core/ir/TypeRef;
+	public final fun getValue ()Lkotlinx/schema/generator/core/ir/TypeRef;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class kotlinx/schema/generator/core/ir/ObjectNode : kotlinx/schema/generator/core/ir/TypeNode {
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/Set;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/util/Set;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/util/List;
+	public final fun component3 ()Ljava/util/Set;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/util/List;Ljava/util/Set;Ljava/lang/String;)Lkotlinx/schema/generator/core/ir/ObjectNode;
+	public static synthetic fun copy$default (Lkotlinx/schema/generator/core/ir/ObjectNode;Ljava/lang/String;Ljava/util/List;Ljava/util/Set;Ljava/lang/String;ILjava/lang/Object;)Lkotlinx/schema/generator/core/ir/ObjectNode;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getDescription ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getProperties ()Ljava/util/List;
+	public final fun getRequired ()Ljava/util/Set;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class kotlinx/schema/generator/core/ir/PolymorphicNode : kotlinx/schema/generator/core/ir/TypeNode {
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Lkotlinx/schema/generator/core/ir/Discriminator;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;Lkotlinx/schema/generator/core/ir/Discriminator;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/util/List;
+	public final fun component3 ()Lkotlinx/schema/generator/core/ir/Discriminator;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/util/List;Lkotlinx/schema/generator/core/ir/Discriminator;Ljava/lang/String;)Lkotlinx/schema/generator/core/ir/PolymorphicNode;
+	public static synthetic fun copy$default (Lkotlinx/schema/generator/core/ir/PolymorphicNode;Ljava/lang/String;Ljava/util/List;Lkotlinx/schema/generator/core/ir/Discriminator;Ljava/lang/String;ILjava/lang/Object;)Lkotlinx/schema/generator/core/ir/PolymorphicNode;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBaseName ()Ljava/lang/String;
+	public fun getDescription ()Ljava/lang/String;
+	public final fun getDiscriminator ()Lkotlinx/schema/generator/core/ir/Discriminator;
+	public final fun getSubtypes ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class kotlinx/schema/generator/core/ir/PrimitiveKind : java/lang/Enum {
+	public static final field BOOLEAN Lkotlinx/schema/generator/core/ir/PrimitiveKind;
+	public static final field DOUBLE Lkotlinx/schema/generator/core/ir/PrimitiveKind;
+	public static final field FLOAT Lkotlinx/schema/generator/core/ir/PrimitiveKind;
+	public static final field INT Lkotlinx/schema/generator/core/ir/PrimitiveKind;
+	public static final field LONG Lkotlinx/schema/generator/core/ir/PrimitiveKind;
+	public static final field STRING Lkotlinx/schema/generator/core/ir/PrimitiveKind;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lkotlinx/schema/generator/core/ir/PrimitiveKind;
+	public static fun values ()[Lkotlinx/schema/generator/core/ir/PrimitiveKind;
+}
+
+public final class kotlinx/schema/generator/core/ir/PrimitiveNode : kotlinx/schema/generator/core/ir/TypeNode {
+	public fun <init> (Lkotlinx/schema/generator/core/ir/PrimitiveKind;Ljava/lang/String;)V
+	public synthetic fun <init> (Lkotlinx/schema/generator/core/ir/PrimitiveKind;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lkotlinx/schema/generator/core/ir/PrimitiveKind;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Lkotlinx/schema/generator/core/ir/PrimitiveKind;Ljava/lang/String;)Lkotlinx/schema/generator/core/ir/PrimitiveNode;
+	public static synthetic fun copy$default (Lkotlinx/schema/generator/core/ir/PrimitiveNode;Lkotlinx/schema/generator/core/ir/PrimitiveKind;Ljava/lang/String;ILjava/lang/Object;)Lkotlinx/schema/generator/core/ir/PrimitiveNode;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getDescription ()Ljava/lang/String;
+	public final fun getKind ()Lkotlinx/schema/generator/core/ir/PrimitiveKind;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class kotlinx/schema/generator/core/ir/Property {
+	public fun <init> (Ljava/lang/String;Lkotlinx/schema/generator/core/ir/TypeRef;Ljava/lang/String;ZLkotlinx/schema/generator/core/ir/DefaultPresence;Ljava/util/Map;)V
+	public synthetic fun <init> (Ljava/lang/String;Lkotlinx/schema/generator/core/ir/TypeRef;Ljava/lang/String;ZLkotlinx/schema/generator/core/ir/DefaultPresence;Ljava/util/Map;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Lkotlinx/schema/generator/core/ir/TypeRef;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Z
+	public final fun component5 ()Lkotlinx/schema/generator/core/ir/DefaultPresence;
+	public final fun component6 ()Ljava/util/Map;
+	public final fun copy (Ljava/lang/String;Lkotlinx/schema/generator/core/ir/TypeRef;Ljava/lang/String;ZLkotlinx/schema/generator/core/ir/DefaultPresence;Ljava/util/Map;)Lkotlinx/schema/generator/core/ir/Property;
+	public static synthetic fun copy$default (Lkotlinx/schema/generator/core/ir/Property;Ljava/lang/String;Lkotlinx/schema/generator/core/ir/TypeRef;Ljava/lang/String;ZLkotlinx/schema/generator/core/ir/DefaultPresence;Ljava/util/Map;ILjava/lang/Object;)Lkotlinx/schema/generator/core/ir/Property;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAnnotations ()Ljava/util/Map;
+	public final fun getDefaultPresence ()Lkotlinx/schema/generator/core/ir/DefaultPresence;
+	public final fun getDeprecated ()Z
+	public final fun getDescription ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getType ()Lkotlinx/schema/generator/core/ir/TypeRef;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class kotlinx/schema/generator/core/ir/SchemaIntrospector {
+	public abstract fun introspect (Ljava/lang/Object;)Lkotlinx/schema/generator/core/ir/TypeGraph;
+}
+
+public final class kotlinx/schema/generator/core/ir/SubtypeRef {
+	public fun <init> (Lkotlinx/schema/generator/core/ir/TypeId;Lkotlinx/schema/generator/core/ir/TypeRef$Ref;)V
+	public synthetic fun <init> (Lkotlinx/schema/generator/core/ir/TypeId;Lkotlinx/schema/generator/core/ir/TypeRef$Ref;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lkotlinx/schema/generator/core/ir/TypeId;
+	public final fun component2 ()Lkotlinx/schema/generator/core/ir/TypeRef$Ref;
+	public final fun copy (Lkotlinx/schema/generator/core/ir/TypeId;Lkotlinx/schema/generator/core/ir/TypeRef$Ref;)Lkotlinx/schema/generator/core/ir/SubtypeRef;
+	public static synthetic fun copy$default (Lkotlinx/schema/generator/core/ir/SubtypeRef;Lkotlinx/schema/generator/core/ir/TypeId;Lkotlinx/schema/generator/core/ir/TypeRef$Ref;ILjava/lang/Object;)Lkotlinx/schema/generator/core/ir/SubtypeRef;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getId ()Lkotlinx/schema/generator/core/ir/TypeId;
+	public final fun getRef ()Lkotlinx/schema/generator/core/ir/TypeRef$Ref;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class kotlinx/schema/generator/core/ir/TypeGraph {
+	public fun <init> (Lkotlinx/schema/generator/core/ir/TypeRef;Ljava/util/Map;)V
+	public final fun component1 ()Lkotlinx/schema/generator/core/ir/TypeRef;
+	public final fun component2 ()Ljava/util/Map;
+	public final fun copy (Lkotlinx/schema/generator/core/ir/TypeRef;Ljava/util/Map;)Lkotlinx/schema/generator/core/ir/TypeGraph;
+	public static synthetic fun copy$default (Lkotlinx/schema/generator/core/ir/TypeGraph;Lkotlinx/schema/generator/core/ir/TypeRef;Ljava/util/Map;ILjava/lang/Object;)Lkotlinx/schema/generator/core/ir/TypeGraph;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getNodes ()Ljava/util/Map;
+	public final fun getRoot ()Lkotlinx/schema/generator/core/ir/TypeRef;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class kotlinx/schema/generator/core/ir/TypeGraphTransformer {
+	public abstract fun transform (Lkotlinx/schema/generator/core/ir/TypeGraph;Ljava/lang/String;)Ljava/lang/Object;
+}
+
+public final class kotlinx/schema/generator/core/ir/TypeId {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Lkotlinx/schema/generator/core/ir/TypeId;
+	public static synthetic fun copy$default (Lkotlinx/schema/generator/core/ir/TypeId;Ljava/lang/String;ILjava/lang/Object;)Lkotlinx/schema/generator/core/ir/TypeId;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class kotlinx/schema/generator/core/ir/TypeNode {
+	public abstract fun getDescription ()Ljava/lang/String;
+}
+
+public abstract interface class kotlinx/schema/generator/core/ir/TypeRef {
+	public abstract fun getNullable ()Z
+}
+
+public final class kotlinx/schema/generator/core/ir/TypeRef$Inline : kotlinx/schema/generator/core/ir/TypeRef {
+	public fun <init> (Lkotlinx/schema/generator/core/ir/TypeNode;Z)V
+	public synthetic fun <init> (Lkotlinx/schema/generator/core/ir/TypeNode;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lkotlinx/schema/generator/core/ir/TypeNode;
+	public final fun component2 ()Z
+	public final fun copy (Lkotlinx/schema/generator/core/ir/TypeNode;Z)Lkotlinx/schema/generator/core/ir/TypeRef$Inline;
+	public static synthetic fun copy$default (Lkotlinx/schema/generator/core/ir/TypeRef$Inline;Lkotlinx/schema/generator/core/ir/TypeNode;ZILjava/lang/Object;)Lkotlinx/schema/generator/core/ir/TypeRef$Inline;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getNode ()Lkotlinx/schema/generator/core/ir/TypeNode;
+	public fun getNullable ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class kotlinx/schema/generator/core/ir/TypeRef$Ref : kotlinx/schema/generator/core/ir/TypeRef {
+	public fun <init> (Lkotlinx/schema/generator/core/ir/TypeId;Z)V
+	public synthetic fun <init> (Lkotlinx/schema/generator/core/ir/TypeId;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lkotlinx/schema/generator/core/ir/TypeId;
+	public final fun component2 ()Z
+	public final fun copy (Lkotlinx/schema/generator/core/ir/TypeId;Z)Lkotlinx/schema/generator/core/ir/TypeRef$Ref;
+	public static synthetic fun copy$default (Lkotlinx/schema/generator/core/ir/TypeRef$Ref;Lkotlinx/schema/generator/core/ir/TypeId;ZILjava/lang/Object;)Lkotlinx/schema/generator/core/ir/TypeRef$Ref;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getId ()Lkotlinx/schema/generator/core/ir/TypeId;
+	public fun getNullable ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class kotlinx/schema/generator/reflect/ReflectionFunctionIntrospector : kotlinx/schema/generator/core/ir/SchemaIntrospector {
+	public static final field INSTANCE Lkotlinx/schema/generator/reflect/ReflectionFunctionIntrospector;
+	public synthetic fun introspect (Ljava/lang/Object;)Lkotlinx/schema/generator/core/ir/TypeGraph;
+	public fun introspect (Lkotlin/reflect/KCallable;)Lkotlinx/schema/generator/core/ir/TypeGraph;
+}
+
+public final class kotlinx/schema/generator/reflect/ReflectionIntrospector : kotlinx/schema/generator/core/ir/SchemaIntrospector {
+	public static final field INSTANCE Lkotlinx/schema/generator/reflect/ReflectionIntrospector;
+	public synthetic fun introspect (Ljava/lang/Object;)Lkotlinx/schema/generator/core/ir/TypeGraph;
+	public fun introspect (Lkotlin/reflect/KClass;)Lkotlinx/schema/generator/core/ir/TypeGraph;
+}
+
