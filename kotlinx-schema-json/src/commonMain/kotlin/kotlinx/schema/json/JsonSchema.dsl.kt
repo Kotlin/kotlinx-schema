@@ -246,14 +246,24 @@ public class JsonSchemaDefinitionBuilder {
         set(value) {
             _additionalProperties =
                 when (value) {
-                    is JsonObject -> value
-                    is Boolean -> JsonPrimitive(value)
-                    null -> null
-                    else ->
+                    is JsonObject -> {
+                        value
+                    }
+
+                    is Boolean -> {
+                        JsonPrimitive(value)
+                    }
+
+                    null -> {
+                        null
+                    }
+
+                    else -> {
                         error(
                             "additionalProperties  must be Boolean, JsonElement, or null, " +
                                 "but got: ${value::class.simpleName}",
                         )
+                    }
                 }
         }
 
@@ -505,6 +515,117 @@ public class PropertyBuilder {
      * @return A configured [ReferencePropertyDefinition]
      */
     public fun reference(ref: String): ReferencePropertyDefinition = ReferencePropertyDefinition(ref)
+
+    /**
+     * Creates a oneOf property definition.
+     *
+     * Validates that the value matches exactly one of the provided schemas.
+     * Useful for polymorphic types with mutually exclusive alternatives.
+     *
+     * ## Example - Simple oneOf
+     * ```kotlin
+     * property("payment") {
+     *     oneOf {
+     *         obj {
+     *             property("type") {
+     *                 required = true
+     *                 string { constValue = "credit_card" }
+     *             }
+     *             property("cardNumber") {
+     *                 required = true
+     *                 string()
+     *             }
+     *         }
+     *         obj {
+     *             property("type") {
+     *                 required = true
+     *                 string { constValue = "paypal" }
+     *             }
+     *             property("email") {
+     *                 required = true
+     *                 string { format = "email" }
+     *             }
+     *         }
+     *     }
+     * }
+     * ```
+     *
+     * ## Example - oneOf with Discriminator
+     * ```kotlin
+     * property("shape") {
+     *     oneOf {
+     *         description = "A geometric shape"
+     *         discriminator("type") {
+     *             mapping = mapOf(
+     *                 "circle" to "#/definitions/Circle",
+     *                 "rectangle" to "#/definitions/Rectangle"
+     *             )
+     *         }
+     *         reference("#/definitions/Circle")
+     *         reference("#/definitions/Rectangle")
+     *     }
+     * }
+     * ```
+     *
+     * @param block Configuration for the oneOf property
+     * @return A configured [OneOfPropertyDefinition]
+     * @see OneOfPropertyBuilder
+     */
+    public fun oneOf(block: OneOfPropertyBuilder.() -> Unit = {}): OneOfPropertyDefinition =
+        OneOfPropertyBuilder().apply(block).build()
+
+    /**
+     * Creates an anyOf property definition.
+     *
+     * Validates that the value matches one or more of the provided schemas.
+     * Unlike oneOf, the value can match multiple schemas simultaneously.
+     *
+     * ## Example
+     * ```kotlin
+     * property("value") {
+     *     anyOf {
+     *         description = "A value that can be a string or number"
+     *         string { minLength = 1 }
+     *         number { minimum = 0.0 }
+     *     }
+     * }
+     * ```
+     *
+     * @param block Configuration for the anyOf property
+     * @return A configured [AnyOfPropertyDefinition]
+     * @see AnyOfPropertyBuilder
+     */
+    public fun anyOf(block: AnyOfPropertyBuilder.() -> Unit = {}): AnyOfPropertyDefinition =
+        AnyOfPropertyBuilder().apply(block).build()
+
+    /**
+     * Creates an allOf property definition.
+     *
+     * Validates that the value matches all of the provided schemas.
+     * Commonly used for schema composition and inheritance.
+     *
+     * ## Example
+     * ```kotlin
+     * property("extendedUser") {
+     *     allOf {
+     *         description = "User with additional properties"
+     *         reference("#/definitions/BaseUser")
+     *         obj {
+     *             property("role") {
+     *                 required = true
+     *                 string { enum = listOf("admin", "user") }
+     *             }
+     *         }
+     *     }
+     * }
+     * ```
+     *
+     * @param block Configuration for the allOf property
+     * @return A configured [AllOfPropertyDefinition]
+     * @see AllOfPropertyBuilder
+     */
+    public fun allOf(block: AllOfPropertyBuilder.() -> Unit = {}): AllOfPropertyDefinition =
+        AllOfPropertyBuilder().apply(block).build()
 }
 
 /**
@@ -633,14 +754,24 @@ public class StringPropertyBuilder internal constructor() {
         set(value) {
             _default =
                 when (value) {
-                    is JsonElement -> value
-                    is String -> JsonPrimitive(value)
-                    null -> null
-                    else ->
+                    is JsonElement -> {
+                        value
+                    }
+
+                    is String -> {
+                        JsonPrimitive(value)
+                    }
+
+                    null -> {
+                        null
+                    }
+
+                    else -> {
                         error(
                             "String property default must be String, JsonElement, or null, " +
                                 "but got: ${value::class.simpleName}",
                         )
+                    }
                 }
         }
 
@@ -662,14 +793,24 @@ public class StringPropertyBuilder internal constructor() {
         set(value) {
             _constValue =
                 when (value) {
-                    is JsonElement -> value
-                    is String -> JsonPrimitive(value)
-                    null -> null
-                    else ->
+                    is JsonElement -> {
+                        value
+                    }
+
+                    is String -> {
+                        JsonPrimitive(value)
+                    }
+
+                    null -> {
+                        null
+                    }
+
+                    else -> {
                         error(
                             "String property constValue must be String, JsonElement, or null, " +
                                 "but got: ${value::class.simpleName}",
                         )
+                    }
                 }
         }
 
@@ -782,14 +923,24 @@ public class NumericPropertyBuilder internal constructor(
         set(value) {
             _default =
                 when (value) {
-                    is JsonElement -> value
-                    is Number -> JsonPrimitive(value)
-                    null -> null
-                    else ->
+                    is JsonElement -> {
+                        value
+                    }
+
+                    is Number -> {
+                        JsonPrimitive(value)
+                    }
+
+                    null -> {
+                        null
+                    }
+
+                    else -> {
                         error(
                             "Numeric property default must be Number, JsonElement, or null, " +
                                 "but got: ${value::class.simpleName}",
                         )
+                    }
                 }
         }
 
@@ -804,14 +955,24 @@ public class NumericPropertyBuilder internal constructor(
         set(value) {
             _constValue =
                 when (value) {
-                    is JsonElement -> value
-                    is Number -> JsonPrimitive(value)
-                    null -> null
-                    else ->
+                    is JsonElement -> {
+                        value
+                    }
+
+                    is Number -> {
+                        JsonPrimitive(value)
+                    }
+
+                    null -> {
+                        null
+                    }
+
+                    else -> {
                         error(
                             "Numeric property constValue must be Number, JsonElement, or null, " +
                                 "but got: ${value::class.simpleName}",
                         )
+                    }
                 }
         }
 
@@ -882,14 +1043,24 @@ public class BooleanPropertyBuilder internal constructor() {
         set(value) {
             _default =
                 when (value) {
-                    is JsonElement -> value
-                    is Boolean -> JsonPrimitive(value)
-                    null -> null
-                    else ->
+                    is JsonElement -> {
+                        value
+                    }
+
+                    is Boolean -> {
+                        JsonPrimitive(value)
+                    }
+
+                    null -> {
+                        null
+                    }
+
+                    else -> {
                         error(
                             "Boolean property default must be Boolean, JsonElement, or null, " +
                                 "but got: ${value::class.simpleName}",
                         )
+                    }
                 }
         }
 
@@ -904,14 +1075,24 @@ public class BooleanPropertyBuilder internal constructor() {
         set(value) {
             _constValue =
                 when (value) {
-                    is JsonElement -> value
-                    is Boolean -> JsonPrimitive(value)
-                    null -> null
-                    else ->
+                    is JsonElement -> {
+                        value
+                    }
+
+                    is Boolean -> {
+                        JsonPrimitive(value)
+                    }
+
+                    null -> {
+                        null
+                    }
+
+                    else -> {
                         error(
                             "Boolean property constValue must be Boolean, JsonElement, or null, " +
                                 "but got: ${value::class.simpleName}",
                         )
+                    }
                 }
         }
 
@@ -1030,31 +1211,55 @@ public class ArrayPropertyBuilder internal constructor() {
         set(value) {
             _default =
                 when (value) {
-                    is JsonElement -> value
-                    is List<*> ->
+                    is JsonElement -> {
+                        value
+                    }
+
+                    is List<*> -> {
                         JsonArray(
                             value.map { item ->
                                 when (item) {
-                                    is JsonElement -> item
-                                    is String -> JsonPrimitive(item)
-                                    is Number -> JsonPrimitive(item)
-                                    is Boolean -> JsonPrimitive(item)
-                                    null -> JsonNull
-                                    else ->
+                                    is JsonElement -> {
+                                        item
+                                    }
+
+                                    is String -> {
+                                        JsonPrimitive(item)
+                                    }
+
+                                    is Number -> {
+                                        JsonPrimitive(item)
+                                    }
+
+                                    is Boolean -> {
+                                        JsonPrimitive(item)
+                                    }
+
+                                    null -> {
+                                        JsonNull
+                                    }
+
+                                    else -> {
                                         error(
                                             "Array property default list item must be JsonElement, String, Number, " +
                                                 "Boolean, or null, but got: ${item::class.simpleName}",
                                         )
+                                    }
                                 }
                             },
                         )
+                    }
 
-                    null -> null
-                    else ->
+                    null -> {
+                        null
+                    }
+
+                    else -> {
                         error(
                             "Array property default must be List, JsonElement, or null, " +
                                 "but got: ${value::class.simpleName}",
                         )
+                    }
                 }
         }
 
@@ -1251,31 +1456,55 @@ public class ObjectPropertyBuilder internal constructor() {
         set(value) {
             _default =
                 when (value) {
-                    is JsonElement -> value
-                    is Map<*, *> ->
+                    is JsonElement -> {
+                        value
+                    }
+
+                    is Map<*, *> -> {
                         JsonObject(
                             value.mapKeys { it.key.toString() }.mapValues { (_, v) ->
                                 when (v) {
-                                    is JsonElement -> v
-                                    is String -> JsonPrimitive(v)
-                                    is Number -> JsonPrimitive(v)
-                                    is Boolean -> JsonPrimitive(v)
-                                    null -> JsonNull
-                                    else ->
+                                    is JsonElement -> {
+                                        v
+                                    }
+
+                                    is String -> {
+                                        JsonPrimitive(v)
+                                    }
+
+                                    is Number -> {
+                                        JsonPrimitive(v)
+                                    }
+
+                                    is Boolean -> {
+                                        JsonPrimitive(v)
+                                    }
+
+                                    null -> {
+                                        JsonNull
+                                    }
+
+                                    else -> {
                                         error(
                                             "Object property default map value must be JsonElement, String, Number, " +
                                                 "Boolean, or null, but got: ${v::class.simpleName}",
                                         )
+                                    }
                                 }
                             },
                         )
+                    }
 
-                    null -> null
-                    else ->
+                    null -> {
+                        null
+                    }
+
+                    else -> {
                         error(
                             "Object property default must be Map, JsonElement, or null, " +
                                 "but got: ${value::class.simpleName}",
                         )
+                    }
                 }
         }
 
@@ -1320,4 +1549,350 @@ public class ObjectPropertyBuilder internal constructor() {
             additionalProperties = additionalProperties,
             default = _default,
         )
+}
+
+/**
+ * Common interface for builders that collect polymorphic schema options.
+ *
+ * Provides methods to add various property types as options in oneOf, anyOf, or allOf compositions.
+ * This interface is used internally by polymorphic property builders.
+ */
+@JsonSchemaDsl
+public interface PolymorphicOptionsCollector {
+    /**
+     * Adds a property definition as an option.
+     * @suppress Internal API - use type-specific methods like string(), obj(), etc. instead
+     */
+    public fun addOption(option: PropertyDefinition)
+}
+
+/*
+ * Extension functions for [PolymorphicOptionsCollector] that provide type-safe option builders.
+ */
+
+/** Adds a string schema option. */
+public fun PolymorphicOptionsCollector.string(block: StringPropertyBuilder.() -> Unit = {}) {
+    addOption(StringPropertyBuilder().apply(block).build())
+}
+
+/** Adds an integer schema option. */
+public fun PolymorphicOptionsCollector.integer(block: NumericPropertyBuilder.() -> Unit = {}) {
+    addOption(NumericPropertyBuilder(type = "integer").apply(block).build())
+}
+
+/** Adds a number schema option. */
+public fun PolymorphicOptionsCollector.number(block: NumericPropertyBuilder.() -> Unit = {}) {
+    addOption(NumericPropertyBuilder(type = "number").apply(block).build())
+}
+
+/** Adds a boolean schema option. */
+public fun PolymorphicOptionsCollector.boolean(block: BooleanPropertyBuilder.() -> Unit = {}) {
+    addOption(BooleanPropertyBuilder().apply(block).build())
+}
+
+/** Adds an array schema option. */
+public fun PolymorphicOptionsCollector.array(block: ArrayPropertyBuilder.() -> Unit = {}) {
+    addOption(ArrayPropertyBuilder().apply(block).build())
+}
+
+/** Adds an object schema option. */
+public fun PolymorphicOptionsCollector.obj(block: ObjectPropertyBuilder.() -> Unit = {}) {
+    addOption(ObjectPropertyBuilder().apply(block).build())
+}
+
+/** Adds a reference schema option. */
+public fun PolymorphicOptionsCollector.reference(ref: String) {
+    addOption(ReferencePropertyDefinition(ref))
+}
+
+/** Adds a nested oneOf schema option. */
+public fun PolymorphicOptionsCollector.oneOf(block: OneOfPropertyBuilder.() -> Unit = {}) {
+    addOption(OneOfPropertyBuilder().apply(block).build())
+}
+
+/** Adds a nested anyOf schema option. */
+public fun PolymorphicOptionsCollector.anyOf(block: AnyOfPropertyBuilder.() -> Unit = {}) {
+    addOption(AnyOfPropertyBuilder().apply(block).build())
+}
+
+/** Adds a nested allOf schema option. */
+public fun PolymorphicOptionsCollector.allOf(block: AllOfPropertyBuilder.() -> Unit = {}) {
+    addOption(AllOfPropertyBuilder().apply(block).build())
+}
+
+/**
+ * Builder for [Discriminator].
+ *
+ * Configures a discriminator for efficient polymorphic type resolution.
+ * The discriminator identifies which schema applies based on a property value.
+ *
+ * This class is part of the JSON Schema DSL and cannot be instantiated directly.
+ * Use within [OneOfPropertyBuilder.discriminator] context.
+ *
+ * ## Example with references
+ * ```kotlin
+ * oneOf {
+ *     discriminator("type") {
+ *         "dog" mappedTo "#/definitions/Dog"
+ *         "cat" mappedTo "#/definitions/Cat"
+ *     }
+ *     // References are added automatically
+ * }
+ * ```
+ *
+ * ## Example with inline schemas
+ * ```kotlin
+ * oneOf {
+ *     discriminator("paymentType") {
+ *         "credit_card" mappedTo {
+ *             property("type") { string { constValue = "credit_card" } }
+ *             property("cardNumber") { string() }
+ *         }
+ *         "paypal" mappedTo {
+ *             property("type") { string { constValue = "paypal" } }
+ *             property("email") { string { format = "email" } }
+ *         }
+ *     }
+ * }
+ * ```
+ *
+ * @see Discriminator
+ * @see OneOfPropertyBuilder
+ */
+@JsonSchemaDsl
+public class DiscriminatorBuilder internal constructor(
+    private val propertyName: String,
+    private val optionsCollector: PolymorphicOptionsCollector,
+) {
+    private val mappingMap = mutableMapOf<String, String>()
+
+    /**
+     * Maps a discriminator value to a schema reference, automatically adding
+     * the reference to the parent oneOf options and the explicit mapping.
+     *
+     * This eliminates duplication - you don't need to specify the reference twice.
+     *
+     * @receiver The discriminator value (e.g., "dog", "cat")
+     * @param ref The schema reference (e.g., "#/definitions/Dog")
+     */
+    public infix fun String.mappedTo(ref: String) {
+        require(ref.isNotEmpty()) { "Schema reference cannot be empty" }
+        mappingMap[this] = ref
+        optionsCollector.addOption(ReferencePropertyDefinition(ref = ref))
+    }
+
+    /**
+     * Maps a discriminator value to an inline object schema, automatically adding
+     * it to the parent oneOf options.
+     *
+     * This is a concise form for defining inline objects without the `obj` keyword.
+     *
+     * @receiver The discriminator value (e.g., "credit_card", "paypal")
+     * @param block Builder block for defining object properties
+     */
+    public infix fun String.mappedTo(block: ObjectPropertyBuilder.() -> Unit) {
+        val definition = ObjectPropertyBuilder().apply(block).build()
+        optionsCollector.addOption(definition)
+        // Inline objects don't have references, so no mapping entry
+    }
+
+    internal fun build(): Discriminator =
+        Discriminator(
+            propertyName = propertyName,
+            mapping = mappingMap.takeIf { it.isNotEmpty() },
+        )
+}
+
+/**
+ * Builder for [OneOfPropertyDefinition].
+ *
+ * Configures oneOf schema composition where exactly one schema must match.
+ * Supports optional discriminator for efficient polymorphic type resolution.
+ *
+ * This class is part of the JSON Schema DSL and cannot be instantiated directly.
+ * Use [PropertyBuilder.oneOf] instead within the DSL context.
+ *
+ * ## Example - Basic oneOf
+ * ```kotlin
+ * property("contact") {
+ *     oneOf {
+ *         description = "Email or phone contact"
+ *         obj {
+ *             property("email") {
+ *                 required = true
+ *                 string { format = "email" }
+ *             }
+ *         }
+ *         obj {
+ *             property("phone") {
+ *                 required = true
+ *                 string()
+ *             }
+ *         }
+ *     }
+ * }
+ * ```
+ *
+ * @see PropertyBuilder.oneOf
+ * @see Discriminator
+ */
+@JsonSchemaDsl
+public class OneOfPropertyBuilder internal constructor() : PolymorphicOptionsCollector {
+    /**
+     * Human-readable description of this property.
+     */
+    public var description: String? = null
+
+    private val options: MutableList<PropertyDefinition> = mutableListOf()
+    private var discriminatorDef: Discriminator? = null
+
+    override fun addOption(option: PropertyDefinition) {
+        options.add(option)
+    }
+
+    /**
+     * Configures the discriminator for this oneOf.
+     *
+     * The discriminator enables efficient determination of which schema applies
+     * based on a property value in the instance data.
+     *
+     * Use the [DiscriminatorBuilder.mappedTo] infix operator to map discriminator
+     * values to references, eliminating duplication.
+     *
+     * @param propertyName The name of the property that holds the discriminator value.
+     *                     Must be non-empty and present in all schemas within the oneOf.
+     * @param block Configuration block for discriminator mappings
+     *
+     * ## Example
+     * ```kotlin
+     * discriminator("type") {
+     *     "dog" mappedTo "#/definitions/Dog"
+     *     "cat" mappedTo "#/definitions/Cat"
+     * }
+     * // No need to add references separately!
+     * ```
+     */
+    public fun discriminator(
+        propertyName: String,
+        block: DiscriminatorBuilder.() -> Unit = {},
+    ) {
+        require(propertyName.isNotEmpty()) { "Discriminator propertyName cannot be empty" }
+        discriminatorDef = DiscriminatorBuilder(propertyName, this).apply(block).build()
+    }
+
+    public fun build(): OneOfPropertyDefinition {
+        require(options.size >= 2) {
+            "oneOf requires at least 2 options, but got ${options.size}"
+        }
+        return OneOfPropertyDefinition(
+            oneOf = options.toList(),
+            discriminator = discriminatorDef,
+            description = description,
+        )
+    }
+}
+
+/**
+ * Builder for [AnyOfPropertyDefinition].
+ *
+ * Configures anyOf schema composition where one or more schemas must match.
+ * Unlike oneOf, the value can satisfy multiple schemas simultaneously.
+ *
+ * This class is part of the JSON Schema DSL and cannot be instantiated directly.
+ * Use [PropertyBuilder.anyOf] instead within the DSL context.
+ *
+ * ## Example
+ * ```kotlin
+ * property("identifier") {
+ *     anyOf {
+ *         description = "Can be UUID or integer ID"
+ *         string {
+ *             format = "uuid"
+ *             description = "UUID identifier"
+ *         }
+ *         integer {
+ *             minimum = 1.0
+ *             description = "Numeric identifier"
+ *         }
+ *     }
+ * }
+ * ```
+ *
+ * @see PropertyBuilder.anyOf
+ */
+@JsonSchemaDsl
+public class AnyOfPropertyBuilder internal constructor() : PolymorphicOptionsCollector {
+    /**
+     * Human-readable description of this property.
+     */
+    public var description: String? = null
+
+    private val options: MutableList<PropertyDefinition> = mutableListOf()
+
+    override fun addOption(option: PropertyDefinition) {
+        options.add(option)
+    }
+
+    public fun build(): AnyOfPropertyDefinition {
+        require(options.size >= 2) {
+            "anyOf requires at least 2 options, but got ${options.size}"
+        }
+        return AnyOfPropertyDefinition(
+            anyOf = options.toList(),
+            description = description,
+        )
+    }
+}
+
+/**
+ * Builder for [AllOfPropertyDefinition].
+ *
+ * Configures allOf schema composition where all schemas must match.
+ * Commonly used for schema composition, extension, and inheritance patterns.
+ *
+ * This class is part of the JSON Schema DSL and cannot be instantiated directly.
+ * Use [PropertyBuilder.allOf] instead within the DSL context.
+ *
+ * ## Example - Schema Extension
+ * ```kotlin
+ * property("adminUser") {
+ *     allOf {
+ *         description = "Admin user with base properties plus admin-specific properties"
+ *         reference("#/definitions/BaseUser")
+ *         obj {
+ *             property("permissions") {
+ *                 required = true
+ *                 array {
+ *                     ofString()
+ *                 }
+ *             }
+ *         }
+ *     }
+ * }
+ * ```
+ *
+ * @see PropertyBuilder.allOf
+ */
+@JsonSchemaDsl
+public class AllOfPropertyBuilder internal constructor() : PolymorphicOptionsCollector {
+    /**
+     * Human-readable description of this property.
+     */
+    public var description: String? = null
+
+    private val options: MutableList<PropertyDefinition> = mutableListOf()
+
+    override fun addOption(option: PropertyDefinition) {
+        options.add(option)
+    }
+
+    public fun build(): AllOfPropertyDefinition {
+        require(options.isNotEmpty()) {
+            "allOf requires at least 1 schema, but got 0"
+        }
+        return AllOfPropertyDefinition(
+            allOf = options.toList(),
+            description = description,
+        )
+    }
 }
