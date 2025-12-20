@@ -2,7 +2,7 @@
 [![JetBrains Experimental](https://kotl.in/badges/experimental.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 
 [![Maven Central](https://img.shields.io/maven-central/v/org.jetbrains.kotlinx/kotlinx-schema-ksp.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=org.jetbrains.kotlinx%2Fkotlinx-schema-*)
-[![Kotlin CI with Gradle](https://github.com/Kotlin/kotlinx-schema/actions/workflows/gradle.yml/badge.svg?branch=main)](https://github.com/Kotlin/kotlinx-schema/actions/workflows/gradle.yml)
+[![Build with Gradle](https://github.com/Kotlin/kotlinx-schema/actions/workflows/build.yml/badge.svg)](https://github.com/Kotlin/kotlinx-schema/actions/workflows/build.yml)
 [![CodeQL](https://github.com/Kotlin/kotlinx-schema/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Kotlin/kotlinx-schema/actions/workflows/github-code-scanning/codeql)
 
 [![Kotlin](https://img.shields.io/badge/kotlin-2.2+-blueviolet.svg?logo=kotlin)](http://kotlinlang.org)
