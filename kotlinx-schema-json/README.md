@@ -612,8 +612,8 @@ sealed class Animal {
         override val name: String,
         @property:Description("Dog's breed")
         val breed: String,
-        @property:Description("Whether the dog is trained")
-        val isTrained: Boolean = false
+        @property:Description("Trained or not")
+        val isTrained: Boolean = false,
     ) : Animal()
 
     @Description("Represents a cat")
@@ -621,8 +621,8 @@ sealed class Animal {
         override val name: String,
         @property:Description("Cat's color")
         val color: String,
-        @property:Description("Number of lives remaining")
-        val lives: Int = 9
+        @property:Description("Lives left")
+        val lives: Int = 9,
     ) : Animal()
 }
 
@@ -630,57 +630,71 @@ val generator = ReflectionClassJsonSchemaGenerator.Default
 val schema = generator.generateSchema(Animal::class)
 ```
 
-This generates a JSON schema with `oneOf` for the sealed hierarchy:
+This generates a JSON schema with `oneOf` and `$ref`/`$defs` for the sealed hierarchy:
 
 ```json
 {
-  "name": "Animal",
+  "name": "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal",
   "strict": false,
   "schema": {
     "type": "object",
-    "description": "Represents an animal",
     "additionalProperties": false,
+    "description": "Represents an animal",
     "oneOf": [
       {
+        "$ref": "#/$defs/Cat"
+      },
+      {
+        "$ref": "#/$defs/Dog"
+      }
+    ],
+    "discriminator": {
+      "propertyName": "type",
+      "mapping": {
+        "Cat": "#/$defs/Cat",
+        "Dog": "#/$defs/Dog"
+      }
+    },
+    "$defs": {
+      "Cat": {
         "type": "object",
         "description": "Represents a cat",
         "properties": {
-          "name": { "type": "string" },
+          "name": {
+            "type": "string",
+            "description": "Animal's name"
+          },
           "color": {
             "type": "string",
             "description": "Cat's color"
           },
           "lives": {
             "type": "integer",
-            "description": "Number of lives remaining"
+            "description": "Lives left"
           }
         },
         "required": ["name", "color"],
         "additionalProperties": false
       },
-      {
+      "Dog": {
         "type": "object",
         "description": "Represents a dog",
         "properties": {
-          "name": { "type": "string" },
+          "name": {
+            "type": "string",
+            "description": "Animal's name"
+          },
           "breed": {
             "type": "string",
             "description": "Dog's breed"
           },
           "isTrained": {
             "type": "boolean",
-            "description": "Whether the dog is trained"
+            "description": "Trained or not"
           }
         },
         "required": ["name", "breed"],
         "additionalProperties": false
-      }
-    ],
-    "discriminator": {
-      "propertyName": "type",
-      "mapping": {
-        "Cat": "Cat",
-        "Dog": "Dog"
       }
     }
   }
@@ -689,8 +703,9 @@ This generates a JSON schema with `oneOf` for the sealed hierarchy:
 
 #### Key Features
 
-- **Automatic `oneOf` generation**: Each sealed subclass becomes an alternative in the `oneOf` array
-- **Discriminator support**: Automatically generates discriminator with explicit type mapping
+- **Automatic `oneOf` generation**: Each sealed subclass becomes an alternative in the `oneOf` array with `$ref` pointers
+- **`$defs` section**: Subclass schemas are defined in the `$defs` section and referenced via `$ref`
+- **Discriminator support**: Automatically generates discriminator with explicit type mapping to `$ref` paths
 - **Property inheritance**: Properties from the sealed base class are included in each subtype
 - **Optional properties**: Properties with default values are correctly marked as optional
 - **Documentation**: `@Description` annotations are preserved in the schema

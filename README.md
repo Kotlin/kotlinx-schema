@@ -12,27 +12,11 @@
 
 # kotlinx-schema
 
-**Generate JSON Schemas and LLM function calling schemas from Kotlin code — including classes you don't own.**
+**Generate JSON schemas and LLM function calling schemas from Kotlin code — including classes you don't own.**
 
-> [!IMPORTANT]  
-> The Library is **super experimental**. Some parts might eventually be part of [kotlinx-serialization](https://github.com/Kotlin/kotlinx.serialization).
-
-
-## Why kotlinx-schema?
-
-This library solves three key challenges:
-
-1. **🤖 LLM Function Calling Integration**: Generate OpenAI/Anthropic-compatible function schemas directly from Kotlin functions with proper type definitions and descriptions
-2. **📦 Third-Party Class Support**: Create schemas for library classes without modifying their source code (Spring entities, Ktor models, etc.)
-3. **🔄 Multi-Framework Compatibility**: Works with existing annotations from Jackson, LangChain4j, Koog, and more — no code changes needed
-
-### When to Use
-
-* 🤖 Building LLM-powered applications with structured function calling (OpenAI, Anthropic, Claude, MCP)
-* 👽 Need schemas for third-party library classes you cannot modify
-* ✅ Already using `@Description`-like annotations from other frameworks
-* 👌 Want zero runtime overhead with compile-time generation **(Multiplatform!!!)**
-* ☕️ Need dynamic schema generation at runtime via reflection (JVM)
+> [!IMPORTANT]
+> This library is **experimental**. 
+> Some parts might eventually be part of [kotlinx-serialization](https://github.com/Kotlin/kotlinx.serialization).
 
 ## Key Features
 
@@ -51,6 +35,7 @@ This library solves three key challenges:
 
 **Comprehensive Type Support:**
 - Enums, collections, maps, nested objects, nullability, generics (with star-projection)
+- Sealed class hierarchies with automatic `oneOf`/discriminator generation
 - Proper union types for nullable parameters (`["string", "null"]`)
 - Type constraints (min/max, patterns, formats)
 
@@ -59,39 +44,61 @@ This library solves three key challenges:
 - Type-safe Kotlin DSL for programmatic schema construction
 - Works everywhere: JVM, JS, iOS, macOS, Wasm
 
-## Quick start
+## Why kotlinx-schema?
+
+This library solves three key challenges:
+
+1. **🤖 LLM Function Calling Integration**: Generate OpenAI/Anthropic-compatible function schemas directly from Kotlin functions with proper type definitions and descriptions
+2. **📦 Third-Party Class Support**: Create schemas for library classes without modifying their source code (Spring entities, Ktor models, etc.)
+3. **🔄 Multi-Framework Compatibility**: Works with existing annotations from Jackson, LangChain4j, Koog, and more — no code changes needed
+
+### When to Use
+
+* 🤖 Building LLM-powered applications with structured function calling (OpenAI, Anthropic, Claude, MCP)
+* 👽 Need schemas for third-party library classes you cannot modify
+* ✅ Already using `@Description`-like annotations from other frameworks
+* 👌 Want zero runtime overhead with compile-time generation (multiplatform support)
+* ☕️ Need dynamic schema generation at runtime via reflection (JVM)
+
+## Quick Start
 
 Recommended: use the Gradle plugin.
 It applies KSP for you, wires generated sources, and sets up task dependencies.
 
-### 1) Apply the Gradle plugin
+### Configuration
 
-Kotlin Multiplatform (Kotlin DSL):
+#### Using the Gradle Plugin (Recommended)
+
+**Kotlin Multiplatform:**
 
 ```kotlin
 plugins {
     kotlin("multiplatform")
-    // Published plugin id:
     id("org.jetbrains.kotlinx.schema.ksp") // version "<x.y.z>" if used outside this repository
 }
 
-// Optional configuration
+// Configuration (all options are optional)
 kotlinxSchema {
-    // Enable or disable schema generation (default: true)
+    // Enable or disable schema generation (optional, default: true)
     enabled.set(true)
 
-    // Limit processing to this package and its subpackages (speeds up builds)
+    // Process only classes in this package and subpackages (optional, speeds up builds)
     // Omit to process all packages
     rootPackage.set("com.example.models")
+
+    // Generate jsonSchema: JsonObject property in addition to jsonSchemaString (optional, default: false)
+    // Can also be set per-class via @Schema(withSchemaObject = true)
+    // Global setting here overrides per-class annotations
+    withSchemaObject.set(true)
 }
 
 kotlin {
     compilerOptions {
-        // Apply bare annotations to both constructor params and properties (recommended)
+        // Recommended: Apply annotations to both constructor params and properties
         freeCompilerArgs.add("-Xannotation-default-target=param-property")
     }
 
-    // Targets…
+    // Configure your targets
     jvm()
     js { nodejs() }
     wasmJs { browser() }
@@ -101,9 +108,9 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                // Annotations used in your code
+                // Required: Annotations for your code
                 implementation("org.jetbrains.kotlinx:kotlinx-schema-annotations:<version>")
-                // For JsonObject in runtime APIs
+                // Required: For JsonObject in runtime APIs
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:<version>")
             }
         }
@@ -111,7 +118,7 @@ kotlin {
 }
 ```
 
-Single-target JVM setup:
+**Single-target JVM:**
 
 ```kotlin
 plugins {
@@ -119,10 +126,11 @@ plugins {
     id("org.jetbrains.kotlinx.schema.ksp") // version "<x.y.z>" if used outside this repository
 }
 
-// Optional configuration
+// Configuration (all options are optional)
 kotlinxSchema {
-    enabled.set(true)  // optional, default: true
-    rootPackage.set("com.example.models")  // optional
+    enabled.set(true)              // Optional, default: true
+    rootPackage.set("com.example") // Optional, speeds up builds
+    withSchemaObject.set(false)    // Optional, default: false
 }
 
 dependencies {
@@ -131,131 +139,49 @@ dependencies {
 }
 ```
 
-Notes:
-
+**Notes:**
 - You do NOT need to apply the KSP plugin yourself — the Gradle plugin does it.
 - You do NOT need to add generated source directories — the plugin does it.
-- For an example project using the plugin, see [gradle-plugin-integration-tests](gradle-plugin-integration-tests).
+- For an example project, see [gradle-plugin-integration-tests](./gradle-plugin-integration-tests).
 
-Alternative: manual wiring without the Gradle plugin
+#### Configuration Options Reference
 
-If you prefer explicit KSP setup, you can configure it manually.
+##### `enabled`
+Enable or disable schema generation.
+- **Type:** `Boolean`
+- **Default:** `true`
+- **Example:** `enabled.set(false)`
 
-Multiplatform (metadata processing):
+##### `rootPackage`
+Process only classes in the specified package and its subpackages. Improves build performance in large projects.
+- **Type:** `String`
+- **Default:** All packages
+- **Example:** `rootPackage.set("com.example.models")`
 
-```kotlin
-plugins {
-    kotlin("multiplatform")
-    id("com.google.devtools.ksp")
-}
+##### `withSchemaObject`
+Generate `jsonSchema: JsonObject` property in addition to `jsonSchemaString: String`.
 
-dependencies {
-    add("kspCommonMainMetadata", "org.jetbrains.kotlinx:kotlinx-schema-ksp:<version>")
-    implementation("org.jetbrains.kotlinx:kotlinx-schema-annotations:<version>")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:<version>")
-}
+- **Type:** `Boolean`
+- **Default:** `false`
+- **Precedence:**
+  1. **Global option** (if set): Overrides all per-class annotations
+  2. **Per-class annotation** (fallback): `@Schema(withSchemaObject = true)`
 
-kotlin {
-    sourceSets.commonMain {
-        // Make generated sources visible to metadata compilation
-        kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
-    }
-}
-```
-
-JVM only:
-
-```kotlin
-plugins {
-    kotlin("jvm")
-    id("com.google.devtools.ksp")
-}
-
-dependencies {
-    ksp("org.jetbrains.kotlinx:kotlinx-schema-ksp:<version>")
-    implementation("org.jetbrains.kotlinx:kotlinx-schema-annotations:<version>")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:<version>")
-}
-
-sourceSets.main {
-    kotlin.srcDir("build/generated/ksp/main/kotlin")
-}
-```
-
-### 2) Annotate your models
-
-```kotlin
-/** 
- * A postal address for deliveries and billing.
- */
-@Schema
-data class Address(
-    @Description("Street address, including house number") val street: String,
-    @Description("City or town name") val city: String,
-    @Description("Postal or ZIP code") val zipCode: String,
-    @Description("Two-letter ISO country code; defaults to US") val country: String = "US",
-)
-```
-**Note!** for classes KDoc can also be used as a description.
-
-### 3) Use the generated extensions
-
-```kotlin
-val schemaString: String = Address::class.jsonSchemaString
-val schemaObject: kotlinx.serialization.json.JsonObject = Address::class.jsonSchema
-```
-
-## Advanced Configuration
-
-### KSP Processor Options
-
-Configure via the `kotlinxSchema` extension or directly via `ksp { arg(...) }`:
-
-#### kotlinx.schema.enabled
-Enable/disable schema generation. Default: `true`
-
+**Example with global setting:**
 ```kotlin
 kotlinxSchema {
-    enabled.set(false)
-}
-```
-
-#### kotlinx.schema.rootPackage
-Process only classes in the specified package and subpackages. Speeds up large builds. Default: all packages
-
-```kotlin
-kotlinxSchema {
-    rootPackage.set("com.example.models")
-}
-```
-
-#### kotlinx.schema.withSchemaObject
-Generate `jsonSchema: JsonObject` property in addition to `jsonSchemaString: String`. Default: `false`
-
-**Precedence (highest to lowest):**
-1. **Global KSP option** (if set): `ksp { arg("kotlinx.schema.withSchemaObject", "true") }`
-2. **Per-class annotation** (fallback): `@Schema(withSchemaObject = true)`
-
-When the global KSP option is set, it overrides all annotation settings. 
-When not set, per-class annotation values are used.
-
-**Examples:**
-
-```kotlin
-// Global setting overrides all annotations
-ksp {
-    arg("kotlinx.schema.withSchemaObject", "true")
+    withSchemaObject.set(true)  // Applies to ALL classes
 }
 
 @Schema(withSchemaObject = false)  // IGNORED - global setting takes precedence
-data class User(val name: String)  // ✅ Generates both (due to global setting)
+data class User(val name: String)  // ✅ Generates both jsonSchemaString and jsonSchema
 
 @Schema  // IGNORED - global setting takes precedence
 data class Product(val id: Long)  // ✅ Generates both (due to global setting)
 ```
 
+**Example with per-class annotations (no global setting):**
 ```kotlin
-// Without global setting, annotations control behavior
 @Schema(withSchemaObject = true)   // ✅ Generates both extensions
 data class User(val name: String)
 
@@ -266,7 +192,91 @@ data class Address(val street: String)
 data class Product(val id: Long)
 ```
 
-## What gets generated
+### Alternative: Manual Setup with Standard KSP Plugin
+
+If you prefer explicit KSP setup or need fine-grained control, you can configure it manually using the standard Google KSP plugin.
+
+#### Multiplatform (metadata processing)
+
+```kotlin
+plugins {
+    kotlin("multiplatform")
+    id("com.google.devtools.ksp") version "2.1.0-1.0.29" // Use KSP version matching your Kotlin version
+}
+
+dependencies {
+    // Add KSP processor for metadata (common code)
+    add("kspCommonMainMetadata", "org.jetbrains.kotlinx:kotlinx-schema-ksp:<version>")
+
+    // Runtime dependencies
+    implementation("org.jetbrains.kotlinx:kotlinx-schema-annotations:<version>")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:<version>")
+}
+
+kotlin {
+    sourceSets.commonMain {
+        // Make generated sources visible to metadata compilation
+        kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
+    }
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.dsl.KotlinCompile<*>>().all {
+    if (name != "kspCommonMainKotlinMetadata") {
+        dependsOn("kspCommonMainKotlinMetadata")
+    }
+}
+```
+
+#### JVM Only
+
+```kotlin
+plugins {
+    kotlin("jvm")
+    id("com.google.devtools.ksp") version "2.1.0-1.0.29" // Use KSP version matching your Kotlin version
+}
+
+dependencies {
+    // Add KSP processor for main source set
+    ksp("org.jetbrains.kotlinx:kotlinx-schema-ksp:<version>")
+
+    // Runtime dependencies
+    implementation("org.jetbrains.kotlinx:kotlinx-schema-annotations:<version>")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:<version>")
+}
+
+// Make generated sources visible to compilation
+sourceSets.main {
+    kotlin.srcDir("build/generated/ksp/main/kotlin")
+}
+```
+
+> **Note:** The KSP plugin version should match your Kotlin version. See the [KSP release table](https://github.com/google/ksp/releases) for compatibility.
+
+### Annotate Your Models
+
+```kotlin
+/**
+ * A postal address for deliveries and billing.
+ */
+@Schema
+data class Address(
+    @Description("Street address, including house number") val street: String,
+    @Description("City or town name") val city: String,
+    @Description("Postal or ZIP code") val zipCode: String,
+    @Description("Two-letter ISO country code; defaults to US") val country: String = "US",
+)
+```
+
+> **Note:** KDoc comments on classes can also be used as descriptions.
+
+### Use the Generated Extensions
+
+```kotlin
+val schemaString: String = Address::class.jsonSchemaString
+val schemaObject: kotlinx.serialization.json.JsonObject = Address::class.jsonSchema
+```
+
+## What Gets Generated
 
 Schemas follow a `$id/$defs/$ref` layout. Example (pretty-printed):
 
@@ -308,7 +318,7 @@ Schemas follow a `$id/$defs/$ref` layout. Example (pretty-printed):
 ```
 
 - Enums are `type: string` with `enum: [...]` and carry `@Description` as `description`.
-- Object properties include their inferred type schema and, when present, property-level `@Description` as`description`.
+- Object properties include their inferred type schema and, when present, property-level `@Description` as `description`.
 - Nullable properties are emitted as a union including `null`.
 - Collections: `List<T>`/`Set<T>` → `{ "type":"array", "items": T }`; `Map<String, V>` →
   `{ "type":"object", "additionalProperties": V }`.
@@ -584,6 +594,38 @@ val schemaString: String = generator.generateSchemaString(User::class)
 - ✅ Use **KSP** for your domain models in multiplatform projects
 - ✅ Use **Reflection** for third-party library classes or when you need dynamic generation
 
+### Sealed Class Polymorphism
+
+The library automatically generates JSON schemas for Kotlin sealed class hierarchies using `oneOf` with discriminator support:
+
+```kotlin
+@Description("Represents an animal")
+sealed class Animal {
+    abstract val name: String
+
+    data class Dog(
+        override val name: String,
+        val breed: String,
+    ) : Animal()
+
+    data class Cat(
+        override val name: String,
+        val color: String,
+    ) : Animal()
+}
+
+val generator = ReflectionClassJsonSchemaGenerator.Default
+val schema = generator.generateSchema(Animal::class)
+```
+
+The generated schema includes:
+- **`oneOf` with `$ref`**: Each sealed subclass is referenced from a `$defs` section
+- **Discriminator**: Automatically generated with `type` property mapping
+- **Property inheritance**: Base class properties included in each subtype
+- **Type safety**: Each subtype gets its own schema definition
+
+**📖 See [kotlinx-schema-json/README.md#sealed-class-polymorphic-schema-generation](kotlinx-schema-json/README.md#sealed-class-polymorphic-schema-generation) for complete documentation and examples.**
+
 ## Function calling schema generation for LLMs
 
 Modern LLMs (OpenAI GPT-4, Anthropic Claude, etc.) use structured function calling to interact with your code. 
@@ -810,6 +852,8 @@ Now the schema generator will recognize `@ApiDoc` and extract descriptions from 
 
 ### Example: Reusing Jackson Annotations
 
+If your project already uses Jackson for JSON serialization, you can generate schemas from existing Jackson-annotated classes without any modifications. This is particularly useful for REST APIs and Spring Boot applications where Jackson annotations are already present.
+
 ```kotlin
 // Existing code with Jackson annotations - NO CHANGES NEEDED!
 @JsonClassDescription("Customer profile data")
@@ -833,6 +877,8 @@ val schema = generator.generateSchema(Customer::class)
 
 ### Example: LangChain4j Integration
 
+LangChain4j uses the `@P` annotation for parameter descriptions in AI function calling. The library recognizes these annotations automatically, enabling seamless integration with existing LangChain4j codebases.
+
 ```kotlin
 // Code using LangChain4j annotations
 data class SearchQuery(
@@ -849,6 +895,8 @@ val schema = ReflectionFunctionCallingSchemaGenerator.Default
 ```
 
 ### Example: Koog AI Agents
+
+Koog AI framework uses `@LLMDescription` for documenting agent tools and parameters. The library supports both the verbose `description =` syntax and the shorthand form, making migration from Koog straightforward.
 
 ```kotlin
 @LLMDescription(description = "Product with pricing information")
