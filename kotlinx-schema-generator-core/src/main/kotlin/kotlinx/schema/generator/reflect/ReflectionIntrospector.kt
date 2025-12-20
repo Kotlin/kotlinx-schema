@@ -130,6 +130,25 @@ public object ReflectionIntrospector : SchemaIntrospector<KClass<*>> {
             val properties = mutableListOf<Property>()
             val requiredProperties = mutableSetOf<String>()
 
+            // Find sealed parent classes to inherit property descriptions
+            val sealedParents =
+                klass.supertypes
+                    .mapNotNull { it.classifier as? KClass<*> }
+                    .filter { it.isSealed }
+
+            // Build a map of parent property descriptions
+            val parentPropertyDescriptions = mutableMapOf<String, String>()
+            sealedParents.forEach { parent ->
+                parent.members
+                    .filterIsInstance<KProperty<*>>()
+                    .forEach { prop ->
+                        val desc = extractDescription(prop.annotations)
+                        if (desc != null) {
+                            parentPropertyDescriptions[prop.name] = desc
+                        }
+                    }
+            }
+
             // Extract properties from primary constructor
             klass.constructors.firstOrNull()?.parameters?.forEach { param ->
                 val propertyName = param.name ?: return@forEach
@@ -144,11 +163,16 @@ public object ReflectionIntrospector : SchemaIntrospector<KClass<*>> {
                 val propertyType = param.type
                 val typeRef = convertKTypeToTypeRef(propertyType)
 
+                // Get description from property or inherit from parent
+                val description =
+                    property?.let { extractDescription(it.annotations) }
+                        ?: parentPropertyDescriptions[propertyName]
+
                 properties +=
                     Property(
                         name = propertyName,
                         type = typeRef,
-                        description = property?.let { extractDescription(it.annotations) },
+                        description = description,
                         defaultPresence = if (hasDefault) DefaultPresence.Absent else DefaultPresence.Required,
                     )
 

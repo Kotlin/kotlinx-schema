@@ -394,4 +394,241 @@ internal class JsonSchemaSerializationTest {
             ref shouldBe "#/definitions/ExternalType"
         }
     }
+
+    @Test
+    fun `Should serialize and deserialize polymorphic schema with defs and ref`() {
+        // language=json
+        val json =
+            """
+            {
+              "name": "Animal",
+              "strict": false,
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "description": "Animal hierarchy",
+                "oneOf": [
+                  {
+                    "${'$'}ref": "#/${'$'}defs/Cat"
+                  },
+                  {
+                    "${'$'}ref": "#/${'$'}defs/Dog"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "type",
+                  "mapping": {
+                    "Cat": "#/${'$'}defs/Cat",
+                    "Dog": "#/${'$'}defs/Dog"
+                  }
+                },
+                "${'$'}defs": {
+                  "Cat": {
+                    "type": "object",
+                    "description": "A cat",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "lives": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": ["name"],
+                    "additionalProperties": false
+                  },
+                  "Dog": {
+                    "type": "object",
+                    "description": "A dog",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "breed": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["name", "breed"],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+            """.trimIndent()
+
+        val schema = deserializeAndSerialize<JsonSchema>(json, jsonParser)
+
+        // Validate basic structure
+        schema.name shouldBe "Animal"
+        schema.strict shouldBe false
+
+        val schemaDefinition = schema.schema
+        schemaDefinition.type shouldBe "object"
+        schemaDefinition.description shouldBe "Animal hierarchy"
+
+        // Validate oneOf with $ref
+        schemaDefinition.oneOf shouldNotBeNull {
+            shouldHaveSize(2)
+            this[0] shouldNotBeNull {
+                this as ReferencePropertyDefinition
+                ref shouldBe "#/\$defs/Cat"
+            }
+            this[1] shouldNotBeNull {
+                this as ReferencePropertyDefinition
+                ref shouldBe "#/\$defs/Dog"
+            }
+        }
+
+        // Validate discriminator
+        schemaDefinition.discriminator shouldNotBeNull {
+            propertyName shouldBe "type"
+            mapping shouldNotBeNull {
+                shouldHaveSize(2)
+                this["Cat"] shouldBe "#/\$defs/Cat"
+                this["Dog"] shouldBe "#/\$defs/Dog"
+            }
+        }
+
+        // Validate $defs
+        schemaDefinition.defs shouldNotBeNull {
+            shouldHaveSize(2)
+            this["Cat"] shouldNotBeNull {
+                this as ObjectPropertyDefinition
+                type shouldBe listOf("object")
+                description shouldBe "A cat"
+                properties shouldNotBeNull {
+                    shouldHaveSize(2)
+                    this["name"] shouldNotBeNull {
+                        this as StringPropertyDefinition
+                        type shouldBe listOf("string")
+                    }
+                    this["lives"] shouldNotBeNull {
+                        this as NumericPropertyDefinition
+                        type shouldBe listOf("integer")
+                    }
+                }
+                required shouldBe listOf("name")
+            }
+            this["Dog"] shouldNotBeNull {
+                this as ObjectPropertyDefinition
+                type shouldBe listOf("object")
+                description shouldBe "A dog"
+                properties shouldNotBeNull {
+                    shouldHaveSize(2)
+                    this["name"] shouldNotBeNull {
+                        this as StringPropertyDefinition
+                        type shouldBe listOf("string")
+                    }
+                    this["breed"] shouldNotBeNull {
+                        this as StringPropertyDefinition
+                        type shouldBe listOf("string")
+                    }
+                }
+                required shouldBe listOf("name", "breed")
+            }
+        }
+    }
+
+    @Test
+    fun `Should serialize and deserialize nullable polymorphic schema with anyOf`() {
+        // language=json
+        val json =
+            """
+            {
+              "name": "Container",
+              "strict": false,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "animal": {
+                    "description": "Optional animal",
+                    "anyOf": [
+                      {
+                        "oneOf": [
+                          {
+                            "${'$'}ref": "#/${'$'}defs/Cat"
+                          },
+                          {
+                            "${'$'}ref": "#/${'$'}defs/Dog"
+                          }
+                        ],
+                        "discriminator": {
+                          "propertyName": "type",
+                          "mapping": {
+                            "Cat": "#/${'$'}defs/Cat",
+                            "Dog": "#/${'$'}defs/Dog"
+                          }
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": ["animal"],
+                "additionalProperties": false,
+                "${'$'}defs": {
+                  "Cat": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["name"],
+                    "additionalProperties": false
+                  },
+                  "Dog": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["name"],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+            """.trimIndent()
+
+        val schema = deserializeAndSerialize<JsonSchema>(json, jsonParser)
+
+        schema.name shouldBe "Container"
+        val schemaDefinition = schema.schema
+
+        // Validate properties with anyOf
+        schemaDefinition.properties["animal"] shouldNotBeNull {
+            this as AnyOfPropertyDefinition
+            description shouldBe "Optional animal"
+            anyOf shouldHaveSize 2
+
+            // First option should be oneOf with refs
+            anyOf[0] shouldNotBeNull {
+                this as OneOfPropertyDefinition
+                oneOf shouldHaveSize 2
+                oneOf[0] shouldNotBeNull {
+                    this as ReferencePropertyDefinition
+                    ref shouldBe "#/\$defs/Cat"
+                }
+                discriminator shouldNotBeNull {
+                    propertyName shouldBe "type"
+                }
+            }
+
+            // Second option should be null type
+            // Note: {"type": "null"} deserializes as StringPropertyDefinition (fallback)
+            anyOf[1] shouldNotBeNull {
+                this as StringPropertyDefinition
+                type shouldBe listOf("null")
+            }
+        }
+
+        // Validate $defs
+        schemaDefinition.defs shouldNotBeNull {
+            shouldHaveSize(2)
+        }
+    }
 }

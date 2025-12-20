@@ -1,9 +1,6 @@
 @file:Suppress("UnstableApiUsage")
 
 pluginManagement {
-    // Include parent build to access gradle plugin
-    includeBuild("..")
-
     repositories {
         google()
         mavenCentral()

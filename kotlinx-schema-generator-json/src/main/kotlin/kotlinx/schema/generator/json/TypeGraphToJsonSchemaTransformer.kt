@@ -22,6 +22,7 @@ import kotlinx.schema.json.NumericPropertyDefinition
 import kotlinx.schema.json.ObjectPropertyDefinition
 import kotlinx.schema.json.OneOfPropertyDefinition
 import kotlinx.schema.json.PropertyDefinition
+import kotlinx.schema.json.ReferencePropertyDefinition
 import kotlinx.schema.json.StringPropertyDefinition
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
@@ -71,6 +72,12 @@ public class TypeGraphToJsonSchemaTransformer
         private val json: Json = Json { encodeDefaults = false },
     ) : TypeGraphTransformer<JsonSchema> {
         /**
+         * Collects type definitions for $defs section during schema generation.
+         * Maps type names to their property definitions.
+         */
+        private val definitions = mutableMapOf<String, PropertyDefinition>()
+
+        /**
          * Transforms a type graph into a JSON Schema.
          *
          * @param graph Type graph with all type definitions
@@ -81,6 +88,9 @@ public class TypeGraphToJsonSchemaTransformer
             graph: TypeGraph,
             rootName: String,
         ): JsonSchema {
+            // Clear definitions from any previous transform
+            definitions.clear()
+
             // Extract the main schema definition
             val schemaDefinition =
                 when (val rootDefinition = convertTypeRef(graph.root, graph)) {
@@ -90,6 +100,7 @@ public class TypeGraphToJsonSchemaTransformer
                             required = rootDefinition.required ?: emptyList(),
                             additionalProperties = rootDefinition.additionalProperties,
                             description = rootDefinition.description,
+                            defs = definitions.takeIf { it.isNotEmpty() },
                         )
                     }
 
@@ -103,6 +114,7 @@ public class TypeGraphToJsonSchemaTransformer
                             description = rootDefinition.description,
                             oneOf = rootDefinition.oneOf,
                             discriminator = rootDefinition.discriminator,
+                            defs = definitions.takeIf { it.isNotEmpty() },
                         )
                     }
 
@@ -112,6 +124,7 @@ public class TypeGraphToJsonSchemaTransformer
                             properties = emptyMap(),
                             required = emptyList(),
                             additionalProperties = JsonPrimitive(false),
+                            defs = definitions.takeIf { it.isNotEmpty() },
                         )
                     }
                 }
@@ -435,11 +448,11 @@ public class TypeGraphToJsonSchemaTransformer
         }
 
         /**
-         * Converts sealed class hierarchies to JSON Schema oneOf with discriminator.
+         * Converts sealed class hierarchies to JSON Schema oneOf with $ref and $defs.
          *
-         * Generates oneOf for each subtype with discriminator mapping. Nullable types are
-         * wrapped in anyOf with `null` option. The discriminator property itself is NOT added
-         * to subtype schemas - serialization layers (kotlinx.serialization) handle this.
+         * Generates $defs entries for each subtype and uses $ref in oneOf array.
+         * Discriminator mapping references proper $ref paths. Nullable types are
+         * wrapped in anyOf with `null` option.
          *
          * @param node Polymorphic node with subtypes and discriminator
          * @param nullable Whether type reference is nullable
@@ -451,21 +464,25 @@ public class TypeGraphToJsonSchemaTransformer
             nullable: Boolean,
             graph: TypeGraph,
         ): PropertyDefinition {
-            // Convert each subtype to a PropertyDefinition
-            val subtypeDefinitions =
+            // Convert each subtype and add to $defs, collect $ref for oneOf
+            val subtypeRefs =
                 node.subtypes.map { subtypeRef ->
-                    convertTypeRef(subtypeRef.ref, graph)
+                    val typeName = subtypeRef.id.value
+                    val subtypeDefinition = convertTypeRef(subtypeRef.ref, graph)
+
+                    // Add to definitions map for $defs section
+                    definitions[typeName] = subtypeDefinition
+
+                    // Return a reference to this definition
+                    ReferencePropertyDefinition(ref = "#/\$defs/$typeName")
                 }
 
-            // Convert discriminator if present
+            // Convert discriminator with proper $ref paths
             val discriminator =
                 node.discriminator?.let { disc ->
                     val mapping =
                         disc.mapping?.mapValues { (_, typeId) ->
-                            // For the mapping, we need to provide the reference string
-                            // Typically this would be something like "#/definitions/ClassName"
-                            // For now, we'll use the typeId value
-                            typeId.value
+                            "#/\$defs/${typeId.value}"
                         }
                     Discriminator(
                         propertyName = disc.name,
@@ -475,25 +492,24 @@ public class TypeGraphToJsonSchemaTransformer
 
             val oneOfDef =
                 OneOfPropertyDefinition(
-                    oneOf = subtypeDefinitions,
+                    oneOf = subtypeRefs,
                     discriminator = discriminator,
-                    description = if (nullable) null else node.description, // Only set description if not nullable
+                    description = if (nullable) null else node.description,
                 )
 
             // If nullable, wrap in anyOf with null option
-            // The description will be set at the anyOf level by setDescription in convertObject
             return if (nullable) {
                 AnyOfPropertyDefinition(
                     anyOf =
                         listOf(
                             oneOfDef,
-                            ObjectPropertyDefinition(
+                            StringPropertyDefinition(
                                 type = listOf("null"),
                                 description = null,
                                 nullable = null,
                             ),
                         ),
-                    description = null, // Description will be set by setDescription
+                    description = null, // Description set by setDescription in convertObject
                 )
             } else {
                 oneOfDef

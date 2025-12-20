@@ -1,4 +1,4 @@
-package kotlinx.schema.generator.reflect
+package kotlinx.schema.generator.json
 
 import io.kotest.assertions.json.shouldEqualJson
 import kotlinx.schema.Description

@@ -1,11 +1,8 @@
-package kotlinx.schema.generator.reflect
+package kotlinx.schema.generator.json
 
-import io.kotest.assertions.json.shouldEqualJson
 import kotlinx.schema.Description
 import kotlinx.schema.generator.core.SchemaGeneratorService
 import kotlinx.schema.json.JsonSchema
-import kotlinx.schema.json.encodeToString
-import kotlinx.serialization.json.Json
 import kotlin.reflect.KClass
 import kotlin.test.Test
 
@@ -22,11 +19,6 @@ class JsonSchemaGeneratorTest {
         @property:Description("The color of the rainbow")
         val color: Color,
     )
-
-    private val json =
-        Json {
-            prettyPrint = true
-        }
 
     @Description("Personal information")
     data class Person(
@@ -80,9 +72,8 @@ class JsonSchemaGeneratorTest {
             }
         }
         """
-        val actualSchema = schema.encodeToString(json)
 
-        actualSchema shouldEqualJson expectedSchema
+        verifySchema(schema, expectedSchema)
     }
 
     @Test
@@ -108,11 +99,7 @@ class JsonSchemaGeneratorTest {
             }
         }
         """
-        val actualSchema = schema.encodeToString(json)
-        println("Expected schema = $expectedSchema")
-        println("Actual schema = $actualSchema")
-
-        actualSchema shouldEqualJson expectedSchema
+        verifySchema(schema, expectedSchema)
     }
 
     @Test
@@ -142,9 +129,7 @@ class JsonSchemaGeneratorTest {
             }
         }
         """
-        val actualSchema = schema.encodeToString(json)
-
-        actualSchema shouldEqualJson expectedSchema
+        verifySchema(schema, expectedSchema)
     }
 
     @Test
@@ -199,9 +184,7 @@ class JsonSchemaGeneratorTest {
         }
         """
 
-        val actualSchemaString = schema.encodeToString(json)
-
-        actualSchemaString shouldEqualJson expectedSchema
+        verifySchema(schema, expectedSchema)
     }
 
     @Test
@@ -228,8 +211,6 @@ class JsonSchemaGeneratorTest {
         }
         """
 
-        val actualSchemaString = schema.encodeToString(json)
-
-        actualSchemaString shouldEqualJson expectedSchema
+        verifySchema(schema, expectedSchema)
     }
 }

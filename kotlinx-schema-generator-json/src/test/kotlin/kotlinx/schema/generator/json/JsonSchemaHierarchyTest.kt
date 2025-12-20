@@ -1,11 +1,8 @@
-package kotlinx.schema.generator.reflect
+package kotlinx.schema.generator.json
 
-import io.kotest.assertions.json.shouldEqualJson
 import kotlinx.schema.Description
 import kotlinx.schema.generator.core.SchemaGeneratorService
 import kotlinx.schema.json.JsonSchema
-import kotlinx.schema.json.encodeToString
-import kotlinx.serialization.json.Json
 import kotlin.reflect.KClass
 import kotlin.test.Test
 
@@ -35,11 +32,6 @@ class JsonSchemaHierarchyTest {
         ) : Animal()
     }
 
-    private val json =
-        Json {
-            prettyPrint = true
-        }
-
     private val generator =
         requireNotNull(
             SchemaGeneratorService.getGenerator(
@@ -55,9 +47,9 @@ class JsonSchemaHierarchyTest {
         val schema = generator.generateSchema(Animal::class)
 
         // language=json
-        val expectedSchema = """
+        val expectedSchema = $$"""
         {
-            "name": "${Animal::class.qualifiedName}",
+            "name": "$${Animal::class.qualifiedName}",
             "strict": false,
             "schema": {
               "type": "object",
@@ -65,11 +57,27 @@ class JsonSchemaHierarchyTest {
               "description": "Represents an animal",
               "oneOf": [
                 {
+                  "$ref": "#/$defs/Cat"
+                },
+                {
+                  "$ref": "#/$defs/Dog"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "type",
+                "mapping": {
+                  "Cat": "#/$defs/Cat",
+                  "Dog": "#/$defs/Dog"
+                }
+              },
+              "$defs": {
+                "Cat": {
                   "type": "object",
                   "description": "Represents a cat",
                   "properties": {
                     "name": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "Animal's name"
                     },
                     "color": {
                       "type": "string",
@@ -83,12 +91,13 @@ class JsonSchemaHierarchyTest {
                   "required": ["name", "color"],
                   "additionalProperties": false
                 },
-                {
+                "Dog": {
                   "type": "object",
                   "description": "Represents a dog",
                   "properties": {
                     "name": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "Animal's name"
                     },
                     "breed": {
                       "type": "string",
@@ -102,20 +111,11 @@ class JsonSchemaHierarchyTest {
                   "required": ["name", "breed"],
                   "additionalProperties": false
                 }
-              ],
-              "discriminator": {
-                "propertyName": "type",
-                "mapping": {
-                  "Cat": "Cat",
-                  "Dog": "Dog"
-                }
               }
             }
         }
         """
-        val actualSchema = schema.encodeToString(json)
-
-        actualSchema shouldEqualJson expectedSchema
+        verifySchema(schema, expectedSchema)
     }
 
     @Description("Container with nullable animal")
@@ -129,9 +129,9 @@ class JsonSchemaHierarchyTest {
         val schema = generator.generateSchema(AnimalContainer::class)
 
         // language=json
-        val expectedSchema = """
+        val expectedSchema = $$"""
         {
-            "name": "${AnimalContainer::class.qualifiedName}",
+            "name": "$${AnimalContainer::class.qualifiedName}",
             "strict": false,
             "schema": {
               "type": "object",
@@ -143,49 +143,17 @@ class JsonSchemaHierarchyTest {
                     {
                       "oneOf": [
                         {
-                          "type": "object",
-                          "description": "Represents a cat",
-                          "properties": {
-                            "name": {
-                              "type": "string"
-                            },
-                            "color": {
-                              "type": "string",
-                              "description": "Cat's color"
-                            },
-                            "lives": {
-                              "type": "integer",
-                              "description": "Lives left"
-                            }
-                          },
-                          "required": ["name", "color"],
-                          "additionalProperties": false
+                          "$ref": "#/$defs/Cat"
                         },
                         {
-                          "type": "object",
-                          "description": "Represents a dog",
-                          "properties": {
-                            "name": {
-                              "type": "string"
-                            },
-                            "breed": {
-                              "type": "string",
-                              "description": "Dog's breed"
-                            },
-                            "isTrained": {
-                              "type": "boolean",
-                              "description": "Trained or not"
-                            }
-                          },
-                          "required": ["name", "breed"],
-                          "additionalProperties": false
+                          "$ref": "#/$defs/Dog"
                         }
                       ],
                       "discriminator": {
                         "propertyName": "type",
                         "mapping": {
-                          "Cat": "Cat",
-                          "Dog": "Dog"
+                          "Cat": "#/$defs/Cat",
+                          "Dog": "#/$defs/Dog"
                         }
                       }
                     },
@@ -196,12 +164,53 @@ class JsonSchemaHierarchyTest {
                 }
               },
               "required": ["animal"],
-              "additionalProperties": false
+              "additionalProperties": false,
+              "$defs": {
+                "Cat": {
+                  "type": "object",
+                  "description": "Represents a cat",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "Animal's name"
+                    },
+                    "color": {
+                      "type": "string",
+                      "description": "Cat's color"
+                    },
+                    "lives": {
+                      "type": "integer",
+                      "description": "Lives left"
+                    }
+                  },
+                  "required": ["name", "color"],
+                  "additionalProperties": false
+                },
+                "Dog": {
+                  "type": "object",
+                  "description": "Represents a dog",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "Animal's name"
+                    },
+                    "breed": {
+                      "type": "string",
+                      "description": "Dog's breed"
+                    },
+                    "isTrained": {
+                      "type": "boolean",
+                      "description": "Trained or not"
+                    }
+                  },
+                  "required": ["name", "breed"],
+                  "additionalProperties": false
+                }
+              }
             }
         }
         """
-        val actualSchema = schema.encodeToString(json)
 
-        actualSchema shouldEqualJson expectedSchema
+        verifySchema(schema, expectedSchema)
     }
 }

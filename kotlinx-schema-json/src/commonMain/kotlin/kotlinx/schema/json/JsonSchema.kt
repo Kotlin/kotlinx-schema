@@ -58,6 +58,7 @@ public fun JsonSchema.encodeToString(json: Json = Json): String = json.encodeToS
  * @property description Optional description of the schema.
  * @property oneOf List of alternative schemas for polymorphic types.
  * @property discriminator Optional discriminator for polymorphic schemas.
+ * @property defs Schema definitions for reusable types (JSON Schema $defs).
  *
  * @author Konstantin Pavlov
  */
@@ -83,6 +84,7 @@ public data class JsonSchemaDefinition(
     public val items: PropertyDefinition? = null,
     public val oneOf: List<PropertyDefinition>? = null,
     public val discriminator: Discriminator? = null,
+    @SerialName($$"$defs") public val defs: Map<String, PropertyDefinition>? = null,
 )
 
 /**
