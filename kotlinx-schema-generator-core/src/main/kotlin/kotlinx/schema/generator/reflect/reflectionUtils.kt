@@ -23,8 +23,7 @@ internal fun createTypeId(klass: KClass<*>): TypeId = TypeId(klass.qualifiedName
 /**
  * Checks if a class is list-like (List, Collection, or Iterable).
  */
-internal fun isListLike(klass: KClass<*>): Boolean =
-    klass == List::class || klass == Collection::class || klass == Iterable::class
+internal fun isListLike(klass: KClass<*>): Boolean = Iterable::class.java.isAssignableFrom(klass.java)
 
 /**
  * Checks if a class is an enum class.

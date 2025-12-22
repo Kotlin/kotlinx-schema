@@ -171,7 +171,17 @@ internal class KspClassIntrospector : SchemaIntrospector<KSClassDeclaration> {
                             val tref = toRef(pType)
                             val presence = if (p.hasDefault) DefaultPresence.Absent else DefaultPresence.Required
                             if (!p.hasDefault) required += name
-                            props += Property(name = name, type = tref, description = desc, defaultPresence = presence)
+                            // Note: KSP does not provide access to default value expressions at compile-time.
+                            // https://github.com/google/ksp/issues/1868
+                            // Only runtime reflection can extract actual default values.
+                            props +=
+                                Property(
+                                    name = name,
+                                    type = tref,
+                                    description = desc,
+                                    defaultPresence = presence,
+                                    defaultValue = null,
+                                )
                         }
                     } else {
                         decl.getDeclaredProperties().filter { it.isPublic() }.forEach { prop ->
@@ -184,7 +194,14 @@ internal class KspClassIntrospector : SchemaIntrospector<KSClassDeclaration> {
                             // KSP doesn't easily provide default presence here; treat as required conservatively
                             val presence = DefaultPresence.Required
                             required += name
-                            props += Property(name = name, type = tref, description = desc, defaultPresence = presence)
+                            props +=
+                                Property(
+                                    name = name,
+                                    type = tref,
+                                    description = desc,
+                                    defaultPresence = presence,
+                                    defaultValue = null,
+                                )
                         }
                     }
 

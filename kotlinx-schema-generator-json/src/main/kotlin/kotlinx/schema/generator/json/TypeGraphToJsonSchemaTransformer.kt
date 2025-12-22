@@ -305,19 +305,20 @@ public class TypeGraphToJsonSchemaTransformer
                                 removeNullableFlag(propertyDef)
                             }
 
-                            // Properties with defaults when config is false: keep as is
+                            // Properties with defaults when config is false: set the default value
+                            hasDefault -> {
+                                setDefaultValue(propertyDef, property.defaultValue)
+                            }
+
                             else -> {
                                 propertyDef
                             }
                         }
 
                     // Add the property description if available
-                    val description = property.description
                     val finalDef =
-                        if (description != null) {
-                            setDescription(adjustedDef, description)
-                        } else {
-                            adjustedDef
+                        adjustedDef.let { def ->
+                            property.description?.let { setDescription(def, it) } ?: def
                         }
                     property.name to finalDef
                 }
@@ -377,31 +378,6 @@ public class TypeGraphToJsonSchemaTransformer
                 else -> {
                     propertyDef
                 }
-            }
-
-        private fun removeNullableFlag(propertyDef: PropertyDefinition): PropertyDefinition =
-            when (propertyDef) {
-                is StringPropertyDefinition -> propertyDef.copy(nullable = null)
-                is NumericPropertyDefinition -> propertyDef.copy(nullable = null)
-                is BooleanPropertyDefinition -> propertyDef.copy(nullable = null)
-                is ArrayPropertyDefinition -> propertyDef.copy(nullable = null)
-                is ObjectPropertyDefinition -> propertyDef.copy(nullable = null)
-                else -> propertyDef
-            }
-
-        private fun setDescription(
-            propertyDef: PropertyDefinition,
-            description: String,
-        ): PropertyDefinition =
-            when (propertyDef) {
-                is StringPropertyDefinition -> propertyDef.copy(description = description)
-                is NumericPropertyDefinition -> propertyDef.copy(description = description)
-                is BooleanPropertyDefinition -> propertyDef.copy(description = description)
-                is ArrayPropertyDefinition -> propertyDef.copy(description = description)
-                is ObjectPropertyDefinition -> propertyDef.copy(description = description)
-                is AnyOfPropertyDefinition -> propertyDef.copy(description = description)
-                is OneOfPropertyDefinition -> propertyDef.copy(description = description)
-                else -> propertyDef
             }
 
         private fun convertEnum(

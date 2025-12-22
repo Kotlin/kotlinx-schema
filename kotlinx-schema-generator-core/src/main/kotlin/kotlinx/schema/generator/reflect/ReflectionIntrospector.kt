@@ -70,7 +70,7 @@ public object ReflectionIntrospector : SchemaIntrospector<KClass<*>> {
             // Handle different type categories, including sealed classes
             return when {
                 isListLike(klass) -> handleListType(klass, nullable)
-                klass == Map::class -> handleMapType(klass, nullable)
+                Map::class.java.isAssignableFrom(klass.java) -> handleMapType(klass, nullable)
                 isEnumClass(klass) -> handleEnumType(klass, nullable)
                 klass.isSealed -> handleSealedType(klass, nullable)
                 else -> handleObjectType(klass, nullable, useSimpleName)
@@ -117,11 +117,12 @@ public object ReflectionIntrospector : SchemaIntrospector<KClass<*>> {
             return PolymorphicNode(
                 baseName = klass.simpleName ?: "UnknownSealed",
                 subtypes = subtypes,
-                discriminator = Discriminator(
-                    name = "type",
-                    required = true,
-                    mapping = discriminatorMapping
-                ),
+                discriminator =
+                    Discriminator(
+                        name = "type",
+                        required = true,
+                        mapping = discriminatorMapping,
+                    ),
                 description = extractDescription(klass.annotations),
             )
         }
@@ -149,6 +150,9 @@ public object ReflectionIntrospector : SchemaIntrospector<KClass<*>> {
                     }
             }
 
+            // Try to extract default values by creating an instance
+            val defaultValues = DefaultValueExtractor.extractDefaultValues(klass)
+
             // Extract properties from primary constructor
             klass.constructors.firstOrNull()?.parameters?.forEach { param ->
                 val propertyName = param.name ?: return@forEach
@@ -168,12 +172,16 @@ public object ReflectionIntrospector : SchemaIntrospector<KClass<*>> {
                     property?.let { extractDescription(it.annotations) }
                         ?: parentPropertyDescriptions[propertyName]
 
+                // Get the actual default value if available
+                val defaultValue = if (hasDefault) defaultValues[propertyName] else null
+
                 properties +=
                     Property(
                         name = propertyName,
                         type = typeRef,
                         description = description,
                         defaultPresence = if (hasDefault) DefaultPresence.Absent else DefaultPresence.Required,
+                        defaultValue = defaultValue,
                     )
 
                 if (!hasDefault) {

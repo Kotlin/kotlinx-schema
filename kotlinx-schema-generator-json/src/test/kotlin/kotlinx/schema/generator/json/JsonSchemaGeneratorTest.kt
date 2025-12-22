@@ -164,7 +164,8 @@ class JsonSchemaGeneratorTest {
                   "type": "integer"
                 },
                 "email": {
-                  "type": "string"
+                  "type": "string",
+                  "default": "n/a"
                 },
                 "tags": {
                   "type": "array",

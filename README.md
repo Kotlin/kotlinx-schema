@@ -38,6 +38,7 @@
 - Sealed class hierarchies with automatic `oneOf`/discriminator generation
 - Proper union types for nullable parameters (`["string", "null"]`)
 - Type constraints (min/max, patterns, formats)
+- **Default values** (compile-time: tracked but not extracted; runtime: fully extracted)
 
 **Developer Experience:**
 - Gradle plugin for one-line setup
@@ -301,7 +302,8 @@ Schemas follow a `$id/$defs/$ref` layout. Example (pretty-printed):
                 },
                 "country": {
                     "type": "string",
-                    "description": "Two-letter ISO country code; defaults to US"
+                    "description": "Two-letter ISO country code; defaults to US",
+                    "default": "US"
                 }
             },
             "required": [
@@ -319,6 +321,7 @@ Schemas follow a `$id/$defs/$ref` layout. Example (pretty-printed):
 
 - Enums are `type: string` with `enum: [...]` and carry `@Description` as `description`.
 - Object properties include their inferred type schema and, when present, property-level `@Description` as `description`.
+- **Default values** are automatically extracted and included in the schema when using **runtime reflection** (e.g., `val country: String = "US"` → `"default": "US"`). Note: KSP (compile-time) tracks which properties have defaults but cannot extract the actual values.
 - Nullable properties are emitted as a union including `null`.
 - Collections: `List<T>`/`Set<T>` → `{ "type":"array", "items": T }`; `Map<String, V>` →
   `{ "type":"object", "additionalProperties": V }`.
@@ -387,14 +390,16 @@ val schemaObject = Product::class.jsonSchema
                 },
                 "inStock": {
                     "type": "boolean",
-                    "description": "Whether the product is currently in stock"
+                    "description": "Whether the product is currently in stock",
+                    "default": true
                 },
                 "tags": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     },
-                    "description": "List of tags for categorization and search"
+                    "description": "List of tags for categorization and search",
+                    "default": []
                 }
             },
             "required": [
@@ -568,7 +573,10 @@ The compile-time (KSP) approach requires you to annotate classes with `@Schema`,
 Runtime generation solves this by using reflection to analyze any class at runtime.
 
 > [!IMPORTANT]
-> **Limitation:** KDoc annotations are not available at runtime 
+> **Limitations:**
+> - KDoc annotations are not available at runtime
+> - Function parameter defaults (e.g., `fun foo(x: Int = 5)`) cannot be extracted via reflection
+> - Data class property defaults (e.g., `data class Config(val port: Int = 8080)`) ARE supported 
 
 ### Usage
 
@@ -585,10 +593,10 @@ val schemaString: String = generator.generateSchemaString(User::class)
 
 ### Choosing Your Approach
 
-| Approach                 | Best For                               | Pros                                               | Cons                                |
-|--------------------------|----------------------------------------|----------------------------------------------------|-------------------------------------|
-| **Compile-time (KSP)**   | Your own annotated classes             | Zero runtime cost, multiplatform                   | Only works for classes you own      |
-| **Runtime (Reflection)** | Third-party classes, dynamic scenarios | Works with any class, supports foreign annotations | JVM only, small reflection overhead |
+| Approach                 | Best For                               | Pros                                                    | Cons                                           |
+|--------------------------|----------------------------------------|---------------------------------------------------------|------------------------------------------------|
+| **Compile-time (KSP)**   | Your own annotated classes             | Zero runtime cost, multiplatform                        | Only works for classes you own, no default value extraction |
+| **Runtime (Reflection)** | Third-party classes, dynamic scenarios | Works with any class, extracts default values, foreign annotations | JVM only, small reflection overhead            |
 
 **Decision guide**:
 - ✅ Use **KSP** for your domain models in multiplatform projects
@@ -690,10 +698,13 @@ The generated schema follows the LLM function calling format:
 ### Key Features
 
 - **Automatic extraction**: Function name and descriptions from `@Description` annotations
+- **Default values**: Property defaults in nested data classes are automatically extracted (e.g., `data class Config(val port: Int = 8080)`)
 - **Strict mode**: `strict: true` enables OpenAI's [strict mode](https://platform.openai.com/docs/guides/function-calling#strict-mode) for reliable parsing
 - **Union types**: Nullable parameters use `["string", "null"]` instead of `nullable: true`
 - **Required by default**: All parameters marked as required (OpenAI structured outputs requirement)
 - **Type safety**: Proper JSON Schema types from Kotlin types (Int → integer, String → string, etc.)
+
+> **Note:** Function parameter defaults (e.g., `unit: String = "celsius"`) cannot be extracted via reflection, but nested data class property defaults are fully supported.
 
 ### Working with Multiple Functions
 

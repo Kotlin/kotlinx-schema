@@ -87,6 +87,7 @@ public data class Property(
     val description: String? = null,
     val deprecated: Boolean = false,
     val defaultPresence: DefaultPresence = DefaultPresence.Absent,
+    val defaultValue: Any? = null,
     val annotations: Map<String, String?> = emptyMap(),
 )
 
