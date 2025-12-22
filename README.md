@@ -66,9 +66,97 @@ This library solves three key challenges:
 Recommended: use the Gradle plugin.
 It applies KSP for you, wires generated sources, and sets up task dependencies.
 
+### Annotate Your Models
+
+```kotlin
+/**
+ * A postal address for deliveries and billing.
+ */
+@Schema
+data class Address(
+    @Description("Street address, including house number") val street: String,
+    @Description("City or town name") val city: String,
+    @Description("Postal or ZIP code") val zipCode: String,
+    @Description("Two-letter ISO country code; defaults to US") val country: String = "US",
+)
+```
+
+> **Note:** KDoc comments on classes can also be used as descriptions.
+
 ### Configuration
 
-#### Using the Gradle Plugin (Recommended)
+### Using Standard KSP Plugin
+
+You can configure KSP processor manually using the standard Google KSP plugin.
+
+#### Multiplatform (metadata processing)
+
+```kotlin
+plugins {
+    kotlin("multiplatform")
+    id("com.google.devtools.ksp") version "2.1.0-1.0.29" // Use KSP version matching your Kotlin version
+}
+
+dependencies {
+    // Add KSP processor for metadata (common code)
+    add("kspCommonMainMetadata", "org.jetbrains.kotlinx:kotlinx-schema-ksp:<version>")
+
+    // Runtime dependencies
+    implementation("org.jetbrains.kotlinx:kotlinx-schema-annotations:<version>")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:<version>")
+}
+
+kotlin {
+    sourceSets.commonMain {
+        // Make generated sources visible to metadata compilation
+        kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
+    }
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.dsl.KotlinCompile<*>>().all {
+    if (name != "kspCommonMainKotlinMetadata") {
+        dependsOn("kspCommonMainKotlinMetadata")
+    }
+}
+```
+
+#### JVM Only
+
+```kotlin
+plugins {
+    kotlin("jvm")
+    id("com.google.devtools.ksp") version "2.1.0-1.0.29" // Use KSP version matching your Kotlin version
+}
+
+dependencies {
+    // Add KSP processor for main source set
+    ksp("org.jetbrains.kotlinx:kotlinx-schema-ksp:<version>")
+
+    // Runtime dependencies
+    implementation("org.jetbrains.kotlinx:kotlinx-schema-annotations:<version>")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:<version>")
+}
+
+// Make generated sources visible to compilation
+sourceSets.main {
+    kotlin.srcDir("build/generated/ksp/main/kotlin")
+}
+```
+
+> **Note:** The KSP plugin version should match your Kotlin version. See the [KSP release table](https://github.com/google/ksp/releases) for compatibility.
+
+### Use the Generated Extensions
+
+```kotlin
+val schemaString: String = Address::class.jsonSchemaString
+val schemaObject: kotlinx.serialization.json.JsonObject = Address::class.jsonSchema
+```
+
+### Using the Gradle Plugin (WIP)
+<details>
+<summary>This is "work in progress" yet</summary>
+
+_Gradle plugin "org.jetbrains.kotlinx.schema.ksp" isn't yet available on Gradle Plugins portal._
 
 **Kotlin Multiplatform:**
 
@@ -144,8 +232,9 @@ dependencies {
 - You do NOT need to apply the KSP plugin yourself — the Gradle plugin does it.
 - You do NOT need to add generated source directories — the plugin does it.
 - For an example project, see [gradle-plugin-integration-tests](./gradle-plugin-integration-tests).
+</details>
 
-#### Configuration Options Reference
+### Configuration Options
 
 ##### `enabled`
 Enable or disable schema generation.
@@ -193,89 +282,54 @@ data class Address(val street: String)
 data class Product(val id: Long)
 ```
 
-### Alternative: Manual Setup with Standard KSP Plugin
+## Runtime schema generation
 
-If you prefer explicit KSP setup or need fine-grained control, you can configure it manually using the standard Google KSP plugin.
+For scenarios where compile-time generation isn't possible, use
+[`ReflectionClassJsonSchemaGenerator`](kotlinx-schema-generator-json/src/main/kotlin/kotlinx/schema/generator/json/ReflectionClassJsonSchemaGenerator.kt)
+and [`ReflectionFunctionCallingSchemaGenerator`](kotlinx-schema-generator-json/src/main/kotlin/kotlinx/schema/generator/json/ReflectionFunctionCallingSchemaGenerator.kt)
+with Kotlin reflection (JVM only).
 
-#### Multiplatform (metadata processing)
+### Why Runtime Generation?
 
-```kotlin
-plugins {
-    kotlin("multiplatform")
-    id("com.google.devtools.ksp") version "2.1.0-1.0.29" // Use KSP version matching your Kotlin version
-}
+**Primary use case: Third-party library classes**
 
-dependencies {
-    // Add KSP processor for metadata (common code)
-    add("kspCommonMainMetadata", "org.jetbrains.kotlinx:kotlinx-schema-ksp:<version>")
+The compile-time (KSP) approach requires you to annotate classes with `@Schema`, which isn't possible for:
+- Library classes (Spring entities, Ktor models, database classes)
+- Framework-provided models
+- Classes from dependencies you don't control
 
-    // Runtime dependencies
-    implementation("org.jetbrains.kotlinx:kotlinx-schema-annotations:<version>")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:<version>")
-}
+Runtime generation solves this by using reflection to analyze any class at runtime.
 
-kotlin {
-    sourceSets.commonMain {
-        // Make generated sources visible to metadata compilation
-        kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
-    }
-}
+> [!IMPORTANT]
+> **Limitations:**
+> - KDoc annotations are not available at runtime
+> - Function parameter defaults (e.g., `fun foo(x: Int = 5)`) cannot be extracted via reflection
+> - Data class property defaults (e.g., `data class Config(val port: Int = 8080)`) ARE supported
 
-tasks.withType<org.jetbrains.kotlin.gradle.dsl.KotlinCompile<*>>().all {
-    if (name != "kspCommonMainKotlinMetadata") {
-        dependsOn("kspCommonMainKotlinMetadata")
-    }
-}
-```
-
-#### JVM Only
+### Usage
 
 ```kotlin
-plugins {
-    kotlin("jvm")
-    id("com.google.devtools.ksp") version "2.1.0-1.0.29" // Use KSP version matching your Kotlin version
-}
+// Works with ANY class, even from third-party libraries
+import com.thirdparty.library.User  // Not your code!
 
-dependencies {
-    // Add KSP processor for main source set
-    ksp("org.jetbrains.kotlinx:kotlinx-schema-ksp:<version>")
-
-    // Runtime dependencies
-    implementation("org.jetbrains.kotlinx:kotlinx-schema-annotations:<version>")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:<version>")
-}
-
-// Make generated sources visible to compilation
-sourceSets.main {
-    kotlin.srcDir("build/generated/ksp/main/kotlin")
-}
+val generator = kotlinx.schema.generator.json.ReflectionClassJsonSchemaGenerator.Default
+val schema: JsonObject = generator.generateSchema(User::class)
+val schemaString: String = generator.generateSchemaString(User::class)
 ```
 
-> **Note:** The KSP plugin version should match your Kotlin version. See the [KSP release table](https://github.com/google/ksp/releases) for compatibility.
+**Add dependency**: `org.jetbrains.kotlinx:kotlinx-schema-generator-json:<version>`
 
-### Annotate Your Models
+### Choosing Your Approach
 
-```kotlin
-/**
- * A postal address for deliveries and billing.
- */
-@Schema
-data class Address(
-    @Description("Street address, including house number") val street: String,
-    @Description("City or town name") val city: String,
-    @Description("Postal or ZIP code") val zipCode: String,
-    @Description("Two-letter ISO country code; defaults to US") val country: String = "US",
-)
-```
+| Approach                 | Best For                               | Pros                                                    | Cons                                           |
+|--------------------------|----------------------------------------|---------------------------------------------------------|------------------------------------------------|
+| **Compile-time (KSP)**   | Your own annotated classes             | Zero runtime cost, multiplatform                        | Only works for classes you own, no default value extraction |
+| **Runtime (Reflection)** | Third-party classes, dynamic scenarios | Works with any class, extracts default values, foreign annotations | JVM only, small reflection overhead            |
 
-> **Note:** KDoc comments on classes can also be used as descriptions.
+**Decision guide**:
+- ✅ Use **KSP** for your domain models in multiplatform projects
+- ✅ Use **Reflection** for third-party library classes or when you need dynamic generation
 
-### Use the Generated Extensions
-
-```kotlin
-val schemaString: String = Address::class.jsonSchemaString
-val schemaObject: kotlinx.serialization.json.JsonObject = Address::class.jsonSchema
-```
 
 ## What Gets Generated
 
@@ -515,6 +569,121 @@ Generic type parameters are resolved at the usage site. When generating a schema
 parameters (like `T`) are treated as `kotlin.Any` with a minimal definition in the `$defs` section. For more specific
 typing, instantiate the generic class with concrete types when you need them.
 
+### Sealed class polymorphism
+
+The library automatically generates JSON schemas for Kotlin sealed class hierarchies using `oneOf` with discriminator support:
+
+```kotlin
+@Description("Represents an animal")
+sealed class Animal {
+    @Description("Animal's name")
+    abstract val name: String
+
+    @Description("Represents a dog")
+    data class Dog(
+        override val name: String,
+        @Description("Dog's breed")
+        val breed: String,
+        @Description("Trained or not")
+        val isTrained: Boolean = false,
+    ) : Animal()
+
+    @Description("Represents a cat")
+    data class Cat(
+        override val name: String,
+        @Description("Cat's color")
+        val color: String,
+        @Description("Lives left")
+        val lives: Int = 9,
+    ) : Animal()
+}
+
+val generator = ReflectionClassJsonSchemaGenerator.Default
+val schema = generator.generateSchema(Animal::class)
+```
+
+<details>
+<summary>Generated JSON schema</summary>
+
+```json
+{
+    "name": "com.example.Animal",
+    "strict": false,
+    "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Represents an animal",
+        "oneOf": [
+            {
+                "$ref": "#/$defs/Cat"
+            },
+            {
+                "$ref": "#/$defs/Dog"
+            }
+        ],
+        "discriminator": {
+            "propertyName": "type",
+            "mapping": {
+                "Cat": "#/$defs/Cat",
+                "Dog": "#/$defs/Dog"
+            }
+        },
+        "$defs": {
+            "Cat": {
+                "type": "object",
+                "description": "Represents a cat",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Animal's name"
+                    },
+                    "color": {
+                        "type": "string",
+                        "description": "Cat's color"
+                    },
+                    "lives": {
+                        "type": "integer",
+                        "description": "Lives left",
+                        "default": 9
+                    }
+                },
+                "required": ["name", "color"],
+                "additionalProperties": false
+            },
+            "Dog": {
+                "type": "object",
+                "description": "Represents a dog",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Animal's name"
+                    },
+                    "breed": {
+                        "type": "string",
+                        "description": "Dog's breed"
+                    },
+                    "isTrained": {
+                        "type": "boolean",
+                        "description": "Trained or not",
+                        "default": false
+                    }
+                },
+                "required": ["name", "breed"],
+                "additionalProperties": false
+            }
+        }
+    }
+}
+```
+</details>
+
+**Key features:**
+- **`oneOf` with `$ref`**: Each sealed subclass is referenced from a `$defs` section
+- **Discriminator**: Automatically generated with `type` property mapping
+- **Property inheritance**: Base class properties included in each subtype
+- **Type safety**: Each subtype gets its own schema definition
+- **Default values**: Subtype properties with defaults (like `lives: Int = 9`) are included
+
 ## Using @Schema and @Description annotations
 
 ### @Schema annotation
@@ -553,86 +722,6 @@ data class Product(
 **Tip**: With the recommended compiler flag `-Xannotation-default-target=param-property`, a bare `@Description` on a
 primary constructor parameter also applies to the property. If you do not enable the flag, use `@param:Description` for
 constructor-declared properties.
-
-## Runtime schema generation
-
-For scenarios where compile-time generation isn't possible, use 
-[`ReflectionClassJsonSchemaGenerator`](kotlinx-schema-generator-json/src/main/kotlin/kotlinx/schema/generator/json/ReflectionClassJsonSchemaGenerator.kt) 
-and [`ReflectionFunctionCallingSchemaGenerator`](kotlinx-schema-generator-json/src/main/kotlin/kotlinx/schema/generator/json/ReflectionFunctionCallingSchemaGenerator.kt)
-with Kotlin reflection (JVM only).
-
-### Why Runtime Generation?
-
-**Primary use case: Third-party library classes**
-
-The compile-time (KSP) approach requires you to annotate classes with `@Schema`, which isn't possible for:
-- Library classes (Spring entities, Ktor models, database classes)
-- Framework-provided models
-- Classes from dependencies you don't control
-
-Runtime generation solves this by using reflection to analyze any class at runtime.
-
-> [!IMPORTANT]
-> **Limitations:**
-> - KDoc annotations are not available at runtime
-> - Function parameter defaults (e.g., `fun foo(x: Int = 5)`) cannot be extracted via reflection
-> - Data class property defaults (e.g., `data class Config(val port: Int = 8080)`) ARE supported 
-
-### Usage
-
-```kotlin
-// Works with ANY class, even from third-party libraries
-import com.thirdparty.library.User  // Not your code!
-
-val generator = kotlinx.schema.generator.json.ReflectionClassJsonSchemaGenerator.Default
-val schema: JsonObject = generator.generateSchema(User::class)
-val schemaString: String = generator.generateSchemaString(User::class)
-```
-
-**Add dependency**: `org.jetbrains.kotlinx:kotlinx-schema-generator-json:<version>`
-
-### Choosing Your Approach
-
-| Approach                 | Best For                               | Pros                                                    | Cons                                           |
-|--------------------------|----------------------------------------|---------------------------------------------------------|------------------------------------------------|
-| **Compile-time (KSP)**   | Your own annotated classes             | Zero runtime cost, multiplatform                        | Only works for classes you own, no default value extraction |
-| **Runtime (Reflection)** | Third-party classes, dynamic scenarios | Works with any class, extracts default values, foreign annotations | JVM only, small reflection overhead            |
-
-**Decision guide**:
-- ✅ Use **KSP** for your domain models in multiplatform projects
-- ✅ Use **Reflection** for third-party library classes or when you need dynamic generation
-
-### Sealed Class Polymorphism
-
-The library automatically generates JSON schemas for Kotlin sealed class hierarchies using `oneOf` with discriminator support:
-
-```kotlin
-@Description("Represents an animal")
-sealed class Animal {
-    abstract val name: String
-
-    data class Dog(
-        override val name: String,
-        val breed: String,
-    ) : Animal()
-
-    data class Cat(
-        override val name: String,
-        val color: String,
-    ) : Animal()
-}
-
-val generator = ReflectionClassJsonSchemaGenerator.Default
-val schema = generator.generateSchema(Animal::class)
-```
-
-The generated schema includes:
-- **`oneOf` with `$ref`**: Each sealed subclass is referenced from a `$defs` section
-- **Discriminator**: Automatically generated with `type` property mapping
-- **Property inheritance**: Base class properties included in each subtype
-- **Type safety**: Each subtype gets its own schema definition
-
-**📖 See [kotlinx-schema-json/README.md#sealed-class-polymorphic-schema-generation](kotlinx-schema-json/README.md#sealed-class-polymorphic-schema-generation) for complete documentation and examples.**
 
 ## Function calling schema generation for LLMs
 
