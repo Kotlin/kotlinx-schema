@@ -1,0 +1,11 @@
+.gradle
+.junie/
+build/
+!gradle-wrapper.jar
+.idea
+*.iml
+*.ipr
+*.iws
+.DS_Store
+node_modules/
+kotlin-js-store/

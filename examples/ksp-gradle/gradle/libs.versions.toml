@@ -1,0 +1,12 @@
+[versions]
+koog = "0.5.3"
+kotest = "6.0.4"
+kotlinxSerialization = "1.9.0"
+kotlinxSchemaAnnotations = "0.0.2"
+
+[libraries]
+koog-agents-tools = { module = "ai.koog:agents-tools", version.ref = "koog" }
+kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
+kotest-assertions-json = { module = "io.kotest:kotest-assertions-json", version.ref = "kotest" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+kotlinx-schema-annotations = { module = "org.jetbrains.kotlinx:kotlinx-schema-annotations", version.ref = "kotlinxSchemaAnnotations" }

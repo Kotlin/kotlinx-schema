@@ -6,6 +6,7 @@ on:
     branches: ["main"]
     paths-ignore:
       - "**/README.md"
+      - "examples/**"
   pull_request:
     branches: ["main"]
   workflow_dispatch:

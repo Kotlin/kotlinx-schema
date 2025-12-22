@@ -66,6 +66,8 @@ This library solves three key challenges:
 Recommended: use the Gradle plugin.
 It applies KSP for you, wires generated sources, and sets up task dependencies.
 
+Refer to the example projects [here](./examples).
+
 ### Annotate Your Models
 
 ```kotlin
