@@ -72,7 +72,7 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>> 
             // Handle different type categories
             return when {
                 isListLike(klass) -> handleListType(klass, nullable)
-                klass == Map::class -> handleMapType(klass, nullable)
+                Map::class.java.isAssignableFrom(klass.java) -> handleMapType(klass, nullable)
                 isEnumClass(klass) -> handleEnumType(klass, nullable)
                 else -> handleObjectType(klass, nullable, useSimpleName)
             }
@@ -143,6 +143,9 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>> 
             val properties = mutableListOf<Property>()
             val requiredProperties = mutableSetOf<String>()
 
+            // Try to extract default values by creating an instance
+            val defaultValues = DefaultValueExtractor.extractDefaultValues(klass)
+
             // Extract properties from primary constructor
             klass.constructors.firstOrNull()?.parameters?.forEach { param ->
                 val propertyName = param.name ?: return@forEach
@@ -157,12 +160,16 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>> 
                 val propertyType = param.type
                 val typeRef = convertKTypeToTypeRef(propertyType)
 
+                // Get the actual default value if available
+                val defaultValue = if (hasDefault) defaultValues[propertyName] else null
+
                 properties +=
                     Property(
                         name = propertyName,
                         type = typeRef,
                         description = property?.let { extractDescription(it.annotations) },
                         defaultPresence = if (hasDefault) DefaultPresence.Absent else DefaultPresence.Required,
+                        defaultValue = defaultValue,
                     )
 
                 if (!hasDefault) {

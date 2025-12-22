@@ -59,7 +59,7 @@ internal abstract class BaseIntrospectionContext {
                 TypeRef.Inline(ListNode(elementRef), isNullable)
             }
 
-            classifier == Map::class -> {
+            Map::class.java.isAssignableFrom(classifier.java) -> {
                 val keyType = type.arguments.getOrNull(0)?.type
                 val valueType = type.arguments.getOrNull(1)?.type
                 val keyRef =
@@ -71,7 +71,9 @@ internal abstract class BaseIntrospectionContext {
                 TypeRef.Inline(MapNode(keyRef, valueRef), isNullable)
             }
 
-            else -> convertToTypeRef(classifier, isNullable)
+            else -> {
+                convertToTypeRef(classifier, isNullable)
+            }
         }
     }
 

@@ -56,15 +56,18 @@ public class TypeGraphToFunctionCallingSchemaTransformer
 
                     when (node) {
                         is ObjectNode -> convertObjectNodeToToolSchema(node, graph)
+
                         else -> throw IllegalArgumentException(
                             "Root node must be ObjectNode for tool schema, got: ${node::class.simpleName}",
                         )
                     }
                 }
 
-                is TypeRef.Inline -> throw IllegalArgumentException(
-                    "Root cannot be inline for tool schema. Expected ObjectNode reference.",
-                )
+                is TypeRef.Inline -> {
+                    throw IllegalArgumentException(
+                        "Root cannot be inline for tool schema. Expected ObjectNode reference.",
+                    )
+                }
             }
         }
 
@@ -74,16 +77,13 @@ public class TypeGraphToFunctionCallingSchemaTransformer
         ): FunctionCallingSchema {
             val properties =
                 node.properties.associate { property ->
-                    val propertyDef = convertTypeRef(property.type, graph)
-
-                    // Add description if available
-                    val description = property.description
                     val finalDef =
-                        if (description != null) {
-                            setDescription(propertyDef, description)
-                        } else {
-                            propertyDef
-                        }
+                        convertTypeRef(property.type, graph)
+                            .let { def ->
+                                property.description?.let { setDescription(def, it) } ?: def
+                            }.let { def ->
+                                property.defaultValue?.let { setDefaultValue(def, it) } ?: def
+                            }
 
                     property.name to finalDef
                 }
@@ -105,7 +105,10 @@ public class TypeGraphToFunctionCallingSchemaTransformer
             graph: TypeGraph,
         ): PropertyDefinition =
             when (typeRef) {
-                is TypeRef.Inline -> convertInlineNode(typeRef.node, typeRef.nullable, graph)
+                is TypeRef.Inline -> {
+                    convertInlineNode(typeRef.node, typeRef.nullable, graph)
+                }
+
                 is TypeRef.Ref -> {
                     val node =
                         graph.nodes[typeRef.id]
@@ -122,14 +125,24 @@ public class TypeGraphToFunctionCallingSchemaTransformer
             graph: TypeGraph,
         ): PropertyDefinition =
             when (node) {
-                is PrimitiveNode -> convertPrimitive(node, nullable)
-                is ListNode -> convertList(node, nullable, graph)
-                is MapNode -> convertMap(node, nullable, graph)
-                else ->
+                is PrimitiveNode -> {
+                    convertPrimitive(node, nullable)
+                }
+
+                is ListNode -> {
+                    convertList(node, nullable, graph)
+                }
+
+                is MapNode -> {
+                    convertMap(node, nullable, graph)
+                }
+
+                else -> {
                     throw IllegalArgumentException(
                         "Unsupported inline node type: ${node::class.simpleName}. " +
                             "Only PrimitiveNode, ListNode, and MapNode can be inlined.",
                     )
+                }
             }
 
         private fun convertNode(
@@ -138,15 +151,31 @@ public class TypeGraphToFunctionCallingSchemaTransformer
             graph: TypeGraph,
         ): PropertyDefinition =
             when (node) {
-                is PrimitiveNode -> convertPrimitive(node, nullable)
-                is ObjectNode -> convertObject(node, nullable, graph)
-                is EnumNode -> convertEnum(node, nullable)
-                is ListNode -> convertList(node, nullable, graph)
-                is MapNode -> convertMap(node, nullable, graph)
-                else ->
+                is PrimitiveNode -> {
+                    convertPrimitive(node, nullable)
+                }
+
+                is ObjectNode -> {
+                    convertObject(node, nullable, graph)
+                }
+
+                is EnumNode -> {
+                    convertEnum(node, nullable)
+                }
+
+                is ListNode -> {
+                    convertList(node, nullable, graph)
+                }
+
+                is MapNode -> {
+                    convertMap(node, nullable, graph)
+                }
+
+                else -> {
                     throw IllegalArgumentException(
                         "Unsupported node type: ${node::class.simpleName}.",
                     )
+                }
             }
 
         private fun convertPrimitive(
@@ -154,40 +183,45 @@ public class TypeGraphToFunctionCallingSchemaTransformer
             nullable: Boolean,
         ): PropertyDefinition =
             when (node.kind) {
-                PrimitiveKind.STRING ->
+                PrimitiveKind.STRING -> {
                     StringPropertyDefinition(
                         type = if (nullable) listOf("string", "null") else listOf("string"),
                         description = node.description,
                         nullable = null,
                     )
+                }
 
-                PrimitiveKind.BOOLEAN ->
+                PrimitiveKind.BOOLEAN -> {
                     BooleanPropertyDefinition(
                         type = if (nullable) listOf("boolean", "null") else listOf("boolean"),
                         description = node.description,
                         nullable = null,
                     )
+                }
 
-                PrimitiveKind.INT ->
+                PrimitiveKind.INT -> {
                     NumericPropertyDefinition(
                         type = if (nullable) listOf("integer", "null") else listOf("integer"),
                         description = node.description,
                         nullable = null,
                     )
+                }
 
-                PrimitiveKind.LONG ->
+                PrimitiveKind.LONG -> {
                     NumericPropertyDefinition(
                         type = if (nullable) listOf("integer", "null") else listOf("integer"),
                         description = node.description,
                         nullable = null,
                     )
+                }
 
-                PrimitiveKind.FLOAT, PrimitiveKind.DOUBLE ->
+                PrimitiveKind.FLOAT, PrimitiveKind.DOUBLE -> {
                     NumericPropertyDefinition(
                         type = if (nullable) listOf("number", "null") else listOf("number"),
                         description = node.description,
                         nullable = null,
                     )
+                }
             }
 
         private fun convertObject(
@@ -197,15 +231,13 @@ public class TypeGraphToFunctionCallingSchemaTransformer
         ): PropertyDefinition {
             val properties =
                 node.properties.associate { property ->
-                    val propertyDef = convertTypeRef(property.type, graph)
-
-                    val description = property.description
                     val finalDef =
-                        if (description != null) {
-                            setDescription(propertyDef, description)
-                        } else {
-                            propertyDef
-                        }
+                        convertTypeRef(property.type, graph)
+                            .let { def ->
+                                property.description?.let { setDescription(def, it) } ?: def
+                            }.let { def ->
+                                property.defaultValue?.let { setDefaultValue(def, it) } ?: def
+                            }
 
                     property.name to finalDef
                 }
@@ -261,17 +293,4 @@ public class TypeGraphToFunctionCallingSchemaTransformer
                 additionalProperties = additionalPropertiesSchema,
             )
         }
-
-        private fun setDescription(
-            propertyDef: PropertyDefinition,
-            description: String,
-        ): PropertyDefinition =
-            when (propertyDef) {
-                is StringPropertyDefinition -> propertyDef.copy(description = description)
-                is NumericPropertyDefinition -> propertyDef.copy(description = description)
-                is BooleanPropertyDefinition -> propertyDef.copy(description = description)
-                is ArrayPropertyDefinition -> propertyDef.copy(description = description)
-                is ObjectPropertyDefinition -> propertyDef.copy(description = description)
-                else -> propertyDef
-            }
     }

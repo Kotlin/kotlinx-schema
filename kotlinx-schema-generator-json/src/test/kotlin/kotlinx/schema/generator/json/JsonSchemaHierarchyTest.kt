@@ -85,7 +85,8 @@ class JsonSchemaHierarchyTest {
                     },
                     "lives": {
                       "type": "integer",
-                      "description": "Lives left"
+                      "description": "Lives left",
+                      "default": 9
                     }
                   },
                   "required": ["name", "color"],
@@ -105,7 +106,8 @@ class JsonSchemaHierarchyTest {
                     },
                     "isTrained": {
                       "type": "boolean",
-                      "description": "Trained or not"
+                      "description": "Trained or not",
+                      "default": false
                     }
                   },
                   "required": ["name", "breed"],
@@ -180,7 +182,8 @@ class JsonSchemaHierarchyTest {
                     },
                     "lives": {
                       "type": "integer",
-                      "description": "Lives left"
+                      "description": "Lives left",
+                      "default": 9
                     }
                   },
                   "required": ["name", "color"],
@@ -200,7 +203,8 @@ class JsonSchemaHierarchyTest {
                     },
                     "isTrained": {
                       "type": "boolean",
-                      "description": "Trained or not"
+                      "description": "Trained or not",
+                      "default": false
                     }
                   },
                   "required": ["name", "breed"],

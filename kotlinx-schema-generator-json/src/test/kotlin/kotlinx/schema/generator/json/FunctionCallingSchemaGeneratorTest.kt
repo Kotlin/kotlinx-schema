@@ -172,7 +172,8 @@ class FunctionCallingSchemaGeneratorTest {
                                     "type": "string"
                                 },
                                 "port": {
-                                    "type": "integer"
+                                    "type": "integer",
+                                    "default": 8080
                                 }
                             },
                             "required": ["host", "port"],
