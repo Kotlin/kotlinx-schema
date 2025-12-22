@@ -95,7 +95,6 @@ class KotlinxSchemaPluginTest {
 
         (project as ProjectInternal).evaluate()
 
-        val ksp = project.extensions.getByType(com.google.devtools.ksp.gradle.KspExtension::class.java)
         extension.rootPackage.get() shouldBe "com.example"
     }
 }
