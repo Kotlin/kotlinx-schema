@@ -116,3 +116,35 @@ data class Order(
     @Description("Current status of the order")
     val status: Status,
 )
+
+/**
+ * Sealed class hierarchy to test polymorphism support
+ */
+@Description("Represents a geometric shape")
+@Schema(withSchemaObject = true)
+sealed class Shape {
+    @Description("A circular shape")
+    @Schema
+    data class Circle(
+        @Description("Radius of the circle")
+        val radius: Double,
+    ) : Shape()
+
+    @Description("A rectangular shape")
+    @Schema
+    data class Rectangle(
+        @Description("Width of the rectangle")
+        val width: Double,
+        @Description("Height of the rectangle")
+        val height: Double,
+    ) : Shape()
+
+    @Description("A triangular shape")
+    @Schema
+    data class Triangle(
+        @Description("Length of the base")
+        val base: Double,
+        @Description("Height from base to apex")
+        val height: Double,
+    ) : Shape()
+}
