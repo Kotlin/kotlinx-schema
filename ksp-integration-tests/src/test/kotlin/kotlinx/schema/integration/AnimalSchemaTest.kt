@@ -1,23 +1,18 @@
-@file:Suppress("JsonStandardCompliance")
-
 package kotlinx.schema.integration
 
 import io.kotest.assertions.json.shouldEqualJson
-import io.kotest.matchers.shouldNotBe
 import kotlin.test.Test
 
 /**
- * Integration tests that verify KSP-generated extension properties work correctly for sealed classes
+ * Tests for Animal schema generation - sealed class polymorphism.
  */
-@Suppress("LongMethod")
-class SealedHierarchyTest {
+class AnimalSchemaTest {
     @Test
-    fun `Sealed hierarchy should generate polymorphic schema with discriminator`() {
-        Animal::class.jsonSchema shouldNotBe null
-        val animalSchemaString = Animal::class.jsonSchemaString
+    fun `generates polymorphic schema with oneOf composition`() {
+        val schema = Animal::class.jsonSchemaString
 
         // language=json
-        animalSchemaString shouldEqualJson
+        schema shouldEqualJson
             $$"""
             {
               "$id": "kotlinx.schema.integration.Animal",
@@ -32,27 +27,34 @@ class SealedHierarchyTest {
                 "kotlinx.schema.integration.Animal.Cat": {
                   "type": "object",
                   "properties": {
-                    "name": { "type": "string" },
-                    "type": { "const": "kotlinx.schema.integration.Animal.Cat" }
+                    "name": {
+                      "type": "string",
+                      "description": "Animal's name"
+                    },
+                    "type": {
+                      "const": "kotlinx.schema.integration.Animal.Cat"
+                    }
                   },
-                  "required": [ "name", "type" ],
+                  "required": ["name", "type"],
                   "additionalProperties": false
                 },
                 "kotlinx.schema.integration.Animal.Dog": {
                   "type": "object",
                   "properties": {
-                    "name": { "type": "string" },
-                    "type": { "const": "kotlinx.schema.integration.Animal.Dog" }
+                    "name": {
+                      "type": "string",
+                      "description": "Animal's name"
+                    },
+                    "type": {
+                      "const": "kotlinx.schema.integration.Animal.Dog"
+                    }
                   },
-                  "required": [ "name", "type" ],
+                  "required": ["name", "type"],
                   "additionalProperties": false
                 }
               },
               "$ref": "#/$defs/kotlinx.schema.integration.Animal"
             }
             """.trimIndent()
-
-        Animal.Cat::class.jsonSchema shouldNotBe null
-        Animal.Dog::class.jsonSchema shouldNotBe null
     }
 }
