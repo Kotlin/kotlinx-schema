@@ -5,16 +5,20 @@ import com.google.devtools.ksp.isPublic
 import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSType
+import com.google.devtools.ksp.symbol.Modifier
 import com.google.devtools.ksp.symbol.Nullability
 import kotlinx.schema.generator.core.ir.DefaultPresence
+import kotlinx.schema.generator.core.ir.Discriminator
 import kotlinx.schema.generator.core.ir.EnumNode
 import kotlinx.schema.generator.core.ir.ListNode
 import kotlinx.schema.generator.core.ir.MapNode
 import kotlinx.schema.generator.core.ir.ObjectNode
+import kotlinx.schema.generator.core.ir.PolymorphicNode
 import kotlinx.schema.generator.core.ir.PrimitiveKind
 import kotlinx.schema.generator.core.ir.PrimitiveNode
 import kotlinx.schema.generator.core.ir.Property
 import kotlinx.schema.generator.core.ir.SchemaIntrospector
+import kotlinx.schema.generator.core.ir.SubtypeRef
 import kotlinx.schema.generator.core.ir.TypeGraph
 import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeNode
@@ -122,6 +126,52 @@ internal class KspClassIntrospector : SchemaIntrospector<KSClassDeclaration> {
                     ),
                 )
                 return TypeRef.Ref(anyId, false)
+            }
+
+            // Sealed classes (polymorphic hierarchies)
+            if (type.declaration is KSClassDeclaration &&
+                (type.declaration as KSClassDeclaration).modifiers.contains(Modifier.SEALED)
+            ) {
+                val decl = type.declaration as KSClassDeclaration
+
+                val id = decl.typeId()
+                if (!nodes.containsKey(id) && decl !in visiting) {
+                    visiting += decl
+
+                    // Find all sealed subclasses
+                    val sealedSubclasses = decl.getSealedSubclasses().toList()
+
+                    // Create SubtypeRef for each sealed subclass using their typeId()
+                    val subtypes = sealedSubclasses.map { subclass ->
+                        SubtypeRef(subclass.typeId())
+                    }
+
+                    // Build discriminator mapping: discriminator value (simple name) -> TypeId (full qualified name)
+                    val discriminatorMapping = sealedSubclasses.associate { subclass ->
+                        val simpleName = subclass.simpleName.asString()
+                        simpleName to subclass.typeId()
+                    }
+
+                    val node = PolymorphicNode(
+                        baseName = decl.simpleName.asString(),
+                        subtypes = subtypes,
+                        discriminator = Discriminator(
+                            name = "type",
+                            required = true,
+                            mapping = discriminatorMapping,
+                        ),
+                        description = decl.descriptionOrDefault(decl.descriptionFromKdoc()),
+                    )
+                    nodes[id] = node
+
+                    // Process each sealed subclass
+                    sealedSubclasses.forEach { subclass ->
+                        toRef(subclass.asType(emptyList()))
+                    }
+
+                    visiting -= decl
+                }
+                return TypeRef.Ref(id, nullable)
             }
 
             // Enums

@@ -107,3 +107,5 @@ gradle-app.setting
 ## Junie
 /test_*.*
 /debug_*.*
+/.junie/
+/.claude/

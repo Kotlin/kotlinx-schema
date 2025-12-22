@@ -1,24 +1,29 @@
 package kotlinx.schema.integration
 
+import kotlinx.schema.Description
 import kotlinx.schema.Schema
 
 /**
  * Multicellular eukaryotic organism of the kingdom Metazoa
  */
+@Description("Multicellular eukaryotic organism of the kingdom Metazoa")
 @Schema
-public sealed class Animal {
+sealed class Animal {
     /**
      * Animal's name
      */
+    @Description("Animal's name")
     abstract val name: String
 
     @Schema(withSchemaObject = true)
-    public data class Dog(
+    data class Dog(
+        @Description("Animal's name")
         override val name: String,
     ) : Animal()
 
     @Schema(withSchemaObject = true)
-    public data class Cat(
+    data class Cat(
+        @Description("Animal's name")
         override val name: String,
     ) : Animal()
 }

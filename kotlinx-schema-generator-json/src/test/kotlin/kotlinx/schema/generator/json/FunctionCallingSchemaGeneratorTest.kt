@@ -1,6 +1,7 @@
 package kotlinx.schema.generator.json
 
 import io.kotest.assertions.json.shouldEqualJson
+import io.kotest.matchers.shouldBe
 import kotlinx.schema.Description
 import kotlinx.schema.generator.core.SchemaGeneratorService
 import kotlinx.schema.json.FunctionCallingSchema
@@ -282,5 +283,47 @@ class FunctionCallingSchemaGeneratorTest {
                 }
             }
             """.trimIndent()
+    }
+
+    @Test
+    fun `should use default instance of generator`() {
+        val generator = ReflectionFunctionCallingSchemaGenerator.Default
+        val schema = generator.generateSchema(SimpleFunction::greet)
+        schema.name shouldBe "greet"
+    }
+
+    @Test
+    fun `should use SchemaGeneratorService for function calling`() {
+        val generator =
+            SchemaGeneratorService.getGenerator<KCallable<*>, FunctionCallingSchema>(
+                KCallable::class,
+                FunctionCallingSchema::class,
+            )
+        val result = generator?.generateSchemaString(SimpleFunction::greet)
+        result!! shouldEqualJson
+            // language=json
+            """
+            {
+                "type": "function",
+                "name": "greet",
+                "description": "Greet a person",
+                "strict": true,
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        }
+                    },
+                    "required": ["name"],
+                    "additionalProperties": false
+                }
+            }
+            """.trimIndent()
+    }
+
+    object SimpleFunction {
+        @Description("Greet a person")
+        fun greet(name: String) = "Hello, $name"
     }
 }

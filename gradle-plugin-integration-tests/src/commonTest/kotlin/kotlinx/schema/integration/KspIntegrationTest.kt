@@ -348,6 +348,73 @@ class KspIntegrationTest {
     }
 
     @Test
+    fun `Shape sealed class should generate polymorphic schema with discriminator`() {
+        val schema = Shape::class.jsonSchemaString
+
+        // language=json
+        schema shouldEqualJson
+            $$"""
+            {
+              "$id": "kotlinx.schema.integration.Shape",
+              "$defs": {
+                "kotlinx.schema.integration.Shape": {
+                  "oneOf": [
+                    { "$ref": "#/$defs/kotlinx.schema.integration.Shape.Circle" },
+                    { "$ref": "#/$defs/kotlinx.schema.integration.Shape.Rectangle" },
+                    { "$ref": "#/$defs/kotlinx.schema.integration.Shape.Triangle" }
+                  ],
+                  "description": "Represents a geometric shape"
+                },
+                "kotlinx.schema.integration.Shape.Circle": {
+                  "type": "object",
+                  "properties": {
+                    "radius": { "type": "number", "description": "Radius of the circle" },
+                    "type": { "const": "kotlinx.schema.integration.Shape.Circle" }
+                  },
+                  "required": [
+                    "radius",
+                    "type"
+                  ],
+                  "additionalProperties": false,
+                  "description": "A circular shape"
+                },
+                "kotlinx.schema.integration.Shape.Rectangle": {
+                  "type": "object",
+                  "properties": {
+                    "width": { "type": "number", "description": "Width of the rectangle" },
+                    "height": { "type": "number", "description": "Height of the rectangle" },
+                    "type": { "const": "kotlinx.schema.integration.Shape.Rectangle" }
+                  },
+                  "required": [
+                    "width",
+                    "height",
+                    "type"
+                  ],
+                  "additionalProperties": false,
+                  "description": "A rectangular shape"
+                },
+                "kotlinx.schema.integration.Shape.Triangle": {
+                  "type": "object",
+                  "properties": {
+                    "base": { "type": "number", "description": "Length of the base" },
+                    "height": { "type": "number", "description": "Height from base to apex" },
+                    "type": { "const": "kotlinx.schema.integration.Shape.Triangle" }
+                  },
+                  "required": [
+                    "base",
+                    "height",
+                    "type"
+                  ],
+                  "additionalProperties": false,
+                  "description": "A triangular shape"
+                }
+              },
+              "$ref": "#/$defs/kotlinx.schema.integration.Shape"
+            }
+            """.trimIndent()
+    }
+
+    @Test
     fun `generated schemas should be valid JSON format`() {
         val schemas =
             listOf(
@@ -357,6 +424,7 @@ class KspIntegrationTest {
                 Container::class.jsonSchemaString,
                 Status::class.jsonSchemaString,
                 Order::class.jsonSchemaString,
+                Shape::class.jsonSchemaString,
             )
 
         schemas.forEach { schema ->

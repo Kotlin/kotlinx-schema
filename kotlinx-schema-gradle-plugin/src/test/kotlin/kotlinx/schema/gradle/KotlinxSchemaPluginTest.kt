@@ -2,6 +2,7 @@ package kotlinx.schema.gradle
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.testfixtures.ProjectBuilder
 import kotlin.test.Test
 
@@ -67,5 +68,33 @@ class KotlinxSchemaPluginTest {
         val extension = project.extensions.findByName(EXTENSION_NAME)
         extension shouldNotBe null
         extension shouldBe project.extensions.getByType(KotlinxSchemaExtension::class.java)
+    }
+
+    @Test
+    fun `plugin can be disabled`() {
+        val project = ProjectBuilder.builder().build()
+        project.pluginManager.apply("org.jetbrains.kotlin.jvm")
+        project.pluginManager.apply(PLUGIN_ID)
+
+        val extension = project.extensions.getByType(KotlinxSchemaExtension::class.java)
+        extension.enabled.set(false)
+
+        (project as ProjectInternal).evaluate()
+
+        extension.enabled.get() shouldBe false
+    }
+
+    @Test
+    fun `plugin configures ksp with rootPackage`() {
+        val project = ProjectBuilder.builder().build()
+        project.pluginManager.apply("org.jetbrains.kotlin.jvm")
+        project.pluginManager.apply(PLUGIN_ID)
+
+        val extension = project.extensions.getByType(KotlinxSchemaExtension::class.java)
+        extension.rootPackage.set("com.example")
+
+        (project as ProjectInternal).evaluate()
+
+        extension.rootPackage.get() shouldBe "com.example"
     }
 }

@@ -47,7 +47,7 @@ changes safe, comprehensible, and easy to maintain.
   if no asked to run tests on another platform too.
 - Use function `Names with backticks` for test methods in Kotlin, e.g. "fun `should return 200 OK`()"
 - Avoid writing KDocs for tests, keep code self-documenting
-- Use Kotest JSON assertions for schema comparisons:
+- Use Kotest JSON assertions for json and json schema comparisons:
     - Example: `schema shouldEqualJson """ { ... } """.trimIndent()`
     - For Kotlin raw strings containing JSON Schema keywords starting with `$`, escape with Kotlin interpolation escape
       in tests: use $$""" and `${'$'}` inside raw strings where needed, e.g. `${'$'}id`, `${'$'}defs`, `${'$'}ref`.
