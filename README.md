@@ -99,7 +99,7 @@ You can configure KSP processor manually using the standard Google KSP plugin.
 ```kotlin
 plugins {
     kotlin("multiplatform")
-    id("com.google.devtools.ksp") version "2.1.0-1.0.29" // Use KSP version matching your Kotlin version
+    id("com.google.devtools.ksp") version "2.3.4" // check https://github.com/google/ksp/releases
 }
 
 dependencies {
@@ -130,7 +130,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.dsl.KotlinCompile<*>>().all {
 ```kotlin
 plugins {
     kotlin("jvm")
-    id("com.google.devtools.ksp") version "2.1.0-1.0.29" // Use KSP version matching your Kotlin version
+    id("com.google.devtools.ksp") version "2.3.4" // check https://github.com/google/ksp/releases
 }
 
 dependencies {
