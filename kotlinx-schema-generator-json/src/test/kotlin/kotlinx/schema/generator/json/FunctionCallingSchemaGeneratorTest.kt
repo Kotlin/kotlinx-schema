@@ -24,37 +24,49 @@ class FunctionCallingSchemaGeneratorTest {
         fun greet(
             @Description("Person's name")
             name: String,
-            age: Int,
+            @Description("Person's age")
+            age: Int?,
         ): String = "$name: $age"
     }
 
     @Test
     fun `generates schema for simple function with primitives`() {
+        val schema = generator.generateSchema(SimplePrimitives::greet)
+
         val schemaString = generator.generateSchemaString(SimplePrimitives::greet)
         schemaString shouldEqualJson
             // language=json
             """
             {
-                "type": "function",
-                "name": "greet",
-                "description": "Greets a person",
-                "strict": true,
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "Person's name"
-                        },
-                        "age": {
-                            "type": "integer"
-                        }
-                    },
-                    "required": ["name", "age"],
-                    "additionalProperties": false
-                }
+              "type": "function",
+              "name": "greet",
+              "description": "Greets a person",
+              "strict": true,
+              "parameters": {
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Person's name"
+                  },
+                  "age": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "description": "Person's age"
+                  }
+                },
+                "required": [
+                  "name",
+                  "age"
+                ],
+                "additionalProperties": false,
+                "type": "object"
+              }
             }
             """.trimIndent()
+
+        json.encodeToString(schema) shouldEqualJson schemaString
     }
 
     object Collections {
