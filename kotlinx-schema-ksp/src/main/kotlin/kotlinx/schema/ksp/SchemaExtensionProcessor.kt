@@ -19,7 +19,7 @@ import com.google.devtools.ksp.validate
  */
 internal class SchemaExtensionProcessor(
     private val codeGenerator: CodeGenerator,
-    private val sourceCoGenerator: SourceCodeGenerator,
+    private val sourceCoGenerator: ClassSourceCodeGenerator,
     private val logger: KSPLogger,
     private val options: Map<String, String>,
 ) : SymbolProcessor {

@@ -1,4 +1,4 @@
-package kotlinx.schema.integration
+package kotlinx.schema.integration.type
 
 import io.kotest.assertions.json.shouldEqualJson
 import kotlin.test.Test
@@ -15,9 +15,9 @@ class PersonSchemaTest {
         schema shouldEqualJson
             $$"""
             {
-              "$id": "kotlinx.schema.integration.Person",
+              "$id": "kotlinx.schema.integration.type.Person",
               "$defs": {
-                "kotlinx.schema.integration.Person": {
+                "kotlinx.schema.integration.type.Person": {
                   "type": "object",
                   "properties": {
                     "firstName": {
@@ -38,7 +38,7 @@ class PersonSchemaTest {
                   "description": "A person with a first and last name and age."
                 }
               },
-              "$ref": "#/$defs/kotlinx.schema.integration.Person"
+              "$ref": "#/$defs/kotlinx.schema.integration.type.Person"
             }
             """.trimIndent()
     }

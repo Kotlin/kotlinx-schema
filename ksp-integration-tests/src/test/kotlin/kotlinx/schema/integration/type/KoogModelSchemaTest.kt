@@ -1,4 +1,4 @@
-package kotlinx.schema.integration
+package kotlinx.schema.integration.type
 
 import io.kotest.assertions.json.shouldEqualJson
 import kotlin.test.Test
@@ -15,9 +15,9 @@ class KoogModelSchemaTest {
         schema shouldEqualJson
             $$"""
             {
-              "$id": "kotlinx.schema.integration.KoogModel",
+              "$id": "kotlinx.schema.integration.type.KoogModel",
               "$defs": {
-                "kotlinx.schema.integration.KoogModel": {
+                "kotlinx.schema.integration.type.KoogModel": {
                   "type": "object",
                   "properties": {
                     "id": {
@@ -53,7 +53,7 @@ class KoogModelSchemaTest {
                   "description": "A purchasable product with pricing and inventory info."
                 }
               },
-              "$ref": "#/$defs/kotlinx.schema.integration.KoogModel"
+              "$ref": "#/$defs/kotlinx.schema.integration.type.KoogModel"
             }
             """.trimIndent()
     }

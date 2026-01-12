@@ -1,4 +1,4 @@
-package kotlinx.schema.integration
+package kotlinx.schema.integration.type
 
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.ints.shouldBeGreaterThan
@@ -81,8 +81,8 @@ class SchemaInfrastructureTest {
         schemas.forEach { (name, schema) ->
             val jsonObj = Json.decodeFromString<JsonObject>(schema)
             val id = jsonObj["\$id"]?.toString()?.trim('"')
-            assert(id == "kotlinx.schema.integration.$name") {
-                "Expected ID kotlinx.schema.integration.$name but got $id"
+            assert(id == "kotlinx.schema.integration.type.$name") {
+                "Expected ID kotlinx.schema.integration.type.$name but got $id"
             }
         }
 

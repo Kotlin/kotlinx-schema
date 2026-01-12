@@ -1,4 +1,4 @@
-package kotlinx.schema.integration
+package kotlinx.schema.integration.type
 
 import io.kotest.assertions.json.shouldEqualJson
 import kotlin.test.Test
@@ -15,9 +15,9 @@ class AddressSchemaTest {
         schema shouldEqualJson
             $$"""
             {
-              "$id": "kotlinx.schema.integration.Address",
+              "$id": "kotlinx.schema.integration.type.Address",
               "$defs": {
-                "kotlinx.schema.integration.Address": {
+                "kotlinx.schema.integration.type.Address": {
                   "type": "object",
                   "properties": {
                     "street": {
@@ -42,7 +42,7 @@ class AddressSchemaTest {
                   "description": "A postal address for deliveries and billing."
                 }
               },
-              "$ref": "#/$defs/kotlinx.schema.integration.Address"
+              "$ref": "#/$defs/kotlinx.schema.integration.type.Address"
             }
             """.trimIndent()
     }

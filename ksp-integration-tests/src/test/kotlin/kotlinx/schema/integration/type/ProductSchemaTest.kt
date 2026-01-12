@@ -1,23 +1,23 @@
-package kotlinx.schema.integration
+package kotlinx.schema.integration.type
 
 import io.kotest.assertions.json.shouldEqualJson
 import kotlin.test.Test
 
 /**
- * Tests for JacksonModel schema generation - Jackson annotation extraction.
+ * Tests for Product schema generation - all primitive types and collections.
  */
-class JacksonModelSchemaTest {
+class ProductSchemaTest {
     @Test
-    fun `extracts descriptions from Jackson annotations`() {
-        val schema = JacksonModel::class.jsonSchemaString
+    fun `generates schema with all property types and nullable handling`() {
+        val schema = Product::class.jsonSchemaString
 
         // language=json
         schema shouldEqualJson
             $$"""
             {
-              "$id": "kotlinx.schema.integration.JacksonModel",
+              "$id": "kotlinx.schema.integration.type.Product",
               "$defs": {
-                "kotlinx.schema.integration.JacksonModel": {
+                "kotlinx.schema.integration.type.Product": {
                   "type": "object",
                   "properties": {
                     "id": {
@@ -50,10 +50,10 @@ class JacksonModelSchemaTest {
                   },
                   "required": ["id", "name", "description", "price"],
                   "additionalProperties": false,
-                  "description": "A purchasable product using Jackson annotations."
+                  "description": "A purchasable product with pricing and inventory info."
                 }
               },
-              "$ref": "#/$defs/kotlinx.schema.integration.JacksonModel"
+              "$ref": "#/$defs/kotlinx.schema.integration.type.Product"
             }
             """.trimIndent()
     }

@@ -5,11 +5,13 @@ import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.symbol.KSAnnotated
 import io.kotest.matchers.collections.shouldBeEmpty
+import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.verify
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
@@ -17,7 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith
  * Unit tests for SchemaExtensionProcessor.
  *
  * These tests verify that the processor correctly:
- * - Passes options to SourceCodeGenerator with correct precedence
+ * - Passes options to ClassSourceCodeGenerator with correct precedence
  * - Creates files with proper naming and packages
  * - Handles enabled/disabled state
  * - Manages lifecycle correctly
@@ -30,15 +32,26 @@ class SchemaExtensionProcessorTest {
     private lateinit var codeGenerator: CodeGenerator
 
     @MockK
-    private lateinit var sourceCodeGenerator: SourceCodeGenerator
+    private lateinit var sourceCodeGenerator: ClassSourceCodeGenerator
 
-    @MockK(relaxed = true)
+    @MockK(relaxUnitFun = true)
     private lateinit var logger: KSPLogger
 
     @MockK
     private lateinit var resolver: Resolver
 
     private lateinit var subject: SchemaExtensionProcessor
+
+    @BeforeEach
+    fun beforeEach() {
+        subject =
+            SchemaExtensionProcessor(
+                codeGenerator,
+                sourceCodeGenerator,
+                logger,
+                options = emptyMap(),
+            )
+    }
 
     @Test
     fun `should skip processing when disabled via options`() {

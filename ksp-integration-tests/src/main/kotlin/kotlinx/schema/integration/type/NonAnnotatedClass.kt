@@ -1,4 +1,4 @@
-package kotlinx.schema.integration
+package kotlinx.schema.integration.type
 
 /**
  * Simple class without annotation - should not generate extensions

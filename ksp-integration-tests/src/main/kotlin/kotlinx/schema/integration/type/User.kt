@@ -1,4 +1,4 @@
-package kotlinx.schema.integration
+package kotlinx.schema.integration.type
 
 import kotlinx.schema.Description
 import kotlinx.schema.Schema

@@ -1,4 +1,4 @@
-package kotlinx.schema.integration
+package kotlinx.schema.integration.type
 
 import io.kotest.assertions.json.shouldEqualJson
 import kotlin.test.Test
@@ -16,9 +16,9 @@ class OrderSchemaTest {
         schema shouldEqualJson
             $$"""
             {
-              "$id": "kotlinx.schema.integration.Order",
+              "$id": "kotlinx.schema.integration.type.Order",
               "$defs": {
-                "kotlinx.schema.integration.Person": {
+                "kotlinx.schema.integration.type.Person": {
                   "type": "object",
                   "properties": {
                     "firstName": {
@@ -38,7 +38,7 @@ class OrderSchemaTest {
                   "additionalProperties": false,
                   "description": "A person with a first and last name and age."
                 },
-                "kotlinx.schema.integration.Address": {
+                "kotlinx.schema.integration.type.Address": {
                   "type": "object",
                   "properties": {
                     "street": {
@@ -62,7 +62,7 @@ class OrderSchemaTest {
                   "additionalProperties": false,
                   "description": "A postal address for deliveries and billing."
                 },
-                "kotlinx.schema.integration.Product": {
+                "kotlinx.schema.integration.type.Product": {
                   "type": "object",
                   "properties": {
                     "id": {
@@ -97,12 +97,12 @@ class OrderSchemaTest {
                   "additionalProperties": false,
                   "description": "A purchasable product with pricing and inventory info."
                 },
-                "kotlinx.schema.integration.Status": {
+                "kotlinx.schema.integration.type.Status": {
                   "type": "string",
                   "enum": ["ACTIVE", "INACTIVE", "PENDING"],
                   "description": "Current lifecycle status of an entity."
                 },
-                "kotlinx.schema.integration.Order": {
+                "kotlinx.schema.integration.type.Order": {
                   "type": "object",
                   "properties": {
                     "id": {
@@ -110,22 +110,22 @@ class OrderSchemaTest {
                       "description": "Unique order identifier"
                     },
                     "customer": {
-                      "$ref": "#/$defs/kotlinx.schema.integration.Person",
+                      "$ref": "#/$defs/kotlinx.schema.integration.type.Person",
                       "description": "The customer who placed the order"
                     },
                     "shippingAddress": {
-                      "$ref": "#/$defs/kotlinx.schema.integration.Address",
+                      "$ref": "#/$defs/kotlinx.schema.integration.type.Address",
                       "description": "Destination address for shipment"
                     },
                     "items": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/$defs/kotlinx.schema.integration.Product"
+                        "$ref": "#/$defs/kotlinx.schema.integration.type.Product"
                       },
                       "description": "List of items included in the order"
                     },
                     "status": {
-                      "$ref": "#/$defs/kotlinx.schema.integration.Status",
+                      "$ref": "#/$defs/kotlinx.schema.integration.type.Status",
                       "description": "Current status of the order"
                     }
                   },
@@ -134,7 +134,7 @@ class OrderSchemaTest {
                   "description": "An order placed by a customer containing multiple items."
                 }
               },
-              "$ref": "#/$defs/kotlinx.schema.integration.Order"
+              "$ref": "#/$defs/kotlinx.schema.integration.type.Order"
             }
             """.trimIndent()
     }

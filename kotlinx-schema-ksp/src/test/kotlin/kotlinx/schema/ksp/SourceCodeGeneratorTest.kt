@@ -5,7 +5,7 @@ import io.kotest.matchers.string.shouldNotContain
 import org.junit.jupiter.api.Test
 
 /**
- * Unit tests for SourceCodeGenerator.
+ * Unit tests for ClassSourceCodeGenerator.
  *
  * Tests verify the precedence logic for withSchemaObject option:
  * - Global KSP option takes precedence over annotation parameter
@@ -20,7 +20,7 @@ class SourceCodeGeneratorTest {
 
         // When
         val code =
-            SourceCodeGenerator.generateCode(
+            ClassSourceCodeGenerator.generateCode(
                 packageName = "com.example",
                 classNameWithGenerics = "com.example.TestClass",
                 options = options,
@@ -43,7 +43,7 @@ class SourceCodeGeneratorTest {
 
         // When
         val code =
-            SourceCodeGenerator.generateCode(
+            ClassSourceCodeGenerator.generateCode(
                 packageName = "com.example",
                 classNameWithGenerics = "com.example.TestClass",
                 options = options,
@@ -65,7 +65,7 @@ class SourceCodeGeneratorTest {
 
         // When
         val code =
-            SourceCodeGenerator.generateCode(
+            ClassSourceCodeGenerator.generateCode(
                 packageName = "com.example",
                 classNameWithGenerics = "com.example.TestClass",
                 options = options,
@@ -87,7 +87,7 @@ class SourceCodeGeneratorTest {
 
         // When
         val code =
-            SourceCodeGenerator.generateCode(
+            ClassSourceCodeGenerator.generateCode(
                 packageName = "com.example",
                 classNameWithGenerics = "com.example.TestClass",
                 options = options,
@@ -109,7 +109,7 @@ class SourceCodeGeneratorTest {
 
         // When
         val code =
-            SourceCodeGenerator.generateCode(
+            ClassSourceCodeGenerator.generateCode(
                 packageName = "com.example",
                 classNameWithGenerics = "com.example.TestClass",
                 options = options,
@@ -131,7 +131,7 @@ class SourceCodeGeneratorTest {
 
         // When - single type parameter
         val codeSingle =
-            SourceCodeGenerator.generateCode(
+            ClassSourceCodeGenerator.generateCode(
                 packageName = "com.example",
                 classNameWithGenerics = "com.example.Container<*>",
                 options = options,
@@ -141,7 +141,7 @@ class SourceCodeGeneratorTest {
 
         // When - multiple type parameters
         val codeMultiple =
-            SourceCodeGenerator.generateCode(
+            ClassSourceCodeGenerator.generateCode(
                 packageName = "com.example",
                 classNameWithGenerics = "com.example.Result<*, *>",
                 options = options,
@@ -165,7 +165,7 @@ class SourceCodeGeneratorTest {
         // Test 1: Package and class reference generation
         // =================================================================
         val codeWithCustomPackage =
-            SourceCodeGenerator.generateCode(
+            ClassSourceCodeGenerator.generateCode(
                 packageName = "com.example.models",
                 classNameWithGenerics = "com.example.models.UserModel",
                 options = optionsBasic,
@@ -183,7 +183,7 @@ class SourceCodeGeneratorTest {
         // Test 2: String escaping and wrapping
         // =================================================================
         val codeWithDollarSign =
-            SourceCodeGenerator.generateCode(
+            ClassSourceCodeGenerator.generateCode(
                 packageName = "com.example",
                 classNameWithGenerics = "com.example.TestClass",
                 options = optionsBasic,
@@ -192,7 +192,7 @@ class SourceCodeGeneratorTest {
             )
 
         val codeWithTripleQuotes =
-            SourceCodeGenerator.generateCode(
+            ClassSourceCodeGenerator.generateCode(
                 packageName = "com.example",
                 classNameWithGenerics = "com.example.TestClass",
                 options = optionsBasic,
@@ -211,7 +211,7 @@ class SourceCodeGeneratorTest {
         // Test 3: Code structure - suppressions, markers, and documentation
         // =================================================================
         val codeWithBothProperties =
-            SourceCodeGenerator.generateCode(
+            ClassSourceCodeGenerator.generateCode(
                 packageName = "com.example",
                 classNameWithGenerics = "com.example.TestClass",
                 options = optionsWithSchemaObject,
@@ -245,7 +245,7 @@ class SourceCodeGeneratorTest {
 
         // When
         val code =
-            SourceCodeGenerator.generateCode(
+            ClassSourceCodeGenerator.generateCode(
                 packageName = "com.example",
                 classNameWithGenerics = "com.example.TestClass",
                 options = options,
