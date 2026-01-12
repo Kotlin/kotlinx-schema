@@ -8,7 +8,7 @@ public object SchemaGeneratorService {
     private val logger = KotlinLogging.logger {}
 
     private val serviceLoader = ServiceLoader.load(SchemaGenerator::class.java)
-    private var generators: List<SchemaGenerator<*, *>> = serviceLoader.toList()
+    private val generators: List<SchemaGenerator<*, *>> = serviceLoader.toList()
 
     init {
         logger.info {

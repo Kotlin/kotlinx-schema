@@ -121,7 +121,7 @@ internal object Config {
         val classLoader = Config.javaClass.classLoader
         val stream =
             classLoader.getResourceAsStream(CONFIG_FILE_NAME)
-                ?: throw IllegalStateException(
+                ?: error(
                     "Configuration file '$CONFIG_FILE_NAME' not found on classpath. " +
                         "Searched using classloader: ${classLoader.javaClass.name}. " +
                         "Ensure the file exists in your resources directory.",

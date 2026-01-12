@@ -1,14 +1,13 @@
 package kotlinx.schema.json
 
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonPrimitive
 import kotlin.test.Test
 
 /**
  * Tests for polymorphic property definitions (oneOf, anyOf, allOf) serialization and deserialization.
  */
-@Suppress("LargeClass", "LongMethod")
 internal class PolymorphicPropertyDefinitionTest {
     private val json = Json { prettyPrint = true }
 
@@ -77,14 +76,14 @@ internal class PolymorphicPropertyDefinitionTest {
 
         // language=json
         val expectedJson =
-            """
+            $$"""
             {
               "oneOf": [
                 {
-                  "${'$'}ref": "#/definitions/Dog"
+                  "$ref": "#/definitions/Dog"
                 },
                 {
-                  "${'$'}ref": "#/definitions/Cat"
+                  "$ref": "#/definitions/Cat"
                 }
               ],
               "discriminator": {
@@ -111,6 +110,7 @@ internal class PolymorphicPropertyDefinitionTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun `oneOf with inline object options serialization round-trip`() {
         val definition =
             OneOfPropertyDefinition(
@@ -119,7 +119,7 @@ internal class PolymorphicPropertyDefinitionTest {
                         ObjectPropertyDefinition(
                             properties =
                                 mapOf(
-                                    "type" to StringPropertyDefinition(constValue = kotlinx.serialization.json.JsonPrimitive("credit_card")),
+                                    "type" to StringPropertyDefinition(constValue = JsonPrimitive("credit_card")),
                                     "cardNumber" to StringPropertyDefinition(description = "Card number"),
                                 ),
                             required = listOf("type", "cardNumber"),
@@ -127,7 +127,7 @@ internal class PolymorphicPropertyDefinitionTest {
                         ObjectPropertyDefinition(
                             properties =
                                 mapOf(
-                                    "type" to StringPropertyDefinition(constValue = kotlinx.serialization.json.JsonPrimitive("paypal")),
+                                    "type" to StringPropertyDefinition(constValue = JsonPrimitive("paypal")),
                                     "email" to StringPropertyDefinition(format = "email", description = "PayPal email"),
                                 ),
                             required = listOf("type", "email"),
@@ -226,6 +226,7 @@ internal class PolymorphicPropertyDefinitionTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun `allOf with composition serialization round-trip`() {
         val definition =
             AllOfPropertyDefinition(
@@ -254,11 +255,11 @@ internal class PolymorphicPropertyDefinitionTest {
 
         // language=json
         val expectedJson =
-            """
+            $$"""
             {
               "allOf": [
                 {
-                  "${'$'}ref": "#/definitions/BaseUser"
+                  "$ref": "#/definitions/BaseUser"
                 },
                 {
                   "type": "object",
@@ -352,11 +353,11 @@ internal class PolymorphicPropertyDefinitionTest {
 
         // language=json
         val expectedJson =
-            """
+            $$"""
             {
               "allOf": [
                 {
-                  "${'$'}ref": "#/definitions/Base"
+                  "$ref": "#/definitions/Base"
                 }
               ],
               "description": "Single ref allOf"
@@ -377,7 +378,10 @@ internal class PolymorphicPropertyDefinitionTest {
                             oneOf =
                                 listOf(
                                     StringPropertyDefinition(description = "String variant"),
-                                    NumericPropertyDefinition(type = listOf("integer"), description = "Integer variant"),
+                                    NumericPropertyDefinition(
+                                        type = listOf("integer"),
+                                        description = "Integer variant",
+                                    ),
                                 ),
                         ),
                     ),
@@ -386,11 +390,11 @@ internal class PolymorphicPropertyDefinitionTest {
 
         // language=json
         val expectedJson =
-            """
+            $$"""
             {
               "allOf": [
                 {
-                  "${'$'}ref": "#/definitions/Base"
+                  "$ref": "#/definitions/Base"
                 },
                 {
                   "oneOf": [
@@ -427,14 +431,14 @@ internal class PolymorphicPropertyDefinitionTest {
 
         // language=json
         val expectedJson =
-            """
+            $$"""
             {
               "oneOf": [
                 {
-                  "${'$'}ref": "#/definitions/TypeA"
+                  "$ref": "#/definitions/TypeA"
                 },
                 {
-                  "${'$'}ref": "#/definitions/TypeB"
+                  "$ref": "#/definitions/TypeB"
                 }
               ],
               "discriminator": {
@@ -503,11 +507,11 @@ internal class PolymorphicPropertyDefinitionTest {
     fun `deserialize allOf from JSON`() {
         // language=json
         val inputJson =
-            """
+            $$"""
             {
               "allOf": [
                 {
-                  "${'$'}ref": "#/definitions/Base"
+                  "$ref": "#/definitions/Base"
                 },
                 {
                   "type": "object",

@@ -21,9 +21,10 @@ internal fun KSAnnotation.descriptionOrNull(): String? {
             .asString()
 
     val args: List<Pair<String, Any?>> =
-        arguments
-            .filter { it.name?.asString() != null }
-            .map { it.name?.asString()!! to it.value }
+        arguments.mapNotNull {
+            val name = it.name?.asString() ?: return@mapNotNull null
+            name to it.value
+        }
 
     return Introspections.getDescriptionFromAnnotation(
         annotationName = annotationName,
@@ -32,4 +33,5 @@ internal fun KSAnnotation.descriptionOrNull(): String? {
 }
 
 internal fun KSAnnotated.descriptionOrDefault(defaultValue: String? = null): String? =
-    annotations.mapNotNull { it.descriptionOrNull() }.firstOrNull() ?: defaultValue
+    annotations.mapNotNull { it.descriptionOrNull() }.firstOrNull()
+        ?: defaultValue

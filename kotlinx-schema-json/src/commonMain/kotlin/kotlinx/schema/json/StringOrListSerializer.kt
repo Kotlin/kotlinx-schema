@@ -48,13 +48,19 @@ public class StringOrListSerializer : KSerializer<List<String>> {
                 ?: throw SerializationException("This serializer can only be used with JSON")
 
         return when (val element = jsonDecoder.decodeJsonElement()) {
-            is JsonPrimitive -> listOf(element.contentOrNull ?: "")
-            is JsonArray ->
-                element.map {
-                    (it as? JsonPrimitive)?.contentOrNull ?: ""
-                }
+            is JsonPrimitive -> {
+                listOf(element.contentOrNull.orEmpty())
+            }
 
-            else -> throw SerializationException("Expected string or array of strings")
+            is JsonArray -> {
+                element.map {
+                    (it as? JsonPrimitive)?.contentOrNull.orEmpty()
+                }
+            }
+
+            else -> {
+                throw SerializationException("Expected string or array of strings")
+            }
         }
     }
 

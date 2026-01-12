@@ -151,9 +151,13 @@ internal class SchemaExtensionProcessor(
 
         // Create the generated file
         val fileName = "${className}SchemaExtensions"
+        val classSourceFile =
+            requireNotNull(classDeclaration.containingFile) {
+                "Class declaration must have a containing file"
+            }
         val file =
             codeGenerator.createNewFile(
-                dependencies = Dependencies(true, classDeclaration.containingFile!!),
+                dependencies = Dependencies(true, classSourceFile),
                 packageName = packageName,
                 fileName = fileName,
             )
@@ -188,9 +192,10 @@ internal class SchemaExtensionProcessor(
         val defaultParameters = getSchemaAnnotationDefaults()
 
         val parameters =
-            schemaAnnotation.arguments.filter { it.name != null }.associate {
-                it.name!!.getShortName() to it.value
-            }
+            schemaAnnotation.arguments
+                .mapNotNull { arg ->
+                    arg.name?.getShortName()?.let { it to arg.value }
+                }.toMap()
         return defaultParameters.plus(parameters)
     }
 

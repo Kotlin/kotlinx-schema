@@ -184,12 +184,12 @@ public class JsonSchemaBuilder {
 
     public fun build(): JsonSchema {
         require(name.isNotEmpty()) { "Schema name must not be empty" }
-        requireNotNull(schemaDefinition) { "Schema definition must be provided" }
+        val schema = requireNotNull(schemaDefinition) { "Schema definition must be provided" }
         return JsonSchema(
             name = name,
             strict = strict,
             description = description,
-            schema = schemaDefinition!!,
+            schema = schema,
         )
     }
 }
