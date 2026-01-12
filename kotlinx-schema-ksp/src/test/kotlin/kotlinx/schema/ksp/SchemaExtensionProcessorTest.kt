@@ -5,14 +5,11 @@ import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.symbol.KSAnnotated
 import io.kotest.matchers.collections.shouldBeEmpty
-import io.mockk.Runs
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
@@ -35,20 +32,13 @@ class SchemaExtensionProcessorTest {
     @MockK
     private lateinit var sourceCodeGenerator: SourceCodeGenerator
 
-    @MockK
+    @MockK(relaxed = true)
     private lateinit var logger: KSPLogger
 
     @MockK
     private lateinit var resolver: Resolver
 
     private lateinit var subject: SchemaExtensionProcessor
-
-    @BeforeEach
-    fun setup() {
-        every { logger.info(any()) } just Runs
-        every { logger.warn(any()) } just Runs
-        every { logger.error(any()) } just Runs
-    }
 
     @Test
     fun `should skip processing when disabled via options`() {
@@ -98,7 +88,6 @@ class SchemaExtensionProcessorTest {
         // Then
         result.shouldBeEmpty()
     }
-
 
     @Test
     fun `finish should log success message`() {
