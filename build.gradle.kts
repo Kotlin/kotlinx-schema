@@ -78,6 +78,7 @@ kover {
     reports {
         filters {
             includes.classes("kotlinx.schema.*")
+            excludes.classes("kotlinx.schema.ksp.ir.*")
         }
         total {
             log {

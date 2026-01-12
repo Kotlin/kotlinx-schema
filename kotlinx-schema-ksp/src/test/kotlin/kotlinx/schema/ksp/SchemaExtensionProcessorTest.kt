@@ -17,7 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith
  * Unit tests for SchemaExtensionProcessor.
  *
  * These tests verify that the processor correctly:
- * - Passes options to SourceCodeGenerator with correct precedence
+ * - Passes options to ClassSourceCodeGenerator with correct precedence
  * - Creates files with proper naming and packages
  * - Handles enabled/disabled state
  * - Manages lifecycle correctly
@@ -30,7 +30,7 @@ class SchemaExtensionProcessorTest {
     private lateinit var codeGenerator: CodeGenerator
 
     @MockK
-    private lateinit var sourceCodeGenerator: SourceCodeGenerator
+    private lateinit var sourceCodeGenerator: ClassSourceCodeGenerator
 
     @MockK(relaxed = true)
     private lateinit var logger: KSPLogger

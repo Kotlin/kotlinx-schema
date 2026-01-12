@@ -10,8 +10,6 @@ import com.google.devtools.ksp.symbol.Nullability
 import kotlinx.schema.generator.core.ir.DefaultPresence
 import kotlinx.schema.generator.core.ir.Discriminator
 import kotlinx.schema.generator.core.ir.EnumNode
-import kotlinx.schema.generator.core.ir.ListNode
-import kotlinx.schema.generator.core.ir.MapNode
 import kotlinx.schema.generator.core.ir.ObjectNode
 import kotlinx.schema.generator.core.ir.PolymorphicNode
 import kotlinx.schema.generator.core.ir.PrimitiveKind
@@ -38,79 +36,17 @@ internal class KspClassIntrospector : SchemaIntrospector<KSClassDeclaration> {
             if (!nodes.containsKey(this)) nodes[this] = node
         }
 
-        fun primitiveFor(type: KSType): PrimitiveNode? {
-            val qn = type.declaration.qualifiedName?.asString()
-            return when (qn) {
-                "kotlin.String" -> PrimitiveNode(PrimitiveKind.STRING)
-                "kotlin.Boolean" -> PrimitiveNode(PrimitiveKind.BOOLEAN)
-                "kotlin.Int", "kotlin.Byte", "kotlin.Short" -> PrimitiveNode(PrimitiveKind.INT)
-                "kotlin.Long" -> PrimitiveNode(PrimitiveKind.LONG)
-                "kotlin.Float" -> PrimitiveNode(PrimitiveKind.FLOAT)
-                "kotlin.Double" -> PrimitiveNode(PrimitiveKind.DOUBLE)
-                else -> null
-            }
-        }
-
         fun toRef(type: KSType): TypeRef {
             val nullable = type.nullability == Nullability.NULLABLE
 
-            primitiveFor(type)?.let { prim ->
+            // Try primitive types first
+            KspTypeMappers.primitiveFor(type)?.let { prim ->
                 return TypeRef.Inline(prim, nullable)
             }
 
-            val qn = type.declaration.qualifiedName?.asString()
-
-            // Collections
-            if (qn == "kotlin.collections.List" || qn == "kotlin.collections.Set") {
-                val elem =
-                    type.arguments
-                        .firstOrNull()
-                        ?.type
-                        ?.resolve() ?: return TypeRef.Inline(
-                        ListNode(
-                            TypeRef.Inline(PrimitiveNode(PrimitiveKind.STRING)),
-                        ),
-                        nullable,
-                    )
-                return TypeRef.Inline(ListNode(element = toRef(elem)), nullable)
-            }
-            if (qn == "kotlin.collections.Map") {
-                val key =
-                    type.arguments
-                        .getOrNull(0)
-                        ?.type
-                        ?.resolve() ?: return TypeRef.Inline(
-                        MapNode(
-                            TypeRef.Inline(PrimitiveNode(PrimitiveKind.STRING)),
-                            TypeRef.Inline(PrimitiveNode(PrimitiveKind.STRING)),
-                        ),
-                        nullable,
-                    )
-                val value =
-                    type.arguments
-                        .getOrNull(1)
-                        ?.type
-                        ?.resolve() ?: return TypeRef.Inline(
-                        MapNode(
-                            TypeRef.Inline(PrimitiveNode(PrimitiveKind.STRING)),
-                            TypeRef.Inline(PrimitiveNode(PrimitiveKind.STRING)),
-                        ),
-                        nullable,
-                    )
-                return TypeRef.Inline(MapNode(key = toRef(key), value = toRef(value)), nullable)
-            }
-            if (qn == "kotlin.Array") {
-                val elem =
-                    type.arguments
-                        .firstOrNull()
-                        ?.type
-                        ?.resolve() ?: return TypeRef.Inline(
-                        ListNode(
-                            TypeRef.Inline(PrimitiveNode(PrimitiveKind.STRING)),
-                        ),
-                        nullable,
-                    )
-                return TypeRef.Inline(ListNode(element = toRef(elem)), nullable)
+            // Try collection types (List, Set, Map, Array)
+            KspTypeMappers.collectionTypeRefOrNull(type, ::toRef)?.let { collectionRef ->
+                return collectionRef
             }
 
             // Generic type parameters or unknown declarations -> star-projection to kotlin.Any
@@ -142,26 +78,30 @@ internal class KspClassIntrospector : SchemaIntrospector<KSClassDeclaration> {
                     val sealedSubclasses = decl.getSealedSubclasses().toList()
 
                     // Create SubtypeRef for each sealed subclass using their typeId()
-                    val subtypes = sealedSubclasses.map { subclass ->
-                        SubtypeRef(subclass.typeId())
-                    }
+                    val subtypes =
+                        sealedSubclasses.map { subclass ->
+                            SubtypeRef(subclass.typeId())
+                        }
 
                     // Build discriminator mapping: discriminator value (simple name) -> TypeId (full qualified name)
-                    val discriminatorMapping = sealedSubclasses.associate { subclass ->
-                        val simpleName = subclass.simpleName.asString()
-                        simpleName to subclass.typeId()
-                    }
+                    val discriminatorMapping =
+                        sealedSubclasses.associate { subclass ->
+                            val simpleName = subclass.simpleName.asString()
+                            simpleName to subclass.typeId()
+                        }
 
-                    val node = PolymorphicNode(
-                        baseName = decl.simpleName.asString(),
-                        subtypes = subtypes,
-                        discriminator = Discriminator(
-                            name = "type",
-                            required = true,
-                            mapping = discriminatorMapping,
-                        ),
-                        description = decl.descriptionOrDefault(decl.descriptionFromKdoc()),
-                    )
+                    val node =
+                        PolymorphicNode(
+                            baseName = decl.simpleName.asString(),
+                            subtypes = subtypes,
+                            discriminator =
+                                Discriminator(
+                                    name = "type",
+                                    required = true,
+                                    mapping = discriminatorMapping,
+                                ),
+                            description = decl.descriptionOrDefault(decl.descriptionFromKdoc()),
+                        )
                     nodes[id] = node
 
                     // Process each sealed subclass

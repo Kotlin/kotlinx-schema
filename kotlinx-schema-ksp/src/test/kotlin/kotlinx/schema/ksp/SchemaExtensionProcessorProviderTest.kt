@@ -4,13 +4,11 @@ import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import io.kotest.matchers.types.shouldBeInstanceOf
+import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.mockk.junit5.MockKExtension
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 
-@ExtendWith(MockKExtension::class)
 class SchemaExtensionProcessorProviderTest {
     @MockK
     private lateinit var options: Map<String, String>
@@ -28,6 +26,7 @@ class SchemaExtensionProcessorProviderTest {
 
     @Test
     fun `Should create generator`() {
+        MockKAnnotations.init(this)
         every { environment.codeGenerator } returns codeGenerator
         every { environment.logger } returns kspLogger
         every { environment.options } returns options

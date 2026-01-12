@@ -13,7 +13,7 @@ internal class SchemaExtensionProcessorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor =
         SchemaExtensionProcessor(
             codeGenerator = environment.codeGenerator,
-            sourceCoGenerator = SourceCodeGenerator,
+            sourceCoGenerator = ClassSourceCodeGenerator,
             logger = environment.logger,
             options = environment.options,
         )
