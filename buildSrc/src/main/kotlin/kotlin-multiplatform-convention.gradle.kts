@@ -114,3 +114,7 @@ kotlin {
     tvosX64()
      */
 }
+
+tasks.named("detekt").configure {
+    dependsOn("detektMainJvm", "detektTestJvm")
+}

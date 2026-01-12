@@ -35,7 +35,7 @@ clean:
 .PHONY: lint
 lint:
 	@echo "🕵️‍♀️ Inspecting code..."
-	@./gradlew detekt
+	@./gradlew detekt --rerun-tasks
 	@echo "✅ Code inspection complete!"
 
 .PHONY: publish

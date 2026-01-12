@@ -2,7 +2,7 @@ plugins {
     kotlin("plugin.serialization") version libs.versions.kotlin apply false
     alias(libs.plugins.androidLibrary) apply false
     alias(libs.plugins.kover)
-    alias(libs.plugins.detekt) apply false
+    alias(libs.plugins.detekt)
 }
 
 dependencies {
@@ -64,8 +64,23 @@ tasks.register("testGradlePlugin") {
 
 subprojects {
     apply(plugin = "org.jetbrains.kotlinx.kover")
-    apply(plugin = "io.gitlab.arturbosch.detekt")
+    apply {
+        plugin("dev.detekt")
+    }
+
+    detekt {
+        config = files("$rootDir/detekt.yml")
+        buildUponDefaultConfig = true
+    }
 }
+
+// tasks.named("check").configure {
+//    this.setDependsOn(
+//        this.dependsOn.filterNot {
+//            it is TaskProvider<*> && it.name == "detekt"
+//        },
+//    )
+// }
 
 kover {
     reports {

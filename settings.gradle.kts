@@ -16,6 +16,8 @@ dependencyResolutionManagement {
 
 rootProject.name = "kotlinx-schema"
 
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 include(
     ":kotlinx-schema-annotations",
     ":kotlinx-schema-json",

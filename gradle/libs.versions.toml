@@ -1,6 +1,6 @@
 [versions]
 agp = "8.10.1"
-detekt = "1.23.8"
+detekt = "2.0.0-alpha.1"
 dokka = "2.1.0"
 jackson = "2.18.5" # pin it
 junit = "6.0.1"
@@ -36,7 +36,7 @@ slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4
 
 [plugins]
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
-detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+detekt = { id = "dev.detekt", version.ref = "detekt" }
 google-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 vanniktech-maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechMavenPublish" }
