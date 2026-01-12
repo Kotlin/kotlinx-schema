@@ -6,6 +6,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonObject
@@ -18,55 +19,62 @@ import kotlinx.serialization.json.JsonObject
 public class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("PropertyDefinition")
 
-    @Suppress("LongMethod", "CyclomaticComplexMethod")
     override fun deserialize(decoder: Decoder): PropertyDefinition {
         require(decoder is JsonDecoder) { "This serializer can only be used with JSON" }
 
         val jsonElement = decoder.decodeJsonElement()
         require(jsonElement is JsonObject) { "Expected JSON object for PropertyDefinition" }
 
+        return decodePolymorphicOrNull(decoder, jsonElement)
+            ?: decodeTypedProperty(decoder, jsonElement)
+    }
+
+    private fun decodePolymorphicOrNull(
+        decoder: JsonDecoder,
+        jsonElement: JsonObject,
+    ): PropertyDefinition? {
         val json = decoder.json
-
-        // Check for polymorphic composition types first (they take precedence)
-        if (jsonElement.containsKey("oneOf")) {
-            return json.decodeFromJsonElement(
-                OneOfPropertyDefinition.serializer(),
-                jsonElement,
-            )
-        }
-
-        if (jsonElement.containsKey("anyOf")) {
-            return json.decodeFromJsonElement(
-                AnyOfPropertyDefinition.serializer(),
-                jsonElement,
-            )
-        }
-
-        if (jsonElement.containsKey("allOf")) {
-            return json.decodeFromJsonElement(
-                AllOfPropertyDefinition.serializer(),
-                jsonElement,
-            )
-        }
-
-        // Check if it's a reference
-        if (jsonElement.containsKey($$"$ref")) {
-            return json.decodeFromJsonElement(
-                ReferencePropertyDefinition.serializer(),
-                jsonElement,
-            )
-        }
-
-        // Determine the type
-        val types =
-            when (val typeElement = jsonElement["type"]) {
-                null -> null
-                is JsonObject -> listOf(typeElement.toString())
-                else -> {
-                    val typeSerializer = StringOrListSerializer()
-                    json.decodeFromJsonElement(typeSerializer, typeElement)
-                }
+        return when {
+            jsonElement.containsKey("oneOf") -> {
+                json.decodeFromJsonElement(
+                    OneOfPropertyDefinition.serializer(),
+                    jsonElement,
+                )
             }
+
+            jsonElement.containsKey("anyOf") -> {
+                json.decodeFromJsonElement(
+                    AnyOfPropertyDefinition.serializer(),
+                    jsonElement,
+                )
+            }
+
+            jsonElement.containsKey("allOf") -> {
+                json.decodeFromJsonElement(
+                    AllOfPropertyDefinition.serializer(),
+                    jsonElement,
+                )
+            }
+
+            jsonElement.containsKey("\$ref") -> {
+                json.decodeFromJsonElement(
+                    ReferencePropertyDefinition.serializer(),
+                    jsonElement,
+                )
+            }
+
+            else -> {
+                null
+            }
+        }
+    }
+
+    private fun decodeTypedProperty(
+        decoder: JsonDecoder,
+        jsonElement: JsonObject,
+    ): PropertyDefinition {
+        val json = decoder.json
+        val types = determineTypes(json, jsonElement)
 
         return when {
             // If it has items, it's an array
@@ -76,6 +84,7 @@ public class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
                     jsonElement,
                 )
             }
+
             // If it has properties, it's an object
             jsonElement.containsKey("properties") -> {
                 json.decodeFromJsonElement(
@@ -83,52 +92,10 @@ public class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
                     jsonElement,
                 )
             }
+
             // Check type-specific properties
             types != null -> {
-                when {
-                    types.contains("string") -> {
-                        json.decodeFromJsonElement(
-                            StringPropertyDefinition.serializer(),
-                            jsonElement,
-                        )
-                    }
-
-                    types.contains("integer") || types.contains("number") -> {
-                        json.decodeFromJsonElement(
-                            NumericPropertyDefinition.serializer(),
-                            jsonElement,
-                        )
-                    }
-
-                    types.contains("boolean") -> {
-                        json.decodeFromJsonElement(
-                            BooleanPropertyDefinition.serializer(),
-                            jsonElement,
-                        )
-                    }
-
-                    types.contains("array") -> {
-                        json.decodeFromJsonElement(
-                            ArrayPropertyDefinition.serializer(),
-                            jsonElement,
-                        )
-                    }
-
-                    types.contains("object") -> {
-                        json.decodeFromJsonElement(
-                            ObjectPropertyDefinition.serializer(),
-                            jsonElement,
-                        )
-                    }
-
-                    else -> {
-                        // Default to string for unknown types
-                        json.decodeFromJsonElement(
-                            StringPropertyDefinition.serializer(),
-                            jsonElement,
-                        )
-                    }
-                }
+                decodeByTypes(json, jsonElement, types)
             }
 
             else -> {
@@ -141,6 +108,75 @@ public class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
         }
     }
 
+    private fun determineTypes(
+        json: Json,
+        jsonElement: JsonObject,
+    ): List<String>? =
+        when (val typeElement = jsonElement["type"]) {
+            null -> {
+                null
+            }
+
+            is JsonObject -> {
+                listOf(typeElement.toString())
+            }
+
+            else -> {
+                val typeSerializer = StringOrListSerializer()
+                json.decodeFromJsonElement(typeSerializer, typeElement)
+            }
+        }
+
+    private fun decodeByTypes(
+        json: Json,
+        jsonElement: JsonObject,
+        types: List<String>,
+    ): PropertyDefinition =
+        when {
+            types.contains("string") -> {
+                json.decodeFromJsonElement(
+                    StringPropertyDefinition.serializer(),
+                    jsonElement,
+                )
+            }
+
+            types.contains("integer") || types.contains("number") -> {
+                json.decodeFromJsonElement(
+                    NumericPropertyDefinition.serializer(),
+                    jsonElement,
+                )
+            }
+
+            types.contains("boolean") -> {
+                json.decodeFromJsonElement(
+                    BooleanPropertyDefinition.serializer(),
+                    jsonElement,
+                )
+            }
+
+            types.contains("array") -> {
+                json.decodeFromJsonElement(
+                    ArrayPropertyDefinition.serializer(),
+                    jsonElement,
+                )
+            }
+
+            types.contains("object") -> {
+                json.decodeFromJsonElement(
+                    ObjectPropertyDefinition.serializer(),
+                    jsonElement,
+                )
+            }
+
+            else -> {
+                // Default to string for unknown types
+                json.decodeFromJsonElement(
+                    StringPropertyDefinition.serializer(),
+                    jsonElement,
+                )
+            }
+        }
+
     override fun serialize(
         encoder: Encoder,
         value: PropertyDefinition,
@@ -149,60 +185,76 @@ public class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
             encoder as? JsonEncoder
                 ?: throw SerializationException("This serializer can only be used with JSON")
 
+        encodePropertyDefinition(jsonEncoder, value)
+    }
+
+    private fun encodePropertyDefinition(
+        encoder: JsonEncoder,
+        value: PropertyDefinition,
+    ) {
         when (value) {
-            is StringPropertyDefinition ->
-                jsonEncoder.encodeSerializableValue(
+            is StringPropertyDefinition -> {
+                encoder.encodeSerializableValue(
                     StringPropertyDefinition.serializer(),
                     value,
                 )
+            }
 
-            is NumericPropertyDefinition ->
-                jsonEncoder.encodeSerializableValue(
+            is NumericPropertyDefinition -> {
+                encoder.encodeSerializableValue(
                     NumericPropertyDefinition.serializer(),
                     value,
                 )
+            }
 
-            is ArrayPropertyDefinition ->
-                jsonEncoder.encodeSerializableValue(
+            is ArrayPropertyDefinition -> {
+                encoder.encodeSerializableValue(
                     ArrayPropertyDefinition.serializer(),
                     value,
                 )
+            }
 
-            is ObjectPropertyDefinition ->
-                jsonEncoder.encodeSerializableValue(
+            is ObjectPropertyDefinition -> {
+                encoder.encodeSerializableValue(
                     ObjectPropertyDefinition.serializer(),
                     value,
                 )
+            }
 
-            is ReferencePropertyDefinition ->
-                jsonEncoder.encodeSerializableValue(
+            is ReferencePropertyDefinition -> {
+                encoder.encodeSerializableValue(
                     ReferencePropertyDefinition.serializer(),
                     value,
                 )
+            }
 
-            is BooleanPropertyDefinition ->
-                jsonEncoder.encodeSerializableValue(
+            is BooleanPropertyDefinition -> {
+                encoder.encodeSerializableValue(
                     BooleanPropertyDefinition.serializer(),
                     value,
                 )
+            }
 
-            is OneOfPropertyDefinition ->
-                jsonEncoder.encodeSerializableValue(
+            is OneOfPropertyDefinition -> {
+                encoder.encodeSerializableValue(
                     OneOfPropertyDefinition.serializer(),
                     value,
                 )
+            }
 
-            is AnyOfPropertyDefinition ->
-                jsonEncoder.encodeSerializableValue(
+            is AnyOfPropertyDefinition -> {
+                encoder.encodeSerializableValue(
                     AnyOfPropertyDefinition.serializer(),
                     value,
                 )
+            }
 
-            is AllOfPropertyDefinition ->
-                jsonEncoder.encodeSerializableValue(
+            is AllOfPropertyDefinition -> {
+                encoder.encodeSerializableValue(
                     AllOfPropertyDefinition.serializer(),
                     value,
                 )
+            }
         }
     }
 }
