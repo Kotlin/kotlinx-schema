@@ -880,6 +880,98 @@ Generates:
 
 For more details on function calling schemas and OpenAI compatibility, see [kotlinx-schema-json/README.md](kotlinx-schema-json/README.md#function-calling-schema-for-llm-apis).
 
+### Compile-time Function Schema Generation (KSP)
+
+In addition to runtime reflection-based generation, you can generate function schemas at compile time using KSP. This approach provides zero runtime overhead and works with all function types: top-level, instance/member, suspend, and extension functions.
+
+#### Annotate Your Functions
+
+```kotlin
+/**
+ * Sends a greeting message to a person.
+ */
+@Schema
+@Description("Sends a greeting message to a person")
+fun greetPerson(
+    @Description("Name of the person to greet")
+    name: String,
+    @Description("Optional greeting prefix (e.g., 'Hello', 'Hi')")
+    greeting: String = "Hello",
+): String {
+    return "$greeting, $name!"
+}
+```
+
+#### Use the Generated Functions
+
+The KSP processor generates two functions for each annotated function:
+
+```kotlin
+// Get schema as JSON string
+val schemaString: String = greetPersonJsonSchemaString()
+
+// Get schema as FunctionCallingSchema object (optional, generated when withSchemaObject = true)
+val schema: FunctionCallingSchema = greetPersonJsonSchema()
+```
+
+#### Generated Schema
+
+The generated schema is identical to the runtime reflection format:
+
+```json
+{
+  "type": "function",
+  "name": "greetPerson",
+  "description": "Sends a greeting message to a person",
+  "strict": true,
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "Name of the person to greet"
+      },
+      "greeting": {
+        "type": "string",
+        "description": "Optional greeting prefix (e.g., 'Hello', 'Hi')"
+      }
+    },
+    "required": ["name"],
+    "additionalProperties": false
+  }
+}
+```
+
+#### Key Differences from Runtime Reflection
+
+- **Compile-time generation**: Schemas are generated during compilation, not at runtime
+- **Zero runtime overhead**: No reflection or runtime introspection needed
+- **Default value limitation**: Function parameter default values (e.g., `greeting: String = "Hello"`) are detected but their actual values cannot be extracted at compile time due to [KSP limitations](https://github.com/google/ksp/issues/1868). Parameters with defaults are marked as optional (excluded from `required` array)
+- **All function types supported**: Works with top-level, instance, companion object, and suspend functions
+- **Generated function naming**: For a function `myFunction()`, generates `myFunctionJsonSchemaString()` and optionally `myFunctionJsonSchema()`
+
+#### Suspend Functions
+
+Suspend functions are fully supported and generate identical schemas to their non-suspend counterparts:
+
+```kotlin
+@Schema
+@Description("Fetches user data asynchronously from a remote service")
+suspend fun fetchUserData(
+    @Description("User ID to fetch")
+    userId: Long,
+    @Description("Whether to include detailed profile information")
+    includeDetails: Boolean = false,
+): String {
+    // Implementation...
+}
+
+// Use the generated function
+val schema = fetchUserDataJsonSchemaString()
+```
+
+> **Tip**: Use compile-time generation (KSP) when you want zero runtime overhead and can annotate your functions at compile time. Use runtime reflection when you need to generate schemas dynamically for unannotated functions or when you need to extract actual default values from nested data classes.
+
 ## Multi-Framework Annotation Support
 
 **You don't need to change your existing code!**

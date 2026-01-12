@@ -1,1 +1,2 @@
 kotlinx.schema.ksp.KspClassSchemaGenerator
+kotlinx.schema.ksp.KspFunctionSchemaGenerator
