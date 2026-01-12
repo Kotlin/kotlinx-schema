@@ -72,12 +72,6 @@ public class TypeGraphToJsonSchemaTransformer
         private val json: Json = Json { encodeDefaults = false },
     ) : TypeGraphTransformer<JsonSchema> {
         /**
-         * Collects type definitions for $defs section during schema generation.
-         * Maps type names to their property definitions.
-         */
-        private val definitions = mutableMapOf<String, PropertyDefinition>()
-
-        /**
          * Transforms a type graph into a JSON Schema.
          *
          * @param graph Type graph with all type definitions
@@ -88,12 +82,11 @@ public class TypeGraphToJsonSchemaTransformer
             graph: TypeGraph,
             rootName: String,
         ): JsonSchema {
-            // Clear definitions from any previous transform
-            definitions.clear()
+            val definitions = mutableMapOf<String, PropertyDefinition>()
 
             // Extract the main schema definition
             val schemaDefinition =
-                when (val rootDefinition = convertTypeRef(graph.root, graph)) {
+                when (val rootDefinition = convertTypeRef(graph.root, graph, definitions)) {
                     is ObjectPropertyDefinition -> {
                         JsonSchemaDefinition(
                             properties = rootDefinition.properties ?: emptyMap(),
@@ -144,10 +137,11 @@ public class TypeGraphToJsonSchemaTransformer
         private fun convertTypeRef(
             typeRef: TypeRef,
             graph: TypeGraph,
+            definitions: MutableMap<String, PropertyDefinition>,
         ): PropertyDefinition =
             when (typeRef) {
                 is TypeRef.Inline -> {
-                    convertInlineNode(typeRef.node, typeRef.nullable, graph)
+                    convertInlineNode(typeRef.node, typeRef.nullable, graph, definitions)
                 }
 
                 is TypeRef.Ref -> {
@@ -158,7 +152,7 @@ public class TypeGraphToJsonSchemaTransformer
                                     "This indicates a bug in the introspector - all referenced types " +
                                     "should be present in the graph's nodes map.",
                             )
-                    convertNode(node, typeRef.nullable, graph)
+                    convertNode(node, typeRef.nullable, graph, definitions)
                 }
             }
 
@@ -170,6 +164,7 @@ public class TypeGraphToJsonSchemaTransformer
             node: TypeNode,
             nullable: Boolean,
             graph: TypeGraph,
+            definitions: MutableMap<String, PropertyDefinition>,
         ): PropertyDefinition =
             when (node) {
                 is PrimitiveNode -> {
@@ -177,11 +172,11 @@ public class TypeGraphToJsonSchemaTransformer
                 }
 
                 is ListNode -> {
-                    convertList(node, nullable, graph)
+                    convertList(node, nullable, graph, definitions)
                 }
 
                 is MapNode -> {
-                    convertMap(node, nullable, graph)
+                    convertMap(node, nullable, graph, definitions)
                 }
 
                 else -> {
@@ -201,14 +196,15 @@ public class TypeGraphToJsonSchemaTransformer
             node: TypeNode,
             nullable: Boolean,
             graph: TypeGraph,
+            definitions: MutableMap<String, PropertyDefinition>,
         ): PropertyDefinition =
             when (node) {
                 is PrimitiveNode -> convertPrimitive(node, nullable)
-                is ObjectNode -> convertObject(node, nullable, graph)
+                is ObjectNode -> convertObject(node, nullable, graph, definitions)
                 is EnumNode -> convertEnum(node, nullable)
-                is ListNode -> convertList(node, nullable, graph)
-                is MapNode -> convertMap(node, nullable, graph)
-                is PolymorphicNode -> convertPolymorphic(node, nullable, graph)
+                is ListNode -> convertList(node, nullable, graph, definitions)
+                is MapNode -> convertMap(node, nullable, graph, definitions)
+                is PolymorphicNode -> convertPolymorphic(node, nullable, graph, definitions)
             }
 
         private fun convertPrimitive(
@@ -265,6 +261,7 @@ public class TypeGraphToJsonSchemaTransformer
             node: ObjectNode,
             nullable: Boolean,
             graph: TypeGraph,
+            definitions: MutableMap<String, PropertyDefinition>,
         ): PropertyDefinition {
             // Build required list based on config and DefaultPresence
             val required =
@@ -289,7 +286,7 @@ public class TypeGraphToJsonSchemaTransformer
                         }
                     val hasDefault = property.defaultPresence != DefaultPresence.Required
 
-                    val propertyDef = convertTypeRef(property.type, graph)
+                    val propertyDef = convertTypeRef(property.type, graph, definitions)
 
                     // Adjust based on config and property characteristics
                     val adjustedDef =
@@ -395,8 +392,9 @@ public class TypeGraphToJsonSchemaTransformer
             node: ListNode,
             nullable: Boolean,
             graph: TypeGraph,
+            definitions: MutableMap<String, PropertyDefinition>,
         ): PropertyDefinition {
-            val items = convertTypeRef(node.element, graph)
+            val items = convertTypeRef(node.element, graph, definitions)
             return ArrayPropertyDefinition(
                 type = listOf("array"),
                 description = null,
@@ -409,10 +407,11 @@ public class TypeGraphToJsonSchemaTransformer
             node: MapNode,
             nullable: Boolean,
             graph: TypeGraph,
+            definitions: MutableMap<String, PropertyDefinition>,
         ): PropertyDefinition {
             // Maps are represented as objects with additionalProperties
             // The value type determines what additionalProperties accepts
-            val valuePropertyDef = convertTypeRef(node.value, graph)
+            val valuePropertyDef = convertTypeRef(node.value, graph, definitions)
             val additionalPropertiesSchema = json.encodeToJsonElement(valuePropertyDef)
 
             return ObjectPropertyDefinition(
@@ -433,18 +432,20 @@ public class TypeGraphToJsonSchemaTransformer
          * @param node Polymorphic node with subtypes and discriminator
          * @param nullable Whether type reference is nullable
          * @param graph Type graph with all definitions
+         * @param definitions Map to collect type definitions for $defs
          * @return OneOfPropertyDefinition, or AnyOfPropertyDefinition if nullable
          */
         private fun convertPolymorphic(
             node: PolymorphicNode,
             nullable: Boolean,
             graph: TypeGraph,
+            definitions: MutableMap<String, PropertyDefinition>,
         ): PropertyDefinition {
             // Convert each subtype and add to $defs, collect $ref for oneOf
             val subtypeRefs =
                 node.subtypes.map { subtypeRef ->
                     val typeName = subtypeRef.id.value
-                    val subtypeDefinition = convertTypeRef(subtypeRef.ref, graph)
+                    val subtypeDefinition = convertTypeRef(subtypeRef.ref, graph, definitions)
 
                     // Add to definitions map for $defs section
                     definitions[typeName] = subtypeDefinition

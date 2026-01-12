@@ -6,7 +6,6 @@ import kotlinx.schema.json.JsonSchema
 import kotlin.reflect.KClass
 import kotlin.test.Test
 
-@Suppress("LongMethod", "unused")
 class JsonSchemaHierarchyTest {
     @Description("Represents an animal")
     sealed class Animal {
@@ -43,6 +42,7 @@ class JsonSchemaHierarchyTest {
         }
 
     @Test
+    @Suppress("LongMethod")
     fun `Should generate schema for sealed hierarchy`() {
         val schema = generator.generateSchema(Animal::class)
 
@@ -127,6 +127,7 @@ class JsonSchemaHierarchyTest {
     )
 
     @Test
+    @Suppress("LongMethod")
     fun `Should generate schema for nullable sealed hierarchy`() {
         val schema = generator.generateSchema(AnimalContainer::class)
 
