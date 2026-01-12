@@ -1,6 +1,6 @@
 @file:Suppress("JsonStandardCompliance")
 
-package kotlinx.schema.integration
+package kotlinx.schema.integration.type
 
 import io.kotest.assertions.json.shouldEqualJson
 import kotlin.test.Test
@@ -19,9 +19,9 @@ class LangChain4jAnnotationsTest {
         schema shouldEqualJson
             $$"""
             {
-              "$id": "kotlinx.schema.integration.LangChain4jModel",
+              "$id": "kotlinx.schema.integration.type.LangChain4jModel",
               "$defs": {
-                "kotlinx.schema.integration.LangChain4jModel": {
+                "kotlinx.schema.integration.type.LangChain4jModel": {
                   "type": "object",
                   "properties": {
                     "id": { "type": "integer", "description": "Unique identifier for the product" },
@@ -41,7 +41,7 @@ class LangChain4jAnnotationsTest {
                   "description": "A purchasable product using LangChain4j annotations."
                 }
               },
-              "$ref": "#/$defs/kotlinx.schema.integration.LangChain4jModel"
+              "$ref": "#/$defs/kotlinx.schema.integration.type.LangChain4jModel"
             }
             """.trimIndent()
     }

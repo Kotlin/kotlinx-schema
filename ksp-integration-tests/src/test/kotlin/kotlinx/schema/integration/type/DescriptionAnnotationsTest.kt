@@ -1,6 +1,6 @@
 @file:Suppress("JsonStandardCompliance")
 
-package kotlinx.schema.integration
+package kotlinx.schema.integration.type
 
 import io.kotest.assertions.json.shouldEqualJson
 import kotlin.test.Test
@@ -18,9 +18,9 @@ class DescriptionAnnotationsTest {
         schema shouldEqualJson
             $$"""
             {
-              "$id": "kotlinx.schema.integration.Product",
+              "$id": "kotlinx.schema.integration.type.Product",
               "$defs": {
-                "kotlinx.schema.integration.Product": {
+                "kotlinx.schema.integration.type.Product": {
                   "type": "object",
                   "properties": {
                     "id": { "type": "integer", "description": "Unique identifier for the product" },
@@ -40,7 +40,7 @@ class DescriptionAnnotationsTest {
                   "description": "A purchasable product with pricing and inventory info."
                 }
               },
-              "$ref": "#/$defs/kotlinx.schema.integration.Product"
+              "$ref": "#/$defs/kotlinx.schema.integration.type.Product"
             }
             """.trimIndent()
     }

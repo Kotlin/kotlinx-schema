@@ -1,4 +1,4 @@
-package kotlinx.schema.integration
+package kotlinx.schema.integration.type
 
 import ai.koog.agents.core.tools.annotations.LLMDescription
 import kotlinx.schema.Schema

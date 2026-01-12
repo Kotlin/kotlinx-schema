@@ -1,4 +1,4 @@
-package kotlinx.schema.integration
+package kotlinx.schema.integration.type
 
 import io.kotest.assertions.json.shouldEqualJson
 import kotlin.test.Test
@@ -15,7 +15,7 @@ class ContainerSchemaTest {
         schema shouldEqualJson
             $$"""
             {
-              "$id": "kotlinx.schema.integration.Container",
+              "$id": "kotlinx.schema.integration.type.Container",
               "$defs": {
                 "kotlin.Any": {
                   "type": "object",
@@ -23,7 +23,7 @@ class ContainerSchemaTest {
                   "required": [],
                   "additionalProperties": false
                 },
-                "kotlinx.schema.integration.Container": {
+                "kotlinx.schema.integration.type.Container": {
                   "type": "object",
                   "properties": {
                     "content": {
@@ -43,7 +43,7 @@ class ContainerSchemaTest {
                   "description": "A generic container that wraps content with optional metadata."
                 }
               },
-              "$ref": "#/$defs/kotlinx.schema.integration.Container"
+              "$ref": "#/$defs/kotlinx.schema.integration.type.Container"
             }
             """.trimIndent()
     }

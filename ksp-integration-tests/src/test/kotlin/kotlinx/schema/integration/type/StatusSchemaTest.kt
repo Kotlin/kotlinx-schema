@@ -1,4 +1,4 @@
-package kotlinx.schema.integration
+package kotlinx.schema.integration.type
 
 import io.kotest.assertions.json.shouldEqualJson
 import kotlin.test.Test
@@ -15,15 +15,15 @@ class StatusSchemaTest {
         schema shouldEqualJson
             $$"""
             {
-              "$id": "kotlinx.schema.integration.Status",
+              "$id": "kotlinx.schema.integration.type.Status",
               "$defs": {
-                "kotlinx.schema.integration.Status": {
+                "kotlinx.schema.integration.type.Status": {
                   "type": "string",
                   "enum": ["ACTIVE", "INACTIVE", "PENDING"],
                   "description": "Current lifecycle status of an entity."
                 }
               },
-              "$ref": "#/$defs/kotlinx.schema.integration.Status"
+              "$ref": "#/$defs/kotlinx.schema.integration.type.Status"
             }
             """.trimIndent()
     }
