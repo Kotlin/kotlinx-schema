@@ -5,7 +5,6 @@ import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.symbol.KSAnnotated
 import io.kotest.matchers.collections.shouldBeEmpty
-import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -14,6 +13,7 @@ import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.api.parallel.Isolated
 
 /**
  * Unit tests for SchemaExtensionProcessor.
@@ -27,12 +27,16 @@ import org.junit.jupiter.api.extension.ExtendWith
  * Code generation logic itself is tested in SourceCodeGeneratorTest.
  */
 @ExtendWith(MockKExtension::class)
+@Isolated
 class SchemaExtensionProcessorTest {
     @MockK
     private lateinit var codeGenerator: CodeGenerator
 
     @MockK
-    private lateinit var sourceCodeGenerator: ClassSourceCodeGenerator
+    private lateinit var classSourceCodeGenerator: ClassSourceCodeGenerator
+
+    @MockK
+    private lateinit var functionSourceCodeGenerator: FunctionSourceCodeGenerator
 
     @MockK(relaxUnitFun = true)
     private lateinit var logger: KSPLogger
@@ -47,7 +51,8 @@ class SchemaExtensionProcessorTest {
         subject =
             SchemaExtensionProcessor(
                 codeGenerator,
-                sourceCodeGenerator,
+                classSourceCodeGenerator,
+                functionSourceCodeGenerator,
                 logger,
                 options = emptyMap(),
             )
@@ -57,7 +62,14 @@ class SchemaExtensionProcessorTest {
     fun `should skip processing when disabled via options`() {
         // Given
         val options = mapOf("kotlinx.schema.enabled" to "false")
-        subject = SchemaExtensionProcessor(codeGenerator, sourceCodeGenerator, logger, options)
+        subject =
+            SchemaExtensionProcessor(
+                codeGenerator,
+                classSourceCodeGenerator,
+                functionSourceCodeGenerator,
+                logger,
+                options,
+            )
 
         val symbols = mockk<Sequence<KSAnnotated>>()
         every { resolver.getSymbolsWithAnnotation("kotlinx.schema.Schema") } returns symbols
@@ -74,7 +86,14 @@ class SchemaExtensionProcessorTest {
     fun `should process when enabled is explicitly true`() {
         // Given
         val options = mapOf("kotlinx.schema.enabled" to "true")
-        subject = SchemaExtensionProcessor(codeGenerator, sourceCodeGenerator, logger, options)
+        subject =
+            SchemaExtensionProcessor(
+                codeGenerator,
+                classSourceCodeGenerator,
+                functionSourceCodeGenerator,
+                logger,
+                options,
+            )
 
         val emptySymbols = emptySequence<KSAnnotated>()
         every { resolver.getSymbolsWithAnnotation("kotlinx.schema.Schema") } returns emptySymbols
@@ -90,7 +109,14 @@ class SchemaExtensionProcessorTest {
     fun `should process when enabled option is not set (default enabled)`() {
         // Given
         val options = emptyMap<String, String>()
-        subject = SchemaExtensionProcessor(codeGenerator, sourceCodeGenerator, logger, options)
+        subject =
+            SchemaExtensionProcessor(
+                codeGenerator,
+                classSourceCodeGenerator,
+                functionSourceCodeGenerator,
+                logger,
+                options,
+            )
 
         val emptySymbols = emptySequence<KSAnnotated>()
         every { resolver.getSymbolsWithAnnotation("kotlinx.schema.Schema") } returns emptySymbols
@@ -106,7 +132,14 @@ class SchemaExtensionProcessorTest {
     fun `finish should log success message`() {
         // Given
         val options = emptyMap<String, String>()
-        subject = SchemaExtensionProcessor(codeGenerator, sourceCodeGenerator, logger, options)
+        subject =
+            SchemaExtensionProcessor(
+                codeGenerator,
+                classSourceCodeGenerator,
+                functionSourceCodeGenerator,
+                logger,
+                options,
+            )
 
         // When
         subject.finish()
@@ -123,7 +156,14 @@ class SchemaExtensionProcessorTest {
                 "kotlinx.schema.enabled" to "true",
                 "kotlinx.schema.withSchemaObject" to "true",
             )
-        subject = SchemaExtensionProcessor(codeGenerator, sourceCodeGenerator, logger, options)
+        subject =
+            SchemaExtensionProcessor(
+                codeGenerator,
+                classSourceCodeGenerator,
+                functionSourceCodeGenerator,
+                logger,
+                options,
+            )
 
         // When
         subject.onError()

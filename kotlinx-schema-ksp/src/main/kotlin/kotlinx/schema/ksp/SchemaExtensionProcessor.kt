@@ -7,10 +7,12 @@ import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.validate
 
 /**
- * KSP processor that generates extension properties for classes annotated with @Schema.
+ * KSP processor that generates extension properties for classes and functions,
+ * annotated with `@Schema`.
  *
  * For a class annotated with @Schema, this processor generates an extension property:
  * ```kotlin
@@ -19,7 +21,8 @@ import com.google.devtools.ksp.validate
  */
 internal class SchemaExtensionProcessor(
     private val codeGenerator: CodeGenerator,
-    private val sourceCoGenerator: ClassSourceCodeGenerator,
+    private val classSourceCodeGenerator: ClassSourceCodeGenerator = ClassSourceCodeGenerator,
+    private val functionSourceCodeGenerator: FunctionSourceCodeGenerator = FunctionSourceCodeGenerator,
     private val logger: KSPLogger,
     private val options: Map<String, String>,
 ) : SymbolProcessor {
@@ -63,6 +66,7 @@ internal class SchemaExtensionProcessor(
     }
 
     private val schemaGenerator = KspClassSchemaGenerator()
+    private val functionSchemaGenerator = KspFunctionSchemaGenerator()
 
     override fun finish() {
         logger.info("[kotlinx-schema] ✅ Done!")
@@ -94,44 +98,88 @@ internal class SchemaExtensionProcessor(
             return emptyList()
         }
 
-        symbols.filterIsInstance<KSClassDeclaration>().forEach { classDeclaration ->
-            if (!classDeclaration.validate()) {
-                ret.add(classDeclaration)
-                return@forEach
-            }
+        // Process classes annotated with @Schema
+        processClassDeclarations(symbols, ret, rootPackage)
 
-            // If a root package is specified, skip classes outside of it
-            if (rootPackage != null) {
-                val pkg = classDeclaration.packageName.asString()
-                val inRoot = pkg == rootPackage || pkg.startsWith("$rootPackage.")
-                if (!inRoot) {
-                    logger.info(
-                        "[kotlinx-schema] Skipping ${classDeclaration.qualifiedName?.asString()} " +
-                            "as it is outside rootPackage '$rootPackage'",
-                    )
-                    return@forEach
-                }
-            }
-
-            @Suppress("TooGenericExceptionCaught")
-            try {
-                generateSchemaExtension(classDeclaration)
-            } catch (e: Exception) {
-                logger.error(
-                    "Failed to generate schema extension " +
-                        "for ${classDeclaration.qualifiedName?.asString()}: ${e.message}",
-                )
-                e.printStackTrace()
-            }
-        }
+        // Process functions annotated with @Schema
+        processFunctionDeclarations(symbols, ret, rootPackage)
 
         return ret
+    }
+
+    private fun processFunctionDeclarations(
+        symbols: Sequence<KSAnnotated>,
+        ret: MutableList<KSAnnotated>,
+        rootPackage: String?,
+    ) {
+        symbols
+            .filterIsInstance<KSFunctionDeclaration>()
+            .filter { filterByRootPackage(it, rootPackage, logger) }
+            .forEach { functionDeclaration ->
+                if (!functionDeclaration.validate()) {
+                    ret.add(functionDeclaration)
+                    return@forEach
+                }
+
+                @Suppress("TooGenericExceptionCaught")
+                try {
+                    generateFunctionSchemaExtension(functionDeclaration)
+                } catch (e: Exception) {
+                    logger.error(
+                        "Failed to generate function schema extension " +
+                            "for ${functionDeclaration.qualifiedName?.asString()}: ${e.message}",
+                    )
+                }
+            }
+    }
+
+    /**
+     * Processes a sequence of class declarations, validating and generating schema
+     * extensions for eligible classes. Any invalid or ignored classes are added
+     * to the provided list for further handling. Optionally filters by a specified
+     * root package.
+     *
+     * @param symbols The sequence of annotated symbols to process, expected to
+     *     include class declarations.
+     * @param unprocessable A mutable list to collect invalid or unprocessed class declarations.
+     * @param rootPackage The optional root package name to constrain class processing.
+     *     Classes outside this package (or its subpackages) are skipped.
+     */
+    private fun processClassDeclarations(
+        symbols: Sequence<KSAnnotated>,
+        unprocessable: MutableList<KSAnnotated>,
+        rootPackage: String?,
+    ) {
+        symbols
+            .filterIsInstance<KSClassDeclaration>()
+            .filter { filterByRootPackage(it, rootPackage, logger) }
+            .forEach { classDeclaration ->
+                if (!classDeclaration.validate()) {
+                    unprocessable.add(classDeclaration)
+                    return@forEach
+                }
+
+                @Suppress("TooGenericExceptionCaught")
+                try {
+                    generateSchemaExtension(classDeclaration)
+                } catch (e: Exception) {
+                    logger.error(
+                        "Failed to generate schema extension " +
+                            "for ${classDeclaration.qualifiedName?.asString()}: ${e.message}",
+                    )
+                }
+            }
     }
 
     private fun generateSchemaExtension(classDeclaration: KSClassDeclaration) {
         val className = classDeclaration.simpleName.asString()
         val packageName = classDeclaration.packageName.asString()
-        val parameters = getSchemaParameters(classDeclaration)
+        val parameters =
+            getSchemaParameters(
+                classDeclaration,
+                KOTLINX_SCHEMA_ANNOTATION,
+                schemaAnnotationDefaults,
+            )
         logger.info("Parameters = $parameters")
 
         val qualifiedName = classDeclaration.qualifiedName?.asString() ?: "$packageName.$className"
@@ -165,7 +213,7 @@ internal class SchemaExtensionProcessor(
         file.use { outputStream ->
             val writer = outputStream.bufferedWriter(Charsets.UTF_8)
             writer.write(
-                sourceCoGenerator.generateCode(
+                classSourceCodeGenerator.generateCode(
                     packageName = packageName,
                     classNameWithGenerics = classNameWithGenerics,
                     options = options,
@@ -179,32 +227,65 @@ internal class SchemaExtensionProcessor(
         logger.info("Generated schema extension for $qualifiedName")
     }
 
-    private fun getSchemaParameters(classDeclaration: KSClassDeclaration): Map<String, Any?> {
-        val schemaAnnotation =
-            classDeclaration.annotations.firstOrNull {
-                it.shortName.getShortName() == "Schema"
-            }
-        if (schemaAnnotation == null) {
-            return mapOf()
-        }
-
-        // Get default values from the Schema annotation class using reflection
-        val defaultParameters = getSchemaAnnotationDefaults()
-
-        val parameters =
-            schemaAnnotation.arguments
-                .mapNotNull { arg ->
-                    arg.name?.getShortName()?.let { it to arg.value }
-                }.toMap()
-        return defaultParameters.plus(parameters)
-    }
-
     /**
      * Gets the default parameter values from the Schema annotation class using KSP symbol processing
      */
-    private fun getSchemaAnnotationDefaults(): Map<String, Any?> =
+    private val schemaAnnotationDefaults: Map<String, Any?> =
         mapOf(
             "value" to "json", // Default from Schema annotation
             OPTION_WITH_SCHEMA_OBJECT to false, // Default from Schema annotation
         )
+
+    private fun generateFunctionSchemaExtension(functionDeclaration: KSFunctionDeclaration) {
+        val functionName = functionDeclaration.simpleName.asString()
+        val packageName = functionDeclaration.packageName.asString()
+        val parameters =
+            getSchemaParameters(
+                functionDeclaration,
+                KOTLINX_SCHEMA_ANNOTATION,
+                schemaAnnotationDefaults,
+            )
+        logger.info("Function Parameters = $parameters")
+
+        val qualifiedName = functionDeclaration.qualifiedName?.asString() ?: "$packageName.$functionName"
+
+        // Generate input schema (FunctionCallingSchema format)
+        val inputSchemaString = functionSchemaGenerator.generateSchemaString(functionDeclaration)
+
+        // Create the generated file
+        val fileName = "${functionName}FunctionSchema"
+        val functionSourceFile =
+            requireNotNull(functionDeclaration.containingFile) {
+                "Function declaration must have a containing file"
+            }
+        val file =
+            codeGenerator.createNewFile(
+                dependencies = Dependencies(true, functionSourceFile),
+                packageName = packageName,
+                fileName = fileName,
+            )
+
+        file.use { outputStream ->
+            val writer = outputStream.bufferedWriter(Charsets.UTF_8)
+            writer.write(
+                functionSourceCodeGenerator.generateCode(
+                    packageName = packageName,
+                    functionName = functionName,
+                    options = options,
+                    parameters = parameters,
+                    inputSchemaString = inputSchemaString,
+                    isExtensionFunction = functionDeclaration.extensionReceiver != null,
+                    receiverType =
+                        functionDeclaration.extensionReceiver
+                            ?.resolve()
+                            ?.declaration
+                            ?.qualifiedName
+                            ?.asString(),
+                ),
+            )
+            writer.flush()
+        }
+
+        logger.info("Generated function schema for $qualifiedName")
+    }
 }

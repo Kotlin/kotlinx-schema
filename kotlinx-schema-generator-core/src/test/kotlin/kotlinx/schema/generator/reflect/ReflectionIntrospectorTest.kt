@@ -29,6 +29,7 @@ class ReflectionIntrospectorTest {
     )
 
     @Description("Available colors")
+    @Suppress("unused")
     enum class Color { RED, GREEN, BLUE }
 
     data class WithEnum(

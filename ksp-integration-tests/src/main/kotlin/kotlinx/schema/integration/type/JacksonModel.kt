@@ -24,3 +24,7 @@ data class JacksonModel(
     @JsonPropertyDescription("List of tags for categorization and search")
     val tags: List<String> = emptyList(),
 )
+
+@Schema
+@Suppress("FunctionOnlyReturningConstant")
+public fun createJacksonModel(): JacksonModel? = null

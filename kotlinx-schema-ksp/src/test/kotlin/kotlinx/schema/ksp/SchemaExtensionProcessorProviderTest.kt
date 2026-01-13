@@ -9,8 +9,10 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.api.parallel.Isolated
 
 @ExtendWith(MockKExtension::class)
+@Isolated
 class SchemaExtensionProcessorProviderTest {
     @MockK
     private lateinit var options: Map<String, String>

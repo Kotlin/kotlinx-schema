@@ -47,16 +47,18 @@ public annotation class Description(
 )
 
 /**
- * Annotation to define a schema for a class or type.
+ * Annotation to define a schema for a class, type, or function.
  *
  * This annotation is primarily used to associate a specific schema type with the annotated element.
  * By default, it targets JSON Schema but can accommodate custom schema representations as well.
+ *
+ * When applied to functions, generates FunctionCallingSchema for LLM function calling APIs.
  *
  * @property value The schema type. Defaults to "json" for JSON Schema.
  * @property withSchemaObject Indicates whether to generate a specific representation for the schema,
  * such as a `JsonObject` for JSON Schema. This may require additional dependencies.
  */
-@Target(CLASS)
+@Target(CLASS, FUNCTION)
 @Retention(SOURCE)
 public annotation class Schema(
     /**
