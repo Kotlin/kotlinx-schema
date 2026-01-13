@@ -1,7 +1,6 @@
 package kotlinx.schema.ksp
 
 import com.google.devtools.ksp.processing.CodeGenerator
-import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
@@ -9,6 +8,12 @@ import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.validate
+import kotlinx.schema.ksp.functions.CompanionFunctionStrategy
+import kotlinx.schema.ksp.functions.InstanceFunctionStrategy
+import kotlinx.schema.ksp.functions.ObjectFunctionStrategy
+import kotlinx.schema.ksp.functions.TopLevelFunctionStrategy
+import kotlinx.schema.ksp.strategy.CodeGenerationContext
+import kotlinx.schema.ksp.type.ClassSchemaStrategy
 
 /**
  * KSP processor that generates extension properties for classes and functions,
@@ -21,8 +26,6 @@ import com.google.devtools.ksp.validate
  */
 internal class SchemaExtensionProcessor(
     private val codeGenerator: CodeGenerator,
-    private val classSourceCodeGenerator: ClassSourceCodeGenerator = ClassSourceCodeGenerator,
-    private val functionSourceCodeGenerator: FunctionSourceCodeGenerator = FunctionSourceCodeGenerator,
     private val logger: KSPLogger,
     private val options: Map<String, String>,
 ) : SymbolProcessor {
@@ -65,8 +68,15 @@ internal class SchemaExtensionProcessor(
         private const val OPTION_ROOT_PACKAGE = "kotlinx.schema.rootPackage"
     }
 
-    private val schemaGenerator = KspClassSchemaGenerator()
-    private val functionSchemaGenerator = KspFunctionSchemaGenerator()
+    // Strategy instances for different declaration types
+    private val classStrategy = ClassSchemaStrategy()
+    private val functionStrategies =
+        listOf(
+            TopLevelFunctionStrategy(),
+            InstanceFunctionStrategy(),
+            CompanionFunctionStrategy(),
+            ObjectFunctionStrategy(),
+        )
 
     override fun finish() {
         logger.info("[kotlinx-schema] ✅ Done!")
@@ -184,45 +194,14 @@ internal class SchemaExtensionProcessor(
 
         val qualifiedName = classDeclaration.qualifiedName?.asString() ?: "$packageName.$className"
 
-        // Handle generic classes by using star projection
-        val typeParameters = classDeclaration.typeParameters
-        val classNameWithGenerics =
-            if (typeParameters.isNotEmpty()) {
-                val starProjections = typeParameters.joinToString(", ") { "*" }
-                "$qualifiedName<$starProjections>"
-            } else {
-                qualifiedName
-            }
+        // Create context for strategy
+        val context = CodeGenerationContext(options, parameters, logger)
 
-        // Generate class-specific schema string
-        val schemaString = schemaGenerator.generateSchemaString(classDeclaration)
+        // Generate schema using the strategy
+        val schemaString = classStrategy.generateSchema(classDeclaration, context)
 
-        // Create the generated file
-        val fileName = "${className}SchemaExtensions"
-        val classSourceFile =
-            requireNotNull(classDeclaration.containingFile) {
-                "Class declaration must have a containing file"
-            }
-        val file =
-            codeGenerator.createNewFile(
-                dependencies = Dependencies(true, classSourceFile),
-                packageName = packageName,
-                fileName = fileName,
-            )
-
-        file.use { outputStream ->
-            val writer = outputStream.bufferedWriter(Charsets.UTF_8)
-            writer.write(
-                classSourceCodeGenerator.generateCode(
-                    packageName = packageName,
-                    classNameWithGenerics = classNameWithGenerics,
-                    options = options,
-                    parameters = parameters,
-                    schemaString = schemaString,
-                ),
-            )
-            writer.flush()
-        }
+        // Generate code using the strategy
+        classStrategy.generateCode(classDeclaration, schemaString, context, codeGenerator)
 
         logger.info("Generated schema extension for $qualifiedName")
     }
@@ -249,43 +228,25 @@ internal class SchemaExtensionProcessor(
 
         val qualifiedName = functionDeclaration.qualifiedName?.asString() ?: "$packageName.$functionName"
 
-        // Generate input schema (FunctionCallingSchema format)
-        val inputSchemaString = functionSchemaGenerator.generateSchemaString(functionDeclaration)
+        // Create context for strategy
+        val context = CodeGenerationContext(options, parameters, logger)
 
-        // Create the generated file
-        val fileName = "${functionName}FunctionSchema"
-        val functionSourceFile =
-            requireNotNull(functionDeclaration.containingFile) {
-                "Function declaration must have a containing file"
-            }
-        val file =
-            codeGenerator.createNewFile(
-                dependencies = Dependencies(true, functionSourceFile),
-                packageName = packageName,
-                fileName = fileName,
-            )
+        // Find the appropriate strategy for this function
+        val strategy =
+            functionStrategies.firstOrNull { it.appliesTo(functionDeclaration) }
+                ?: run {
+                    logger.warn(
+                        "No strategy found for function: $qualifiedName, falling back to TopLevelFunctionStrategy",
+                    )
+                    functionStrategies.first() // TopLevelFunctionStrategy is first
+                }
 
-        file.use { outputStream ->
-            val writer = outputStream.bufferedWriter(Charsets.UTF_8)
-            writer.write(
-                functionSourceCodeGenerator.generateCode(
-                    packageName = packageName,
-                    functionName = functionName,
-                    options = options,
-                    parameters = parameters,
-                    inputSchemaString = inputSchemaString,
-                    isExtensionFunction = functionDeclaration.extensionReceiver != null,
-                    receiverType =
-                        functionDeclaration.extensionReceiver
-                            ?.resolve()
-                            ?.declaration
-                            ?.qualifiedName
-                            ?.asString(),
-                ),
-            )
-            writer.flush()
-        }
+        // Generate schema using the strategy
+        val schemaString = strategy.generateSchema(functionDeclaration, context)
 
-        logger.info("Generated function schema for $qualifiedName")
+        // Generate code using the strategy
+        strategy.generateCode(functionDeclaration, schemaString, context, codeGenerator)
+
+        logger.info("Generated function schema for $qualifiedName using ${strategy::class.simpleName}")
     }
 }

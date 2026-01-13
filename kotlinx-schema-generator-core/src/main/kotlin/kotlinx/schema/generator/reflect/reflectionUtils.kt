@@ -28,7 +28,7 @@ internal fun isListLike(klass: KClass<*>): Boolean = Iterable::class.java.isAssi
 /**
  * Checks if a class is an enum class.
  */
-internal fun isEnumClass(klass: KClass<*>): Boolean = klass.isData == false && klass.java.isEnum
+internal fun isEnumClass(klass: KClass<*>): Boolean = !klass.isData && klass.java.isEnum
 
 /**
  * Maps a Kotlin primitive class to its corresponding [PrimitiveKind].

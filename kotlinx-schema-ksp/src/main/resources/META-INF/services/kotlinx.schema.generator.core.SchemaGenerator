@@ -1,2 +1,1 @@
-kotlinx.schema.ksp.KspClassSchemaGenerator
-kotlinx.schema.ksp.KspFunctionSchemaGenerator
+kotlinx.schema.ksp.generator.UnifiedKspSchemaGenerator

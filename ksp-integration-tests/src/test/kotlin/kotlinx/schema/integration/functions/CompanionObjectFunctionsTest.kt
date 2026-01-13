@@ -15,7 +15,7 @@ import kotlin.test.Test
 class CompanionObjectFunctionsTest {
     @Test
     fun `DatabaseConnection create generates correct schema`() {
-        val schema = createJsonSchemaString()
+        val schema = DatabaseConnection.Companion::class.createJsonSchemaString()
 
         // language=json
         schema shouldEqualJson
@@ -54,7 +54,7 @@ class CompanionObjectFunctionsTest {
 
     @Test
     fun `DatabaseConnection connectAsync suspend function generates correct schema`() {
-        val schema = connectAsyncJsonSchemaString()
+        val schema = DatabaseConnection.Companion::class.connectAsyncJsonSchemaString()
 
         // language=json
         schema shouldEqualJson
@@ -100,7 +100,7 @@ class CompanionObjectFunctionsTest {
 
     @Test
     fun `ApiClient build generates correct schema`() {
-        val schema = buildJsonSchemaString()
+        val schema = ApiClient.Companion::class.buildJsonSchemaString()
 
         // language=json
         schema shouldEqualJson
@@ -146,7 +146,7 @@ class CompanionObjectFunctionsTest {
 
     @Test
     fun `ApiClient initializeAsync suspend function generates correct schema`() {
-        val schema = initializeAsyncJsonSchemaString()
+        val schema = ApiClient.Companion::class.initializeAsyncJsonSchemaString()
 
         // language=json
         schema shouldEqualJson
@@ -181,7 +181,7 @@ class CompanionObjectFunctionsTest {
 
     @Test
     fun `DataValidator validateAsync suspend function generates correct schema`() {
-        val schema = validateAsyncJsonSchemaString()
+        val schema = DataValidator.Companion::class.validateAsyncJsonSchemaString()
 
         // language=json
         schema shouldEqualJson

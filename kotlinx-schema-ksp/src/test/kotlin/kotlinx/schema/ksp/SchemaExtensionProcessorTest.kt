@@ -19,24 +19,17 @@ import org.junit.jupiter.api.parallel.Isolated
  * Unit tests for SchemaExtensionProcessor.
  *
  * These tests verify that the processor correctly:
- * - Passes options to ClassSourceCodeGenerator with correct precedence
- * - Creates files with proper naming and packages
  * - Handles enabled/disabled state
- * - Manages lifecycle correctly
+ * - Manages lifecycle correctly (finish, onError)
+ * - Processes symbols with correct configuration
  *
- * Code generation logic itself is tested in SourceCodeGeneratorTest.
+ * Strategy-specific code generation logic is tested in individual strategy unit tests.
  */
 @ExtendWith(MockKExtension::class)
 @Isolated
 class SchemaExtensionProcessorTest {
     @MockK
     private lateinit var codeGenerator: CodeGenerator
-
-    @MockK
-    private lateinit var classSourceCodeGenerator: ClassSourceCodeGenerator
-
-    @MockK
-    private lateinit var functionSourceCodeGenerator: FunctionSourceCodeGenerator
 
     @MockK(relaxUnitFun = true)
     private lateinit var logger: KSPLogger
@@ -51,8 +44,6 @@ class SchemaExtensionProcessorTest {
         subject =
             SchemaExtensionProcessor(
                 codeGenerator,
-                classSourceCodeGenerator,
-                functionSourceCodeGenerator,
                 logger,
                 options = emptyMap(),
             )
@@ -65,8 +56,6 @@ class SchemaExtensionProcessorTest {
         subject =
             SchemaExtensionProcessor(
                 codeGenerator,
-                classSourceCodeGenerator,
-                functionSourceCodeGenerator,
                 logger,
                 options,
             )
@@ -89,8 +78,6 @@ class SchemaExtensionProcessorTest {
         subject =
             SchemaExtensionProcessor(
                 codeGenerator,
-                classSourceCodeGenerator,
-                functionSourceCodeGenerator,
                 logger,
                 options,
             )
@@ -112,8 +99,6 @@ class SchemaExtensionProcessorTest {
         subject =
             SchemaExtensionProcessor(
                 codeGenerator,
-                classSourceCodeGenerator,
-                functionSourceCodeGenerator,
                 logger,
                 options,
             )
@@ -135,8 +120,6 @@ class SchemaExtensionProcessorTest {
         subject =
             SchemaExtensionProcessor(
                 codeGenerator,
-                classSourceCodeGenerator,
-                functionSourceCodeGenerator,
                 logger,
                 options,
             )
@@ -159,8 +142,6 @@ class SchemaExtensionProcessorTest {
         subject =
             SchemaExtensionProcessor(
                 codeGenerator,
-                classSourceCodeGenerator,
-                functionSourceCodeGenerator,
                 logger,
                 options,
             )

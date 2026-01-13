@@ -2,6 +2,7 @@
 
 package kotlinx.schema.integration.functions
 
+import kotlinx.coroutines.delay
 import kotlinx.schema.Description
 import kotlinx.schema.Schema
 
@@ -57,6 +58,7 @@ class UserService {
         @Description("Remember session")
         rememberMe: Boolean = false,
     ): String {
+        delay(1)
         // Simulate async authentication
         return "Auth token for $identifier"
     }
@@ -71,7 +73,10 @@ class UserService {
         userId: Long,
         @Description("Preference categories to load")
         categories: List<String>? = null,
-    ): Map<String, String> = mapOf("theme" to "dark", "language" to "en")
+    ): Map<String, String> {
+        delay(1)
+        return mapOf("theme" to "dark", "language" to "en")
+    }
 
     /**
      * Deletes a user account.
@@ -101,7 +106,10 @@ class UserService {
         message: String,
         @Description("Priority level")
         priority: String = "normal",
-    ): Int = userIds.size
+    ): Int {
+        delay(1)
+        return userIds.size
+    }
 }
 
 /**
@@ -136,5 +144,9 @@ class ProductRepository {
         price: Double,
         @Description("Stock quantity")
         stock: Int = 0,
-    ): Long = 12345L
+    ): Long {
+        delay(1)
+        @Suppress("MagicNumber")
+        return 12345L
+    }
 }

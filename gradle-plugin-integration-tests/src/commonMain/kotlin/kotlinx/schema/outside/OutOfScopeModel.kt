@@ -9,6 +9,6 @@ import kotlinx.schema.Schema
 @Description("A model outside the root package; should NOT be processed when rootPackage is set")
 @Schema
 @Suppress("unused")
-public data class OutOfScopeModel(
+data class OutOfScopeModel(
     val value: String,
 )

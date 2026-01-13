@@ -15,7 +15,7 @@ import kotlin.test.Test
 class ObjectFunctionsTest {
     @Test
     fun `ConfigurationManager loadConfig generates correct schema`() {
-        val schema = loadConfigJsonSchemaString()
+        val schema = ConfigurationManager::class.loadConfigJsonSchemaString()
 
         // language=json
         schema shouldEqualJson
@@ -53,7 +53,7 @@ class ObjectFunctionsTest {
 
     @Test
     fun `ConfigurationManager validateConfig suspend function generates correct schema`() {
-        val schema = validateConfigJsonSchemaString()
+        val schema = ConfigurationManager::class.validateConfigJsonSchemaString()
 
         // language=json
         schema shouldEqualJson
@@ -87,7 +87,7 @@ class ObjectFunctionsTest {
 
     @Test
     fun `LogManager writeLog generates correct schema`() {
-        val schema = writeLogJsonSchemaString()
+        val schema = LogManager::class.writeLogJsonSchemaString()
 
         // language=json
         schema shouldEqualJson
@@ -129,7 +129,7 @@ class ObjectFunctionsTest {
 
     @Test
     fun `LogManager archiveLogs suspend function generates correct schema`() {
-        val schema = archiveLogsJsonSchemaString()
+        val schema = LogManager::class.archiveLogsJsonSchemaString()
 
         // language=json
         schema shouldEqualJson
