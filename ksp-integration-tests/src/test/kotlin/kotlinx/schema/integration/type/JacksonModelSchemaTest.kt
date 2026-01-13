@@ -1,6 +1,7 @@
 package kotlinx.schema.integration.type
 
 import io.kotest.assertions.json.shouldEqualJson
+import kotlinx.serialization.json.Json
 import kotlin.test.Test
 
 /**
@@ -56,5 +57,23 @@ class JacksonModelSchemaTest {
               "$ref": "#/$defs/kotlinx.schema.integration.type.JacksonModel"
             }
             """.trimIndent()
+    }
+
+    @Test
+    fun `extracts input schema from function`() {
+        val schema = createJacksonModelJsonSchema()
+        val schemaString = createJacksonModelJsonSchemaString()
+
+        schemaString shouldEqualJson Json.encodeToString(schema)
+        println(schemaString)
+    }
+
+    @Test
+    fun `extracts output schema from function`() {
+        val schema = createJacksonModelJsonSchema()
+        val schemaString = createJacksonModelJsonSchemaString()
+
+        schemaString shouldEqualJson Json.encodeToString(schema)
+        println(schemaString)
     }
 }
