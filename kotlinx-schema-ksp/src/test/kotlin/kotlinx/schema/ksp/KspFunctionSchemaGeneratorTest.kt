@@ -2,7 +2,6 @@ package kotlinx.schema.ksp
 
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import kotlinx.schema.Description
 import org.junit.jupiter.api.Test
 import kotlin.test.assertTrue
 

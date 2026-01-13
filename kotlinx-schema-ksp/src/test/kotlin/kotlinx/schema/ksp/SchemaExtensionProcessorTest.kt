@@ -13,6 +13,7 @@ import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.api.parallel.Isolated
 
 /**
  * Unit tests for SchemaExtensionProcessor.
@@ -26,6 +27,7 @@ import org.junit.jupiter.api.extension.ExtendWith
  * Code generation logic itself is tested in SourceCodeGeneratorTest.
  */
 @ExtendWith(MockKExtension::class)
+@Isolated
 class SchemaExtensionProcessorTest {
     @MockK
     private lateinit var codeGenerator: CodeGenerator

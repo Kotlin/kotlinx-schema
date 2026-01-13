@@ -1,6 +1,5 @@
 package kotlinx.schema.ksp
 
-import com.google.devtools.ksp.symbol.KSCallableReference
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import io.kotest.matchers.collections.shouldHaveAtLeastSize

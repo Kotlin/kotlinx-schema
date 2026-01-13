@@ -7,19 +7,18 @@ import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.validate
 
 /**
- * KSP processor that generates extension properties for classes annotated with @Schema.
+ * KSP processor that generates extension properties for classes and functions,
+ * annotated with `@Schema`.
  *
  * For a class annotated with @Schema, this processor generates an extension property:
  * ```kotlin
  * val MyClass.jsonSchemaString: String get() = "..."
  * ```
  */
-@Suppress("TooManyFunctions")
 internal class SchemaExtensionProcessor(
     private val codeGenerator: CodeGenerator,
     private val classSourceCodeGenerator: ClassSourceCodeGenerator = ClassSourceCodeGenerator,
@@ -85,7 +84,6 @@ internal class SchemaExtensionProcessor(
         )
     }
 
-    @Suppress("LongMethod")
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val schemaAnnotationName = KOTLINX_SCHEMA_ANNOTATION
         val symbols = resolver.getSymbolsWithAnnotation(schemaAnnotationName)
@@ -109,34 +107,6 @@ internal class SchemaExtensionProcessor(
         return ret
     }
 
-    /**
-     * Filters a declaration based on whether it resides within the specified root package.
-     * Logs a message if the declaration is skipped for being outside the root package.
-     *
-     * @param declaration The Kotlin Symbol Processing (KSP) declaration to filter.
-     * @param rootPackage The optional root package name used to constrain the filtering.
-     *                     If null, no filtering is applied based on the root package.
-     * @return `true` if the declaration is in the specified root package or no root package is specified,
-     *         `false` otherwise.
-     */
-    private fun filterByRootPackage(
-        declaration: KSDeclaration,
-        rootPackage: String?,
-    ): Boolean {
-        if (rootPackage != null) {
-            val pkg = declaration.packageName.asString()
-            val inRoot = pkg == rootPackage || pkg.startsWith("$rootPackage.")
-            if (!inRoot) {
-                logger.info(
-                    "[kotlinx-schema] Skipping ${declaration.qualifiedName?.asString()} " +
-                        "as it is outside rootPackage '$rootPackage'",
-                )
-                return false
-            }
-        }
-        return true
-    }
-
     private fun processFunctionDeclarations(
         symbols: Sequence<KSAnnotated>,
         ret: MutableList<KSAnnotated>,
@@ -144,7 +114,7 @@ internal class SchemaExtensionProcessor(
     ) {
         symbols
             .filterIsInstance<KSFunctionDeclaration>()
-            .filter { filterByRootPackage(it, rootPackage) }
+            .filter { filterByRootPackage(it, rootPackage, logger) }
             .forEach { functionDeclaration ->
                 if (!functionDeclaration.validate()) {
                     ret.add(functionDeclaration)
@@ -159,7 +129,6 @@ internal class SchemaExtensionProcessor(
                         "Failed to generate function schema extension " +
                             "for ${functionDeclaration.qualifiedName?.asString()}: ${e.message}",
                     )
-                    e.printStackTrace()
                 }
             }
     }
@@ -172,21 +141,21 @@ internal class SchemaExtensionProcessor(
      *
      * @param symbols The sequence of annotated symbols to process, expected to
      *     include class declarations.
-     * @param ret A mutable list to collect invalid or unprocessed class declarations.
+     * @param unprocessable A mutable list to collect invalid or unprocessed class declarations.
      * @param rootPackage The optional root package name to constrain class processing.
      *     Classes outside this package (or its subpackages) are skipped.
      */
     private fun processClassDeclarations(
         symbols: Sequence<KSAnnotated>,
-        ret: MutableList<KSAnnotated>,
+        unprocessable: MutableList<KSAnnotated>,
         rootPackage: String?,
     ) {
         symbols
             .filterIsInstance<KSClassDeclaration>()
-            .filter { filterByRootPackage(it, rootPackage) }
+            .filter { filterByRootPackage(it, rootPackage, logger) }
             .forEach { classDeclaration ->
                 if (!classDeclaration.validate()) {
-                    ret.add(classDeclaration)
+                    unprocessable.add(classDeclaration)
                     return@forEach
                 }
 
@@ -205,7 +174,12 @@ internal class SchemaExtensionProcessor(
     private fun generateSchemaExtension(classDeclaration: KSClassDeclaration) {
         val className = classDeclaration.simpleName.asString()
         val packageName = classDeclaration.packageName.asString()
-        val parameters = getSchemaParameters(classDeclaration)
+        val parameters =
+            getSchemaParameters(
+                classDeclaration,
+                KOTLINX_SCHEMA_ANNOTATION,
+                schemaAnnotationDefaults,
+            )
         logger.info("Parameters = $parameters")
 
         val qualifiedName = classDeclaration.qualifiedName?.asString() ?: "$packageName.$className"
@@ -253,30 +227,10 @@ internal class SchemaExtensionProcessor(
         logger.info("Generated schema extension for $qualifiedName")
     }
 
-    private fun getSchemaParameters(classDeclaration: KSClassDeclaration): Map<String, Any?> {
-        val schemaAnnotation =
-            classDeclaration.annotations.firstOrNull {
-                it.shortName.getShortName() == "Schema"
-            }
-        if (schemaAnnotation == null) {
-            return mapOf()
-        }
-
-        // Get default values from the Schema annotation class using reflection
-        val defaultParameters = getSchemaAnnotationDefaults()
-
-        val parameters =
-            schemaAnnotation.arguments
-                .mapNotNull { arg ->
-                    arg.name?.getShortName()?.let { it to arg.value }
-                }.toMap()
-        return defaultParameters.plus(parameters)
-    }
-
     /**
      * Gets the default parameter values from the Schema annotation class using KSP symbol processing
      */
-    private fun getSchemaAnnotationDefaults(): Map<String, Any?> =
+    private val schemaAnnotationDefaults: Map<String, Any?> =
         mapOf(
             "value" to "json", // Default from Schema annotation
             OPTION_WITH_SCHEMA_OBJECT to false, // Default from Schema annotation
@@ -285,7 +239,12 @@ internal class SchemaExtensionProcessor(
     private fun generateFunctionSchemaExtension(functionDeclaration: KSFunctionDeclaration) {
         val functionName = functionDeclaration.simpleName.asString()
         val packageName = functionDeclaration.packageName.asString()
-        val parameters = getSchemaParameters(functionDeclaration)
+        val parameters =
+            getSchemaParameters(
+                functionDeclaration,
+                KOTLINX_SCHEMA_ANNOTATION,
+                schemaAnnotationDefaults,
+            )
         logger.info("Function Parameters = $parameters")
 
         val qualifiedName = functionDeclaration.qualifiedName?.asString() ?: "$packageName.$functionName"
@@ -328,25 +287,5 @@ internal class SchemaExtensionProcessor(
         }
 
         logger.info("Generated function schema for $qualifiedName")
-    }
-
-    private fun getSchemaParameters(functionDeclaration: KSFunctionDeclaration): Map<String, Any?> {
-        val schemaAnnotation =
-            functionDeclaration.annotations.firstOrNull {
-                it.shortName.getShortName() == "Schema"
-            }
-        if (schemaAnnotation == null) {
-            return mapOf()
-        }
-
-        // Get default values from the Schema annotation class
-        val defaultParameters = getSchemaAnnotationDefaults()
-
-        val parameters =
-            schemaAnnotation.arguments
-                .mapNotNull { arg ->
-                    arg.name?.getShortName()?.let { it to arg.value }
-                }.toMap()
-        return defaultParameters.plus(parameters)
     }
 }
