@@ -1,5 +1,6 @@
 package kotlinx.schema.generator.json
 
+import io.kotest.matchers.maps.shouldHaveSize
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
@@ -18,7 +19,7 @@ import kotlin.test.Test
  * Comprehensive tests for TypeGraphToFunctionCallingSchemaTransformer.
  * Focuses on coverage of all code paths, nullable handling, and error cases.
  */
-@Suppress("unused", "LongParameterList")
+@Suppress("unused")
 class FunctionCallingSchemaTransformerTest {
     private val generator =
         requireNotNull(
@@ -32,6 +33,7 @@ class FunctionCallingSchemaTransformerTest {
 
     object NullablePrimitives {
         @Description("Test nullable primitives")
+        @Suppress("LongParameterList")
         fun testNullables(
             nullableString: String?,
             nullableInt: Int?,
@@ -48,7 +50,7 @@ class FunctionCallingSchemaTransformerTest {
     fun `Should handle nullable primitive types with null in type array`() {
         val schema = generator.generateSchema(NullablePrimitives::testNullables)
 
-        val properties = schema.parameters.properties
+        val properties = schema.parameters.properties.shouldNotBeNull()
 
         val nullableString = properties["nullableString"] as StringPropertyDefinition
         nullableString.type shouldBe listOf("string", "null")
@@ -79,6 +81,7 @@ class FunctionCallingSchemaTransformerTest {
 
     object NonNullablePrimitives {
         @Description("Test non-nullable primitives")
+        @Suppress("LongParameterList")
         fun testNonNullables(
             string: String,
             int: Int,
@@ -95,7 +98,7 @@ class FunctionCallingSchemaTransformerTest {
     fun `Should handle non-nullable primitive types without null in type array`() {
         val schema = generator.generateSchema(NonNullablePrimitives::testNonNullables)
 
-        val properties = schema.parameters.properties
+        val properties = schema.parameters.properties.shouldNotBeNull()
 
         val string = properties["string"] as StringPropertyDefinition
         string.type shouldBe listOf("string")
@@ -146,7 +149,7 @@ class FunctionCallingSchemaTransformerTest {
     fun `Should handle nullable complex types`() {
         val schema = generator.generateSchema(NullableComplexTypes::testNullableComplex)
 
-        val properties = schema.parameters.properties
+        val properties = schema.parameters.properties.shouldNotBeNull()
 
         val nullableObject = properties["nullableObject"] as ObjectPropertyDefinition
         nullableObject.type shouldBe listOf("object", "null")
@@ -190,7 +193,7 @@ class FunctionCallingSchemaTransformerTest {
     fun `Should handle non-nullable complex types`() {
         val schema = generator.generateSchema(NonNullableComplexTypes::testNonNullableComplex)
 
-        val properties = schema.parameters.properties
+        val properties = schema.parameters.properties.shouldNotBeNull()
 
         val obj = properties["obj"] as ObjectPropertyDefinition
         obj.type shouldBe listOf("object")
@@ -238,7 +241,7 @@ class FunctionCallingSchemaTransformerTest {
     fun `Should propagate descriptions to all property types`() {
         val schema = generator.generateSchema(DescriptionsTest::testDescriptions)
 
-        val properties = schema.parameters.properties
+        val properties = schema.parameters.properties.shouldNotBeNull()
 
         val stringParam = properties["stringParam"] as StringPropertyDefinition
         stringParam.description shouldBe "String description"
@@ -280,7 +283,7 @@ class FunctionCallingSchemaTransformerTest {
     fun `Should handle nested objects with required fields`() {
         val schema = generator.generateSchema(NestedObjectsTest::testNested)
 
-        val properties = schema.parameters.properties
+        val properties = schema.parameters.properties.shouldNotBeNull()
 
         val person = properties["person"] as ObjectPropertyDefinition
         person.properties!!.size shouldBe 2
@@ -317,7 +320,7 @@ class FunctionCallingSchemaTransformerTest {
     fun `Should handle complex nested collections`() {
         val schema = generator.generateSchema(ComplexCollectionsTest::testComplexCollections)
 
-        val properties = schema.parameters.properties
+        val properties = requireNotNull(schema.parameters.properties)
 
         val listOfObjects = properties["listOfObjects"] as ArrayPropertyDefinition
         listOfObjects.type shouldBe listOf("array")
@@ -344,7 +347,7 @@ class FunctionCallingSchemaTransformerTest {
         val schema = generator.generateSchema(NoDescriptionTest::noDescription)
 
         schema.description shouldBe ""
-        schema.parameters.properties.size shouldBe 1
+        schema.parameters.properties?.shouldHaveSize(1)
     }
 
     // Edge Case: Byte and Short types
@@ -365,19 +368,25 @@ class FunctionCallingSchemaTransformerTest {
     fun `Should handle Byte and Short as integer types`() {
         val schema = generator.generateSchema(ByteShortTest::testByteShort)
 
-        val properties = schema.parameters.properties
+        schema.parameters shouldNotBeNull {
+            properties.shouldNotBeNull()
 
-        val byteVal = properties["byteVal"] as NumericPropertyDefinition
-        byteVal.type shouldBe listOf("integer")
+            numericProperty("byteVal") shouldNotBeNull {
+                type shouldBe listOf("integer")
+            }
 
-        val shortVal = properties["shortVal"] as NumericPropertyDefinition
-        shortVal.type shouldBe listOf("integer")
+            numericProperty("shortVal") shouldNotBeNull {
+                type shouldBe listOf("integer")
+            }
 
-        val nullableByte = properties["nullableByte"] as NumericPropertyDefinition
-        nullableByte.type shouldBe listOf("integer", "null")
+            numericProperty("nullableByte") shouldNotBeNull {
+                type shouldBe listOf("integer", "null")
+            }
 
-        val nullableShort = properties["nullableShort"] as NumericPropertyDefinition
-        nullableShort.type shouldBe listOf("integer", "null")
+            numericProperty("nullableShort") shouldNotBeNull {
+                type shouldBe listOf("integer", "null")
+            }
+        }
     }
 
     // All Required Fields Test
@@ -397,7 +406,6 @@ class FunctionCallingSchemaTransformerTest {
     fun `Should mark all fields as required`() {
         val schema = generator.generateSchema(AllRequiredTest::allRequired)
 
-        schema.parameters.required.size shouldBe 3
         schema.parameters.required shouldBe listOf("required1", "required2", "required3")
     }
 
@@ -423,11 +431,17 @@ class FunctionCallingSchemaTransformerTest {
 
         val properties = schema.parameters.properties
 
-        val mapOfObjects = properties["mapOfObjects"] as ObjectPropertyDefinition
-        mapOfObjects.type shouldBe listOf("object")
-        mapOfObjects.additionalProperties.shouldNotBeNull()
+        schema.parameters shouldNotBeNull {
+            properties.shouldNotBeNull()
 
-        val nullableMapOfObjects = properties["nullableMapOfObjects"] as ObjectPropertyDefinition
-        nullableMapOfObjects.type shouldBe listOf("object", "null")
+            objectProperty("mapOfObjects") shouldNotBeNull {
+                type shouldBe listOf("object")
+                additionalProperties.shouldNotBeNull()
+            }
+
+            objectProperty("nullableMapOfObjects") shouldNotBeNull {
+                type shouldBe listOf("object", "null")
+            }
+        }
     }
 }

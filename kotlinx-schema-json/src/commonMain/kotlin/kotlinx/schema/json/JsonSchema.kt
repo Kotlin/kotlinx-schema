@@ -46,6 +46,109 @@ public fun JsonSchema.encodeToJsonObject(json: Json = Json): JsonObject = json.e
 public fun JsonSchema.encodeToString(json: Json = Json): String = json.encodeToString(this)
 
 /**
+ * Interface representing a container for properties in a JSON schema.
+ */
+public interface PropertiesContainer {
+    /**
+     * Represents a map of property definitions for an object.
+     *
+     * Each entry in the map consists of a key-value pair, where the key is the name of the property
+     * (as a [String]) and the value is an instance of [PropertyDefinition], which describes the details
+     * of the property based on the JSON Schema.
+     *
+     * This property may be null, indicating that no properties are defined for the object or the properties
+     * are unavailable.
+     */
+    public val properties: Map<String, PropertyDefinition>?
+
+    /**
+     * Retrieves the boolean property definition associated with the specified property name.
+     *
+     * @param name The name of the property to fetch from the object definition.
+     * @return The corresponding [BooleanPropertyDefinition] if the property exists and is a boolean,
+     * or `null` if no such property exists or the property is not boolean property.
+     */
+    public fun booleanProperty(name: String): BooleanPropertyDefinition? =
+        properties?.get(name) as? BooleanPropertyDefinition
+
+    /**
+     * Retrieves the numeric property definition associated with the specified property name.
+     *
+     * @param name The name of the property to fetch from the object definition.
+     * @return The corresponding [NumericPropertyDefinition] if the property exists and is numeric,
+     * or `null` if no such property exists or the property is not numeric.
+     */
+    public fun numericProperty(name: String): NumericPropertyDefinition? =
+        properties?.get(name) as? NumericPropertyDefinition
+
+    /**
+     * Retrieves the string property definition associated with the specified property name.
+     *
+     * @param name The name of the property to fetch from the object definition.
+     * @return The corresponding [StringPropertyDefinition] if the property exists and is a string,
+     * or `null` if no such property exists or the property is not a string property.
+     */
+    public fun stringProperty(name: String): StringPropertyDefinition? =
+        properties?.get(name) as? StringPropertyDefinition
+
+    /**
+     * Retrieves the `object` property definition associated with the specified property name.
+     *
+     * @param name The name of the property to fetch from the object definition.
+     * @return The corresponding [ObjectPropertyDefinition] if the property exists and is an object,
+     * or `null` if no such property exists or the property is not object property.
+     */
+    public fun objectProperty(name: String): ObjectPropertyDefinition? =
+        properties?.get(name) as? ObjectPropertyDefinition
+
+    /**
+     * Retrieves the array property definition associated with the specified property name.
+     *
+     * @param name The name of the property to fetch from the object definition.
+     * @return The corresponding [ArrayPropertyDefinition] if the property exists and is an array,
+     * or `null` if no such property exists or the property is not an array.
+     */
+    public fun arrayProperty(name: String): ArrayPropertyDefinition? = properties?.get(name) as? ArrayPropertyDefinition
+
+    /**
+     * Retrieves the reference property definition associated with the specified property name.
+     *
+     * @param name The name of the property to fetch from the object definition.
+     * @return The corresponding [ReferencePropertyDefinition] if the property exists and is a reference,
+     * or `null` if no such property exists or the property is not a reference.
+     */
+    public fun referenceProperty(name: String): ReferencePropertyDefinition? =
+        properties?.get(name) as? ReferencePropertyDefinition
+
+    /**
+     * Retrieves the oneOf property definition associated with the specified property name.
+     *
+     * @param name The name of the property to fetch from the object definition.
+     * @return The corresponding [OneOfPropertyDefinition] if the property exists and is a oneOf,
+     * or `null` if no such property exists or the property is not a oneOf.
+     */
+    public fun oneOfProperty(name: String): OneOfPropertyDefinition? = properties?.get(name) as? OneOfPropertyDefinition
+
+    /**
+     * Retrieves the anyOf property definition associated with the specified property name.
+     *
+     * @param name The name of the property to fetch from the object definition.
+     * @return The corresponding [AnyOfPropertyDefinition] if the property exists and is an anyOf,
+     * or `null` if no such property exists or the property is not an anyOf.
+     */
+    public fun anyOfProperty(name: String): AnyOfPropertyDefinition? = properties?.get(name) as? AnyOfPropertyDefinition
+
+    /**
+     * Retrieves the allOf property definition associated with the specified property name.
+     *
+     * @param name The name of the property to fetch from the object definition.
+     * @return The corresponding [AllOfPropertyDefinition] if the property exists and is an allOf,
+     * or `null` if no such property exists or the property is not an allOf.
+     */
+    public fun allOfProperty(name: String): AllOfPropertyDefinition? = properties?.get(name) as? AllOfPropertyDefinition
+}
+
+/**
  * Represents a JSON Schema definition.
  *
  * @property id JSON Schema [$id](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-01#name-the-id-keyword)
@@ -69,7 +172,7 @@ public data class JsonSchemaDefinition(
     @SerialName($$"$schema") public val schema: String? = null,
     @EncodeDefault
     public val type: String = "object",
-    public val properties: Map<String, PropertyDefinition> = emptyMap(),
+    public override val properties: Map<String, PropertyDefinition> = emptyMap(),
     public val required: List<String> = emptyList(),
     /**
      * Defines whether additional properties are allowed and their schema.
@@ -85,7 +188,7 @@ public data class JsonSchemaDefinition(
     public val oneOf: List<PropertyDefinition>? = null,
     public val discriminator: Discriminator? = null,
     @SerialName($$"$defs") public val defs: Map<String, PropertyDefinition>? = null,
-)
+) : PropertiesContainer
 
 /**
  * Represents a property definition in a JSON Schema.
@@ -183,7 +286,7 @@ public data class ObjectPropertyDefinition(
         listOf("object"),
     override val description: String? = null,
     override val nullable: Boolean? = null,
-    val properties: Map<String, PropertyDefinition>? = null,
+    override val properties: Map<String, PropertyDefinition>? = null,
     val required: List<String>? = null,
     /**
      * Defines whether additional properties are allowed and their schema.
@@ -195,7 +298,8 @@ public data class ObjectPropertyDefinition(
      */
     @SerialName("additionalProperties") val additionalProperties: JsonElement? = null,
     val default: JsonElement? = null,
-) : ValuePropertyDefinition
+) : ValuePropertyDefinition,
+    PropertiesContainer
 
 /**
  * Represents a boolean property

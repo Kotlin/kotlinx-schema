@@ -35,7 +35,7 @@ public data class FunctionCallingSchema(
      */
     @EncodeDefault
     public val strict: Boolean? = true,
-    public val parameters: ParametersDefinition,
+    public val parameters: ObjectPropertyDefinition,
 )
 
 /**
@@ -54,28 +54,3 @@ public fun FunctionCallingSchema.encodeToJsonObject(json: Json = Json): JsonObje
  * @return The JSON string representation of the [FunctionCallingSchema] instance.
  */
 public fun FunctionCallingSchema.encodeToString(json: Json = Json): String = json.encodeToString(this)
-
-/**
- * JSON schema defining the function's input arguments.
- *
- * See [Strict mode](https://platform.openai.com/docs/guides/function-calling?strict-mode=disabled#strict-mode)
- */
-@Serializable
-@OptIn(ExperimentalSerializationApi::class)
-public data class ParametersDefinition(
-    @EncodeDefault
-    public val properties: Map<String, PropertyDefinition> = emptyMap(),
-    @EncodeDefault
-    public val required: List<String> = emptyList(),
-    /**
-     * additionalProperties is always "false"
-     */
-    @EncodeDefault
-    public val additionalProperties: Boolean = false,
-) {
-    /**
-     * Type is always "object"
-     */
-    @EncodeDefault
-    public val type: String = "object"
-}

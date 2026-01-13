@@ -15,7 +15,6 @@ import kotlinx.schema.json.BooleanPropertyDefinition
 import kotlinx.schema.json.FunctionCallingSchema
 import kotlinx.schema.json.NumericPropertyDefinition
 import kotlinx.schema.json.ObjectPropertyDefinition
-import kotlinx.schema.json.ParametersDefinition
 import kotlinx.schema.json.PropertyDefinition
 import kotlinx.schema.json.StringPropertyDefinition
 import kotlinx.serialization.json.Json
@@ -93,9 +92,10 @@ public class TypeGraphToFunctionCallingSchemaTransformer
                 name = node.name,
                 description = node.description ?: "",
                 parameters =
-                    ParametersDefinition(
+                    ObjectPropertyDefinition(
                         properties = properties,
                         required = node.properties.map { it.name },
+                        additionalProperties = JsonPrimitive(false),
                     ),
             )
         }
