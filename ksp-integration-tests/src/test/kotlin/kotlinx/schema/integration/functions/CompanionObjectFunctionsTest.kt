@@ -1,12 +1,6 @@
 package kotlinx.schema.integration.functions
 
 import io.kotest.assertions.json.shouldEqualJson
-import io.kotest.matchers.nulls.shouldNotBeNull
-import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldContain
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
 
 /**
@@ -21,135 +15,208 @@ import kotlin.test.Test
 class CompanionObjectFunctionsTest {
     @Test
     fun `DatabaseConnection create generates correct schema`() {
-        val schemaString = createJsonSchemaString()
-        val schema = createJsonSchema()
+        val schema = createJsonSchemaString()
 
-        schemaString shouldEqualJson Json.encodeToString(schema)
-
-        val parsed = Json.parseToJsonElement(schemaString).jsonObject
-
-        parsed["type"]?.jsonPrimitive?.content shouldBe "function"
-        parsed["name"]?.jsonPrimitive?.content shouldBe "create"
-        parsed["description"]?.jsonPrimitive?.content shouldContain "database connection"
-
-        val properties = parsed["parameters"]?.jsonObject?.get("properties")?.jsonObject.shouldNotBeNull()
-        properties["host"].shouldNotBeNull()
-        properties["port"].shouldNotBeNull()
-        properties["database"].shouldNotBeNull()
-        properties["timeout"].shouldNotBeNull()
+        // language=json
+        schema shouldEqualJson
+            """
+            {
+              "type": "function",
+              "name": "create",
+              "description": "Creates a new database connection",
+              "strict": true,
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "host": {
+                    "type": "string",
+                    "description": "Database host"
+                  },
+                  "port": {
+                    "type": "integer",
+                    "description": "Database port"
+                  },
+                  "database": {
+                    "type": "string",
+                    "description": "Database name"
+                  },
+                  "timeout": {
+                    "type": "integer",
+                    "description": "Connection timeout in seconds"
+                  }
+                },
+                "required": ["host", "port", "database", "timeout"],
+                "additionalProperties": false
+              }
+            }
+            """.trimIndent()
     }
 
     @Test
     fun `DatabaseConnection connectAsync suspend function generates correct schema`() {
-        val schemaString = connectAsyncJsonSchemaString()
-        val schema = connectAsyncJsonSchema()
+        val schema = connectAsyncJsonSchemaString()
 
-        schemaString shouldEqualJson Json.encodeToString(schema)
-
-        val parsed = Json.parseToJsonElement(schemaString).jsonObject
-
-        parsed["type"]?.jsonPrimitive?.content shouldBe "function"
-        parsed["name"]?.jsonPrimitive?.content shouldBe "connectAsync"
-        parsed["description"]?.jsonPrimitive?.content shouldContain "asynchronously"
-
-        val properties = parsed["parameters"]?.jsonObject?.get("properties")?.jsonObject.shouldNotBeNull()
-        properties["host"].shouldNotBeNull()
-        properties["port"].shouldNotBeNull()
-        properties["username"].shouldNotBeNull()
-        properties["password"].shouldNotBeNull()
-        properties["options"].shouldNotBeNull()
+        // language=json
+        schema shouldEqualJson
+            """
+            {
+              "type": "function",
+              "name": "connectAsync",
+              "description": "Establishes a database connection asynchronously",
+              "strict": true,
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "host": {
+                    "type": "string",
+                    "description": "Database host"
+                  },
+                  "port": {
+                    "type": "integer",
+                    "description": "Database port"
+                  },
+                  "username": {
+                    "type": "string",
+                    "description": "Username"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "Password"
+                  },
+                  "options": {
+                    "type": ["object", "null"],
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "description": "Connection options"
+                  }
+                },
+                "required": ["host", "port", "username", "password", "options"],
+                "additionalProperties": false
+              }
+            }
+            """.trimIndent()
     }
 
     @Test
     fun `ApiClient build generates correct schema`() {
-        val schemaString = buildJsonSchemaString()
-        val schema = buildJsonSchema()
+        val schema = buildJsonSchemaString()
 
-        schemaString shouldEqualJson Json.encodeToString(schema)
-
-        val parsed = Json.parseToJsonElement(schemaString).jsonObject
-
-        parsed["name"]?.jsonPrimitive?.content shouldBe "build"
-        parsed["description"]?.jsonPrimitive?.content shouldContain "API client"
-
-        val properties = parsed["parameters"]?.jsonObject?.get("properties")?.jsonObject.shouldNotBeNull()
-        properties["baseUrl"].shouldNotBeNull()
-        properties["apiKey"].shouldNotBeNull()
-        properties["timeout"].shouldNotBeNull()
-        properties["debug"].shouldNotBeNull()
-        properties["headers"].shouldNotBeNull()
+        // language=json
+        schema shouldEqualJson
+            """
+            {
+              "type": "function",
+              "name": "build",
+              "description": "Builds an API client with configuration",
+              "strict": true,
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "baseUrl": {
+                    "type": "string",
+                    "description": "API base URL"
+                  },
+                  "apiKey": {
+                    "type": "string",
+                    "description": "API key for authentication"
+                  },
+                  "timeout": {
+                    "type": "integer",
+                    "description": "Request timeout in milliseconds"
+                  },
+                  "debug": {
+                    "type": "boolean",
+                    "description": "Whether to enable debug logging"
+                  },
+                  "headers": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "description": "Custom headers"
+                  }
+                },
+                "required": ["baseUrl", "apiKey", "timeout", "debug", "headers"],
+                "additionalProperties": false
+              }
+            }
+            """.trimIndent()
     }
 
     @Test
     fun `ApiClient initializeAsync suspend function generates correct schema`() {
-        val schemaString = initializeAsyncJsonSchemaString()
-        val schema = initializeAsyncJsonSchema()
+        val schema = initializeAsyncJsonSchemaString()
 
-        schemaString shouldEqualJson Json.encodeToString(schema)
-
-        val parsed = Json.parseToJsonElement(schemaString).jsonObject
-
-        parsed["name"]?.jsonPrimitive?.content shouldBe "initializeAsync"
-        parsed["description"]?.jsonPrimitive?.content shouldContain "asynchronously"
-
-        val properties = parsed["parameters"]?.jsonObject?.get("properties")?.jsonObject.shouldNotBeNull()
-        properties["baseUrl"].shouldNotBeNull()
-        properties["apiKey"].shouldNotBeNull()
-        properties["verifySSL"].shouldNotBeNull()
+        // language=json
+        schema shouldEqualJson
+            """
+            {
+              "type": "function",
+              "name": "initializeAsync",
+              "description": "Initializes API client asynchronously with health check",
+              "strict": true,
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "baseUrl": {
+                    "type": "string",
+                    "description": "API base URL"
+                  },
+                  "apiKey": {
+                    "type": "string",
+                    "description": "API key"
+                  },
+                  "verifySSL": {
+                    "type": "boolean",
+                    "description": "Whether to verify SSL certificates"
+                  }
+                },
+                "required": ["baseUrl", "apiKey", "verifySSL"],
+                "additionalProperties": false
+              }
+            }
+            """.trimIndent()
     }
 
     @Test
     fun `DataValidator validateAsync suspend function generates correct schema`() {
-        val schemaString = validateAsyncJsonSchemaString()
-        val schema = validateAsyncJsonSchema()
+        val schema = validateAsyncJsonSchemaString()
 
-        schemaString shouldEqualJson Json.encodeToString(schema)
-
-        val parsed = Json.parseToJsonElement(schemaString).jsonObject
-
-        parsed["name"]?.jsonPrimitive?.content shouldBe "validateAsync"
-        parsed["description"]?.jsonPrimitive?.content shouldContain "asynchronously"
-
-        val properties = parsed["parameters"]?.jsonObject?.get("properties")?.jsonObject.shouldNotBeNull()
-        properties["data"].shouldNotBeNull()
-        properties["endpoints"].shouldNotBeNull()
-        properties["timeout"].shouldNotBeNull()
-    }
-
-    @Test
-    fun `all companion object function schemas have correct structure`() {
-        val schemas = listOf(
-            createJsonSchemaString(),
-            testConnectionJsonSchemaString(),
-            connectAsyncJsonSchemaString(),
-            closeAllConnectionsJsonSchemaString(),
-            buildJsonSchemaString(),
-            createDefaultJsonSchemaString(),
-            initializeAsyncJsonSchemaString(),
-            discoverEndpointsJsonSchemaString(),
-            validateEmailJsonSchemaString(),
-            validateJsonSchemaString(),
-            validateAsyncJsonSchemaString(),
-            batchValidateJsonSchemaString(),
-        )
-
-        schemas.forEach { schemaString ->
-            val parsed = Json.parseToJsonElement(schemaString).jsonObject
-
-            // Verify FunctionCallingSchema structure
-            parsed["type"].shouldNotBeNull()
-            parsed["name"].shouldNotBeNull()
-            parsed["parameters"].shouldNotBeNull()
-
-            parsed["type"]?.jsonPrimitive?.content shouldBe "function"
-
-            // Verify parameters object
-            val parameters = parsed["parameters"]?.jsonObject.shouldNotBeNull()
-            parameters["type"].shouldNotBeNull()
-            parameters["properties"].shouldNotBeNull()
-            parameters["required"].shouldNotBeNull()
-
-            parameters["type"]?.jsonPrimitive?.content shouldBe "object"
-        }
+        // language=json
+        schema shouldEqualJson
+            """
+            {
+              "type": "function",
+              "name": "validateAsync",
+              "description": "Validates data asynchronously with remote API checks",
+              "strict": true,
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "description": "Data to validate"
+                  },
+                  "endpoints": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Remote validation endpoints"
+                  },
+                  "timeout": {
+                    "type": "integer",
+                    "description": "Timeout for remote checks in milliseconds"
+                  }
+                },
+                "required": ["data", "endpoints", "timeout"],
+                "additionalProperties": false
+              }
+            }
+            """.trimIndent()
     }
 }

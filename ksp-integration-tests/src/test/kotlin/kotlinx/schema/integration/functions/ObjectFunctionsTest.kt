@@ -1,12 +1,6 @@
 package kotlinx.schema.integration.functions
 
 import io.kotest.assertions.json.shouldEqualJson
-import io.kotest.matchers.nulls.shouldNotBeNull
-import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldContain
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
 
 /**
@@ -21,107 +15,146 @@ import kotlin.test.Test
 class ObjectFunctionsTest {
     @Test
     fun `ConfigurationManager loadConfig generates correct schema`() {
-        val schemaString = loadConfigJsonSchemaString()
-        val schema = loadConfigJsonSchema()
+        val schema = loadConfigJsonSchemaString()
 
-        schemaString shouldEqualJson Json.encodeToString(schema)
-
-        val parsed = Json.parseToJsonElement(schemaString).jsonObject
-
-        parsed["type"]?.jsonPrimitive?.content shouldBe "function"
-        parsed["name"]?.jsonPrimitive?.content shouldBe "loadConfig"
-        parsed["description"]?.jsonPrimitive?.content shouldContain "configuration from a file"
-
-        val properties = parsed["parameters"]?.jsonObject?.get("properties")?.jsonObject.shouldNotBeNull()
-        properties["filePath"].shouldNotBeNull()
-        properties["createIfMissing"].shouldNotBeNull()
-        properties["defaults"].shouldNotBeNull()
+        // language=json
+        schema shouldEqualJson
+            """
+            {
+              "type": "function",
+              "name": "loadConfig",
+              "description": "Loads configuration from a file",
+              "strict": true,
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "filePath": {
+                    "type": "string",
+                    "description": "Configuration file path"
+                  },
+                  "createIfMissing": {
+                    "type": "boolean",
+                    "description": "Whether to create file if it doesn't exist"
+                  },
+                  "defaults": {
+                    "type": ["object", "null"],
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "description": "Default values to use"
+                  }
+                },
+                "required": ["filePath", "createIfMissing", "defaults"],
+                "additionalProperties": false
+              }
+            }
+            """.trimIndent()
     }
 
     @Test
     fun `ConfigurationManager validateConfig suspend function generates correct schema`() {
-        val schemaString = validateConfigJsonSchemaString()
-        val schema = validateConfigJsonSchema()
+        val schema = validateConfigJsonSchemaString()
 
-        schemaString shouldEqualJson Json.encodeToString(schema)
-
-        val parsed = Json.parseToJsonElement(schemaString).jsonObject
-
-        parsed["type"]?.jsonPrimitive?.content shouldBe "function"
-        parsed["name"]?.jsonPrimitive?.content shouldBe "validateConfig"
-        parsed["description"]?.jsonPrimitive?.content shouldContain "asynchronously"
-
-        val properties = parsed["parameters"]?.jsonObject?.get("properties")?.jsonObject.shouldNotBeNull()
-        properties["config"].shouldNotBeNull()
-        properties["schemaVersion"].shouldNotBeNull()
+        // language=json
+        schema shouldEqualJson
+            """
+            {
+              "type": "function",
+              "name": "validateConfig",
+              "description": "Validates configuration against schema asynchronously",
+              "strict": true,
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "config": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "description": "Configuration to validate"
+                  },
+                  "schemaVersion": {
+                    "type": "string",
+                    "description": "Schema version"
+                  }
+                },
+                "required": ["config", "schemaVersion"],
+                "additionalProperties": false
+              }
+            }
+            """.trimIndent()
     }
 
     @Test
     fun `LogManager writeLog generates correct schema`() {
-        val schemaString = writeLogJsonSchemaString()
-        val schema = writeLogJsonSchema()
+        val schema = writeLogJsonSchemaString()
 
-        schemaString shouldEqualJson Json.encodeToString(schema)
-
-        val parsed = Json.parseToJsonElement(schemaString).jsonObject
-
-        parsed["name"]?.jsonPrimitive?.content shouldBe "writeLog"
-        parsed["description"]?.jsonPrimitive?.content shouldContain "log entry"
-
-        val properties = parsed["parameters"]?.jsonObject?.get("properties")?.jsonObject.shouldNotBeNull()
-        properties["level"].shouldNotBeNull()
-        properties["message"].shouldNotBeNull()
-        properties["exception"].shouldNotBeNull()
-        properties["tags"].shouldNotBeNull()
+        // language=json
+        schema shouldEqualJson
+            """
+            {
+              "type": "function",
+              "name": "writeLog",
+              "description": "Writes a log entry",
+              "strict": true,
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "level": {
+                    "type": "string",
+                    "description": "Log level (DEBUG, INFO, WARN, ERROR)"
+                  },
+                  "message": {
+                    "type": "string",
+                    "description": "Log message"
+                  },
+                  "exception": {
+                    "type": ["string", "null"],
+                    "description": "Optional exception details"
+                  },
+                  "tags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Additional context tags"
+                  }
+                },
+                "required": ["level", "message", "exception", "tags"],
+                "additionalProperties": false
+              }
+            }
+            """.trimIndent()
     }
 
     @Test
     fun `LogManager archiveLogs suspend function generates correct schema`() {
-        val schemaString = archiveLogsJsonSchemaString()
-        val schema = archiveLogsJsonSchema()
+        val schema = archiveLogsJsonSchemaString()
 
-        schemaString shouldEqualJson Json.encodeToString(schema)
-
-        val parsed = Json.parseToJsonElement(schemaString).jsonObject
-
-        parsed["name"]?.jsonPrimitive?.content shouldBe "archiveLogs"
-        parsed["description"]?.jsonPrimitive?.content shouldContain "asynchronously"
-
-        val properties = parsed["parameters"]?.jsonObject?.get("properties")?.jsonObject.shouldNotBeNull()
-        properties["beforeTimestamp"].shouldNotBeNull()
-        properties["compressionFormat"].shouldNotBeNull()
-    }
-
-    @Test
-    fun `all object function schemas have correct structure`() {
-        val schemas = listOf(
-            loadConfigJsonSchemaString(),
-            saveConfigJsonSchemaString(),
-            validateConfigJsonSchemaString(),
-            reloadConfigurationJsonSchemaString(),
-            writeLogJsonSchemaString(),
-            flushLogsJsonSchemaString(),
-            queryLogsJsonSchemaString(),
-            archiveLogsJsonSchemaString(),
-        )
-
-        schemas.forEach { schemaString ->
-            val parsed = Json.parseToJsonElement(schemaString).jsonObject
-
-            // Verify FunctionCallingSchema structure
-            parsed["type"].shouldNotBeNull()
-            parsed["name"].shouldNotBeNull()
-            parsed["parameters"].shouldNotBeNull()
-
-            parsed["type"]?.jsonPrimitive?.content shouldBe "function"
-
-            // Verify parameters object
-            val parameters = parsed["parameters"]?.jsonObject.shouldNotBeNull()
-            parameters["type"].shouldNotBeNull()
-            parameters["properties"].shouldNotBeNull()
-            parameters["required"].shouldNotBeNull()
-
-            parameters["type"]?.jsonPrimitive?.content shouldBe "object"
-        }
+        // language=json
+        schema shouldEqualJson
+            """
+            {
+              "type": "function",
+              "name": "archiveLogs",
+              "description": "Archives old logs asynchronously",
+              "strict": true,
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "beforeTimestamp": {
+                    "type": "integer",
+                    "description": "Archive logs older than this timestamp"
+                  },
+                  "compressionFormat": {
+                    "type": "string",
+                    "description": "Compression format"
+                  }
+                },
+                "required": ["beforeTimestamp", "compressionFormat"],
+                "additionalProperties": false
+              }
+            }
+            """.trimIndent()
     }
 }

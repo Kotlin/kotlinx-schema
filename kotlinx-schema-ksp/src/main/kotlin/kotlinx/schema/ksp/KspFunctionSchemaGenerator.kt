@@ -30,8 +30,8 @@ internal class KspFunctionSchemaGenerator :
     ) {
     private val json =
         Json {
-            prettyPrint = true
-            encodeDefaults = true
+            prettyPrint = false
+            encodeDefaults = false
         }
 
     override fun getRootName(target: KSFunctionDeclaration): String {

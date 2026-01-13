@@ -27,24 +27,21 @@ import kotlinx.serialization.json.encodeToJsonElement
  * This transformer converts the IR representation of a function's parameters
  * into a tool schema suitable for LLM function calling APIs.
  *
- * All fields are marked as required in the schema. Nullable/optional fields are represented
- * using union types that include "null" (e.g., ["string", "null"]) instead of using the "nullable" flag.
- *
- * See
+ * Nullable/optional fields are represented using union types that include "null"
+ * (e.g., ["string", "null"]) instead of using the "nullable" flag.
  */
 @Suppress("TooManyFunctions")
 public class TypeGraphToFunctionCallingSchemaTransformer
     @JvmOverloads
     public constructor(
         private val json: Json = Json { encodeDefaults = false },
+        private val requiredFieldStrategy: RequiredFieldStrategy = RequiredFieldStrategy.ALL_REQUIRED,
     ) : TypeGraphTransformer<FunctionCallingSchema> {
         override fun transform(
             graph: TypeGraph,
             rootName: String,
-        ): FunctionCallingSchema {
-            val rootRef = graph.root
-
-            return when (rootRef) {
+        ): FunctionCallingSchema =
+            when (val rootRef = graph.root) {
                 is TypeRef.Ref -> {
                     val node =
                         graph.nodes[rootRef.id]
@@ -68,7 +65,6 @@ public class TypeGraphToFunctionCallingSchemaTransformer
                     )
                 }
             }
-        }
 
         private fun convertObjectNodeToToolSchema(
             node: ObjectNode,
@@ -87,14 +83,31 @@ public class TypeGraphToFunctionCallingSchemaTransformer
                     property.name to finalDef
                 }
 
-            // All properties must be required for OpenAI structured outputs compatibility
+            val requiredFields =
+                when (requiredFieldStrategy) {
+                    RequiredFieldStrategy.ALL_REQUIRED -> {
+                        // All properties are required
+                        node.properties.map { it.name }
+                    }
+
+                    RequiredFieldStrategy.NON_NULLABLE_REQUIRED -> {
+                        // Only non-nullable properties are required
+                        node.properties.filter { !it.type.nullable }.map { it.name }
+                    }
+
+                    RequiredFieldStrategy.USE_DEFAULT_PRESENCE -> {
+                        // Use the required set from the ObjectNode (respects DefaultPresence)
+                        node.required.toList()
+                    }
+                }
+
             return FunctionCallingSchema(
                 name = node.name,
                 description = node.description ?: "",
                 parameters =
                     ObjectPropertyDefinition(
                         properties = properties,
-                        required = node.properties.map { it.name },
+                        required = requiredFields,
                         additionalProperties = JsonPrimitive(false),
                     ),
             )
@@ -242,13 +255,30 @@ public class TypeGraphToFunctionCallingSchemaTransformer
                     property.name to finalDef
                 }
 
-            // All properties must be required for OpenAI structured outputs compatibility
+            val requiredFields =
+                when (requiredFieldStrategy) {
+                    RequiredFieldStrategy.ALL_REQUIRED -> {
+                        // All properties are required
+                        node.properties.map { it.name }
+                    }
+
+                    RequiredFieldStrategy.NON_NULLABLE_REQUIRED -> {
+                        // Only non-nullable properties are required
+                        node.properties.filter { !it.type.nullable }.map { it.name }
+                    }
+
+                    RequiredFieldStrategy.USE_DEFAULT_PRESENCE -> {
+                        // Use the required set from the ObjectNode (respects DefaultPresence)
+                        node.required.toList()
+                    }
+                }
+
             return ObjectPropertyDefinition(
                 type = if (nullable) listOf("object", "null") else listOf("object"),
                 description = node.description,
                 nullable = null,
                 properties = properties,
-                required = node.properties.map { it.name },
+                required = requiredFields,
                 additionalProperties = JsonPrimitive(false),
             )
         }

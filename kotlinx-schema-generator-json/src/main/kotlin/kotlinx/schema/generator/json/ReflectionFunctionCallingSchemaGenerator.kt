@@ -24,7 +24,7 @@ import kotlin.reflect.KClass
 public class ReflectionFunctionCallingSchemaGenerator
     @JvmOverloads
     public constructor(
-        json: Json = Json,
+        private val json: Json = Json,
     ) : AbstractSchemaGenerator<KCallable<*>, FunctionCallingSchema>(
             introspector = ReflectionFunctionIntrospector,
             typeGraphTransformer = TypeGraphToFunctionCallingSchemaTransformer(json),
@@ -35,7 +35,7 @@ public class ReflectionFunctionCallingSchemaGenerator
 
         override fun schemaType(): KClass<FunctionCallingSchema> = FunctionCallingSchema::class
 
-        override fun encodeToString(schema: FunctionCallingSchema): String = Json.encodeToString(schema)
+        override fun encodeToString(schema: FunctionCallingSchema): String = json.encodeToString(schema)
 
         public companion object {
             /**
