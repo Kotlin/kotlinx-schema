@@ -35,7 +35,9 @@ import kotlinx.schema.ksp.strategy.SchemaGenerationStrategy
  *
  * // Generated extensions on the companion object:
  * val schema: String = DatabaseConnection.Companion::class.createJsonSchemaString()
- * val schemaObject: FunctionCallingSchema = DatabaseConnection.Companion::class.createJsonSchema()  // if withSchemaObject=true
+ *
+ * // if withSchemaObject=true
+ * val schemaObject: FunctionCallingSchema = DatabaseConnection.Companion::class.createJsonSchema()
  * ```
  *
  * **NEW API:**
@@ -167,7 +169,8 @@ internal class CompanionFunctionStrategy : SchemaGenerationStrategy<KSFunctionDe
      * Builds the complete source code for the KClass extension functions.
      *
      * @param packageName The package name for the generated file
-     * @param classNameWithGenerics The companion object qualified name with generic parameters (e.g., "MyClass.Companion<*>")
+     * @param classNameWithGenerics The companion object qualified name with generic parameters
+     * (e.g., `MyClass.Companion<*>`)
      * @param functionName The function name
      * @param schemaString The function calling schema JSON string
      * @param context Generation context for determining what to generate

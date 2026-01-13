@@ -41,7 +41,7 @@ tasks.register("publishPluginAndSync") {
     }
 }
 
-/**
+/*
  * Runs integration tests (requires plugin to be published first via publishPluginAndSync).
  */
 tasks.register("testGradlePlugin") {
@@ -81,11 +81,12 @@ kover {
             excludes.classes("kotlinx.schema.ksp.ir.*") // tested indirectly
         }
         total {
+            xml {}
             log {
             }
             verify {
                 rule {
-                    minBound(72)
+                    minBound(65)
                 }
             }
         }

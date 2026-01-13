@@ -87,7 +87,9 @@ internal class UnifiedKspSchemaGenerator<T : Any, R : Any>(
                 target.qualifiedName?.asString() ?: "$packageName.$functionName"
             }
 
-            else -> error("Unsupported target type: ${target::class.simpleName}")
+            else -> {
+                error("Unsupported target type: ${target::class.simpleName}")
+            }
         }
 
     /**
