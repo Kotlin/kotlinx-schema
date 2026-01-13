@@ -17,10 +17,10 @@ import kotlinx.schema.ksp.strategy.SchemaGenerationStrategy
 /**
  * Strategy for generating schemas for companion object function declarations.
  *
- * This strategy generates KClass extension functions on the parent class for accessing
+ * This strategy generates KClass extension functions on the companion object for accessing
  * function input parameter schemas:
- * - `KClass<ParentClass>.{functionName}JsonSchemaString(): String` (always generated)
- * - `KClass<ParentClass>.{functionName}JsonSchema(): FunctionCallingSchema` (conditionally generated)
+ * - `KClass<ParentClass.Companion>.{functionName}JsonSchemaString(): String` (always generated)
+ * - `KClass<ParentClass.Companion>.{functionName}JsonSchema(): FunctionCallingSchema` (conditionally generated)
  *
  * **Generated API Example:**
  * ```kotlin
@@ -33,15 +33,15 @@ import kotlinx.schema.ksp.strategy.SchemaGenerationStrategy
  *     }
  * }
  *
- * // Generated extensions on the parent class:
- * val schema: String = DatabaseConnection::class.createJsonSchemaString()
- * val schemaObject: FunctionCallingSchema = DatabaseConnection::class.createJsonSchema()  // if withSchemaObject=true
+ * // Generated extensions on the companion object:
+ * val schema: String = DatabaseConnection.Companion::class.createJsonSchemaString()
+ * val schemaObject: FunctionCallingSchema = DatabaseConnection.Companion::class.createJsonSchema()  // if withSchemaObject=true
  * ```
  *
  * **NEW API:**
  * This strategy introduces a new API where companion object methods generate KClass extensions
- * on the parent class. This provides better namespace organization and makes the factory/builder
- * pattern more intuitive.
+ * on the companion object itself. This provides accurate semantic representation, as the functions
+ * belong to the companion object, not the parent class.
  *
  * **Applies To:**
  * - Functions declared inside companion objects
@@ -95,11 +95,11 @@ internal class CompanionFunctionStrategy : SchemaGenerationStrategy<KSFunctionDe
     /**
      * Generates the Kotlin source code file with KClass extension functions.
      *
-     * The extensions are generated on the parent class, not the companion object itself.
+     * The extensions are generated on the companion object's KClass, not the parent class.
      *
      * This creates a file named `{functionName}FunctionSchema.kt` containing:
-     * 1. KClass extension function on parent class returning schema string (always)
-     * 2. KClass extension function on parent class returning schema object (conditional)
+     * 1. KClass extension function on companion object returning schema string (always)
+     * 2. KClass extension function on companion object returning schema object (conditional)
      *
      * @param declaration The function declaration to generate code for
      * @param schemaString The pre-generated schema JSON string
@@ -115,7 +115,7 @@ internal class CompanionFunctionStrategy : SchemaGenerationStrategy<KSFunctionDe
         val functionName = declaration.simpleName.asString()
         val packageName = declaration.packageName.asString()
 
-        // Get companion object's parent class information
+        // Get companion object and parent class information
         val companionObject = declaration.parentDeclaration as KSClassDeclaration
         val parentClass =
             companionObject.parentDeclaration as? KSClassDeclaration
@@ -127,14 +127,17 @@ internal class CompanionFunctionStrategy : SchemaGenerationStrategy<KSFunctionDe
                 "$packageName.$simpleClassName"
             }
 
-        // Handle generic type parameters with star projection
+        // Build the companion qualified name: ParentClass.Companion
+        val companionQualifiedName = "$parentClassName.Companion"
+
+        // Handle generic type parameters with star projection (from parent class)
         val typeParameters = parentClass.typeParameters
         val classNameWithGenerics =
             if (typeParameters.isNotEmpty()) {
                 val starProjections = typeParameters.joinToString(", ") { "*" }
-                "$parentClassName<$starProjections>"
+                "$companionQualifiedName<$starProjections>"
             } else {
-                parentClassName
+                companionQualifiedName
             }
 
         // Generate the complete source file content
@@ -164,7 +167,7 @@ internal class CompanionFunctionStrategy : SchemaGenerationStrategy<KSFunctionDe
      * Builds the complete source code for the KClass extension functions.
      *
      * @param packageName The package name for the generated file
-     * @param classNameWithGenerics The parent class name with generic parameters (e.g., "MyClass<*>")
+     * @param classNameWithGenerics The companion object qualified name with generic parameters (e.g., "MyClass.Companion<*>")
      * @param functionName The function name
      * @param schemaString The function calling schema JSON string
      * @param context Generation context for determining what to generate
