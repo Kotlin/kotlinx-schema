@@ -1,8 +1,8 @@
 [versions]
-koog = "0.5.3"
+koog = "0.6.0"
 kotest = "6.0.4"
 kotlinxSerialization = "1.9.0"
-kotlinxSchemaAnnotations = "0.0.2"
+kotlinxSchemaAnnotations = "0.0.3"
 
 [libraries]
 koog-agents-tools = { module = "ai.koog:agents-tools", version.ref = "koog" }
