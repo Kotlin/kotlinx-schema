@@ -34,6 +34,7 @@
 
 **Flexible Annotation Support:**
 - Recognizes `@Description`, `@LLMDescription`, `@JsonPropertyDescription`, `@P`, and more
+- Recognizes KDoc
 - Works with annotations from Jackson, LangChain4j, Koog without code changes
 
 **Comprehensive Type Support:**
@@ -326,10 +327,10 @@ val schemaString: String = generator.generateSchemaString(User::class)
 
 ### Choosing Your Approach
 
-| Approach                 | Best For                               | Pros                                                    | Cons                                           |
-|--------------------------|----------------------------------------|---------------------------------------------------------|------------------------------------------------|
-| **Compile-time (KSP)**   | Your own annotated classes             | Zero runtime cost, multiplatform                        | Only works for classes you own, no default value extraction |
-| **Runtime (Reflection)** | Third-party classes, dynamic scenarios | Works with any class, extracts default values, foreign annotations | JVM only, small reflection overhead            |
+| Approach                 | Best For                               | Pros                                                               | Cons                                                        |
+|--------------------------|----------------------------------------|--------------------------------------------------------------------|-------------------------------------------------------------|
+| **Compile-time (KSP)**   | Your own annotated classes             | Zero runtime cost, multiplatform                                   | Only works for classes you own, no default value extraction |
+| **Runtime (Reflection)** | Third-party classes, dynamic scenarios | Works with any class, extracts default values, foreign annotations | JVM only, small reflection overhead, no KDoc support        |
 
 **Decision guide**:
 - ✅ Use **KSP** for your domain models in multiplatform projects
@@ -882,14 +883,13 @@ For more details on function calling schemas and OpenAI compatibility, see [kotl
 
 ### Compile-time Function Schema Generation (KSP)
 
-In addition to runtime reflection-based generation, you can generate function schemas at compile time using KSP. This approach provides zero runtime overhead and works with all function types: top-level, instance/member, suspend, and extension functions.
+Generate function schemas at compile time with zero runtime overhead. KSP generates type-safe extensions for all your annotated functions, with APIs that reflect where functions actually live in your code.
 
-#### Annotate Your Functions
+#### Top-Level Functions
+
+Annotate package-level functions to generate top-level schema accessors:
 
 ```kotlin
-/**
- * Sends a greeting message to a person.
- */
 @Schema
 @Description("Sends a greeting message to a person")
 fun greetPerson(
@@ -897,26 +897,94 @@ fun greetPerson(
     name: String,
     @Description("Optional greeting prefix (e.g., 'Hello', 'Hi')")
     greeting: String = "Hello",
-): String {
-    return "$greeting, $name!"
-}
+): String = "$greeting, $name!"
+
+// Generated: top-level functions
+val schema = greetPersonJsonSchemaString()
 ```
 
-#### Use the Generated Functions
+#### Instance/Member Functions
 
-The KSP processor generates two functions for each annotated function:
+Annotate class methods to generate `KClass` extensions on the containing class:
 
 ```kotlin
-// Get schema as JSON string
-val schemaString: String = greetPersonJsonSchemaString()
+class UserService {
+    @Schema
+    @Description("Registers a new user in the system")
+    fun registerUser(
+        @Description("Username for the new account")
+        username: String,
+        @Description("Email address")
+        email: String,
+    ): String = "User registered"
+}
 
-// Get schema as FunctionCallingSchema object (optional, generated when withSchemaObject = true)
-val schema: FunctionCallingSchema = greetPersonJsonSchema()
+// Generated: KClass extension on UserService
+val schema = UserService::class.registerUserJsonSchemaString()
 ```
 
-#### Generated Schema
+#### Companion Object Functions
 
-The generated schema follows OpenAI Strict Mode by default (all parameters required):
+Annotate companion methods to generate `KClass` extensions on the companion object itself:
+
+```kotlin
+class DatabaseConnection {
+    companion object {
+        @Schema
+        @Description("Creates a new database connection")
+        fun create(
+            @Description("Database host")
+            host: String,
+            @Description("Database port")
+            port: Int = 5432,
+        ): DatabaseConnection = TODO()
+    }
+}
+
+// Generated: KClass extension on companion object
+val schema = DatabaseConnection.Companion::class.createJsonSchemaString()
+```
+
+This API correctly reflects that companion functions belong to the companion object, not the parent class.
+
+#### Singleton Object Functions
+
+Annotate object methods to generate `KClass` extensions on the object type:
+
+```kotlin
+object ConfigurationManager {
+    @Schema
+    @Description("Loads configuration from a file")
+    fun loadConfig(
+        @Description("Configuration file path")
+        filePath: String,
+        @Description("Whether to create file if it doesn't exist")
+        createIfMissing: Boolean = false,
+    ): Map<String, String> = TODO()
+}
+
+// Generated: KClass extension on object
+val schema = ConfigurationManager::class.loadConfigJsonSchemaString()
+```
+
+#### What Gets Generated
+
+KSP generates schema accessor functions that match where your functions live:
+
+| Function Type | Annotate         | Generated API                | Example                                                        |
+|---------------|------------------|------------------------------|----------------------------------------------------------------|
+| **Top-level** | Package function | Top-level accessor           | `greetPersonJsonSchemaString()`                                |
+| **Instance**  | Class method     | `KClass` extension           | `UserService::class.registerUserJsonSchemaString()`            |
+| **Companion** | Companion method | `Companion::class` extension | `DatabaseConnection.Companion::class.createJsonSchemaString()` |
+| **Object**    | Object method    | `Object::class` extension    | `ConfigurationManager::class.loadConfigJsonSchemaString()`     |
+
+For each annotated function, you get:
+- **Always**: `{functionName}JsonSchemaString(): String` — returns the schema as a JSON string
+- **Optional**: `{functionName}JsonSchema(): FunctionCallingSchema` — returns the schema object (requires `withSchemaObject = true`)
+
+#### Schema Format
+
+Generated schemas follow the [OpenAI function calling format](https://platform.openai.com/docs/guides/function-calling):
 
 ```json
 {
@@ -927,14 +995,8 @@ The generated schema follows OpenAI Strict Mode by default (all parameters requi
   "parameters": {
     "type": "object",
     "properties": {
-      "name": {
-        "type": "string",
-        "description": "Name of the person to greet"
-      },
-      "greeting": {
-        "type": "string",
-        "description": "Optional greeting prefix (e.g., 'Hello', 'Hi')"
-      }
+      "name": {"type": "string", "description": "Name of the person to greet"},
+      "greeting": {"type": "string", "description": "Optional greeting prefix"}
     },
     "required": ["name", "greeting"],
     "additionalProperties": false
@@ -942,38 +1004,31 @@ The generated schema follows OpenAI Strict Mode by default (all parameters requi
 }
 ```
 
-**Note**: Both parameters appear in `required` even though `greeting` has a default value. 
-This is [OpenAI Strict Mode](https://platform.openai.com/docs/guides/function-calling?strict-mode=enabled#strict-mode) behavior.
+**OpenAI Strict Mode**: All parameters are marked as required by default, even those with default values. This ensures compatibility with [OpenAI Structured Outputs](https://platform.openai.com/docs/guides/function-calling#strict-mode).
 
-#### Key Differences from Runtime Reflection
+#### KSP vs Runtime Reflection
 
-- **Compile-time generation**: Schemas are generated during compilation, not at runtime
-- **Zero runtime overhead**: No reflection or runtime introspection needed
-- **Default value limitation**: Function parameter default values (e.g., `greeting: String = "Hello"`) cannot be extracted at compile time due to [KSP limitations](https://github.com/google/ksp/issues/1868). With the default `ALL_REQUIRED` strategy (OpenAI Strict Mode), all parameters are marked as required regardless of defaults. Use the `NON_NULLABLE_REQUIRED` strategy if you need nullable parameters to be optional
-- **All function types supported**: Works with top-level, instance, companion object, and suspend functions
-- **Generated function naming**: For a function `myFunction()`, generates `myFunctionJsonSchemaString()` and optionally `myFunctionJsonSchema()`
+| Feature            | KSP (Compile-time)                                                                      | Reflection (Runtime)                     |
+|--------------------|-----------------------------------------------------------------------------------------|------------------------------------------|
+| **Performance**    | Zero runtime cost                                                                       | Small reflection overhead                |
+| **Platforms**      | Multiplatform                                                                           | JVM only                                 |
+| **Default values** | Tracked but not extracted ([KSP limitation](https://github.com/google/ksp/issues/1868)) | Fully extracted from data classes        |
+| **When to use**    | Your annotated functions                                                                | Third-party functions, dynamic scenarios |
 
 #### Suspend Functions
 
-Suspend functions are fully supported and generate identical schemas to their non-suspend counterparts:
+Suspend functions work identically to regular functions. The generated schemas don't expose the suspend modifier—they describe parameter types only:
 
 ```kotlin
 @Schema
-@Description("Fetches user data asynchronously from a remote service")
+@Description("Fetches user data asynchronously")
 suspend fun fetchUserData(
-    @Description("User ID to fetch")
-    userId: Long,
-    @Description("Whether to include detailed profile information")
-    includeDetails: Boolean = false,
-): String {
-    // Implementation...
-}
+    @Description("User ID to fetch") userId: Long,
+): UserData = TODO()
 
-// Use the generated function
+// Generated API works the same way
 val schema = fetchUserDataJsonSchemaString()
 ```
-
-> **Tip**: Use compile-time generation (KSP) when you want zero runtime overhead and can annotate your functions at compile time. Use runtime reflection when you need to generate schemas dynamically for unannotated functions or when you need to extract actual default values from nested data classes.
 
 ## Multi-Framework Annotation Support
 
