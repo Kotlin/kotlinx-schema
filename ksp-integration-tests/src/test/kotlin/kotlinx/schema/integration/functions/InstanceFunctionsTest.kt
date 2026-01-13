@@ -15,7 +15,7 @@ import kotlin.test.Test
 class InstanceFunctionsTest {
     @Test
     fun `UserService registerUser generates correct schema`() {
-        val schema = registerUserJsonSchemaString()
+        val schema = UserService::class.registerUserJsonSchemaString()
 
         // language=json
         schema shouldEqualJson
@@ -54,7 +54,7 @@ class InstanceFunctionsTest {
 
     @Test
     fun `UserService authenticateUser suspend function generates correct schema`() {
-        val schema = authenticateUserJsonSchemaString()
+        val schema = UserService::class.authenticateUserJsonSchemaString()
 
         // language=json
         schema shouldEqualJson
@@ -89,7 +89,7 @@ class InstanceFunctionsTest {
 
     @Test
     fun `ProductRepository saveProduct suspend function generates correct schema`() {
-        val schema = saveProductJsonSchemaString()
+        val schema = ProductRepository::class.saveProductJsonSchemaString()
 
         // language=json
         schema shouldEqualJson
