@@ -157,7 +157,7 @@ internal class KspClassIntrospector : SchemaIntrospector<KSClassDeclaration> {
                             val name = p.name?.asString() ?: return@forEach
                             val pType = p.type.resolve()
                             val desc =
-                                p.annotations.mapNotNull { it.descriptionOrNull() }.firstOrNull() // todo: gen kdoc
+                                p.annotations.firstNotNullOfOrNull { it.descriptionOrNull() } // todo: gen kdoc
                             val tref = toRef(pType)
                             val presence = if (p.hasDefault) DefaultPresence.Absent else DefaultPresence.Required
                             if (!p.hasDefault) required += name
@@ -178,7 +178,7 @@ internal class KspClassIntrospector : SchemaIntrospector<KSClassDeclaration> {
                             val name = prop.simpleName.asString()
                             val pType = prop.type.resolve()
                             val desc =
-                                prop.annotations.mapNotNull { it.descriptionOrNull() }.firstOrNull()
+                                prop.annotations.firstNotNullOfOrNull { it.descriptionOrNull() }
                                     ?: prop.descriptionFromKdoc()
                             val tref = toRef(pType)
                             // KSP doesn't easily provide default presence here; treat as required conservatively

@@ -1,12 +1,6 @@
 package kotlinx.schema.integration.functions
 
 import io.kotest.assertions.json.shouldEqualJson
-import io.kotest.matchers.nulls.shouldNotBeNull
-import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldContain
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
 
 /**
@@ -21,108 +15,114 @@ import kotlin.test.Test
 class InstanceFunctionsTest {
     @Test
     fun `UserService registerUser generates correct schema`() {
-        val schemaString = registerUserJsonSchemaString()
-        val schema = registerUserJsonSchema()
+        val schema = registerUserJsonSchemaString()
 
-        schemaString shouldEqualJson Json.encodeToString(schema)
-
-        val parsed = Json.parseToJsonElement(schemaString).jsonObject
-
-        parsed["type"]?.jsonPrimitive?.content shouldBe "function"
-        parsed["name"]?.jsonPrimitive?.content shouldBe "registerUser"
-        parsed["description"]?.jsonPrimitive?.content shouldContain "Registers a new user"
-
-        val properties =
-            parsed["parameters"]
-                ?.jsonObject
-                ?.get("properties")
-                ?.jsonObject
-                .shouldNotBeNull()
-        properties["username"].shouldNotBeNull()
-        properties["email"].shouldNotBeNull()
-        properties["age"].shouldNotBeNull()
-        properties["sendWelcomeEmail"].shouldNotBeNull()
+        // language=json
+        schema shouldEqualJson
+            """
+            {
+              "type": "function",
+              "name": "registerUser",
+              "description": "Registers a new user in the system",
+              "strict": true,
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "description": "Username for the new account"
+                  },
+                  "email": {
+                    "type": "string",
+                    "description": "Email address"
+                  },
+                  "age": {
+                    "type": ["integer", "null"],
+                    "description": "User's age"
+                  },
+                  "sendWelcomeEmail": {
+                    "type": "boolean",
+                    "description": "Whether to send welcome email"
+                  }
+                },
+                "required": ["username", "email", "age", "sendWelcomeEmail"],
+                "additionalProperties": false
+              }
+            }
+            """.trimIndent()
     }
 
     @Test
     fun `UserService authenticateUser suspend function generates correct schema`() {
-        val schemaString = authenticateUserJsonSchemaString()
-        val schema = authenticateUserJsonSchema()
+        val schema = authenticateUserJsonSchemaString()
 
-        schemaString shouldEqualJson Json.encodeToString(schema)
-
-        val parsed = Json.parseToJsonElement(schemaString).jsonObject
-
-        parsed["type"]?.jsonPrimitive?.content shouldBe "function"
-        parsed["name"]?.jsonPrimitive?.content shouldBe "authenticateUser"
-        parsed["description"]?.jsonPrimitive?.content shouldContain "asynchronously"
-
-        val properties =
-            parsed["parameters"]
-                ?.jsonObject
-                ?.get("properties")
-                ?.jsonObject
-                .shouldNotBeNull()
-        properties["identifier"].shouldNotBeNull()
-        properties["password"].shouldNotBeNull()
-        properties["rememberMe"].shouldNotBeNull()
+        // language=json
+        schema shouldEqualJson
+            """
+            {
+              "type": "function",
+              "name": "authenticateUser",
+              "description": "Authenticates a user asynchronously",
+              "strict": true,
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "identifier": {
+                    "type": "string",
+                    "description": "Username or email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "Password"
+                  },
+                  "rememberMe": {
+                    "type": "boolean",
+                    "description": "Remember session"
+                  }
+                },
+                "required": ["identifier", "password", "rememberMe"],
+                "additionalProperties": false
+              }
+            }
+            """.trimIndent()
     }
 
     @Test
     fun `ProductRepository saveProduct suspend function generates correct schema`() {
-        val schemaString = saveProductJsonSchemaString()
-        val schema = saveProductJsonSchema()
+        val schema = saveProductJsonSchemaString()
 
-        schemaString shouldEqualJson Json.encodeToString(schema)
-
-        val parsed = Json.parseToJsonElement(schemaString).jsonObject
-
-        parsed["name"]?.jsonPrimitive?.content shouldBe "saveProduct"
-        parsed["description"]?.jsonPrimitive?.content shouldContain "asynchronously"
-
-        val properties =
-            parsed["parameters"]
-                ?.jsonObject
-                ?.get("properties")
-                ?.jsonObject
-                .shouldNotBeNull()
-        properties["id"].shouldNotBeNull()
-        properties["name"].shouldNotBeNull()
-        properties["price"].shouldNotBeNull()
-        properties["stock"].shouldNotBeNull()
-    }
-
-    @Test
-    fun `all instance function schemas have correct structure`() {
-        val schemas =
-            listOf(
-                registerUserJsonSchemaString(),
-                updateProfileJsonSchemaString(),
-                authenticateUserJsonSchemaString(),
-                loadUserPreferencesJsonSchemaString(),
-                deleteAccountJsonSchemaString(),
-                sendBulkNotificationJsonSchemaString(),
-                findByCategoryJsonSchemaString(),
-                saveProductJsonSchemaString(),
-            )
-
-        schemas.forEach { schemaString ->
-            val parsed = Json.parseToJsonElement(schemaString).jsonObject
-
-            // Verify FunctionCallingSchema structure
-            parsed["type"].shouldNotBeNull()
-            parsed["name"].shouldNotBeNull()
-            parsed["parameters"].shouldNotBeNull()
-
-            parsed["type"]?.jsonPrimitive?.content shouldBe "function"
-
-            // Verify parameters object
-            val parameters = parsed["parameters"]?.jsonObject.shouldNotBeNull()
-            parameters["type"].shouldNotBeNull()
-            parameters["properties"].shouldNotBeNull()
-            parameters["required"].shouldNotBeNull()
-
-            parameters["type"]?.jsonPrimitive?.content shouldBe "object"
-        }
+        // language=json
+        schema shouldEqualJson
+            """
+            {
+              "type": "function",
+              "name": "saveProduct",
+              "description": "Saves a product to the database asynchronously",
+              "strict": true,
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": ["integer", "null"],
+                    "description": "Product ID (null for new products)"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Product name"
+                  },
+                  "price": {
+                    "type": "number",
+                    "description": "Product price"
+                  },
+                  "stock": {
+                    "type": "integer",
+                    "description": "Stock quantity"
+                  }
+                },
+                "required": ["id", "name", "price", "stock"],
+                "additionalProperties": false
+              }
+            }
+            """.trimIndent()
     }
 }

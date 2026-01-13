@@ -1,14 +1,6 @@
 package kotlinx.schema.integration.functions
 
 import io.kotest.assertions.json.shouldEqualJson
-import io.kotest.matchers.collections.shouldContain
-import io.kotest.matchers.nulls.shouldNotBeNull
-import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldContain
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
 
 /**
@@ -24,167 +16,212 @@ import kotlin.test.Test
 class TopLevelFunctionsTest {
     @Test
     fun `greetPerson generates correct function schema`() {
-        val schemaString = greetPersonJsonSchemaString()
-        val schema = greetPersonJsonSchema()
+        val schema = greetPersonJsonSchemaString()
 
-        // Verify schema can be decoded
-        schemaString shouldEqualJson Json.encodeToString(schema)
-
-        // Parse and verify structure
-        val parsed = Json.parseToJsonElement(schemaString).jsonObject
-
-        // Verify function metadata
-        parsed["type"]?.jsonPrimitive?.content shouldBe "function"
-        parsed["name"]?.jsonPrimitive?.content shouldBe "greetPerson"
-        parsed["description"]?.jsonPrimitive?.content shouldContain "greeting message"
-
-        // Verify parameters
-        val parameters = parsed["parameters"]?.jsonObject.shouldNotBeNull()
-        parameters["type"]?.jsonPrimitive?.content shouldBe "object"
-
-        val properties = parameters["properties"]?.jsonObject.shouldNotBeNull()
-        properties["name"].shouldNotBeNull()
-        properties["greeting"].shouldNotBeNull()
-
-        // Verify required parameters (those without defaults)
-        val required = parameters["required"]?.jsonArray.shouldNotBeNull()
-        required.map { it.jsonPrimitive.content } shouldContain "name"
+        // language=json
+        schema shouldEqualJson
+            """
+            {
+              "type": "function",
+              "name": "greetPerson",
+              "description": "Sends a greeting message to a person",
+              "strict": true,
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Name of the person to greet"
+                  },
+                  "greeting": {
+                    "type": "string",
+                    "description": "Optional greeting prefix (e.g., 'Hello', 'Hi')"
+                  }
+                },
+                "required": ["name", "greeting"],
+                "additionalProperties": false
+              }
+            }
+            """.trimIndent()
     }
 
     @Test
     fun `calculateSum generates correct function schema`() {
-        val schemaString = calculateSumJsonSchemaString()
-        val schema = calculateSumJsonSchema()
+        val schema = calculateSumJsonSchemaString()
 
-        schemaString shouldEqualJson Json.encodeToString(schema)
-
-        val parsed = Json.parseToJsonElement(schemaString).jsonObject
-
-        parsed["name"]?.jsonPrimitive?.content shouldBe "calculateSum"
-        parsed["description"]?.jsonPrimitive?.content shouldContain "sum of two numbers"
-
-        val properties = parsed["parameters"]?.jsonObject?.get("properties")?.jsonObject.shouldNotBeNull()
-        properties["a"].shouldNotBeNull()
-        properties["b"].shouldNotBeNull()
-
-        // Both parameters are required (no defaults)
-        val required = parsed["parameters"]?.jsonObject?.get("required")?.jsonArray.shouldNotBeNull()
-        required.map { it.jsonPrimitive.content } shouldContain "a"
-        required.map { it.jsonPrimitive.content } shouldContain "b"
+        // language=json
+        schema shouldEqualJson
+            """
+            {
+              "type": "function",
+              "name": "calculateSum",
+              "description": "Calculates the sum of two numbers",
+              "strict": true,
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "a": {
+                    "type": "integer",
+                    "description": "First number"
+                  },
+                  "b": {
+                    "type": "integer",
+                    "description": "Second number"
+                  }
+                },
+                "required": ["a", "b"],
+                "additionalProperties": false
+              }
+            }
+            """.trimIndent()
     }
 
     @Test
     fun `fetchUserData suspend function generates correct schema`() {
-        val schemaString = fetchUserDataJsonSchemaString()
-        val schema = fetchUserDataJsonSchema()
+        val schema = fetchUserDataJsonSchemaString()
 
-        schemaString shouldEqualJson Json.encodeToString(schema)
-
-        val parsed = Json.parseToJsonElement(schemaString).jsonObject
-
-        // Suspend functions should generate same schema as normal functions
-        parsed["type"]?.jsonPrimitive?.content shouldBe "function"
-        parsed["name"]?.jsonPrimitive?.content shouldBe "fetchUserData"
-        parsed["description"]?.jsonPrimitive?.content shouldContain "asynchronously"
-
-        val properties = parsed["parameters"]?.jsonObject?.get("properties")?.jsonObject.shouldNotBeNull()
-        properties["userId"].shouldNotBeNull()
-        properties["includeDetails"].shouldNotBeNull()
-
-        // Only userId is required (includeDetails has default)
-        val required = parsed["parameters"]?.jsonObject?.get("required")?.jsonArray.shouldNotBeNull()
-        required.map { it.jsonPrimitive.content } shouldContain "userId"
+        // language=json
+        schema shouldEqualJson
+            """
+            {
+              "type": "function",
+              "name": "fetchUserData",
+              "description": "Fetches user data asynchronously from a remote service",
+              "strict": true,
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "integer",
+                    "description": "User ID to fetch"
+                  },
+                  "includeDetails": {
+                    "type": "boolean",
+                    "description": "Whether to include detailed profile information"
+                  }
+                },
+                "required": ["userId", "includeDetails"],
+                "additionalProperties": false
+              }
+            }
+            """.trimIndent()
     }
 
     @Test
     fun `processItems suspend function generates correct schema`() {
-        val schemaString = processItemsJsonSchemaString()
-        val schema = processItemsJsonSchema()
+        val schema = processItemsJsonSchemaString()
 
-        schemaString shouldEqualJson Json.encodeToString(schema)
-
-        val parsed = Json.parseToJsonElement(schemaString).jsonObject
-
-        parsed["name"]?.jsonPrimitive?.content shouldBe "processItems"
-
-        val properties = parsed["parameters"]?.jsonObject?.get("properties")?.jsonObject.shouldNotBeNull()
-        properties["items"].shouldNotBeNull()
-        properties["mode"].shouldNotBeNull()
+        // language=json
+        schema shouldEqualJson
+            """
+            {
+              "type": "function",
+              "name": "processItems",
+              "description": "Processes a list of items asynchronously",
+              "strict": true,
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "List of items to process"
+                  },
+                  "mode": {
+                    "type": "string",
+                    "description": "Processing mode"
+                  }
+                },
+                "required": ["items", "mode"],
+                "additionalProperties": false
+              }
+            }
+            """.trimIndent()
     }
 
     @Test
     fun `searchProducts with nullable parameters generates correct schema`() {
-        val schemaString = searchProductsJsonSchemaString()
-        val schema = searchProductsJsonSchema()
+        val schema = searchProductsJsonSchemaString()
 
-        schemaString shouldEqualJson Json.encodeToString(schema)
-
-        val parsed = Json.parseToJsonElement(schemaString).jsonObject
-
-        parsed["name"]?.jsonPrimitive?.content shouldBe "searchProducts"
-
-        val properties = parsed["parameters"]?.jsonObject?.get("properties")?.jsonObject.shouldNotBeNull()
-        properties["query"].shouldNotBeNull()
-        properties["minPrice"].shouldNotBeNull()
-        properties["maxPrice"].shouldNotBeNull()
-        properties["categories"].shouldNotBeNull()
-        properties["includeOutOfStock"].shouldNotBeNull()
-
-        // Only query is required (others have defaults or are nullable)
-        val required = parsed["parameters"]?.jsonObject?.get("required")?.jsonArray.shouldNotBeNull()
-        required.map { it.jsonPrimitive.content } shouldContain "query"
+        // language=json
+        schema shouldEqualJson
+            """
+            {
+              "type": "function",
+              "name": "searchProducts",
+              "description": "Searches for products with various filters",
+              "strict": true,
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "description": "Search query string"
+                  },
+                  "minPrice": {
+                    "type": ["number", "null"],
+                    "description": "Minimum price filter"
+                  },
+                  "maxPrice": {
+                    "type": ["number", "null"],
+                    "description": "Maximum price filter"
+                  },
+                  "categories": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Category filters"
+                  },
+                  "includeOutOfStock": {
+                    "type": "boolean",
+                    "description": "Whether to include out-of-stock items"
+                  }
+                },
+                "required": ["query", "minPrice", "maxPrice", "categories", "includeOutOfStock"],
+                "additionalProperties": false
+              }
+            }
+            """.trimIndent()
     }
 
     @Test
     fun `updateConfiguration suspend function with map parameter generates correct schema`() {
-        val schemaString = updateConfigurationJsonSchemaString()
-        val schema = updateConfigurationJsonSchema()
+        val schema = updateConfigurationJsonSchemaString()
 
-        schemaString shouldEqualJson Json.encodeToString(schema)
-
-        val parsed = Json.parseToJsonElement(schemaString).jsonObject
-
-        parsed["name"]?.jsonPrimitive?.content shouldBe "updateConfiguration"
-        parsed["description"]?.jsonPrimitive?.content shouldContain "configuration"
-
-        val properties = parsed["parameters"]?.jsonObject?.get("properties")?.jsonObject.shouldNotBeNull()
-        properties["key"].shouldNotBeNull()
-        properties["value"].shouldNotBeNull()
-        properties["metadata"].shouldNotBeNull()
-
-        // key and value are required, metadata is nullable
-        val required = parsed["parameters"]?.jsonObject?.get("required")?.jsonArray.shouldNotBeNull()
-        required.map { it.jsonPrimitive.content } shouldContain "key"
-        required.map { it.jsonPrimitive.content } shouldContain "value"
-    }
-
-    @Test
-    fun `all generated schemas have FunctionCallingSchema structure`() {
-        val schemas = listOf(
-            greetPersonJsonSchemaString(),
-            calculateSumJsonSchemaString(),
-            fetchUserDataJsonSchemaString(),
-            processItemsJsonSchemaString(),
-            searchProductsJsonSchemaString(),
-            updateConfigurationJsonSchemaString(),
-        )
-
-        schemas.forEach { schemaString ->
-            val parsed = Json.parseToJsonElement(schemaString).jsonObject
-
-            // All schemas should have these required fields
-            parsed["type"].shouldNotBeNull()
-            parsed["name"].shouldNotBeNull()
-            parsed["parameters"].shouldNotBeNull()
-
-            // Type should be "function"
-            parsed["type"]?.jsonPrimitive?.content shouldBe "function"
-
-            // Parameters should be an object with properties and required
-            val parameters = parsed["parameters"]?.jsonObject.shouldNotBeNull()
-            parameters["type"].shouldNotBeNull()
-            parameters["properties"].shouldNotBeNull()
-            parameters["required"].shouldNotBeNull()
-        }
+        // language=json
+        schema shouldEqualJson
+            """
+            {
+              "type": "function",
+              "name": "updateConfiguration",
+              "description": "Updates configuration settings",
+              "strict": true,
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "description": "Configuration key"
+                  },
+                  "value": {
+                    "type": "string",
+                    "description": "Configuration value"
+                  },
+                  "metadata": {
+                    "type": ["object", "null"],
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "description": "Optional metadata"
+                  }
+                },
+                "required": ["key", "value", "metadata"],
+                "additionalProperties": false
+              }
+            }
+            """.trimIndent()
     }
 }

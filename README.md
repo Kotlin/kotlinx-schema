@@ -916,7 +916,7 @@ val schema: FunctionCallingSchema = greetPersonJsonSchema()
 
 #### Generated Schema
 
-The generated schema is identical to the runtime reflection format:
+The generated schema follows OpenAI Strict Mode by default (all parameters required):
 
 ```json
 {
@@ -936,17 +936,20 @@ The generated schema is identical to the runtime reflection format:
         "description": "Optional greeting prefix (e.g., 'Hello', 'Hi')"
       }
     },
-    "required": ["name"],
+    "required": ["name", "greeting"],
     "additionalProperties": false
   }
 }
 ```
 
+**Note**: Both parameters appear in `required` even though `greeting` has a default value. 
+This is [OpenAI Strict Mode](https://platform.openai.com/docs/guides/function-calling?strict-mode=enabled#strict-mode) behavior.
+
 #### Key Differences from Runtime Reflection
 
 - **Compile-time generation**: Schemas are generated during compilation, not at runtime
 - **Zero runtime overhead**: No reflection or runtime introspection needed
-- **Default value limitation**: Function parameter default values (e.g., `greeting: String = "Hello"`) are detected but their actual values cannot be extracted at compile time due to [KSP limitations](https://github.com/google/ksp/issues/1868). Parameters with defaults are marked as optional (excluded from `required` array)
+- **Default value limitation**: Function parameter default values (e.g., `greeting: String = "Hello"`) cannot be extracted at compile time due to [KSP limitations](https://github.com/google/ksp/issues/1868). With the default `ALL_REQUIRED` strategy (OpenAI Strict Mode), all parameters are marked as required regardless of defaults. Use the `NON_NULLABLE_REQUIRED` strategy if you need nullable parameters to be optional
 - **All function types supported**: Works with top-level, instance, companion object, and suspend functions
 - **Generated function naming**: For a function `myFunction()`, generates `myFunctionJsonSchemaString()` and optionally `myFunctionJsonSchema()`
 

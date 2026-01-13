@@ -63,28 +63,26 @@ internal class KspFunctionIntrospector : SchemaIntrospector<KSFunctionDeclaratio
         root.parameters.forEach { param ->
             val paramName = param.name?.asString() ?: return@forEach
             val paramType = param.type.resolve()
-            val hasDefault = param.hasDefault
 
             val typeRef = toRef(paramType)
 
             // Extract description from annotations or KDoc
             val description =
-                param.annotations
-                    .mapNotNull { it.descriptionOrNull() }
-                    .firstOrNull()
+                param.annotations.firstNotNullOfOrNull { it.descriptionOrNull() }
 
+            // KSP limitation: hasDefault doesn't reliably detect default values in the same compilation unit
+            // For function calling schemas, all parameters are marked as required by default (including nullable)
+            // Nullable types are represented with union types: ["string", "null"]
             properties +=
                 Property(
                     name = paramName,
                     type = typeRef,
                     description = description,
-                    defaultPresence = if (hasDefault) DefaultPresence.Absent else DefaultPresence.Required,
+                    defaultPresence = DefaultPresence.Required,
                     defaultValue = null, // KSP cannot extract default values at compile-time
                 )
 
-            if (!hasDefault) {
-                requiredProperties += paramName
-            }
+            requiredProperties += paramName
         }
 
         // Extract function description
