@@ -43,3 +43,7 @@ publish:
 	@echo "📦 Publishing to local Maven repository..."
 	@./gradlew publishToMavenLocal
 	@echo "✅ Published to ~/.m2/repository!"
+
+.PHONY: sync
+sync:
+	git submodule update --init --recursive --depth=1

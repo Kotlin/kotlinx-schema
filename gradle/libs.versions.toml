@@ -3,7 +3,8 @@ agp = "8.10.1"
 detekt = "2.0.0-alpha.1"
 dokka = "2.1.0"
 jackson = "2.18.5" # pin it
-junit = "6.0.1"
+junit = "6.0.2"
+junit-pioneer = "2.3.0"
 koog = "0.6.0"
 kotest = "6.0.4"
 kotlin = "2.2.21"
@@ -11,10 +12,10 @@ kotlinxSerialization = "1.9.0"
 kover = "0.9.3"
 ksp = "2.3.4"
 langchain4j = "1.8.0"
-mockk = "1.14.6"
-vanniktechMavenPublish = "0.35.0"
 logging = "7.0.13"
+mockk = "1.14.6"
 slf4j = "2.0.17"
+vanniktechMavenPublish = "0.35.0"
 
 [libraries]
 kotlin-logging = { group = "io.github.oshai", name = "kotlin-logging", version.ref = "logging" }
@@ -22,6 +23,7 @@ dokka-gradle-plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", vers
 gradle-maven-publish-plugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "vanniktechMavenPublish" }
 jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit" }
+junit-pioneer = { module = "org.junit-pioneer:junit-pioneer", version.ref = "junit-pioneer" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 koog-agents-tools = { module = "ai.koog:agents-tools", version.ref = "koog" }
 kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }

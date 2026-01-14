@@ -5,7 +5,7 @@ support.
 
 ## Features
 
-- **Type-safe data models** for JSON Schema Draft 2020-12
+- **Type-safe data models** for [JSON Schema Draft 2020-12](https://json-schema.org/draft/2020-12)
 - **Kotlin DSL** for declarative schema construction
 - **Kotlinx Serialization** integration for JSON serialization/deserialization
 - **Property types**: string, number, integer, boolean, array, object, reference
@@ -20,6 +20,10 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-schema-json:$version")
 }
 ```
+
+For JVM-only project use 
+[org.jetbrains.kotlinx:kotlinx-schema-json-jvm](https://central.sonatype.com/artifact/org.jetbrains.kotlinx/kotlinx-schema-json-jvm)
+dependency.
 
 ## Usage
 
@@ -46,27 +50,33 @@ val schema = jsonSchema {
 ```
 
 Produces:
+
 ```json
 {
-  "name": "UserEmail",
-  "strict": false,
-  "schema": {
-    "type": "object",
-    "properties": {
-      "email": {
-        "type": "string",
-        "description": "Email address",
-        "format": "email"
-      }
-    },
-    "required": ["email"]
-  }
+    "name": "UserEmail",
+    "strict": false,
+    "schema": {
+        "type": "object",
+        "properties": {
+            "email": {
+                "type": "string",
+                "description": "Email address",
+                "format": "email"
+            }
+        },
+        "required": [
+            "email"
+        ]
+    }
 }
 ```
 
 #### Comprehensive Example
 
 This example demonstrates all available DSL features in a single schema:
+
+<details>
+<summary>Click to expand...</summary>
 
 ```kotlin
 val schema = jsonSchema {
@@ -210,7 +220,10 @@ val schema = jsonSchema {
 }
 ```
 
+</details>
+
 This comprehensive example includes:
+
 - **Required fields**: `id`, `email` (with `required = true`)
 - **String constraints**: `format`, `minLength`, `maxLength`, `enum`, `pattern`
 - **Numeric constraints**: `minimum`, `maximum`, `multipleOf`, `exclusiveMinimum`, `exclusiveMaximum`
@@ -264,7 +277,8 @@ val productSchema = jsonSchema {
 
 ### Polymorphism with oneOf, anyOf, allOf
 
-JSON Schema supports polymorphic types through composition keywords. These enable flexible type definitions where a value can match one or more schemas.
+JSON Schema supports polymorphic types through composition keywords. These enable flexible type definitions where a
+value can match one or more schemas.
 
 #### oneOf - Exactly One Match
 
@@ -333,7 +347,8 @@ val schema = jsonSchema {
 
 #### Discriminators for Efficient Type Resolution
 
-Discriminators enable efficient polymorphic type resolution by specifying which property determines the schema to use. The DSL provides two elegant forms:
+Discriminators enable efficient polymorphic type resolution by specifying which property determines the schema to use.
+The DSL provides two elegant forms:
 
 **Form 1: References with discriminator mapping**
 
@@ -407,6 +422,7 @@ oneOf {
 ```
 
 The `mappedTo` infix operator automatically:
+
 - **For references**: Adds entry to discriminator mapping AND adds reference to oneOf options
 - **For inline schemas**: Adds schema to oneOf options (no explicit mapping needed)
 
@@ -455,7 +471,8 @@ property("complex") {
 - `minItems`, `maxItems` - Array size constraints
 - `additionalProperties` - Allow/disallow additional properties
 
-**Note**: The legacy `required(vararg fields: String)` function is still available for backward compatibility, but using `required = true` within property blocks is the recommended approach.
+**Note**: The legacy `required(vararg fields: String)` function is still available for backward compatibility, but using
+`required = true` within property blocks is the recommended approach.
 
 ## DSL Safety
 
@@ -492,31 +509,36 @@ This produces the following JSON schema compatible with OpenAI's function callin
 
 ```json
 {
-  "type": "function",
-  "name": "search",
-  "description": "Search for items in the database",
-  "strict": true,
-  "parameters": {
-    "type": "object",
-    "properties": {
-      "query": {
-        "type": "string",
-        "description": "Search query"
-      },
-      "limit": {
-        "type": "integer",
-        "description": "Max results"
-      }
-    },
-    "required": ["query", "limit"],
-    "additionalProperties": false
-  }
+    "type": "function",
+    "name": "search",
+    "description": "Search for items in the database",
+    "strict": true,
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": "Search query"
+            },
+            "limit": {
+                "type": "integer",
+                "description": "Max results"
+            }
+        },
+        "required": [
+            "query",
+            "limit"
+        ],
+        "additionalProperties": false
+    }
 }
 ```
 
 ### OpenAI Structured Outputs Compatibility
 
-Function calling schemas follow OpenAI's [structured outputs requirements](https://platform.openai.com/docs/guides/function-calling):
+Function calling schemas follow
+OpenAI's [structured outputs requirements](https://platform.openai.com/docs/guides/function-calling):
+
 - Functions must have a `name` and `description`
 - All fields must be in the `required` array
 - Nullable fields use union types: `["string", "null"]`
@@ -524,6 +546,7 @@ Function calling schemas follow OpenAI's [structured outputs requirements](https
 - `additionalProperties` is set to `false` by default
 
 Example with nullable parameter:
+
 ```kotlin
 val schema = FunctionCallingSchema(
     name = "updateProfile",
@@ -546,7 +569,8 @@ val schema = FunctionCallingSchema(
 
 ### Runtime Generation from Functions
 
-For generating function calling schemas from Kotlin functions at runtime, use `ReflectionFunctionCallingSchemaGenerator` in the `kotlinx-schema-generator-json` module:
+For generating function calling schemas from Kotlin functions at runtime, use `ReflectionFunctionCallingSchemaGenerator`
+in the `kotlinx-schema-generator-json` module:
 
 ```kotlin
 import kotlinx.schema.Description
@@ -594,7 +618,8 @@ and properly typed parameters:
 
 ### Sealed Class Polymorphic Schema Generation
 
-The library automatically generates JSON schemas for Kotlin sealed class hierarchies using `oneOf` with discriminator support. This is perfect for representing polymorphic types in APIs and validation.
+The library automatically generates JSON schemas for Kotlin sealed class hierarchies using `oneOf` with discriminator
+support. This is perfect for representing polymorphic types in APIs and validation.
 
 #### Basic Sealed Class Example
 
@@ -634,76 +659,82 @@ This generates a JSON schema with `oneOf` and `$ref`/`$defs` for the sealed hier
 
 ```json
 {
-  "name": "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal",
-  "strict": false,
-  "schema": {
-    "type": "object",
-    "additionalProperties": false,
-    "description": "Represents an animal",
-    "oneOf": [
-      {
-        "$ref": "#/$defs/Cat"
-      },
-      {
-        "$ref": "#/$defs/Dog"
-      }
-    ],
-    "discriminator": {
-      "propertyName": "type",
-      "mapping": {
-        "Cat": "#/$defs/Cat",
-        "Dog": "#/$defs/Dog"
-      }
-    },
-    "$defs": {
-      "Cat": {
+    "name": "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal",
+    "strict": false,
+    "schema": {
         "type": "object",
-        "description": "Represents a cat",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Animal's name"
-          },
-          "color": {
-            "type": "string",
-            "description": "Cat's color"
-          },
-          "lives": {
-            "type": "integer",
-            "description": "Lives left"
-          }
+        "additionalProperties": false,
+        "description": "Represents an animal",
+        "oneOf": [
+            {
+                "$ref": "#/$defs/Cat"
+            },
+            {
+                "$ref": "#/$defs/Dog"
+            }
+        ],
+        "discriminator": {
+            "propertyName": "type",
+            "mapping": {
+                "Cat": "#/$defs/Cat",
+                "Dog": "#/$defs/Dog"
+            }
         },
-        "required": ["name", "color"],
-        "additionalProperties": false
-      },
-      "Dog": {
-        "type": "object",
-        "description": "Represents a dog",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Animal's name"
-          },
-          "breed": {
-            "type": "string",
-            "description": "Dog's breed"
-          },
-          "isTrained": {
-            "type": "boolean",
-            "description": "Trained or not"
-          }
-        },
-        "required": ["name", "breed"],
-        "additionalProperties": false
-      }
+        "$defs": {
+            "Cat": {
+                "type": "object",
+                "description": "Represents a cat",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Animal's name"
+                    },
+                    "color": {
+                        "type": "string",
+                        "description": "Cat's color"
+                    },
+                    "lives": {
+                        "type": "integer",
+                        "description": "Lives left"
+                    }
+                },
+                "required": [
+                    "name",
+                    "color"
+                ],
+                "additionalProperties": false
+            },
+            "Dog": {
+                "type": "object",
+                "description": "Represents a dog",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Animal's name"
+                    },
+                    "breed": {
+                        "type": "string",
+                        "description": "Dog's breed"
+                    },
+                    "isTrained": {
+                        "type": "boolean",
+                        "description": "Trained or not"
+                    }
+                },
+                "required": [
+                    "name",
+                    "breed"
+                ],
+                "additionalProperties": false
+            }
+        }
     }
-  }
 }
 ```
 
 #### Key Features
 
-- **Automatic `oneOf` generation**: Each sealed subclass becomes an alternative in the `oneOf` array with `$ref` pointers
+- **Automatic `oneOf` generation**: Each sealed subclass becomes an alternative in the `oneOf` array with `$ref`pointers
 - **`$defs` section**: Subclass schemas are defined in the `$defs` section and referenced via `$ref`
 - **Discriminator support**: Automatically generates discriminator with explicit type mapping to `$ref` paths
 - **Property inheritance**: Properties from the sealed base class are included in each subtype
@@ -714,8 +745,18 @@ This generates a JSON schema with `oneOf` and `$ref`/`$defs` for the sealed hier
 #### Use Cases
 
 Sealed class schemas are ideal for:
+
 - **API payloads**: Representing different message or event types
 - **Configuration**: Defining different configuration variants
 - **State machines**: Modeling different states with specific properties
 - **Domain modeling**: Expressing algebraic data types in JSON Schema
 - **Validation**: Ensuring polymorphic data matches one of the allowed types
+
+## Conformance testing
+
+kotlinx-schema-json aims to maintain full conformance with the JSON Schema specification.
+Conformance tests against the
+official [JSON Schema Test Suite](https://github.com/json-schema-org/JSON-Schema-Test-Suite)
+are to ensure compatibility and correctness.
+Our goal is to support all features of the specification while providing a robust and reliable JSON Schema
+implementation for Kotlin.
