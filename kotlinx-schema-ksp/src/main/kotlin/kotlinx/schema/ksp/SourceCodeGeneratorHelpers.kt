@@ -61,14 +61,19 @@ internal object SourceCodeGeneratorHelpers {
 
         val suppressionsString = allSuppressions.joinToString(",\n") { "    \"$it\"" }
 
-        return """
-            |@file:Suppress(
-            |$suppressionsString,
-            |)
-            |
-            |package $packageName
-            |
-            """.trimMargin()
+        return buildString {
+            appendLine(
+                """                                                                                                                              
+              |@file:Suppress(                                                                                                                    
+              |$suppressionsString,                                                                                                               
+              |)                                                                                                                                  
+                """.trimMargin(),
+            )
+
+            if (packageName.isNotEmpty()) {
+                appendLine("package $packageName")
+            }
+        }
     }
 
     /**
@@ -76,7 +81,7 @@ internal object SourceCodeGeneratorHelpers {
      *
      * @param targetName The name of the class/function being documented
      * @param description What this generated code provides
-     * @return KDoc comment as string
+     * @return KDoc comment as a string
      */
     fun generateKDoc(
         targetName: String,
