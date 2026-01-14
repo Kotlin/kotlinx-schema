@@ -82,6 +82,7 @@ so do familiarize yourself with the following guidelines.
 ### Quick Commands
 
 ```bash
+git submodule update --init --recursive --depth=1 # fetch submodules
 ./gradlew build        # Build + test
 ./gradlew test         # Tests only
 make build             # Build + verify + docs

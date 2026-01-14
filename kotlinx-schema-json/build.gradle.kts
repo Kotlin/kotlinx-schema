@@ -32,6 +32,8 @@ kotlin {
         jvmTest {
             dependencies {
                 implementation(kotlin("reflect"))
+                implementation(libs.junit.jupiter.params)
+                implementation(libs.junit.pioneer)
             }
         }
     }

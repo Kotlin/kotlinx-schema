@@ -1,0 +1,3 @@
+[submodule "kotlinx-schema-json/test-suite"]
+	path = kotlinx-schema-json/test-suite
+	url = https://github.com/json-schema-org/JSON-Schema-Test-Suite.git
