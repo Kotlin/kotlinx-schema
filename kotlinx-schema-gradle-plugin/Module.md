@@ -39,5 +39,3 @@ kotlinxSchema {
     rootPackage.set("com.example") // Optional
 }
 ```
-
-See [README.md](README.md) for complete documentation.

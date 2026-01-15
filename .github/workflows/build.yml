@@ -43,7 +43,11 @@ jobs:
           cache-cleanup: always
 
       - name: Build
-        run: ./gradlew build check koverXmlReport --no-daemon
+        run: ./gradlew build check koverXmlReport -Pversion=1-SNAPSHOT --no-daemon
+
+      - name: Integration tests
+        working-directory: gradle-plugin-integration-tests
+        run: ./gradlew clean allTests -PkotlinxSchemaVersion=1-SNAPSHOT --no-daemon --no-configuration-cache
 
       - name: Upload Reports
         if: ${{ !cancelled() }}

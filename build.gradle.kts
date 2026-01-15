@@ -15,7 +15,7 @@ dependencies {
     kover(project(":ksp-integration-tests"))
 }
 
-/**
+/*
  * Publishes the gradle plugin to local maven repository and syncs the project.
  * After running this, reload your IDE/Gradle to enable gradle-plugin-integration-tests.
  */

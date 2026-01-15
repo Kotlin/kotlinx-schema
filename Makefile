@@ -28,7 +28,7 @@ clean:
 	@./gradlew --stop
 	@rm -rf .gradle/configuration-cache
 	@rm -rf buildSrc/.gradle/configuration-cache
-	@rm -rf kotlin-js-store && ./gradlew clean
+	@rm -rf **/kotlin-js-store && ./gradlew clean
 	@(cd gradle-plugin-integration-tests && ./gradlew --stop && rm -rf .gradle/configuration-cache buildSrc/.gradle/configuration-cache kotlin-js-store && ./gradlew clean)
 	@echo "✅ Clean complete!"
 
@@ -47,3 +47,15 @@ publish:
 .PHONY: sync
 sync:
 	git submodule update --init --recursive --depth=1
+
+.PHONY: integration-test
+integration-test:
+	@echo "🧪🧩 Running integration tests..."
+	@rm -rf gradle-plugin-integration-tests/**/build gradle-plugin-integration-tests/kotlin-js-store
+	@./gradlew build publishToMavenLocal \
+		--no-daemon --no-configuration-cache
+	@#	-Pversion=1-SNAPSHOT
+	@echo "💨 Starting Integration tests..."
+	@(cd gradle-plugin-integration-tests && ./gradlew clean build --no-daemon --stacktrace --no-configuration-cache)
+	@#(cd gradle-plugin-integration-tests && ./gradlew clean build --no-daemon --no-configuration-cache -PkotlinxSchemaVersion=1-SNAPSHOT)
+	@echo "✅ Integration tests complete!"

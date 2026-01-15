@@ -10,6 +10,8 @@ import javax.inject.Inject
  * ```kotlin
  * kotlinxSchema {
  *     enabled.set(true)
+ *     rootPackage.set("com.example.models")
+ *     withSchemaObject.set(true)
  * }
  * ```
  */
@@ -28,9 +30,20 @@ public abstract class KotlinxSchemaExtension
          */
         public abstract val rootPackage: Property<String>
 
+        /**
+         * Whether to generate the jsonSchema JsonObject property in addition to jsonSchemaString.
+         * When enabled, both extension properties are generated:
+         * - jsonSchemaString: String
+         * - jsonSchema: JsonObject
+         *
+         * Default: true
+         */
+        public abstract val withSchemaObject: Property<Boolean>
+
         init {
             // Set default values
             enabled.convention(true)
+            withSchemaObject.convention(false) // Enable JsonObject property by default
             // rootPackage intentionally has no default; absence means no filtering
         }
     }

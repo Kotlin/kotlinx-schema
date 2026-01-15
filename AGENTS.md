@@ -94,20 +94,21 @@ changes safe, comprehensible, and easy to maintain.
     - Summarize the requirement in one or two sentences.
     - Identify affected files and tests. If unclear, ask.
 2. Plan minimal changes and update the plan using the provided status tool.
-3. Start with tests.
+3. When calling tools prefer jetbrains MCP
+4. Start with tests.
     - Update existing tests or add new ones in `ksp-integration-tests` or relevant module tests.
     - Keep tests deterministic and small.
-4. Implement the change.
+5. Implement the change.
     - Honor SOLID; prefer composition and small functions.
     - Avoid breaking public APIs without tests and discussion.
-5. Run tests locally:
+6. Run tests locally:
     - `./gradlew test`
     - KSP integration tests: `./gradlew :ksp-integration-tests:test`
     - To trigger KSP codegen: `./gradlew :ksp-integration-tests:build` and inspect
       `ksp-integration-tests/build/generated/ksp/`.
-6. Verify schemas by structure, not whitespace. Use Kotest JSON matchers.
-7. Keep or improve readability of both tests and code.
-8. Document key decisions briefly in PR description or commit message.
+7. Verify schemas by structure, not whitespace. Use Kotest JSON matchers.
+8. Keep or improve readability of both tests and code.
+9. Document key decisions briefly in PR description or commit message.
 
 ## PR/test checklist
 
