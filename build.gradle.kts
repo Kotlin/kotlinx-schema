@@ -12,7 +12,6 @@ dependencies {
     kover(project(":kotlinx-schema-gradle-plugin"))
     kover(project(":kotlinx-schema-json"))
     kover(project(":kotlinx-schema-ksp"))
-    kover(project(":ksp-integration-tests"))
 }
 
 /*
@@ -78,7 +77,7 @@ kover {
     reports {
         filters {
             includes.classes("kotlinx.schema.*")
-            excludes.classes("kotlinx.schema.ksp.ir.*") // tested indirectly
+            excludes.classes("kotlinx.schema.ksp.ir.*", "*Test") // tested indirectly
         }
         total {
             xml {}

@@ -43,11 +43,11 @@ jobs:
           cache-cleanup: always
 
       - name: Build
-        run: ./gradlew build check koverXmlReport -Pversion=1-SNAPSHOT --no-daemon
+        run: ./gradlew build check koverXmlReport koverHtmlReport  publishToMavenLocal -Pversion=1-SNAPSHOT
 
       - name: Integration tests
         working-directory: gradle-plugin-integration-tests
-        run: ./gradlew clean allTests -PkotlinxSchemaVersion=1-SNAPSHOT --no-daemon --no-configuration-cache
+        run: ./gradlew clean allTests -PkotlinxSchemaVersion=1-SNAPSHOT --no-configuration-cache
 
       - name: Upload Reports
         if: ${{ !cancelled() }}
@@ -93,7 +93,7 @@ jobs:
 
       - name: Integration tests
         working-directory: gradle-plugin-integration-tests
-        run: ./gradlew allTests
+        run: ./gradlew build
 
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v6

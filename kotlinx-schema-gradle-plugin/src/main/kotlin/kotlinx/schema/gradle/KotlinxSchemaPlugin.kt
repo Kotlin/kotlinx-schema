@@ -35,10 +35,11 @@ private const val KOTLIN_JVM_PLUGIN = "org.jetbrains.kotlin.jvm"
  */
 public class KotlinxSchemaPlugin : Plugin<Project> {
     override fun apply(target: Project) {
-        val extension = target.extensions.create(
-            PluginConstants.EXTENSION_NAME,
-            KotlinxSchemaExtension::class.java,
-        )
+        val extension =
+            target.extensions.create(
+                PluginConstants.EXTENSION_NAME,
+                KotlinxSchemaExtension::class.java,
+            )
 
         if (extension.enabled.orNull == false) {
             target.logger.log(LogLevel.DEBUG, "kotlinx-schema: Plugin is disabled")
@@ -50,6 +51,7 @@ public class KotlinxSchemaPlugin : Plugin<Project> {
             target.plugins.hasPlugin(KOTLIN_MULTIPLATFORM_PLUGIN) -> {
                 configureMultiplatform(target, extension)
             }
+
             else -> {
                 target.plugins.withId(KOTLIN_JVM_PLUGIN) {
                     configureJvm(target, extension)
@@ -58,12 +60,18 @@ public class KotlinxSchemaPlugin : Plugin<Project> {
         }
     }
 
-    private fun configureMultiplatform(project: Project, extension: KotlinxSchemaExtension) {
+    private fun configureMultiplatform(
+        project: Project,
+        extension: KotlinxSchemaExtension,
+    ) {
         project.logger.log(LogLevel.INFO, "kotlinx-schema: Detected Kotlin Multiplatform")
         MultiplatformConfigurator().configure(project, extension)
     }
 
-    private fun configureJvm(project: Project, extension: KotlinxSchemaExtension) {
+    private fun configureJvm(
+        project: Project,
+        extension: KotlinxSchemaExtension,
+    ) {
         project.afterEvaluate {
             if (!project.plugins.hasPlugin(KOTLIN_MULTIPLATFORM_PLUGIN)) {
                 project.logger.log(LogLevel.INFO, "kotlinx-schema: Detected Kotlin JVM")

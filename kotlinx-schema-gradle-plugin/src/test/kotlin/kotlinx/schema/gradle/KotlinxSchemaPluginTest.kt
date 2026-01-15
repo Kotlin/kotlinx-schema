@@ -12,9 +12,6 @@ private const val EXTENSION_NAME = "kotlinxSchema"
 
 /**
  * Unit tests for KotlinxSchemaPlugin.
- *
- * Note: Full integration testing with KSP should be done manually or in separate integration test projects
- * due to complexities with Gradle TestKit and plugin dependencies.
  */
 class KotlinxSchemaPluginTest {
     @Test

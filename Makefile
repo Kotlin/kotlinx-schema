@@ -1,18 +1,16 @@
 
 .PHONY: build
 build:clean
-	@echo "🔨 Building project with coverage reports..."
-	@(cd gradle-plugin-integration-tests && ./gradlew allTest --rerun-tasks)
+	@echo "🔨 Coverage reports..."
 	@./gradlew \
 		build \
-		koverLog koverXmlReport
+		koverLog koverXmlReport koverHtmlReport
 	@echo "✅ Build complete!"
 
 .PHONY: test
 test:
 	@echo "🧪 Running tests..."
 	@./gradlew check --rerun-tasks
-	@(cd gradle-plugin-integration-tests && ./gradlew allTest --rerun-tasks)
 	@echo "✅ Tests complete!"
 
 .PHONY: apidocs
@@ -50,12 +48,15 @@ sync:
 
 .PHONY: integration-test
 integration-test:
+	@echo "🧪 Running tests..."
+	@rm -rf **/kotlin-js-store
+	@./gradlew build publishToMavenLocal --rerun-tasks
+	@echo "✅ Build complete!"
+
 	@echo "🧪🧩 Running integration tests..."
-	@rm -rf gradle-plugin-integration-tests/**/build gradle-plugin-integration-tests/kotlin-js-store
-	@./gradlew build publishToMavenLocal \
-		--no-daemon --no-configuration-cache
+
 	@#	-Pversion=1-SNAPSHOT
-	@echo "💨 Starting Integration tests..."
+	@echo "🧪🧩 Starting Integration tests..."
+	@rm -rf gradle-plugin-integration-tests/**/build gradle-plugin-integration-tests/kotlin-js-store
 	@(cd gradle-plugin-integration-tests && ./gradlew clean build --no-daemon --stacktrace --no-configuration-cache)
-	@#(cd gradle-plugin-integration-tests && ./gradlew clean build --no-daemon --no-configuration-cache -PkotlinxSchemaVersion=1-SNAPSHOT)
 	@echo "✅ Integration tests complete!"

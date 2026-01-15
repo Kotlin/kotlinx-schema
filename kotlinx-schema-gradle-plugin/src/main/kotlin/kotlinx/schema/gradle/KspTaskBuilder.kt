@@ -10,6 +10,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
  */
 internal class KspTaskBuilder(
     private val project: Project,
+    private val kspExecutor: KspExecutor = KspExecutor(project),
 ) {
     private val sourceCollector = SourceCollector(project)
     private val sourceSetRegistrar = SourceSetRegistrar(project)
@@ -56,8 +57,11 @@ internal class KspTaskBuilder(
         task.description = "Generate JSON schema extension properties"
 
         // Declare outputs so Gradle can track generated files
-        val outputDir = project.layout.buildDirectory.get().asFile
-            .resolve("${PluginConstants.GENERATED_BASE_PATH}/${config.outputName}")
+        val outputDir =
+            project.layout.buildDirectory
+                .get()
+                .asFile
+                .resolve("${PluginConstants.GENERATED_BASE_PATH}/${config.outputName}")
         task.outputs.dir(outputDir)
         task.outputs.cacheIf { true }
 
@@ -88,7 +92,7 @@ internal class KspTaskBuilder(
                 ?: error("Compile task ${config.compileTaskName} not found or not a KotlinCompilationTask")
 
         val options = buildProcessorOptions(extension)
-        val executor = KspExecutor(project)
+        val executor = kspExecutor
         val success =
             executor.execute(
                 taskName = config.outputName,

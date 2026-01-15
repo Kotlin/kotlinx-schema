@@ -7,8 +7,7 @@ import kotlinx.serialization.json.Json
 import kotlin.reflect.KClass
 
 /**
- * A unified implementation of schema generation that replaces both [KspClassSchemaGenerator]
- * and [KspFunctionSchemaGenerator].
+ * A unified implementation of schema generation for class and function schema generation.
  *
  * This class eliminates code duplication by making schema generation configuration-driven.
  * The same core logic works for both class and function schemas, with differences

@@ -50,7 +50,10 @@ internal class KspExecutor(
         }
 
         // Extract build directory for reuse
-        val buildDir = project.layout.buildDirectory.get().asFile
+        val buildDir =
+            project.layout.buildDirectory
+                .get()
+                .asFile
 
         // Create output directories under build/generated/kotlinxSchema
         val baseOutputDir = buildDir.resolve("generated/kotlinxSchema/$taskName")
@@ -81,7 +84,9 @@ internal class KspExecutor(
         // Extract jvmTarget (only available on JVM tasks)
         val jvmTargetRaw =
             (compilerOptions as? org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions)
-                ?.jvmTarget?.orNull?.toString()
+                ?.jvmTarget
+                ?.orNull
+                ?.toString()
                 ?: PluginConstants.DEFAULT_JVM_TARGET
         val jvmTarget = jvmTargetRaw.removePrefix(PluginConstants.JVM_TARGET_PREFIX)
 

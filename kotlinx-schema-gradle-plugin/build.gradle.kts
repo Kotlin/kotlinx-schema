@@ -5,7 +5,11 @@ plugins {
     `publishing-convention`
 }
 
+// https://docs.gradle.org/current/userguide/test_kit.html
+val functionalTest: SourceSet = sourceSets.create("functionalTest")
+
 gradlePlugin {
+    testSourceSets(functionalTest)
     plugins {
         create("kotlinxSchemaPlugin") {
             id = "org.jetbrains.kotlinx.schema.ksp"
@@ -24,9 +28,16 @@ dependencies {
     implementation("com.google.devtools.ksp:symbol-processing-aa-embeddable:${libs.versions.ksp.get()}")
     implementation("com.google.devtools.ksp:symbol-processing-common-deps:${libs.versions.ksp.get()}")
 
+    testRuntimeOnly(project(":kotlinx-schema-ksp"))
+    testRuntimeOnly(project(":kotlinx-schema-annotations"))
     testImplementation(libs.kotlin.test)
+    testImplementation(libs.mockk)
     testImplementation(libs.kotest.assertions.core)
-    testImplementation(gradleTestKit())
+
+    "functionalTestImplementation"(libs.kotest.assertions.core)
+    "functionalTestImplementation"(gradleTestKit())
+    "functionalTestImplementation"(kotlin("test-junit5"))
+    "functionalTestImplementation"(project(":kotlinx-schema-ksp"))
 }
 
 publishing {
@@ -42,3 +53,11 @@ publishing {
 afterEvaluate {
     tasks.findByName("generateMetadataFileForPluginMavenPublication")?.dependsOn("dokkaJavadocJar")
 }
+
+val functionalTestTask =
+    tasks.register<Test>("functionalTest") {
+        group = "verification"
+        testClassesDirs = functionalTest.output.classesDirs
+        classpath = functionalTest.runtimeClasspath
+        useJUnitPlatform()
+    }

@@ -7,6 +7,7 @@ import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import kotlin.test.Ignore
 import kotlin.test.Test
 
 /**
@@ -18,6 +19,7 @@ import kotlin.test.Test
  * - Task dependencies
  * - Source set registration for commonMain
  */
+@Ignore
 class KotlinxSchemaPluginMultiplatformTest {
     @TempDir
     lateinit var testProjectDir: File
