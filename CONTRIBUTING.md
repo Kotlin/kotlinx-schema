@@ -116,6 +116,7 @@ gradle-plugin-integration-tests/build/generated/ksp/metadata/commonMain/kotlin
 - `make build` - Full build with verification and docs
 - `make apidocs` - Generate API docs (→ `docs/public/apidocs`)
 - `make lint` - Code style check with detekt
+- `make integration-test` - Runs integration tests for the Gradle plugin
 
 ## Contacting maintainers
 

@@ -9,13 +9,12 @@ dependencies {
     kover(project(":kotlinx-schema-annotations"))
     kover(project(":kotlinx-schema-generator-core"))
     kover(project(":kotlinx-schema-generator-json"))
-    kover(project(":kotlinx-schema-gradle-plugin"))
+    "kover"(project(":kotlinx-schema-ksp-gradle-plugin"))
     kover(project(":kotlinx-schema-json"))
     kover(project(":kotlinx-schema-ksp"))
-    kover(project(":ksp-integration-tests"))
 }
 
-/**
+/*
  * Publishes the gradle plugin to local maven repository and syncs the project.
  * After running this, reload your IDE/Gradle to enable gradle-plugin-integration-tests.
  */
@@ -78,7 +77,7 @@ kover {
     reports {
         filters {
             includes.classes("kotlinx.schema.*")
-            excludes.classes("kotlinx.schema.ksp.ir.*") // tested indirectly
+            excludes.classes("kotlinx.schema.ksp.ir.*", "*Test") // tested indirectly
         }
         total {
             xml {}

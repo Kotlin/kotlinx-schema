@@ -1,43 +1,21 @@
 [versions]
-agp = "8.10.1"
-detekt = "1.23.8"
 dokka = "2.1.0"
 jackson = "2.18.5" # pin it
 junit = "6.0.1"
-koog = "0.5.3"
 kotest = "6.0.4"
 kotlin = "2.2.21"
-kotlinxSchema = "0.0.4-SNAPSHOT"
 kotlinxSerialization = "1.9.0"
-kover = "0.9.3"
-ksp = "2.3.4"
-langchain4j = "1.8.0"
-mockk = "1.14.6"
-vanniktechMavenPublish = "0.35.0"
-logging = "7.0.13"
 slf4j = "2.0.17"
 
 [libraries]
-kotlin-logging = { group = "io.github.oshai", name = "kotlin-logging", version.ref = "logging" }
-gradle-maven-publish-plugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "vanniktechMavenPublish" }
 jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit" }
-mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
-koog-agents-tools = { module = "ai.koog:agents-tools", version.ref = "koog" }
 kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 kotest-assertions-json = { module = "io.kotest:kotest-assertions-json", version.ref = "kotest" }
-kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
-kotlinx-schema-annotations = { module = "org.jetbrains.kotlinx:kotlinx-schema-annotations", version.ref = "kotlinxSchema" }
+kotlinx-schema-annotations = { module = "org.jetbrains.kotlinx:kotlinx-schema-annotations" }
+kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinxSerialization" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
-ksp-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
-ksp-gradlePlugin = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp" }
-langchain4j-core = { module = "dev.langchain4j:langchain4j-core", version.ref = "langchain4j" }
 slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
 
 [plugins]
-androidLibrary = { id = "com.android.library", version.ref = "agp" }
-detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
-google-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
-vanniktech-maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechMavenPublish" }

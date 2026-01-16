@@ -10,7 +10,7 @@ dependencies {
     dokka(project(":kotlinx-schema-generator-json"))
     dokka(project(":kotlinx-schema-json"))
     dokka(project(":kotlinx-schema-ksp"))
-    dokka(project(":kotlinx-schema-gradle-plugin"))
+    "dokka"(project(":kotlinx-schema-ksp-gradle-plugin"))
 }
 
 dokka {
