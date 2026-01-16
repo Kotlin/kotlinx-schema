@@ -15,7 +15,10 @@ kotlinxSchema {
 kotlin {
     compilerOptions {
         languageVersion = KotlinVersion.KOTLIN_2_1
-        freeCompilerArgs.add("-Xannotation-default-target=param-property")
+        freeCompilerArgs.addAll(
+            "-Xannotation-default-target=param-property",
+            "-Xmulti-dollar-interpolation",
+        )
     }
 }
 
@@ -27,9 +30,12 @@ val kotlinxSchemaVersion = project.properties["kotlinxSchemaVersion"]
 
 dependencies {
     implementation(libs.kotlinx.serialization.json)
+
     implementation(
         "org.jetbrains.kotlinx:kotlinx-schema-annotations:$kotlinxSchemaVersion",
     )
 
     testImplementation(kotlin("test-junit5"))
+    testImplementation(libs.kotest.assertions.core)
+    testImplementation(libs.kotest.assertions.json)
 }

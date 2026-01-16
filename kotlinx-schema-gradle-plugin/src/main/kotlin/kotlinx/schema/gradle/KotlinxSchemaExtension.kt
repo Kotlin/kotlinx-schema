@@ -44,6 +44,6 @@ public abstract class KotlinxSchemaExtension
             // Set default values
             enabled.convention(true)
             withSchemaObject.convention(false) // Enable JsonObject property by default
-            // rootPackage intentionally has no default; absence means no filtering
+            rootPackage.unsetConvention() // rootPackage intentionally has no default; absence means no filtering
         }
     }
