@@ -52,15 +52,6 @@ dependencies {
     "functionalTestImplementation"(project(":kotlinx-schema-ksp"))
 }
 
-publishing {
-    repositories {
-        maven {
-            name = "project"
-            url = uri(rootProject.layout.buildDirectory.dir("project-repo"))
-        }
-    }
-}
-
 tasks.processResources {
     val projectVersion = project.version
     inputs.property("pluginVersion", projectVersion)

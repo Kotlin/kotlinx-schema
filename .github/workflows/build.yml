@@ -47,7 +47,7 @@ jobs:
         run: |-
           ./gradlew build check \
             koverXmlReport koverHtmlReport \
-            publishToMavenLocal -Pversion=${{ env.PROJECT_VERSION }} \
+            publishAllPublicationsToProjectRepository -Pversion=${{ env.PROJECT_VERSION }} \
             --no-daemon
 
       - name: Integration tests

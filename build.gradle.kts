@@ -9,7 +9,7 @@ dependencies {
     kover(project(":kotlinx-schema-annotations"))
     kover(project(":kotlinx-schema-generator-core"))
     kover(project(":kotlinx-schema-generator-json"))
-    "kover"(project(":kotlinx-schema-ksp-gradle-plugin"))
+    kover(project(":kotlinx-schema-ksp-gradle-plugin"))
     kover(project(":kotlinx-schema-json"))
     kover(project(":kotlinx-schema-ksp"))
 }
@@ -22,12 +22,12 @@ tasks.register("publishPluginAndSync") {
     group = "build setup"
     description = "Publishes gradle plugin to local repo (run once, then reload IDE)"
 
-    dependsOn(":kotlinx-schema-gradle-plugin:publishAllPublicationsToLocalRepository")
+    dependsOn(":kotlinx-schema-ksp-gradle-plugin:publishAllPublicationsToProjectRepository")
 
     doLast {
         val repoDir =
             layout.buildDirectory
-                .dir("local-repo")
+                .dir("project-repo")
                 .get()
                 .asFile
         println("✓ Plugin published to: $repoDir")
@@ -47,7 +47,7 @@ tasks.register("testGradlePlugin") {
     group = "verification"
     description = "Tests the gradle plugin (publishes if needed)"
 
-    dependsOn(":kotlinx-schema-gradle-plugin:publishAllPublicationsToLocalRepository")
+    dependsOn("publishToProjectRepo")
 
     val integrationTestsProject = project.findProject(":gradle-plugin-integration-tests")
     if (integrationTestsProject != null) {

@@ -42,9 +42,10 @@ lint:
 
 .PHONY: publish
 publish:
-	@echo "📦 Publishing to local Maven repository..."
-	@./gradlew publishToMavenLocal
-	@echo "✅ Published to ~/.m2/repository!"
+	@echo "📦 Publishing to project repository (build/project-repo)..."
+	@rm -rf build/project-repo
+	@./gradlew publishAllPublicationsToProjectRepository -Pversion=1-SNAPSHOT --rerun-tasks
+	@echo "✅ Published to build/project-repo!"
 
 .PHONY: sync
 sync:
@@ -53,5 +54,5 @@ sync:
 .PHONY: integration-test
 integration-test:clean publish
 	@echo "🧪🧩 Starting Integration tests..."
-	@(cd gradle-plugin-integration-tests && ./gradlew clean kotlinUpgradePackageLock build --no-daemon --stacktrace)
+	@(cd gradle-plugin-integration-tests && ./gradlew clean kotlinUpgradePackageLock build -PkotlinxSchemaVersion=1-SNAPSHOT --no-daemon --stacktrace)
 	@echo "✅ Integration tests complete!"

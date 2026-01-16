@@ -11,6 +11,15 @@ plugins {
     `maven-publish`
 }
 
+publishing {
+    repositories {
+        maven {
+            name = "project"
+            url = uri(rootProject.layout.buildDirectory.dir("project-repo"))
+        }
+    }
+}
+
 mavenPublishing {
     publishToMavenCentral(automaticRelease = true)
 

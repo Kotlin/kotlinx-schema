@@ -9,7 +9,9 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
-        mavenLocal()
+        maven {
+            url = uri("../build/project-repo")
+        }
     }
 
     plugins {
@@ -32,7 +34,9 @@ pluginManagement {
 dependencyResolutionManagement {
     repositories {
         mavenCentral() // Must be first for proper Kotlin multiplatform metadata resolution
-        mavenLocal()
+        maven {
+            url = uri(rootDir.resolve("../build/project-repo"))
+        }
     }
 }
 
