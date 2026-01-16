@@ -18,12 +18,13 @@ Gradle plugin that simplifies the integration of kotlinx-schema-ksp into Kotlin 
 ```kotlin
 plugins {
     kotlin("jvm") version "2.2.21"
-    id("org.jetbrains.kotlinx.schema.ksp") version "0.1.0"
+    id("org.jetbrains.kotlinx.schema.ksp")
 }
 
 kotlinxSchema {
     enabled.set(true)
     rootPackage.set("com.example") // Optional
+    withSchemaObject.set(true)     // Optional. Requires kotlinx-serialization-json
 }
 ```
 
@@ -37,5 +38,6 @@ plugins {
 kotlinxSchema {
     enabled.set(true)
     rootPackage.set("com.example") // Optional
+    withSchemaObject.set(true)     // Optional. Requires kotlinx-serialization-json
 }
 ```

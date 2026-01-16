@@ -21,12 +21,12 @@ gradlePlugin {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:${libs.versions.kotlin.get()}")
+    implementation(libs.kotlin.gradle.plugin)
 
     // KSP2 API for programmatic invocation
-    implementation("com.google.devtools.ksp:symbol-processing-api:${libs.versions.ksp.get()}")
-    implementation("com.google.devtools.ksp:symbol-processing-aa-embeddable:${libs.versions.ksp.get()}")
-    implementation("com.google.devtools.ksp:symbol-processing-common-deps:${libs.versions.ksp.get()}")
+    implementation(libs.ksp.symbol.processing.api)
+    implementation(libs.ksp.symbol.processing.aa.embeddable)
+    implementation(libs.ksp.symbol.processing.common.deps)
 
     testRuntimeOnly(project(":kotlinx-schema-ksp"))
     testRuntimeOnly(project(":kotlinx-schema-annotations"))
