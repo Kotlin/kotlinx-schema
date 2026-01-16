@@ -9,7 +9,7 @@ dependencies {
     kover(project(":kotlinx-schema-annotations"))
     kover(project(":kotlinx-schema-generator-core"))
     kover(project(":kotlinx-schema-generator-json"))
-    kover(project(":kotlinx-schema-gradle-plugin"))
+    "kover"(project(":kotlinx-schema-ksp-gradle-plugin"))
     kover(project(":kotlinx-schema-json"))
     kover(project(":kotlinx-schema-ksp"))
 }

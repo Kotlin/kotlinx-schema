@@ -24,7 +24,7 @@ include(
     ":kotlinx-schema-generator-core",
     ":kotlinx-schema-generator-json",
     ":kotlinx-schema-ksp",
-    ":kotlinx-schema-gradle-plugin",
+    ":kotlinx-schema-ksp-gradle-plugin",
     ":ksp-integration-tests",
     ":docs",
 )

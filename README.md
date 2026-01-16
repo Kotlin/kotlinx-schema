@@ -18,8 +18,8 @@
 **Generate JSON schemas and LLM function calling schemas from Kotlin code — including classes you don't own.**
 
 > [!IMPORTANT]
-> This library is **experimental**. 
-> Some parts might eventually be part of [kotlinx-serialization](https://github.com/Kotlin/kotlinx.serialization).
+> Given the highly experimental nature of this work, nothing is settled in stone.
+> [Kotlinx-schema-json](kotlinx-schema-json) might eventually be moved to [kotlinx-serialization](https://github.com/Kotlin/kotlinx.serialization).
 
 ## Key Features
 

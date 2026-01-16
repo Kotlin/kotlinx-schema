@@ -23,7 +23,7 @@ pluginManagement {
             if (requested.id.id == "org.jetbrains.kotlinx.schema.ksp") {
                 val kotlinxSchemaVersion: String = providers.gradleProperty("kotlinxSchemaVersion").get()
                 println("✅ Resolved plugin: ${requested.id} version: $kotlinxSchemaVersion")
-                useModule("org.jetbrains.kotlinx:kotlinx-schema-gradle-plugin:$kotlinxSchemaVersion")
+                useModule("org.jetbrains.kotlinx:kotlinx-schema-ksp-gradle-plugin:$kotlinxSchemaVersion")
             }
         }
     }
