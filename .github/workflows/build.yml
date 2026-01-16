@@ -13,7 +13,9 @@ on:
 
 env:
   JAVA_VERSION: 17
+  JAVA_DISTRIBUTION: temurin
   PROJECT_VERSION: 0.0.4-SNAPSHOT
+  GRADLE_BUILD_ACTION_CACHE_DEBUG_ENABLED: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -35,13 +37,32 @@ jobs:
         uses: actions/setup-java@v5
         with:
           java-version: ${{ env.JAVA_VERSION }}
-          distribution: 'temurin'
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - name: Cache Kotlin compiler and daemon
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/build-cache-1
+            ~/.konan
+          key: ${{ runner.os }}-gradle-kotlin-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-kotlin-
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5.0.0
         with:
           add-job-summary-as-pr-comment: on-failure
           cache-cleanup: always
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          gradle-home-cache-includes: |
+            caches
+            notifications
+            jdks
+          gradle-home-cache-excludes: |
+            caches/build-cache-1
+            caches/keyrings
 
       - name: Build
         run: |-
@@ -50,22 +71,22 @@ jobs:
             publishAllPublicationsToProjectRepository -Pversion=${{ env.PROJECT_VERSION }} \
             --no-daemon
 
-      - name: Integration tests
-        working-directory: gradle-plugin-integration-tests
-        run: |-
-          ./gradlew clean build \
-            -PkotlinxSchemaVersion=${{ env.PROJECT_VERSION }} \
-            --no-daemon
+      - name: Upload project repository
+        uses: actions/upload-artifact@v6
+        with:
+          name: project-repo
+          path: build/project-repo
+          retention-days: 1
 
-      - name: Upload Reports
+      - name: Upload build reports
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v6
         with:
-          name: reports-${{ matrix.example }}
+          name: build-reports
           path: |
             **/build/reports/
 
-      - name: Publish Test Report
+      - name: Publish build test report
         uses: mikepenz/action-junit-report@v6
         if: ${{ !cancelled() }}
         with:
@@ -75,6 +96,80 @@ jobs:
           flaky_summary: true
           include_empty_in_summary: false
           include_time_in_summary: true
+          check_name: Build Tests
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v5
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - name: Cache Kotlin compiler and daemon
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/build-cache-1
+            ~/.konan
+          key: ${{ runner.os }}-gradle-kotlin-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-kotlin-
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          add-job-summary-as-pr-comment: on-failure
+          cache-cleanup: always
+          cache-read-only: true
+          gradle-home-cache-includes: |
+            caches
+            notifications
+            jdks
+          gradle-home-cache-excludes: |
+            caches/build-cache-1
+            caches/keyrings
+
+      - name: Download project repository
+        uses: actions/download-artifact@v7
+        with:
+          name: project-repo
+          path: build/project-repo
+
+      - name: Integration tests
+        working-directory: gradle-plugin-integration-tests
+        run: |-
+          ./gradlew clean build \
+            -PkotlinxSchemaVersion=${{ env.PROJECT_VERSION }} \
+            --no-daemon
+
+      - name: Upload integration test reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: integration-test-reports
+          path: |
+            gradle-plugin-integration-tests/**/build/reports/
+
+      - name: Publish integration test report
+        uses: mikepenz/action-junit-report@v6
+        if: ${{ !cancelled() }}
+        with:
+          report_paths: 'gradle-plugin-integration-tests/**/test-results/**/TEST-*.xml'
+          annotate_only: true
+          detailed_summary: true
+          flaky_summary: true
+          include_empty_in_summary: false
+          include_time_in_summary: true
+          check_name: Integration Tests
 
   dependency-submission:
     runs-on: ubuntu-latest
@@ -91,7 +186,20 @@ jobs:
         uses: actions/setup-java@v5
         with:
           java-version: ${{ env.JAVA_VERSION }}
-          distribution: 'temurin'
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - name: Cache Kotlin compiler and daemon
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/build-cache-1
+            ~/.konan
+          key: ${{ runner.os }}-gradle-kotlin-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-kotlin-
 
       - name: Generate and submit dependency graph
         uses: gradle/actions/dependency-submission@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5.0.0
+        with:
+          cache-read-only: true
