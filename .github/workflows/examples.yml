@@ -39,14 +39,14 @@ jobs:
           distribution: 'temurin'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5.0.0
+        uses: gradle/actions/setup-gradle@v5
         with:
           add-job-summary-as-pr-comment: on-failure
           cache-cleanup: always
 
       - name: "Build Sample: ${{ matrix.example }}"
         working-directory: ./examples/${{ matrix.example }}
-        run: ./gradlew --no-daemon clean build
+        run: ./gradlew --no-daemon clean build --rerun-tasks
 
       - name: Upload Reports
         if: ${{ !cancelled() }}
