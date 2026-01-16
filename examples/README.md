@@ -2,4 +2,6 @@
 
 This directory contains example projects demonstrating various use cases of **kotlinx-schema**.
 
-- [ksp-gradle](ksp-gradle) Generate Kotlin classes from JSON schema using KSP Processor
+- **[gradle-google-ksp](gradle-google-ksp):**  Generate JSON schema from Kotlin classes 
+    using [Kotlin Symbol Processing (KSP)](https://kotlinlang.org/docs/ksp-overview.html) 
+    via [Google KSP Gradle plugin](https://github.com/google/ksp).

@@ -1,7 +1,7 @@
 plugins {
-    kotlin("multiplatform") version "2.2.21"
-    kotlin("plugin.serialization") version "2.2.21"
-    id("com.google.devtools.ksp") version "2.3.4"
+    kotlin("multiplatform") version libs.versions.kotlin.get()
+    kotlin("plugin.serialization") version libs.versions.kotlin.get()
+    alias(libs.plugins.google.ksp)
 }
 
 kotlin {

@@ -27,7 +27,7 @@ jobs:
     strategy:
       matrix:
         example:
-          - ksp-gradle
+          - gradle-google-ksp
 
     steps:
       - uses: actions/checkout@v6

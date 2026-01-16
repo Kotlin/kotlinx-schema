@@ -5,7 +5,7 @@
 [![Build with Gradle](https://github.com/Kotlin/kotlinx-schema/actions/workflows/build.yml/badge.svg)](https://github.com/Kotlin/kotlinx-schema/actions/workflows/build.yml)
 [![CodeQL](https://github.com/Kotlin/kotlinx-schema/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Kotlin/kotlinx-schema/actions/workflows/github-code-scanning/codeql)
 [![Docs](https://img.shields.io/badge/Docs-Live-blue?logo=kotlin)](https://kotlin.github.io/kotlinx-schema/)
-[![Examples](https://img.shields.io/badge/Examples-blue?logo=github)](examples)
+[![Examples](https://img.shields.io/badge/Examples-blue?logo=github)](https://github.com/Kotlin/kotlinx-schema/tree/main/examples)
 
 [![Kotlin](https://img.shields.io/badge/kotlin-2.2+-blueviolet.svg?logo=kotlin)](http://kotlinlang.org)
 [![Kotlin Multiplatform](https://img.shields.io/badge/Platforms-%20JVM%20%7C%20Wasm%2FJS%20%7C%20Native%20-blueviolet?logo=kotlin)](https://kotlinlang.org/docs/multiplatform.html)
