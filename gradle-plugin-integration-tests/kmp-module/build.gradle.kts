@@ -36,12 +36,14 @@ kotlin {
 
     linuxX64()
 
+    val kotlinxSchemaVersion = project.properties["kotlinxSchemaVersion"]
+
     sourceSets {
         commonMain {
             dependencies {
                 api(libs.kotlinx.serialization.json)
                 implementation(
-                    "org.jetbrains.kotlinx:kotlinx-schema-annotations:${project.properties["kotlinxSchemaVersion"]}",
+                    "org.jetbrains.kotlinx:kotlinx-schema-annotations:$kotlinxSchemaVersion",
                 )
             }
         }

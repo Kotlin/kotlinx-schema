@@ -3,16 +3,17 @@ name: Build with Gradle
 on:
   merge_group:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
     paths-ignore:
       - "**/README.md"
       - "examples/**"
   pull_request:
-    branches: ["main"]
+    branches: [ "main" ]
   workflow_dispatch:
 
 env:
   JAVA_VERSION: 17
+  PROJECT_VERSION: 0.0.4-SNAPSHOT
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -43,11 +44,18 @@ jobs:
           cache-cleanup: always
 
       - name: Build
-        run: ./gradlew build check koverXmlReport koverHtmlReport  publishToMavenLocal -Pversion=1-SNAPSHOT
+        run: |-
+          ./gradlew build check \
+            koverXmlReport koverHtmlReport \
+            publishToMavenLocal -Pversion=${{ env.PROJECT_VERSION }} \
+            --no-daemon
 
       - name: Integration tests
         working-directory: gradle-plugin-integration-tests
-        run: ./gradlew clean allTests -PkotlinxSchemaVersion=1-SNAPSHOT --no-configuration-cache
+        run: |-
+          ./gradlew clean build \
+            -PkotlinxSchemaVersion=${{ env.PROJECT_VERSION }} \
+            --no-configuration-cache --no-daemon
 
       - name: Upload Reports
         if: ${{ !cancelled() }}

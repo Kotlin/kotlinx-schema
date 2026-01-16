@@ -9,6 +9,7 @@ import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.provider.Property
+import org.jetbrains.kotlin.gradle.plugin.getKotlinPluginVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import java.io.File
 import java.net.URLClassLoader
@@ -165,10 +166,8 @@ internal class KspExecutor(
             .toList()
     }
 
-    private fun extractKotlinVersion(property: Property<org.jetbrains.kotlin.gradle.dsl.KotlinVersion>): String {
-        val prop = property.orNull
-        return prop?.version ?: "${KotlinVersion.CURRENT.major}.${KotlinVersion.CURRENT.minor}"
-    }
+    private fun extractKotlinVersion(property: Property<org.jetbrains.kotlin.gradle.dsl.KotlinVersion>): String =
+        property.orNull?.version ?: getKotlinPluginVersion(project.logger).substringBeforeLast('.')
 
     /**
      * KSP Logger that delegates to Gradle logger.
