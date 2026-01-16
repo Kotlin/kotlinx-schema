@@ -14,7 +14,7 @@ ksp = "2.3.4"
 langchain4j = "1.8.0"
 mockk = "1.14.6"
 vanniktechMavenPublish = "0.35.0"
-logging = "7.0.13"
+logging = "7.0.14"
 slf4j = "2.0.17"
 
 [libraries]
