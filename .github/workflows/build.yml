@@ -1,4 +1,4 @@
-name: Build with Gradle
+name: Build
 
 on:
   merge_group:
@@ -55,7 +55,7 @@ jobs:
         run: |-
           ./gradlew clean build \
             -PkotlinxSchemaVersion=${{ env.PROJECT_VERSION }} \
-            --no-configuration-cache --no-daemon
+            --no-daemon
 
       - name: Upload Reports
         if: ${{ !cancelled() }}

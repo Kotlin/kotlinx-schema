@@ -2,7 +2,6 @@ package kotlinx.schema.ksp.gradle.plugin
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.logging.LogLevel
 
 private const val KOTLIN_MULTIPLATFORM_PLUGIN = "org.jetbrains.kotlin.multiplatform"
 private const val KOTLIN_JVM_PLUGIN = "org.jetbrains.kotlin.jvm"
@@ -42,7 +41,7 @@ public class KotlinxSchemaPlugin : Plugin<Project> {
             )
 
         if (extension.enabled.orNull == false) {
-            target.logger.log(LogLevel.DEBUG, "kotlinx-schema: Plugin is disabled")
+            target.logger.debug("kotlinx-schema: Plugin is disabled")
             return
         }
 
@@ -64,7 +63,7 @@ public class KotlinxSchemaPlugin : Plugin<Project> {
         project: Project,
         extension: KotlinxSchemaExtension,
     ) {
-        project.logger.log(LogLevel.INFO, "kotlinx-schema: Detected Kotlin Multiplatform")
+        project.logger.info("kotlinx-schema: Detected Kotlin Multiplatform")
         MultiplatformConfigurator().configure(project, extension)
     }
 
@@ -72,11 +71,7 @@ public class KotlinxSchemaPlugin : Plugin<Project> {
         project: Project,
         extension: KotlinxSchemaExtension,
     ) {
-        project.afterEvaluate {
-            if (!project.plugins.hasPlugin(KOTLIN_MULTIPLATFORM_PLUGIN)) {
-                project.logger.log(LogLevel.INFO, "kotlinx-schema: Detected Kotlin JVM")
-                JvmConfigurator().configure(project, extension)
-            }
-        }
+        project.logger.info("kotlinx-schema: Detected Kotlin JVM")
+        JvmConfigurator().configure(project, extension)
     }
 }

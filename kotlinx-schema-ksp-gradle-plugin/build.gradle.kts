@@ -61,6 +61,18 @@ publishing {
     }
 }
 
+tasks.processResources {
+    val projectVersion = project.version
+    inputs.property("pluginVersion", projectVersion)
+    filesMatching("kotlinxSchema.properties") {
+        expand("pluginVersion" to projectVersion)
+    }
+}
+
+tasks.validatePlugins {
+    enableStricterValidation = true
+}
+
 // Fix task dependency issue between dokka and publishing
 afterEvaluate {
     tasks.findByName("generateMetadataFileForPluginMavenPublication")?.dependsOn("dokkaJavadocJar")

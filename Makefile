@@ -1,3 +1,4 @@
+.SHELLFLAGS := -e -o pipefail -c
 
 .PHONY: build
 build:clean
@@ -51,9 +52,6 @@ sync:
 
 .PHONY: integration-test
 integration-test:clean publish
-	@#./gradlew build publishToMavenLocal -Pversion=1-SNAPSHOT --rerun-tasks
-	@#./gradlew assemble check publishToMavenLocal --rerun-tasks
 	@echo "🧪🧩 Starting Integration tests..."
-	@#(cd gradle-plugin-integration-tests && ./gradlew clean kotlinUpgradePackageLock build -PkotlinxSchemaVersion=1-SNAPSHOT --no-daemon --stacktrace --no-configuration-cache)
-	@(cd gradle-plugin-integration-tests && ./gradlew clean kotlinUpgradePackageLock build --no-daemon --stacktrace --no-configuration-cache)
+	@(cd gradle-plugin-integration-tests && ./gradlew clean kotlinUpgradePackageLock build --no-daemon --stacktrace)
 	@echo "✅ Integration tests complete!"

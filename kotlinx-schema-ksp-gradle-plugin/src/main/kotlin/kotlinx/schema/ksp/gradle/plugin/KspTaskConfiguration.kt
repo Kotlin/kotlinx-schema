@@ -1,7 +1,6 @@
 package kotlinx.schema.ksp.gradle.plugin
 
 import org.gradle.api.Project
-import org.gradle.api.logging.LogLevel
 import java.io.File
 
 /**
@@ -60,7 +59,7 @@ internal class SourceCollector(
     fun collectSourceRoots(sourceSets: List<String>): List<File> =
         sourceSets.mapNotNull { sourceSetName ->
             project.file("src/$sourceSetName/kotlin").takeIf { it.exists() }?.also {
-                project.logger.log(LogLevel.INFO, "kotlinx-schema: Adding sources from $sourceSetName")
+                project.logger.info("kotlinx-schema: Adding sources from $sourceSetName")
             }
         }
 }
@@ -109,36 +108,47 @@ internal class SourceSetRegistrar(
             ?.kotlin
             ?.srcDir(generatedDir)
 
-        project.logger.log(
-            LogLevel.INFO,
+        project.logger.info(
             "kotlinx-schema: Added generated sources to $targetSourceSet (multiplatform)",
         )
 
         // For commonMain, ensure all compilation tasks depend on KSP
         if (outputName == PluginConstants.SOURCE_SET_COMMONMAIN) {
-            // Metadata compilation
-            project.tasks.findByName(PluginConstants.COMPILE_TASK_METADATA)?.let { metadataTask ->
-                metadataTask.dependsOn(kspTaskProvider)
-                project.logger.log(
-                    LogLevel.INFO,
-                    "kotlinx-schema: Added KSP dependency to ${PluginConstants.COMPILE_TASK_METADATA}",
-                )
-            }
+            configureCommonMainDependencies(extension, kspTaskProvider)
+        }
+    }
 
-            // All platform compilation tasks via Kotlin Multiplatform API
-            extension.targets.forEach { target ->
-                target.compilations.forEach { compilation ->
-                    // Configure "main" compilations (they all use commonMain sources)
-                    // Skip test compilations
-                    if (compilation.name == PluginConstants.COMPILATION_MAIN) {
-                        compilation.compileTaskProvider.configure { compileTask ->
-                            compileTask.dependsOn(kspTaskProvider)
-                            project.logger.log(
-                                LogLevel.INFO,
-                                "kotlinx-schema: Added KSP dependency to ${compileTask.name}",
-                            )
-                        }
-                    }
+    private fun configureCommonMainDependencies(
+        extension: org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension,
+        kspTaskProvider: org.gradle.api.tasks.TaskProvider<org.gradle.api.Task>,
+    ) {
+        // Metadata compilation
+        project.tasks.findByName(PluginConstants.COMPILE_TASK_METADATA)?.let { metadataTask ->
+            metadataTask.dependsOn(kspTaskProvider)
+            project.logger.info(
+                "kotlinx-schema: Added KSP dependency to ${PluginConstants.COMPILE_TASK_METADATA}",
+            )
+        }
+
+        // All platform compilation tasks via Kotlin Multiplatform API
+        extension.targets.forEach { target ->
+            configureTargetCompilations(target, kspTaskProvider)
+        }
+    }
+
+    private fun configureTargetCompilations(
+        target: org.jetbrains.kotlin.gradle.plugin.KotlinTarget,
+        kspTaskProvider: org.gradle.api.tasks.TaskProvider<org.gradle.api.Task>,
+    ) {
+        target.compilations.forEach { compilation ->
+            // Configure "main" compilations (they all use commonMain sources)
+            // Skip test compilations
+            if (compilation.name == PluginConstants.COMPILATION_MAIN) {
+                compilation.compileTaskProvider.configure { compileTask ->
+                    compileTask.dependsOn(kspTaskProvider)
+                    project.logger.info(
+                        "kotlinx-schema: Added KSP dependency to ${compileTask.name}",
+                    )
                 }
             }
         }
@@ -154,8 +164,7 @@ internal class SourceSetRegistrar(
             ?.kotlin
             ?.srcDir(generatedDir)
 
-        project.logger.log(
-            LogLevel.INFO,
+        project.logger.info(
             "kotlinx-schema: Added generated sources to $targetSourceSet (jvm)",
         )
     }

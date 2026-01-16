@@ -26,6 +26,10 @@ internal class MultiplatformConfigurator : KotlinProjectConfigurator {
         project: Project,
         extension: KotlinxSchemaExtension,
     ) {
+        // Multiplatform projects need afterEvaluate because:
+        // 1. Platform-specific compile tasks (compileKotlinJvm, compileKotlinJs, etc.) are created lazily
+        // 2. When we register generated sources to commonMain, ALL platform compile tasks need proper dependencies
+        // 3. Without afterEvaluate, source set registration happens before compile tasks exist
         project.afterEvaluate {
             // Determine classpath - prefer JVM if available, otherwise JS
             val classpathConfigName =
@@ -66,18 +70,16 @@ internal class JvmConfigurator : KotlinProjectConfigurator {
         project: Project,
         extension: KotlinxSchemaExtension,
     ) {
-        project.afterEvaluate {
-            val config =
-                KspTaskConfig(
-                    taskName = PluginConstants.KSP_TASK_KOTLIN,
-                    compileTaskName = PluginConstants.COMPILE_TASK_KOTLIN,
-                    sourceSets = listOf(PluginConstants.SOURCE_SET_MAIN),
-                    targetSourceSet = PluginConstants.SOURCE_SET_MAIN,
-                    classpathConfigName = PluginConstants.CLASSPATH_MAIN,
-                    outputName = PluginConstants.SOURCE_SET_MAIN,
-                )
+        val config =
+            KspTaskConfig(
+                taskName = PluginConstants.KSP_TASK_KOTLIN,
+                compileTaskName = PluginConstants.COMPILE_TASK_KOTLIN,
+                sourceSets = listOf(PluginConstants.SOURCE_SET_MAIN),
+                targetSourceSet = PluginConstants.SOURCE_SET_MAIN,
+                classpathConfigName = PluginConstants.CLASSPATH_MAIN,
+                outputName = PluginConstants.SOURCE_SET_MAIN,
+            )
 
-            KspTaskBuilder(project).buildTask(config, extension)
-        }
+        KspTaskBuilder(project).buildTask(config, extension)
     }
 }
