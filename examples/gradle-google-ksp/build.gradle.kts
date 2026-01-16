@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.google.ksp)
 }
 
+val kotlinxSchemaVersion = project.properties["kotlinxSchemaVersion"]
+
 kotlin {
     compilerOptions {
         freeCompilerArgs.add("-Xannotation-default-target=param-property")
@@ -21,7 +23,7 @@ kotlin {
             dependencies {
                 implementation(libs.koog.agents.tools)
                 implementation(libs.kotlinx.serialization.json)
-                implementation(libs.kotlinx.schema.annotations)
+                implementation("org.jetbrains.kotlinx:kotlinx-schema-annotations:$kotlinxSchemaVersion")
             }
         }
 
@@ -51,5 +53,5 @@ ksp {
 
 // Add KSP processor for common target
 dependencies {
-    add("kspCommonMainMetadata", "org.jetbrains.kotlinx:kotlinx-schema-ksp:0.0.2")
+    add("kspCommonMainMetadata", "org.jetbrains.kotlinx:kotlinx-schema-ksp:$kotlinxSchemaVersion")
 }
