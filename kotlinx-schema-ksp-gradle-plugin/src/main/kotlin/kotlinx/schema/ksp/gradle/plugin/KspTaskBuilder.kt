@@ -2,6 +2,7 @@ package kotlinx.schema.ksp.gradle.plugin
 
 import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.api.tasks.TaskProvider
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 /**
@@ -104,7 +105,7 @@ internal class KspTaskBuilder(
 
     private fun setupTaskDependencies(
         compileTaskName: String,
-        kspTask: org.gradle.api.tasks.TaskProvider<KspTask>,
+        kspTask: TaskProvider<KspTask>,
     ) {
         // Setup dependency: compile task depends on KSP task
         project.tasks.findByName(compileTaskName)?.let { compileTask ->
@@ -130,7 +131,7 @@ internal class KspTaskBuilder(
 
     private fun registerGeneratedSources(
         config: KspTaskConfig,
-        kspTask: org.gradle.api.tasks.TaskProvider<KspTask>,
+        kspTask: TaskProvider<KspTask>,
     ) {
         val generatedDir =
             project.layout.buildDirectory
@@ -143,7 +144,7 @@ internal class KspTaskBuilder(
                 generatedDir = generatedDir,
                 targetSourceSet = config.targetSourceSet,
                 outputName = config.outputName,
-                kspTaskProvider = kspTask as org.gradle.api.tasks.TaskProvider<org.gradle.api.Task>,
+                kspTaskProvider = kspTask,
             )
         } catch (e: GradleException) {
             throw e
