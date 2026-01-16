@@ -2,7 +2,6 @@
 koog = "0.6.0"
 kotest = "6.0.4"
 kotlinxSerialization = "1.9.0"
-kotlinxSchemaAnnotations = "0.0.3"
 ksp = "2.3.4"
 kotlin = "2.3.0"
 
@@ -11,7 +10,6 @@ koog-agents-tools = { module = "ai.koog:agents-tools", version.ref = "koog" }
 kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 kotest-assertions-json = { module = "io.kotest:kotest-assertions-json", version.ref = "kotest" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
-kotlinx-schema-annotations = { module = "org.jetbrains.kotlinx:kotlinx-schema-annotations", version.ref = "kotlinxSchemaAnnotations" }
 
 [plugins]
 google-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

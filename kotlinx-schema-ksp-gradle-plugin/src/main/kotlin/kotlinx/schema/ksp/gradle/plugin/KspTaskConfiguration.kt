@@ -1,6 +1,11 @@
 package kotlinx.schema.ksp.gradle.plugin
 
 import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.tasks.TaskProvider
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 import java.io.File
 
 /**
@@ -74,16 +79,22 @@ internal class SourceSetRegistrar(
         generatedDir: File,
         targetSourceSet: String,
         outputName: String,
-        kspTaskProvider: org.gradle.api.tasks.TaskProvider<org.gradle.api.Task>,
+        kspTaskProvider: TaskProvider<out Task>,
     ) {
         val multiplatformExt =
-            project.extensions.findByType(org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension::class.java)
+            project.extensions.findByType(KotlinMultiplatformExtension::class.java)
         val jvmExt =
-            project.extensions.findByType(org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension::class.java)
+            project.extensions.findByType(KotlinJvmProjectExtension::class.java)
 
         when {
             multiplatformExt != null -> {
-                registerForMultiplatform(multiplatformExt, generatedDir, targetSourceSet, outputName, kspTaskProvider)
+                registerForMultiplatform(
+                    multiplatformExt,
+                    generatedDir,
+                    targetSourceSet,
+                    outputName,
+                    kspTaskProvider,
+                )
             }
 
             jvmExt != null -> {
@@ -97,11 +108,11 @@ internal class SourceSetRegistrar(
     }
 
     private fun registerForMultiplatform(
-        extension: org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension,
+        extension: KotlinMultiplatformExtension,
         generatedDir: File,
         targetSourceSet: String,
         outputName: String,
-        kspTaskProvider: org.gradle.api.tasks.TaskProvider<org.gradle.api.Task>,
+        kspTaskProvider: TaskProvider<out Task>,
     ) {
         extension.sourceSets
             .findByName(targetSourceSet)
@@ -119,8 +130,8 @@ internal class SourceSetRegistrar(
     }
 
     private fun configureCommonMainDependencies(
-        extension: org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension,
-        kspTaskProvider: org.gradle.api.tasks.TaskProvider<org.gradle.api.Task>,
+        extension: KotlinMultiplatformExtension,
+        kspTaskProvider: TaskProvider<out Task>,
     ) {
         // Metadata compilation
         project.tasks.findByName(PluginConstants.COMPILE_TASK_METADATA)?.let { metadataTask ->
@@ -137,8 +148,8 @@ internal class SourceSetRegistrar(
     }
 
     private fun configureTargetCompilations(
-        target: org.jetbrains.kotlin.gradle.plugin.KotlinTarget,
-        kspTaskProvider: org.gradle.api.tasks.TaskProvider<org.gradle.api.Task>,
+        target: KotlinTarget,
+        kspTaskProvider: TaskProvider<out Task>,
     ) {
         target.compilations.forEach { compilation ->
             // Configure "main" compilations (they all use commonMain sources)
@@ -155,7 +166,7 @@ internal class SourceSetRegistrar(
     }
 
     private fun registerForJvm(
-        extension: org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension,
+        extension: KotlinJvmProjectExtension,
         generatedDir: File,
         targetSourceSet: String,
     ) {

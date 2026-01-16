@@ -2,12 +2,13 @@ pluginManagement {
     repositories {
         mavenCentral()
         gradlePluginPortal()
+        maven(url = uri(rootDir.resolve("../project-repo")))
     }
 }
 
 dependencyResolutionManagement {
     repositories {
         mavenCentral()
-        mavenLocal()
+        maven(url = uri(rootDir.resolve("../project-repo")))
     }
 }
