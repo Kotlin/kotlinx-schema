@@ -6,21 +6,20 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.DynamicContainer
 import org.junit.jupiter.api.DynamicNode
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
+import org.junit.jupiter.api.fail
 import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Conformance tests for JsonSchemaDefinition against the official JSON Schema Test Suite.
  *
  * Tests verify that schemas from the test suite can be successfully parsed into JsonSchemaDefinition.
- * Unparseable schemas are marked with ❌ emoji and skipped in JUnit to avoid suite failure,
- * while parseable schemas are marked with ✅ emoji. Error messages for unparseable schemas
- * are captured and included in the markdown report (`build/reports/spec-coverage.md`).
+ * Tests fail if parsing fails. Error messages are captured and included in the markdown report
+ * (`build/reports/spec-coverage.md`).
  */
 class JsonSchemaConformanceTest {
     private val json =
@@ -58,54 +57,25 @@ class JsonSchemaConformanceTest {
                 testSuites
                     .filter { it.schema is JsonObject }
                     .map { testSuite ->
-                        // Pre-validate and capture error if unparseable
-                        val preValidation =
-                            runCatching {
-                                json.decodeFromJsonElement<JsonSchemaDefinition>(testSuite.schema)
+                        DynamicTest.dynamicTest(testSuite.description) {
+                            val result = runCatching {
+                                parseSchema(testSuite.schema)
                             }
-                        val canParse = preValidation.isSuccess
-                        val emoji = if (canParse) "✅" else "❌"
 
-                        DynamicTest.dynamicTest("#### $emoji ${testSuite.description}") {
-                            if (!canParse) {
-                                // Track as failed with error message
-                                trackResult(
-                                    SchemaTestResult(
-                                        testSuiteDescription = testSuite.description,
-                                        fileName = fileName,
-                                        passed = false,
-                                        error = preValidation.exceptionOrNull(),
-                                        stage = "parse",
-                                        schema = testSuite.schema,
-                                    ),
-                                )
-                                // Skip in JUnit to avoid suite failure
-                                Assumptions.assumeTrue(
-                                    false,
-                                    "Schema cannot be parsed: ${preValidation.exceptionOrNull()?.message}",
-                                )
-                            } else {
-                                // Normal test execution for parseable schemas
-                                val result =
-                                    runCatching {
-                                        parseSchema(testSuite.schema)
-                                    }
+                            val failure = result.exceptionOrNull()
+                            trackResult(
+                                SchemaTestResult(
+                                    testSuiteDescription = testSuite.description,
+                                    fileName = fileName,
+                                    passed = result.isSuccess,
+                                    error = failure,
+                                    stage = if (result.isFailure) "parse" else null,
+                                    schema = if (result.isFailure) testSuite.schema else null,
+                                ),
+                            )
 
-                                trackResult(
-                                    SchemaTestResult(
-                                        testSuiteDescription = testSuite.description,
-                                        fileName = fileName,
-                                        passed = result.isSuccess,
-                                        error = result.exceptionOrNull(),
-                                        stage = if (result.isFailure) "parse" else null,
-                                        schema = if (result.isFailure) testSuite.schema else null,
-                                    ),
-                                )
-
-                                // This shouldn't happen since we pre-validated, but keep for safety
-                                if (result.isFailure) {
-                                    Assumptions.assumeTrue(false, result.exceptionOrNull()?.message ?: "Parse failed")
-                                }
+                            if (result.isFailure) {
+                                fail("Parse failed: ${failure?.message}", failure)
                             }
                         }
                     },
@@ -114,7 +84,7 @@ class JsonSchemaConformanceTest {
     }
 
     @Test
-    fun `zzz generate spec coverage report`() {
+    fun `generate spec coverage report`() {
         // Generate report after all tests have run
         // Named with 'zzz' prefix to ensure it runs last alphabetically
         if (results.isNotEmpty()) {
