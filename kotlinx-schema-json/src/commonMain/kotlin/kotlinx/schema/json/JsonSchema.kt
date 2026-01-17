@@ -146,6 +146,20 @@ public interface PropertiesContainer {
      * or `null` if no such property exists or the property is not an allOf.
      */
     public fun allOfProperty(name: String): AllOfPropertyDefinition? = properties?.get(name) as? AllOfPropertyDefinition
+
+    /**
+     * Retrieves the boolean schema definition associated with the specified property name.
+     *
+     * Note: This is different from [booleanProperty] which returns [BooleanPropertyDefinition]
+     * (a schema for boolean values). This method returns [BooleanSchemaDefinition] which
+     * represents a boolean schema (true/false as the entire schema).
+     *
+     * @param name The name of the property to fetch from the object definition.
+     * @return The corresponding [BooleanSchemaDefinition] if the property exists and is a boolean schema,
+     * or `null` if no such property exists or the property is not a boolean schema.
+     */
+    public fun booleanSchemaProperty(name: String): BooleanSchemaDefinition? =
+        properties?.get(name) as? BooleanSchemaDefinition
 }
 
 /**
@@ -170,8 +184,8 @@ public interface PropertiesContainer {
 public data class JsonSchemaDefinition(
     @SerialName($$"$id") public val id: String? = null,
     @SerialName($$"$schema") public val schema: String? = null,
-    @EncodeDefault
-    public val type: String = "object",
+    @Serializable(with = StringOrListSerializer::class) @EncodeDefault
+    public val type: List<String> = listOf("object"),
     public override val properties: Map<String, PropertyDefinition> = emptyMap(),
     public val required: List<String> = emptyList(),
     /**
@@ -202,6 +216,24 @@ public data class JsonSchemaDefinition(
  */
 @Serializable(with = PropertyDefinitionSerializer::class)
 public sealed interface PropertyDefinition
+
+/**
+ * Represents a boolean schema in JSON Schema.
+ *
+ * Boolean schemas provide simple validation semantics:
+ * - `true` schema: accepts/allows any value (always valid)
+ * - `false` schema: rejects/disallows any value (always invalid)
+ *
+ * These are commonly used in:
+ * - `items` to allow/disallow additional array items
+ * - Polymorphic compositions (oneOf/anyOf/allOf)
+ *
+ * @property value true for "always valid", false for "always invalid"
+ */
+@Serializable
+public data class BooleanSchemaDefinition(
+    val value: Boolean
+) : PropertyDefinition
 
 /**
  * Represents a value-based property definition in a JSON Schema.

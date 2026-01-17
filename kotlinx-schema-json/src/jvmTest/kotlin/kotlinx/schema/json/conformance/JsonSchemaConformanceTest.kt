@@ -55,6 +55,8 @@ class JsonSchemaConformanceTest {
             DynamicContainer.dynamicContainer(
                 fileName,
                 testSuites
+                    // Filter out top-level boolean schemas since JsonSchemaDefinition only supports object schemas
+                    // BooleanSchemaDefinition is supported as PropertyDefinition (nested in objects)
                     .filter { it.schema is JsonObject }
                     .map { testSuite ->
                         DynamicTest.dynamicTest(testSuite.description) {
@@ -93,7 +95,7 @@ class JsonSchemaConformanceTest {
     }
 
     private fun parseSchema(schema: JsonElement): JsonSchemaDefinition {
-        require(schema is JsonObject) { "Only JsonObject schemas are supported" }
+        require(schema is JsonObject) { "Only JsonObject schemas are supported at top level" }
         return json.decodeFromJsonElement(schema)
     }
 }

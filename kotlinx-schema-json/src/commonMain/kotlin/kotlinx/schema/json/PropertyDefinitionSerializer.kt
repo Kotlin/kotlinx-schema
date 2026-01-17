@@ -10,6 +10,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 
 /**
  * Serializer for [PropertyDefinition] that handles polymorphic serialization.
@@ -23,7 +24,18 @@ public class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
         require(decoder is JsonDecoder) { "This serializer can only be used with JSON" }
 
         val jsonElement = decoder.decodeJsonElement()
-        require(jsonElement is JsonObject) { "Expected JSON object for PropertyDefinition" }
+
+        // Handle boolean schemas (true/false)
+        if (jsonElement is JsonPrimitive) {
+            val content = jsonElement.content
+            if (content == "true" || content == "false") {
+                return BooleanSchemaDefinition(value = content.toBoolean())
+            }
+        }
+
+        require(jsonElement is JsonObject) {
+            "Expected JSON object or boolean for PropertyDefinition, got ${jsonElement::class.simpleName}"
+        }
 
         return decodePolymorphicOrNull(decoder, jsonElement)
             ?: decodeTypedProperty(decoder, jsonElement)
@@ -113,14 +125,7 @@ public class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
         jsonElement: JsonObject,
     ): List<String>? =
         when (val typeElement = jsonElement["type"]) {
-            null -> {
-                null
-            }
-
-            is JsonObject -> {
-                listOf(typeElement.toString())
-            }
-
+            null -> null
             else -> {
                 val typeSerializer = StringOrListSerializer()
                 json.decodeFromJsonElement(typeSerializer, typeElement)
@@ -193,6 +198,11 @@ public class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
         value: PropertyDefinition,
     ) {
         when (value) {
+            is BooleanSchemaDefinition -> {
+                // Serialize as primitive boolean, not object
+                encoder.encodeJsonElement(JsonPrimitive(value.value))
+            }
+
             is StringPropertyDefinition -> {
                 encoder.encodeSerializableValue(
                     StringPropertyDefinition.serializer(),
