@@ -285,7 +285,11 @@ internal class JsonSchemaSerializationTest {
         properties["status"] shouldNotBeNull {
             this as StringPropertyDefinition
             description shouldBe "Current status"
-            enum shouldBe listOf("active", "inactive", "pending")
+            enum shouldBe listOf(
+                kotlinx.serialization.json.JsonPrimitive("active"),
+                kotlinx.serialization.json.JsonPrimitive("inactive"),
+                kotlinx.serialization.json.JsonPrimitive("pending")
+            )
             nullable shouldBe null
         }
 

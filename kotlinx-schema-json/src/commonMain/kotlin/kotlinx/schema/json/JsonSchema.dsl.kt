@@ -713,10 +713,86 @@ public class StringPropertyBuilder internal constructor() {
      */
     public var format: String? = null
 
+    private var _enum: List<JsonElement>? = null
+
     /**
      * List of allowed string values (enumeration).
+     *
+     * Accepts List<String> or null. String values are automatically converted to JsonPrimitive elements.
+     * Throws IllegalArgumentException for non-string types to prevent semantically invalid schemas.
+     *
+     * ## Example
+     * ```kotlin
+     * string {
+     *     enum = listOf("active", "inactive", "pending")
+     * }
+     * ```
      */
-    public var enum: List<String>? = null
+    public var enum: Any?
+        get() = _enum
+        set(value) {
+            _enum =
+                when (value) {
+                    is List<*> -> {
+                        value.map { item ->
+                            when (item) {
+                                is String -> {
+                                    JsonPrimitive(item)
+                                }
+
+                                is JsonPrimitive -> {
+                                    // Validate that JsonPrimitive contains a string
+                                    if (item.isString) {
+                                        item
+                                    } else {
+                                        throw IllegalArgumentException(
+                                            "String property enum must contain only string values, " +
+                                                "but got JsonPrimitive with non-string content",
+                                        )
+                                    }
+                                }
+
+                                null -> {
+                                    JsonNull
+                                }
+
+                                else -> {
+                                    throw IllegalArgumentException(
+                                        "String property enum must contain only String values or null, " +
+                                            "but got: ${item::class.simpleName}",
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    null -> {
+                        null
+                    }
+
+                    else -> {
+                        throw IllegalArgumentException(
+                            "Enum must be a List or null, but got: ${value::class.simpleName}",
+                        )
+                    }
+                }
+        }
+
+    /**
+     * Sets enum values from strings.
+     * Convenience function for the common case of string enums.
+     */
+    public fun stringEnum(vararg values: String) {
+        this.enum = values.toList()
+    }
+
+    /**
+     * Sets enum values from any JSON-compatible values.
+     * Supports numbers, booleans, strings, and null.
+     */
+    public fun mixedEnum(vararg values: Any?) {
+        this.enum = values.toList()
+    }
 
     /**
      * Minimum string length constraint.
@@ -820,7 +896,7 @@ public class StringPropertyBuilder internal constructor() {
             description = description,
             nullable = nullable,
             format = format,
-            enum = enum,
+            enum = _enum,
             minLength = minLength,
             maxLength = maxLength,
             pattern = pattern,
@@ -883,6 +959,75 @@ public class NumericPropertyBuilder internal constructor(
      * Whether null values are allowed.
      */
     public var nullable: Boolean? = null
+
+    private var _enum: List<JsonElement>? = null
+
+    /**
+     * List of allowed numeric values (enumeration).
+     *
+     * Accepts List<Number> or null. Numeric values are automatically converted to JsonPrimitive elements.
+     * Throws IllegalArgumentException for non-numeric types to prevent semantically invalid schemas.
+     *
+     * ## Example
+     * ```kotlin
+     * number {
+     *     enum = listOf(1, 2, 3, 5, 8, 13)
+     * }
+     * integer {
+     *     enum = listOf(0, 1)
+     * }
+     * ```
+     */
+    public var enum: Any?
+        get() = _enum
+        set(value) {
+            _enum =
+                when (value) {
+                    is List<*> -> {
+                        value.map { item ->
+                            when (item) {
+                                is Number -> {
+                                    JsonPrimitive(item)
+                                }
+
+                                is JsonPrimitive -> {
+                                    // Validate that JsonPrimitive contains a number
+                                    val content = item.content
+                                    if (content.toDoubleOrNull() != null || content.toIntOrNull() != null) {
+                                        item
+                                    } else {
+                                        throw IllegalArgumentException(
+                                            "Numeric property enum must contain only numeric values, " +
+                                                "but got JsonPrimitive with non-numeric content: $content",
+                                        )
+                                    }
+                                }
+
+                                null -> {
+                                    JsonNull
+                                }
+
+                                else -> {
+                                    throw IllegalArgumentException(
+                                        "Numeric property enum must contain only Number values or null, " +
+                                            "but got: ${item::class.simpleName}",
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    null -> {
+                        null
+                    }
+
+                    else -> {
+                        throw IllegalArgumentException(
+                            "Enum must be a List or null, but got: ${value::class.simpleName}",
+                        )
+                    }
+                }
+        }
 
     /**
      * Value must be a multiple of this number.
@@ -981,6 +1126,7 @@ public class NumericPropertyBuilder internal constructor(
             type = type,
             description = description,
             nullable = nullable,
+            enum = _enum,
             multipleOf = multipleOf,
             minimum = minimum,
             exclusiveMinimum = exclusiveMinimum,
@@ -1028,6 +1174,78 @@ public class BooleanPropertyBuilder internal constructor() {
      * Whether null values are allowed.
      */
     public var nullable: Boolean? = null
+
+    private var _enum: List<JsonElement>? = null
+
+    /**
+     * List of allowed boolean values (enumeration).
+     *
+     * Accepts List<Boolean> or null. Boolean values are automatically converted to JsonPrimitive elements.
+     * Throws IllegalArgumentException for non-boolean types to prevent semantically invalid schemas.
+     *
+     * ## Example
+     * ```kotlin
+     * boolean {
+     *     enum = listOf(true, false)
+     * }
+     * ```
+     */
+    public var enum: Any?
+        get() = _enum
+        set(value) {
+            _enum =
+                when (value) {
+                    is List<*> -> {
+                        value.map { item ->
+                            when (item) {
+                                is Boolean -> {
+                                    JsonPrimitive(item)
+                                }
+
+                                is JsonPrimitive -> {
+                                    // Validate that JsonPrimitive contains a boolean
+                                    if (item.isString) {
+                                        throw IllegalArgumentException(
+                                            "Boolean property enum must contain only boolean values, " +
+                                                "but got JsonPrimitive with string content",
+                                        )
+                                    }
+                                    val content = item.content
+                                    if (content == "true" || content == "false") {
+                                        item
+                                    } else {
+                                        throw IllegalArgumentException(
+                                            "Boolean property enum must contain only boolean values, " +
+                                                "but got JsonPrimitive with non-boolean content: $content",
+                                        )
+                                    }
+                                }
+
+                                null -> {
+                                    JsonNull
+                                }
+
+                                else -> {
+                                    throw IllegalArgumentException(
+                                        "Boolean property enum must contain only Boolean values or null, " +
+                                            "but got: ${item::class.simpleName}",
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    null -> {
+                        null
+                    }
+
+                    else -> {
+                        throw IllegalArgumentException(
+                            "Enum must be a List or null, but got: ${value::class.simpleName}",
+                        )
+                    }
+                }
+        }
 
     private var _default: JsonElement? = null
     private var _constValue: JsonElement? = null
@@ -1101,6 +1319,7 @@ public class BooleanPropertyBuilder internal constructor() {
             type = type,
             description = description,
             nullable = nullable,
+            enum = _enum,
             default = _default,
             constValue = _constValue,
         )
@@ -1170,6 +1389,59 @@ public class ArrayPropertyBuilder internal constructor() {
      * Whether null values are allowed.
      */
     public var nullable: Boolean? = null
+
+    private var _enum: List<JsonElement>? = null
+
+    /**
+     * List of allowed array values (enumeration).
+     *
+     * Accepts List<JsonArray> or null. Only specific array values are allowed.
+     * Throws IllegalArgumentException for non-array types to prevent semantically invalid schemas.
+     *
+     * This is less common but valid for schemas that allow only specific array instances.
+     *
+     * ## Example
+     * ```kotlin
+     * array {
+     *     description = "Allowed coordinate pairs"
+     *     enum = listOf(
+     *         JsonArray(listOf(JsonPrimitive(0), JsonPrimitive(0))),
+     *         JsonArray(listOf(JsonPrimitive(1), JsonPrimitive(1)))
+     *     )
+     * }
+     * ```
+     */
+    public var enum: Any?
+        get() = _enum
+        set(value) {
+            _enum =
+                when (value) {
+                    is List<*> -> {
+                        value.map { item ->
+                            when (item) {
+                                is JsonArray -> item
+
+                                null -> JsonNull
+
+                                else -> throw IllegalArgumentException(
+                                    "Array property enum must contain only JsonArray values or null, " +
+                                        "but got: ${item::class.simpleName}",
+                                )
+                            }
+                        }
+                    }
+
+                    null -> {
+                        null
+                    }
+
+                    else -> {
+                        throw IllegalArgumentException(
+                            "Enum must be a List or null, but got: ${value::class.simpleName}",
+                        )
+                    }
+                }
+        }
 
     /**
      * Minimum number of items in the array.
@@ -1348,6 +1620,7 @@ public class ArrayPropertyBuilder internal constructor() {
             type = type,
             description = description,
             nullable = nullable,
+            enum = _enum,
             items = itemsDefinition,
             minItems = minItems?.toUInt(),
             maxItems = maxItems?.toUInt(),
@@ -1415,6 +1688,101 @@ public class ObjectPropertyBuilder internal constructor() {
      * Whether null values are allowed.
      */
     public var nullable: Boolean? = null
+
+    private var _enum: List<JsonElement>? = null
+
+    /**
+     * List of allowed object values (enumeration).
+     *
+     * Accepts List<JsonObject>, List<Map>, or null. Map values are automatically converted to JsonObject.
+     * Throws IllegalArgumentException for non-object types to prevent semantically invalid schemas.
+     *
+     * This is less common but valid for schemas that allow only specific object instances.
+     *
+     * ## Example with JsonObject
+     * ```kotlin
+     * obj {
+     *     description = "Allowed configurations"
+     *     enum = listOf(
+     *         JsonObject(mapOf("mode" to JsonPrimitive("read"))),
+     *         JsonObject(mapOf("mode" to JsonPrimitive("write")))
+     *     )
+     * }
+     * ```
+     *
+     * ## Example with Map (convenience)
+     * ```kotlin
+     * obj {
+     *     description = "Allowed configurations"
+     *     enum = listOf(
+     *         mapOf("mode" to "read"),
+     *         mapOf("mode" to "write")
+     *     )
+     * }
+     * ```
+     */
+    @OptIn(ExperimentalSerializationApi::class)
+    public var enum: Any?
+        get() = _enum
+        set(value) {
+            _enum =
+                when (value) {
+                    is List<*> -> {
+                        value.map { item ->
+                            when (item) {
+                                is JsonObject -> {
+                                    item
+                                }
+
+                                is Map<*, *> -> {
+                                    // Convert Map to JsonObject for convenience
+                                    JsonObject(
+                                        item.mapKeys { it.key.toString() }.mapValues { (_, v) ->
+                                            when (v) {
+                                                is JsonElement -> v
+
+                                                is String -> JsonPrimitive(v)
+
+                                                is Number -> JsonPrimitive(v)
+
+                                                is Boolean -> JsonPrimitive(v)
+
+                                                null -> JsonNull
+
+                                                else -> throw IllegalArgumentException(
+                                                    "Object enum map value must be JsonElement, String, Number, " +
+                                                        "Boolean, or null, but got: ${v::class.simpleName}",
+                                                )
+                                            }
+                                        },
+                                    )
+                                }
+
+                                null -> {
+                                    JsonNull
+                                }
+
+                                else -> {
+                                    throw IllegalArgumentException(
+                                        "Object property enum must contain only JsonObject, Map, or null values, " +
+                                            "but got: ${item::class.simpleName}",
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    null -> {
+                        null
+                    }
+
+                    else -> {
+                        throw IllegalArgumentException(
+                            "Enum must be a List or null, but got: ${value::class.simpleName}",
+                        )
+                    }
+                }
+        }
 
     /**
      * Whether additional properties beyond those defined are allowed.
@@ -1544,6 +1912,7 @@ public class ObjectPropertyBuilder internal constructor() {
             type = type,
             description = description,
             nullable = nullable,
+            enum = _enum,
             properties = properties.ifEmpty { null },
             required = if (requiredFields.isEmpty()) null else requiredFields.toList(),
             additionalProperties = additionalProperties,
