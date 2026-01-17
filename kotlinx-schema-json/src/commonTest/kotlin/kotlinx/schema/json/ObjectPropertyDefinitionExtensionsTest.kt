@@ -50,32 +50,32 @@ class ObjectPropertyDefinitionExtensionsTest {
     }
 
     private fun assertObjectPropertyDefinition(objDef: ObjectPropertyDefinition?) {
-        objDef.shouldNotBeNull()
-
-        objDef.stringProperty("str").shouldNotBeNull {
-            description shouldBe "string description"
-        }
-        objDef.numericProperty("num").shouldNotBeNull {
-            minimum shouldBe 10.0
-        }
-        objDef.booleanProperty("bool").shouldNotBeNull {
-            type shouldBe listOf("boolean")
-        }
-        objDef.objectProperty("nestedObj").shouldNotBeNull()
-        objDef.arrayProperty("arr").shouldNotBeNull {
-            minItems shouldBe 1u
-        }
-        objDef.referenceProperty("ref").shouldNotBeNull {
-            ref shouldBe "#/defs/Other"
-        }
-        objDef.oneOfProperty("oneOf").shouldNotBeNull {
-            oneOf.size shouldBe 2
-        }
-        objDef.anyOfProperty("anyOf").shouldNotBeNull {
-            anyOf.size shouldBe 2
-        }
-        objDef.allOfProperty("allOf").shouldNotBeNull {
-            allOf.size shouldBe 2
+        objDef.shouldNotBeNull {
+            stringProperty("str") shouldNotBeNull {
+                description shouldBe "string description"
+            }
+            numericProperty("num") shouldNotBeNull {
+                minimum shouldBe 10.0
+            }
+            booleanProperty("bool") shouldNotBeNull {
+                type shouldBe listOf("boolean")
+            }
+            objectProperty("nestedObj").shouldNotBeNull()
+            arrayProperty("arr") shouldNotBeNull {
+                minItems shouldBe 1u
+            }
+            referenceProperty("ref") shouldNotBeNull {
+                ref shouldBe "#/defs/Other"
+            }
+            oneOfProperty("oneOf") shouldNotBeNull {
+                oneOf.size shouldBe 2
+            }
+            anyOfProperty("anyOf") shouldNotBeNull {
+                anyOf.size shouldBe 2
+            }
+            allOfProperty("allOf") shouldNotBeNull {
+                allOf.size shouldBe 2
+            }
         }
     }
 
@@ -114,27 +114,27 @@ class ObjectPropertyDefinitionExtensionsTest {
 
         val schemaDef = schema.schema
 
-        schemaDef.stringProperty("str").shouldNotBeNull {
+        schemaDef.stringProperty("str") shouldNotBeNull {
             description shouldBe "string description"
         }
-        schemaDef.numericProperty("num").shouldNotBeNull {
+        schemaDef.numericProperty("num") shouldNotBeNull {
             minimum shouldBe 10.0
         }
         schemaDef.booleanProperty("bool").shouldNotBeNull()
         schemaDef.objectProperty("obj").shouldNotBeNull()
-        schemaDef.arrayProperty("arr").shouldNotBeNull {
+        schemaDef.arrayProperty("arr") shouldNotBeNull {
             minItems shouldBe 1u
         }
-        schemaDef.referenceProperty("ref").shouldNotBeNull {
+        schemaDef.referenceProperty("ref") shouldNotBeNull {
             ref shouldBe "#/defs/Other"
         }
-        schemaDef.oneOfProperty("oneOf").shouldNotBeNull {
+        schemaDef.oneOfProperty("oneOf") shouldNotBeNull {
             oneOf.size shouldBe 2
         }
-        schemaDef.anyOfProperty("anyOf").shouldNotBeNull {
+        schemaDef.anyOfProperty("anyOf") shouldNotBeNull {
             anyOf.size shouldBe 2
         }
-        schemaDef.allOfProperty("allOf").shouldNotBeNull {
+        schemaDef.allOfProperty("allOf") shouldNotBeNull {
             allOf.size shouldBe 2
         }
 

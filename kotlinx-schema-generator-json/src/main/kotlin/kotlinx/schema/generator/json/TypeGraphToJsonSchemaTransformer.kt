@@ -100,7 +100,6 @@ public class TypeGraphToJsonSchemaTransformer
                     is OneOfPropertyDefinition -> {
                         // For polymorphic types, use oneOf at the schema definition level
                         JsonSchemaDefinition(
-                            type = "object", // Keep type as object for compatibility
                             properties = emptyMap(),
                             required = emptyList(),
                             additionalProperties = JsonPrimitive(false),

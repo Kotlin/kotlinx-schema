@@ -70,12 +70,13 @@ class BooleanSchemaDefinitionTest {
 
     @Test
     fun `array with boolean items schema`() {
-        val jsonString = """
+        val jsonString =
+            """
             {
                 "type": "array",
                 "items": false
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val arrayDef = json.decodeFromString<ArrayPropertyDefinition>(jsonString)
 
@@ -86,11 +87,12 @@ class BooleanSchemaDefinitionTest {
 
     @Test
     fun `oneOf with boolean schemas`() {
-        val jsonString = """
+        val jsonString =
+            """
             {
                 "oneOf": [true, false, {"type": "string"}]
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val oneOfDef = json.decodeFromString<OneOfPropertyDefinition>(jsonString)
 
@@ -104,11 +106,12 @@ class BooleanSchemaDefinitionTest {
 
     @Test
     fun `anyOf with boolean schemas`() {
-        val jsonString = """
+        val jsonString =
+            """
             {
                 "anyOf": [true, {"type": "number"}]
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val anyOfDef = json.decodeFromString<AnyOfPropertyDefinition>(jsonString)
 
@@ -120,11 +123,12 @@ class BooleanSchemaDefinitionTest {
 
     @Test
     fun `allOf with boolean schemas`() {
-        val jsonString = """
+        val jsonString =
+            """
             {
                 "allOf": [true, {"type": "string", "minLength": 1}]
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val allOfDef = json.decodeFromString<AllOfPropertyDefinition>(jsonString)
 
@@ -136,7 +140,8 @@ class BooleanSchemaDefinitionTest {
 
     @Test
     fun `object properties with boolean schema`() {
-        val jsonString = """
+        val jsonString =
+            """
             {
                 "type": "object",
                 "properties": {
@@ -144,30 +149,32 @@ class BooleanSchemaDefinitionTest {
                     "neverValid": false
                 }
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val objectDef = json.decodeFromString<ObjectPropertyDefinition>(jsonString)
 
         assertNotNull(objectDef.properties)
-        assertEquals(2, objectDef.properties?.size)
+        assertEquals(2, objectDef.properties.size)
 
-        val anyValue = objectDef.properties?.get("anyValue")
+        val anyValue = objectDef.properties["anyValue"]
         assertIs<BooleanSchemaDefinition>(anyValue)
         assertEquals(true, anyValue.value)
 
-        val neverValid = objectDef.properties?.get("neverValid")
+        val neverValid = objectDef.properties["neverValid"]
         assertIs<BooleanSchemaDefinition>(neverValid)
         assertEquals(false, neverValid.value)
     }
 
     @Test
     fun `booleanSchemaProperty helper method returns correct value`() {
-        val objectDef = ObjectPropertyDefinition(
-            properties = mapOf(
-                "alwaysValid" to BooleanSchemaDefinition(true),
-                "regularString" to StringPropertyDefinition()
+        val objectDef =
+            ObjectPropertyDefinition(
+                properties =
+                    mapOf(
+                        "alwaysValid" to BooleanSchemaDefinition(true),
+                        "regularString" to StringPropertyDefinition(),
+                    ),
             )
-        )
 
         val booleanSchema = objectDef.booleanSchemaProperty("alwaysValid")
         assertNotNull(booleanSchema)
@@ -182,13 +189,15 @@ class BooleanSchemaDefinitionTest {
 
     @Test
     fun `serialize and deserialize full object with boolean schema properties`() {
-        val objectDef = ObjectPropertyDefinition(
-            properties = mapOf(
-                "acceptAll" to BooleanSchemaDefinition(true),
-                "rejectAll" to BooleanSchemaDefinition(false),
-                "normalString" to StringPropertyDefinition()
+        val objectDef =
+            ObjectPropertyDefinition(
+                properties =
+                    mapOf(
+                        "acceptAll" to BooleanSchemaDefinition(true),
+                        "rejectAll" to BooleanSchemaDefinition(false),
+                        "normalString" to StringPropertyDefinition(),
+                    ),
             )
-        )
 
         val jsonElement = json.encodeToJsonElement<ObjectPropertyDefinition>(objectDef)
         val decoded = json.decodeFromJsonElement<ObjectPropertyDefinition>(jsonElement)

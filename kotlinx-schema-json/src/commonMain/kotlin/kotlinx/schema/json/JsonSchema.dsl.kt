@@ -8,6 +8,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
 
 /**
  * Marker annotation for the JSON Schema DSL.
@@ -742,14 +743,11 @@ public class StringPropertyBuilder internal constructor() {
 
                                 is JsonPrimitive -> {
                                     // Validate that JsonPrimitive contains a string
-                                    if (item.isString) {
-                                        item
-                                    } else {
-                                        throw IllegalArgumentException(
-                                            "String property enum must contain only string values, " +
-                                                "but got JsonPrimitive with non-string content",
-                                        )
+                                    require(item.isString) {
+                                        "String property enum must contain only string values, " +
+                                            "but got JsonPrimitive with non-string content"
                                     }
+                                    item
                                 }
 
                                 null -> {
@@ -783,7 +781,7 @@ public class StringPropertyBuilder internal constructor() {
      * Convenience function for the common case of string enums.
      */
     public fun stringEnum(vararg values: String) {
-        this.enum = values.toList()
+        enum = values.toList()
     }
 
     /**
@@ -791,7 +789,7 @@ public class StringPropertyBuilder internal constructor() {
      * Supports numbers, booleans, strings, and null.
      */
     public fun mixedEnum(vararg values: Any?) {
-        this.enum = values.toList()
+        enum = values.toList()
     }
 
     /**
@@ -993,14 +991,11 @@ public class NumericPropertyBuilder internal constructor(
                                 is JsonPrimitive -> {
                                     // Validate that JsonPrimitive contains a number
                                     val content = item.content
-                                    if (content.toDoubleOrNull() != null || content.toIntOrNull() != null) {
-                                        item
-                                    } else {
-                                        throw IllegalArgumentException(
-                                            "Numeric property enum must contain only numeric values, " +
-                                                "but got JsonPrimitive with non-numeric content: $content",
-                                        )
+                                    require(content.toDoubleOrNull() != null || content.toIntOrNull() != null) {
+                                        "Numeric property enum must contain only numeric values, " +
+                                            "but got JsonPrimitive with non-numeric content: $content"
                                     }
+                                    item
                                 }
 
                                 null -> {
@@ -1204,21 +1199,14 @@ public class BooleanPropertyBuilder internal constructor() {
 
                                 is JsonPrimitive -> {
                                     // Validate that JsonPrimitive contains a boolean
-                                    if (item.isString) {
-                                        throw IllegalArgumentException(
-                                            "Boolean property enum must contain only boolean values, " +
-                                                "but got JsonPrimitive with string content",
-                                        )
+                                    require(
+                                        item.booleanOrNull != null &&
+                                            (item.content == "true" || item.content == "false"),
+                                    ) {
+                                        "Boolean property enum must contain only boolean values, " +
+                                            "but got JsonPrimitive with non-boolean content: ${item.content}"
                                     }
-                                    val content = item.content
-                                    if (content == "true" || content == "false") {
-                                        item
-                                    } else {
-                                        throw IllegalArgumentException(
-                                            "Boolean property enum must contain only boolean values, " +
-                                                "but got JsonPrimitive with non-boolean content: $content",
-                                        )
-                                    }
+                                    item
                                 }
 
                                 null -> {

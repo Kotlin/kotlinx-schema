@@ -25,9 +25,10 @@ class PolymorphicEnumTest {
 
         val stringProp = json.decodeFromString(StringPropertyDefinition.serializer(), jsonString)
 
-        stringProp.enum.shouldNotBeNull()
-        stringProp.enum!! shouldHaveSize 3
-        stringProp.enum?.get(0) shouldBe JsonPrimitive("active")
+        stringProp.enum.shouldNotBeNull {
+            this shouldHaveSize 3
+            this[0] shouldBe JsonPrimitive("active")
+        }
     }
 
     @Test
@@ -42,28 +43,30 @@ class PolymorphicEnumTest {
 
         val stringProp = json.decodeFromString(StringPropertyDefinition.serializer(), jsonString)
 
-        stringProp.enum.shouldNotBeNull()
-        stringProp.enum!! shouldHaveSize 3
-        stringProp.enum?.get(0) shouldBe JsonPrimitive(1)
+        stringProp.enum.shouldNotBeNull {
+            this shouldHaveSize 3
+            this[0] shouldBe JsonPrimitive(1)
+        }
     }
 
     @Test
     fun `deserialize enum with object values`() {
         val jsonString =
-            """
+            $$"""
             {
                 "type": "string",
                 "enum": [
-                    {"${'$'}anchor": "my_anchor", "type": "null"}
+                    {"$anchor": "my_anchor", "type": "null"}
                 ]
             }
             """.trimIndent()
 
         val stringProp = json.decodeFromString(StringPropertyDefinition.serializer(), jsonString)
 
-        stringProp.enum.shouldNotBeNull()
-        stringProp.enum!! shouldHaveSize 1
-        stringProp.enum?.get(0).shouldBeInstanceOf<JsonObject>()
+        stringProp.enum.shouldNotBeNull {
+            this shouldHaveSize 1
+            this[0].shouldBeInstanceOf<JsonObject>()
+        }
     }
 
     @Test
@@ -78,13 +81,14 @@ class PolymorphicEnumTest {
 
         val stringProp = json.decodeFromString(StringPropertyDefinition.serializer(), jsonString)
 
-        stringProp.enum.shouldNotBeNull()
-        stringProp.enum!! shouldHaveSize 5
-        stringProp.enum?.get(0) shouldBe JsonPrimitive(6)
-        stringProp.enum?.get(1) shouldBe JsonPrimitive("foo")
-        stringProp.enum?.get(2).shouldBeInstanceOf<JsonArray>()
-        stringProp.enum?.get(3) shouldBe JsonPrimitive(true)
-        stringProp.enum?.get(4).shouldBeInstanceOf<JsonObject>()
+        stringProp.enum.shouldNotBeNull {
+            this shouldHaveSize 5
+            this[0] shouldBe JsonPrimitive(6)
+            this[1] shouldBe JsonPrimitive("foo")
+            this[2].shouldBeInstanceOf<JsonArray>()
+            this[3] shouldBe JsonPrimitive(true)
+            this[4].shouldBeInstanceOf<JsonObject>()
+        }
     }
 
     @Test
@@ -130,10 +134,11 @@ class PolymorphicEnumTest {
                 enum = listOf("active", "inactive", "pending"),
             )
 
-        stringProp.enum.shouldNotBeNull()
-        stringProp.enum!! shouldHaveSize 3
-        stringProp.enum?.get(0) shouldBe JsonPrimitive("active")
-        stringProp.enum?.get(1) shouldBe JsonPrimitive("inactive")
+        stringProp.enum.shouldNotBeNull {
+            this shouldHaveSize 3
+            this[0] shouldBe JsonPrimitive("active")
+            this[1] shouldBe JsonPrimitive("inactive")
+        }
     }
 
     @Test
@@ -176,12 +181,14 @@ class PolymorphicEnumTest {
                 }
             }
 
-        val props = schema.schema.properties
-        props.shouldNotBeNull()
-        props.size shouldBe 1
-        val prop = props.values.first() as? StringPropertyDefinition
-        prop.shouldNotBeNull()
-        prop.enum!! shouldHaveSize 3
+        val schemaProps = schema.schema.properties
+        schemaProps.shouldNotBeNull {
+            size shouldBe 1
+            val prop = values.first() as? StringPropertyDefinition
+            prop.shouldNotBeNull {
+                enum!! shouldHaveSize 3
+            }
+        }
     }
 
     @Test
@@ -202,7 +209,7 @@ class PolymorphicEnumTest {
                 }.exceptionOrNull()
 
         exception.shouldBeInstanceOf<IllegalArgumentException>()
-        exception?.message shouldBe "String property enum must contain only String values or null, but got: Int"
+        exception.message shouldBe "String property enum must contain only String values or null, but got: Int"
     }
 
     @Test
@@ -220,12 +227,13 @@ class PolymorphicEnumTest {
                 }
             }
 
-        val props = schema.schema.properties
-        props.shouldNotBeNull()
-        val prop = props.values.first() as? NumericPropertyDefinition
-        prop.shouldNotBeNull()
-        prop.enum!! shouldHaveSize 5
-        prop.enum!![0] shouldBe JsonPrimitive(1)
+        schema.schema.properties.shouldNotBeNull {
+            val prop = values.first() as? NumericPropertyDefinition
+            prop shouldNotBeNull {
+                enum!! shouldHaveSize 5
+                enum[0] shouldBe JsonPrimitive(1)
+            }
+        }
     }
 
     @Test
@@ -243,12 +251,13 @@ class PolymorphicEnumTest {
                 }
             }
 
-        val props = schema.schema.properties
-        props.shouldNotBeNull()
-        val prop = props.values.first() as? BooleanPropertyDefinition
-        prop.shouldNotBeNull()
-        prop.enum!! shouldHaveSize 2
-        prop.enum!![0] shouldBe JsonPrimitive(true)
+        schema.schema.properties.shouldNotBeNull {
+            val prop = values.first() as? BooleanPropertyDefinition
+            prop.shouldNotBeNull {
+                enum!! shouldHaveSize 2
+                enum[0] shouldBe JsonPrimitive(true)
+            }
+        }
     }
 
     @Test
@@ -270,12 +279,13 @@ class PolymorphicEnumTest {
                 }
             }
 
-        val props = schema.schema.properties
-        props.shouldNotBeNull()
-        val prop = props.values.first() as? ArrayPropertyDefinition
-        prop.shouldNotBeNull()
-        prop.enum!! shouldHaveSize 2
-        prop.enum[0].shouldBeInstanceOf<JsonArray>()
+        schema.schema.properties.shouldNotBeNull {
+            val prop = values.first() as? ArrayPropertyDefinition
+            prop.shouldNotBeNull {
+                enum!! shouldHaveSize 2
+                enum[0].shouldBeInstanceOf<JsonArray>()
+            }
+        }
     }
 
     @Test
@@ -318,12 +328,13 @@ class PolymorphicEnumTest {
                 }
             }
 
-        val props = schema.schema.properties
-        props.shouldNotBeNull()
-        val prop = props.values.first() as? ObjectPropertyDefinition
-        prop.shouldNotBeNull()
-        prop.enum!! shouldHaveSize 2
-        prop.enum!![0].shouldBeInstanceOf<JsonObject>()
+        schema.schema.properties.shouldNotBeNull {
+            val prop = values.first() as? ObjectPropertyDefinition
+            prop.shouldNotBeNull {
+                enum!! shouldHaveSize 2
+                enum[0].shouldBeInstanceOf<JsonObject>()
+            }
+        }
     }
 
     @Test
@@ -345,15 +356,18 @@ class PolymorphicEnumTest {
                 }
             }
 
-        val props = schema.schema.properties
-        props.shouldNotBeNull()
-        val prop = props.values.first() as? ObjectPropertyDefinition
-        prop.shouldNotBeNull()
-        prop.enum!! shouldHaveSize 2
-        prop.enum!![0].shouldBeInstanceOf<JsonObject>()
-        val firstEnum = prop.enum!![0] as JsonObject
-        firstEnum["mode"] shouldBe JsonPrimitive("read")
-        firstEnum["timeout"] shouldBe JsonPrimitive(30)
+        schema.schema.properties.shouldNotBeNull {
+            val prop = values.first() as? ObjectPropertyDefinition
+            prop.shouldNotBeNull {
+                enum.shouldNotBeNull {
+                    this shouldHaveSize 2
+                    this[0].shouldBeInstanceOf<JsonObject> { firstEnum ->
+                        firstEnum["mode"] shouldBe JsonPrimitive("read")
+                        firstEnum["timeout"] shouldBe JsonPrimitive(30)
+                    }
+                }
+            }
+        }
     }
 
     @Test
@@ -374,7 +388,7 @@ class PolymorphicEnumTest {
                 }.exceptionOrNull()
 
         exception.shouldBeInstanceOf<IllegalArgumentException>()
-        exception?.message shouldBe
+        exception.message shouldBe
             "Object property enum must contain only JsonObject, Map, or null values, but got: String"
     }
 }

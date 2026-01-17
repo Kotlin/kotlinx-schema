@@ -54,14 +54,14 @@ internal class JsonSchemaSerializationTest {
             }
             """.trimIndent()
 
-        val schema = deserializeAndSerialize<JsonSchema>(json, jsonParser)
+        val decodedSchema = deserializeAndSerialize<JsonSchema>(json, jsonParser)
 
-        schema.name shouldBe "Person"
-        schema.strict shouldBe false
-        schema.schema shouldNotBeNull {
-            this.type shouldBe listOf("object")
-            this.required shouldBeEqual listOf("name", "age", "weight", "height", "married")
-            this.properties shouldNotBeNull {
+        decodedSchema.name shouldBe "Person"
+        decodedSchema.strict shouldBe false
+        decodedSchema.schema shouldNotBeNull {
+            type shouldBe listOf("object")
+            required shouldBeEqual listOf("name", "age", "weight", "height", "married")
+            properties shouldNotBeNull {
                 shouldHaveSize(5)
                 this["name"] as? StringPropertyDefinition shouldNotBeNull {
                     type shouldBe listOf("string")
@@ -103,14 +103,14 @@ internal class JsonSchemaSerializationTest {
             }
             """.trimIndent()
 
-        val schema = deserializeAndSerialize<JsonSchemaDefinition>(json, jsonParser)
+        val decodedSchema = deserializeAndSerialize<JsonSchemaDefinition>(json, jsonParser)
 
-        schema shouldNotBeNull {
-            this.schema shouldBe "https://json-schema.org/draft-07/schema"
-            this.id shouldBe "https://example.com/schemas/product"
-            this.type shouldBe listOf("object")
-            this.required shouldBeEqual listOf("name")
-            this.properties shouldNotBeNull {
+        decodedSchema shouldNotBeNull {
+            schema shouldBe "https://json-schema.org/draft-07/schema"
+            id shouldBe "https://example.com/schemas/product"
+            type shouldBe listOf("object")
+            required shouldBeEqual listOf("name")
+            properties shouldNotBeNull {
                 shouldHaveSize(1)
                 this["name"] as? StringPropertyDefinition shouldNotBeNull {
                     type shouldBe listOf("string")
@@ -232,26 +232,26 @@ internal class JsonSchemaSerializationTest {
             }
             """.trimIndent()
 
-        val schema = deserializeAndSerialize<JsonSchema>(json, jsonParser)
+        val decodedSchema = deserializeAndSerialize<JsonSchema>(json, jsonParser)
 
         // Basic validation
-        schema.name shouldBe "ComplexSchema"
-        schema.strict shouldBe true
-        schema.description shouldBe "A complex schema with various field types"
+        decodedSchema.name shouldBe "ComplexSchema"
+        decodedSchema.strict shouldBe true
+        decodedSchema.description shouldBe "A complex schema with various field types"
 
         // Schema validation
-        val schemaDefinition = schema.schema
+        val schemaDefinition = decodedSchema.schema
         schemaDefinition.type shouldBe listOf("object")
         schemaDefinition.additionalProperties shouldBe kotlinx.serialization.json.JsonPrimitive(false)
         schemaDefinition.required shouldHaveSize 3
         schemaDefinition.required shouldBe listOf("id", "email", "status")
 
         // Properties validation
-        val properties = schemaDefinition.properties
-        properties shouldHaveSize 13
+        val schemaProperties = schemaDefinition.properties
+        schemaProperties shouldHaveSize 13
 
         // String with format
-        properties["id"] shouldNotBeNull {
+        schemaProperties["id"] shouldNotBeNull {
             this as StringPropertyDefinition
             type shouldBe listOf("string")
             nullable shouldBe null
@@ -260,7 +260,7 @@ internal class JsonSchemaSerializationTest {
         }
 
         // String with a pattern
-        properties["email"] shouldNotBeNull {
+        schemaProperties["email"] shouldNotBeNull {
             this as StringPropertyDefinition
             type shouldBe listOf("string")
             nullable shouldBe null
@@ -272,7 +272,7 @@ internal class JsonSchemaSerializationTest {
         }
 
         // Numeric with min/max
-        properties["age"] shouldNotBeNull {
+        schemaProperties["age"] shouldNotBeNull {
             this as NumericPropertyDefinition
             type shouldBe listOf("integer")
             nullable shouldBe null
@@ -282,19 +282,20 @@ internal class JsonSchemaSerializationTest {
         }
 
         // Enum field
-        properties["status"] shouldNotBeNull {
+        schemaProperties["status"] shouldNotBeNull {
             this as StringPropertyDefinition
             description shouldBe "Current status"
-            enum shouldBe listOf(
-                kotlinx.serialization.json.JsonPrimitive("active"),
-                kotlinx.serialization.json.JsonPrimitive("inactive"),
-                kotlinx.serialization.json.JsonPrimitive("pending")
-            )
+            enum shouldBe
+                listOf(
+                    kotlinx.serialization.json.JsonPrimitive("active"),
+                    kotlinx.serialization.json.JsonPrimitive("inactive"),
+                    kotlinx.serialization.json.JsonPrimitive("pending"),
+                )
             nullable shouldBe null
         }
 
         // Array field
-        properties["tags"] shouldNotBeNull {
+        schemaProperties["tags"] shouldNotBeNull {
             this as ArrayPropertyDefinition
             description shouldBe "List of tags"
             nullable shouldBe null
@@ -310,16 +311,16 @@ internal class JsonSchemaSerializationTest {
         }
 
         // Object field with nested properties
-        properties["metadata"] shouldNotBeNull {
+        schemaProperties["metadata"] shouldNotBeNull {
             this as ObjectPropertyDefinition
             description shouldBe "Metadata about the user"
             nullable shouldBe null
-            this.properties.shouldNotBeNull()
-            this.properties shouldHaveSize 2
+            properties.shouldNotBeNull()
+            properties shouldHaveSize 2
         }
 
         // Nullable field
-        properties["nullable_field"] shouldNotBeNull {
+        schemaProperties["nullable_field"] shouldNotBeNull {
             this as StringPropertyDefinition
             description shouldBe "Nullable field"
             nullable shouldBe true
@@ -329,7 +330,7 @@ internal class JsonSchemaSerializationTest {
         }
 
         // Array of objects
-        properties["steps"] shouldNotBeNull {
+        schemaProperties["steps"] shouldNotBeNull {
             this as ArrayPropertyDefinition
             description shouldBe "Steps taken by the user"
             nullable shouldBe null
@@ -338,7 +339,7 @@ internal class JsonSchemaSerializationTest {
                 type shouldBe listOf("object")
                 nullable.shouldBeNull()
                 description.shouldBeNull()
-                this.properties shouldNotBeNull {
+                properties shouldNotBeNull {
                     shouldHaveSize(2)
                     this["explanation"] shouldNotBeNull {
                         this as StringPropertyDefinition
@@ -354,7 +355,7 @@ internal class JsonSchemaSerializationTest {
         }
 
         // Numeric with multipleOf
-        properties["score"] shouldNotBeNull {
+        schemaProperties["score"] shouldNotBeNull {
             this as NumericPropertyDefinition
             type shouldBe listOf("number")
             nullable.shouldBeNull()
@@ -365,7 +366,7 @@ internal class JsonSchemaSerializationTest {
         }
 
         // Numeric with exclusiveMinimum and exclusiveMaximum
-        properties["precision"] shouldNotBeNull {
+        schemaProperties["precision"] shouldNotBeNull {
             this as NumericPropertyDefinition
             type shouldBe listOf("number")
             nullable.shouldBeNull()
@@ -375,7 +376,7 @@ internal class JsonSchemaSerializationTest {
         }
 
         // Boolean with default
-        properties["flag"] shouldNotBeNull {
+        schemaProperties["flag"] shouldNotBeNull {
             this as BooleanPropertyDefinition
             type shouldBe listOf("boolean")
             nullable.shouldBeNull()
@@ -384,7 +385,7 @@ internal class JsonSchemaSerializationTest {
         }
 
         // Boolean with const
-        properties["constant_flag"] shouldNotBeNull {
+        schemaProperties["constant_flag"] shouldNotBeNull {
             this as BooleanPropertyDefinition
             type shouldBe listOf("boolean")
             nullable.shouldBeNull()
@@ -393,7 +394,7 @@ internal class JsonSchemaSerializationTest {
         }
 
         // Reference property
-        properties["reference"] shouldNotBeNull {
+        schemaProperties["reference"] shouldNotBeNull {
             this as ReferencePropertyDefinition
             ref shouldBe "#/definitions/ExternalType"
         }
@@ -460,13 +461,13 @@ internal class JsonSchemaSerializationTest {
             }
             """.trimIndent()
 
-        val schema = deserializeAndSerialize<JsonSchema>(json, jsonParser)
+        val decodedSchema = deserializeAndSerialize<JsonSchema>(json, jsonParser)
 
         // Validate basic structure
-        schema.name shouldBe "Animal"
-        schema.strict shouldBe false
+        decodedSchema.name shouldBe "Animal"
+        decodedSchema.strict shouldBe false
 
-        val schemaDefinition = schema.schema
+        val schemaDefinition = decodedSchema.schema
         schemaDefinition.type shouldBe listOf("object")
         schemaDefinition.description shouldBe "Animal hierarchy"
 
@@ -598,10 +599,10 @@ internal class JsonSchemaSerializationTest {
             }
             """.trimIndent()
 
-        val schema = deserializeAndSerialize<JsonSchema>(json, jsonParser)
+        val decodedSchema = deserializeAndSerialize<JsonSchema>(json, jsonParser)
 
-        schema.name shouldBe "Container"
-        val schemaDefinition = schema.schema
+        decodedSchema.name shouldBe "Container"
+        val schemaDefinition = decodedSchema.schema
 
         // Validate properties with anyOf
         schemaDefinition.properties["animal"] shouldNotBeNull {

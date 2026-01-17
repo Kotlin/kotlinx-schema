@@ -125,7 +125,10 @@ public class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
         jsonElement: JsonObject,
     ): List<String>? =
         when (val typeElement = jsonElement["type"]) {
-            null -> null
+            null -> {
+                null
+            }
+
             else -> {
                 val typeSerializer = StringOrListSerializer()
                 json.decodeFromJsonElement(typeSerializer, typeElement)
@@ -214,14 +217,20 @@ public class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
 
             // Value-based property definitions
             is StringPropertyDefinition -> encodeTyped(encoder, value)
+
             is NumericPropertyDefinition -> encodeTyped(encoder, value)
+
             is BooleanPropertyDefinition -> encodeTyped(encoder, value)
+
             is ArrayPropertyDefinition -> encodeTyped(encoder, value)
+
             is ObjectPropertyDefinition -> encodeTyped(encoder, value)
 
             // Composition-based property definitions
             is OneOfPropertyDefinition -> encodeTyped(encoder, value)
+
             is AnyOfPropertyDefinition -> encodeTyped(encoder, value)
+
             is AllOfPropertyDefinition -> encodeTyped(encoder, value)
 
             // Reference property definition

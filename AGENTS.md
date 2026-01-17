@@ -34,6 +34,7 @@ changes safe, comprehensible, and easy to maintain.
 - Prefer DSL builder style (method with lambda blocks) over constructors, if possible.
 - Use Kotlin's `val` for immutable properties and `var` for mutable properties. Consider using `lateinit var` instead of
   nullable types, if possible.
+- Use multi-dollar interpolation prefix for strings, where applicable
 - Use fully qualified imports instead of star imports
 - Ensure to preserve backward compatibility when making changes
 
@@ -66,8 +67,17 @@ changes safe, comprehensible, and easy to maintain.
   with infix form assertions `shouldBe` instead of `assertEquals`.
 - Use Kotest's `withClue("<failure reason>")` to describe failure reasons, but only when the assertion is NOT obvious.
   Remove obvious cases for simplicity.
-- If multiple assertions are maid against nullable field, first check for null, e.g.:
-  `params shoulNotBeNull { params.id shouldBe 1 }`
+- When making multiple assertions against a nullable field, use the Kotest lambda-style `shouldNotBeNull { ... }` 
+  extension to both assert non-nullability and provide a scope for further assertions on the receiver.
+- Avoid using `this.` explicitly inside lambda blocks (like `shouldNotBeNull`, `assertSoftly`, or DSL builders) 
+  unless necessary to resolve shadowing or ambiguity.
+  - Example:
+    ```kotlin
+    prop.shouldNotBeNull {
+        enum shouldHaveSize 2 // Preferred
+        this.enum shouldHaveSize 2 // Avoid "this." if possible
+    }
+    ```
 - Use `assertSoftly(subject) { ... }` to perform multiple assertions. Never use `assertSoftly { }` to verify properties
   of different subjects, or when there is only one assertion per subject. Avoid using `assertSoftly(this) { ... }`
 - When asked to write tests in Java: use JUnit5, Mockito, AssertJ core
@@ -86,7 +96,7 @@ changes safe, comprehensible, and easy to maintain.
     - Root schema layout uses `$id`, `$defs`, and `$ref`.
 - Keep changes small and reversible. Prefer adding small functions over editing many call sites.
 - Write self-explanatory code; add focused comments where intent is non-obvious.
-- use `git mv` command when moving version-controlled files.
+- use `git mv` command when moving version-controlled files. Never commit and/or push changes yourself.
 
 ## Workflow for AI agents
 
@@ -94,7 +104,7 @@ changes safe, comprehensible, and easy to maintain.
     - Summarize the requirement in one or two sentences.
     - Identify affected files and tests. If unclear, ask.
 2. Plan minimal changes and update the plan using the provided status tool.
-3. When calling tools prefer jetbrains MCP
+3. When viewing, editing, and running tests prefer jetbrains MCP server, if it's available.
 4. Start with tests.
     - Update existing tests or add new ones in `ksp-integration-tests` or relevant module tests.
     - Keep tests deterministic and small.

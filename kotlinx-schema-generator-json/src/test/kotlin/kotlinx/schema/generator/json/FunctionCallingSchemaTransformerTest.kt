@@ -12,6 +12,7 @@ import kotlinx.schema.json.FunctionCallingSchema
 import kotlinx.schema.json.NumericPropertyDefinition
 import kotlinx.schema.json.ObjectPropertyDefinition
 import kotlinx.schema.json.StringPropertyDefinition
+import kotlinx.serialization.json.JsonPrimitive
 import kotlin.reflect.KCallable
 import kotlin.test.Test
 
@@ -158,7 +159,7 @@ class FunctionCallingSchemaTransformerTest {
         val nullableEnum = properties["nullableEnum"] as StringPropertyDefinition
         nullableEnum.type shouldBe listOf("string", "null")
         nullableEnum.nullable.shouldBeNull()
-        nullableEnum.enum shouldBe listOf("DEBUG", "INFO", "ERROR")
+        nullableEnum.enum shouldBe listOf(JsonPrimitive("DEBUG"), JsonPrimitive("INFO"), JsonPrimitive("ERROR"))
 
         val nullableList = properties["nullableList"] as ArrayPropertyDefinition
         nullableList.type shouldBe listOf("array", "null")
@@ -202,7 +203,7 @@ class FunctionCallingSchemaTransformerTest {
         val enumVal = properties["enumVal"] as StringPropertyDefinition
         enumVal.type shouldBe listOf("string")
         enumVal.nullable.shouldBeNull()
-        enumVal.enum shouldBe listOf("DEBUG", "INFO", "ERROR")
+        enumVal.enum shouldBe listOf(JsonPrimitive("DEBUG"), JsonPrimitive("INFO"), JsonPrimitive("ERROR"))
 
         val list = properties["list"] as ArrayPropertyDefinition
         list.type shouldBe listOf("array")
