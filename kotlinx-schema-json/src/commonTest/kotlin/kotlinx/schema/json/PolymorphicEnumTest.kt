@@ -6,6 +6,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlin.test.Test
@@ -15,6 +16,7 @@ class PolymorphicEnumTest {
 
     @Test
     fun `deserialize enum with string values`() {
+        // language=json
         val jsonString =
             """
             {
@@ -27,12 +29,13 @@ class PolymorphicEnumTest {
 
         stringProp.enum.shouldNotBeNull {
             this shouldHaveSize 3
-            this[0] shouldBe JsonPrimitive("active")
+            this[0] shouldBe "active"
         }
     }
 
     @Test
     fun `deserialize enum with number values`() {
+        // language=json
         val jsonString =
             """
             {
@@ -45,12 +48,13 @@ class PolymorphicEnumTest {
 
         stringProp.enum.shouldNotBeNull {
             this shouldHaveSize 3
-            this[0] shouldBe JsonPrimitive(1)
+            this[0] shouldBe "1"
         }
     }
 
     @Test
     fun `deserialize enum with object values`() {
+        // language=json
         val jsonString =
             $$"""
             {
@@ -65,23 +69,24 @@ class PolymorphicEnumTest {
 
         stringProp.enum.shouldNotBeNull {
             this shouldHaveSize 1
-            this[0].shouldBeInstanceOf<JsonObject>()
+            // JsonObject is converted to its string representation
+            this[0] shouldBe $$"""{"$anchor":"my_anchor","type":"null"}"""
         }
     }
 
     @Test
     fun `deserialize heterogeneous enum`() {
+        // language=json
         val jsonString =
             """
             {
-                "type": "string",
                 "enum": [6, "foo", [], true, {"foo": 12}]
             }
             """.trimIndent()
 
-        val stringProp = json.decodeFromString(StringPropertyDefinition.serializer(), jsonString)
+        val genericProp = json.decodeFromString(GenericPropertyDefinition.serializer(), jsonString)
 
-        stringProp.enum.shouldNotBeNull {
+        genericProp.enum.shouldNotBeNull {
             this shouldHaveSize 5
             this[0] shouldBe JsonPrimitive(6)
             this[1] shouldBe JsonPrimitive("foo")
@@ -97,8 +102,8 @@ class PolymorphicEnumTest {
             StringPropertyDefinition(
                 enum =
                     listOf(
-                        JsonPrimitive("active"),
-                        JsonPrimitive("inactive"),
+                        "active",
+                        "inactive",
                     ),
             )
 
@@ -114,9 +119,9 @@ class PolymorphicEnumTest {
             StringPropertyDefinition(
                 enum =
                     listOf(
-                        JsonPrimitive("text"),
-                        JsonPrimitive(42),
-                        JsonPrimitive(true),
+                        "text",
+                        "42",
+                        "true",
                     ),
             )
 
@@ -136,8 +141,8 @@ class PolymorphicEnumTest {
 
         stringProp.enum.shouldNotBeNull {
             this shouldHaveSize 3
-            this[0] shouldBe JsonPrimitive("active")
-            this[1] shouldBe JsonPrimitive("inactive")
+            this[0] shouldBe "active"
+            this[1] shouldBe "inactive"
         }
     }
 
@@ -231,7 +236,7 @@ class PolymorphicEnumTest {
             val prop = values.first() as? NumericPropertyDefinition
             prop shouldNotBeNull {
                 enum!! shouldHaveSize 5
-                enum[0] shouldBe JsonPrimitive(1)
+                enum[0] shouldBe 1
             }
         }
     }
@@ -255,7 +260,7 @@ class PolymorphicEnumTest {
             val prop = values.first() as? BooleanPropertyDefinition
             prop.shouldNotBeNull {
                 enum!! shouldHaveSize 2
-                enum[0] shouldBe JsonPrimitive(true)
+                enum[0] shouldBe true
             }
         }
     }
@@ -390,5 +395,220 @@ class PolymorphicEnumTest {
         exception.shouldBeInstanceOf<IllegalArgumentException>()
         exception.message shouldBe
             "Object property enum must contain only JsonObject, Map, or null values, but got: String"
+    }
+
+    @Test
+    fun `DSL supports generic property`() {
+        val schema =
+            jsonSchema {
+                name = "TestSchema"
+                schema {
+                    property("flexibleValue") {
+                        generic {
+                            description = "Can be any JSON type"
+                        }
+                    }
+                }
+            }
+
+        schema.schema.properties.shouldNotBeNull {
+            val prop = values.first() as? GenericPropertyDefinition
+            prop.shouldNotBeNull {
+                description shouldBe "Can be any JSON type"
+                type shouldBe null
+            }
+        }
+    }
+
+    @Test
+    fun `DSL supports generic property with heterogeneous enum`() {
+        val schema =
+            jsonSchema {
+                name = "TestSchema"
+                schema {
+                    property("value") {
+                        generic {
+                            description = "Mixed type values"
+                            enum =
+                                listOf(
+                                    // Plain Kotlin types
+                                    42,
+                                    3.14,
+                                    "text",
+                                    true,
+                                    false,
+                                    null,
+                                    // Collections (converted to JsonArray)
+                                    listOf(1, 2, 3),
+                                    listOf("a", "b"),
+                                    // Maps (converted to JsonObject)
+                                    mapOf("key" to "value", "count" to 10),
+                                    mapOf("nested" to mapOf("inner" to "value")),
+                                    // JsonElement types
+                                    JsonPrimitive(99),
+                                    JsonArray(listOf(JsonPrimitive(1), JsonPrimitive(2))),
+                                    JsonObject(mapOf("key" to JsonPrimitive("value"))),
+                                )
+                        }
+                    }
+                }
+            }
+
+        schema.schema.properties.shouldNotBeNull {
+            val prop = values.first() as? GenericPropertyDefinition
+            prop.shouldNotBeNull {
+                enum!! shouldHaveSize 13
+
+                // Plain types
+                enum[0] shouldBe JsonPrimitive(42)
+                enum[1] shouldBe JsonPrimitive(3.14)
+                enum[2] shouldBe JsonPrimitive("text")
+                enum[3] shouldBe JsonPrimitive(true)
+                enum[4] shouldBe JsonPrimitive(false)
+                enum[5] shouldBe JsonNull
+
+                // Collections
+                enum[6].shouldBeInstanceOf<JsonArray>()
+                (enum[6] as JsonArray)[0] shouldBe JsonPrimitive(1)
+                enum[7].shouldBeInstanceOf<JsonArray>()
+                (enum[7] as JsonArray)[0] shouldBe JsonPrimitive("a")
+
+                // Maps
+                enum[8].shouldBeInstanceOf<JsonObject>()
+                (enum[8] as JsonObject)["key"] shouldBe JsonPrimitive("value")
+                (enum[8] as JsonObject)["count"] shouldBe JsonPrimitive(10)
+                enum[9].shouldBeInstanceOf<JsonObject>()
+
+                // JsonElement types
+                enum[10] shouldBe JsonPrimitive(99)
+                enum[11].shouldBeInstanceOf<JsonArray>()
+                enum[12].shouldBeInstanceOf<JsonObject>()
+            }
+        }
+    }
+
+    @Test
+    fun `DSL supports generic property with type specified`() {
+        val schema =
+            jsonSchema {
+                name = "TestSchema"
+                schema {
+                    property("multiType") {
+                        generic {
+                            description = "Can be string or number"
+                            type = listOf("string", "number")
+                        }
+                    }
+                }
+            }
+
+        schema.schema.properties.shouldNotBeNull {
+            val prop = values.first() as? GenericPropertyDefinition
+            prop.shouldNotBeNull {
+                type shouldBe listOf("string", "number")
+            }
+        }
+    }
+
+    @Test
+    fun `DSL generic property rejects unsupported enum values`() {
+        // Custom class that is not supported
+        data class UnsupportedType(
+            val value: String,
+        )
+
+        val exception =
+            kotlin
+                .runCatching {
+                    jsonSchema {
+                        name = "TestSchema"
+                        schema {
+                            property("invalid") {
+                                generic {
+                                    enum = listOf(UnsupportedType("test")) // Custom types not supported
+                                }
+                            }
+                        }
+                    }
+                }.exceptionOrNull()
+
+        exception.shouldBeInstanceOf<IllegalArgumentException>()
+        exception.message shouldBe
+            "Generic property enum must contain JsonElement, String, Number, Boolean, null, List, or Map, " +
+            "but got: UnsupportedType"
+    }
+
+    @Test
+    fun `DSL supports generic property with nested collections and maps`() {
+        val schema =
+            jsonSchema {
+                name = "TestSchema"
+                schema {
+                    property("complexValues") {
+                        generic {
+                            description = "Nested collections and maps"
+                            enum =
+                                listOf(
+                                    // Nested lists
+                                    listOf(listOf(1, 2), listOf(3, 4)),
+                                    // Nested maps
+                                    mapOf(
+                                        "user" to mapOf("name" to "Alice", "age" to 30),
+                                        "settings" to mapOf("theme" to "dark"),
+                                    ),
+                                    // Mixed nesting
+                                    mapOf(
+                                        "items" to listOf(1, 2, 3),
+                                        "metadata" to mapOf("count" to 3),
+                                    ),
+                                )
+                        }
+                    }
+                }
+            }
+
+        schema.schema.properties.shouldNotBeNull {
+            val prop = values.first() as? GenericPropertyDefinition
+            prop.shouldNotBeNull {
+                enum!! shouldHaveSize 3
+
+                // Nested list
+                enum[0].shouldBeInstanceOf<JsonArray>()
+                val nestedArray = enum[0] as JsonArray
+                nestedArray[0].shouldBeInstanceOf<JsonArray>()
+
+                // Nested map
+                enum[1].shouldBeInstanceOf<JsonObject>()
+                val nestedObj = enum[1] as JsonObject
+                nestedObj["user"].shouldBeInstanceOf<JsonObject>()
+                (nestedObj["user"] as JsonObject)["name"] shouldBe JsonPrimitive("Alice")
+
+                // Mixed nesting
+                enum[2].shouldBeInstanceOf<JsonObject>()
+                val mixedObj = enum[2] as JsonObject
+                mixedObj["items"].shouldBeInstanceOf<JsonArray>()
+                mixedObj["metadata"].shouldBeInstanceOf<JsonObject>()
+            }
+        }
+    }
+
+    @Test
+    fun `serialize and deserialize generic property with heterogeneous enum`() {
+        val genericProp =
+            GenericPropertyDefinition(
+                description = "Mixed types",
+                enum =
+                    listOf(
+                        JsonPrimitive(1),
+                        JsonPrimitive("text"),
+                        JsonPrimitive(true),
+                    ),
+            )
+
+        val jsonString = json.encodeToString(GenericPropertyDefinition.serializer(), genericProp)
+        val decoded = json.decodeFromString(GenericPropertyDefinition.serializer(), jsonString)
+
+        decoded.enum shouldBe genericProp.enum
+        decoded.description shouldBe "Mixed types"
     }
 }

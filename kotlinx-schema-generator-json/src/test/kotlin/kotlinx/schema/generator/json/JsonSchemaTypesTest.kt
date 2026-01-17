@@ -10,7 +10,6 @@ import kotlinx.schema.json.JsonSchema
 import kotlinx.schema.json.NumericPropertyDefinition
 import kotlinx.schema.json.ObjectPropertyDefinition
 import kotlinx.schema.json.StringPropertyDefinition
-import kotlinx.serialization.json.JsonPrimitive
 import kotlin.reflect.KClass
 import kotlin.test.Test
 
@@ -85,9 +84,9 @@ class JsonSchemaTypesTest {
             size shouldBe 3
             this shouldContainAll
                 listOf(
-                    JsonPrimitive("ACTIVE"),
-                    JsonPrimitive("INACTIVE"),
-                    JsonPrimitive("PENDING"),
+                    "ACTIVE",
+                    "INACTIVE",
+                    "PENDING",
                 )
         }
 

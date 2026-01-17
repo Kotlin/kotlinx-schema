@@ -7,6 +7,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.encodeToJsonElement
@@ -269,48 +270,14 @@ public data class StringPropertyDefinition(
     override val description: String? = null,
     override val nullable: Boolean? = null,
     val format: String? = null,
-    @Serializable(with = PolymorphicEnumSerializer::class)
-    val enum: List<JsonElement>? = null,
+    @Serializable(with = StringEnumSerializer::class)
+    val enum: List<String>? = null,
     val minLength: Int? = null,
     val maxLength: Int? = null,
     val pattern: String? = null,
     val default: JsonElement? = null,
     @SerialName("const") val constValue: JsonElement? = null,
 ) : ValuePropertyDefinition
-
-/**
- * Creates StringPropertyDefinition with enum from strings.
- * Convenience function for backward compatibility.
- * Automatically converts List<String> to List<JsonElement>.
- *
- * Note: This overload only applies when enum parameter is explicitly provided with List<String>.
- * For calls without enum parameter, use the primary constructor.
- */
-@Suppress("LongParameterList")
-public fun StringPropertyDefinition(
-    type: List<String> = listOf("string"),
-    description: String? = null,
-    nullable: Boolean? = null,
-    format: String? = null,
-    enum: List<String>?, // No default - required when this overload is used
-    minLength: Int? = null,
-    maxLength: Int? = null,
-    pattern: String? = null,
-    default: JsonElement? = null,
-    constValue: JsonElement? = null,
-): StringPropertyDefinition =
-    StringPropertyDefinition(
-        type = type,
-        description = description,
-        nullable = nullable,
-        format = format,
-        enum = enum?.toJsonElements(),
-        minLength = minLength,
-        maxLength = maxLength,
-        pattern = pattern,
-        default = default,
-        constValue = constValue,
-    )
 
 /**
  * Represents a numeric property (integer or number).
@@ -320,8 +287,8 @@ public data class NumericPropertyDefinition(
     @Serializable(with = StringOrListSerializer::class) override val type: List<String>,
     override val description: String? = null,
     override val nullable: Boolean? = null,
-    @Serializable(with = PolymorphicEnumSerializer::class)
-    val enum: List<JsonElement>? = null,
+    @Serializable(with = NumericEnumSerializer::class)
+    val enum: List<Double>? = null,
     val multipleOf: Double? = null,
     val minimum: Double? = null,
     val exclusiveMinimum: Double? = null,
@@ -332,39 +299,6 @@ public data class NumericPropertyDefinition(
 ) : ValuePropertyDefinition
 
 /**
- * Creates NumericPropertyDefinition with enum from numbers.
- * Convenience function for backward compatibility.
- * Automatically converts List<Number> to List<JsonElement>.
- */
-@Suppress("LongParameterList")
-public fun NumericPropertyDefinition(
-    type: List<String>,
-    description: String? = null,
-    nullable: Boolean? = null,
-    enum: List<Number>?, // No default - required when this overload is used
-    multipleOf: Double? = null,
-    minimum: Double? = null,
-    exclusiveMinimum: Double? = null,
-    maximum: Double? = null,
-    exclusiveMaximum: Double? = null,
-    default: JsonElement? = null,
-    constValue: JsonElement? = null,
-): NumericPropertyDefinition =
-    NumericPropertyDefinition(
-        type = type,
-        description = description,
-        nullable = nullable,
-        enum = enum?.toJsonElements(),
-        multipleOf = multipleOf,
-        minimum = minimum,
-        exclusiveMinimum = exclusiveMinimum,
-        maximum = maximum,
-        exclusiveMaximum = exclusiveMaximum,
-        default = default,
-        constValue = constValue,
-    )
-
-/**
  * Represents an array property
  */
 @Serializable
@@ -373,8 +307,8 @@ public data class ArrayPropertyDefinition(
         listOf("array"),
     override val description: String? = null,
     override val nullable: Boolean? = null,
-    @Serializable(with = PolymorphicEnumSerializer::class)
-    val enum: List<JsonElement>? = null,
+    @Serializable(with = ArrayEnumSerializer::class)
+    val enum: List<JsonArray>? = null,
     val items: PropertyDefinition? = null,
     val minItems: UInt? = null,
     val maxItems: UInt? = null,
@@ -390,8 +324,8 @@ public data class ObjectPropertyDefinition(
         listOf("object"),
     override val description: String? = null,
     override val nullable: Boolean? = null,
-    @Serializable(with = PolymorphicEnumSerializer::class)
-    val enum: List<JsonElement>? = null,
+    @Serializable(with = ObjectEnumSerializer::class)
+    val enum: List<JsonObject>? = null,
     override val properties: Map<String, PropertyDefinition>? = null,
     val required: List<String>? = null,
     /**
@@ -416,34 +350,33 @@ public data class BooleanPropertyDefinition(
         listOf("boolean"),
     override val description: String? = null,
     override val nullable: Boolean? = null,
-    @Serializable(with = PolymorphicEnumSerializer::class)
-    val enum: List<JsonElement>? = null,
+    @Serializable(with = BooleanEnumSerializer::class)
+    val enum: List<Boolean>? = null,
     val default: JsonElement? = null,
     @SerialName("const") val constValue: JsonElement? = null,
 ) : ValuePropertyDefinition
 
 /**
- * Creates BooleanPropertyDefinition with enum from booleans.
- * Convenience function for backward compatibility.
- * Automatically converts List<Boolean> to List<JsonElement>.
+ * Represents a property definition without specific type constraints.
+ *
+ * Used for schemas that:
+ * - Have no type specified
+ * - Have multiple types
+ * - Have heterogeneous enums with mixed types
+ *
+ * This allows maximum flexibility while still supporting validation keywords like enum.
  */
-@Suppress("LongParameterList")
-public fun BooleanPropertyDefinition(
-    type: List<String> = listOf("boolean"),
-    description: String? = null,
-    nullable: Boolean? = null,
-    enum: List<Boolean>?, // No default - required when this overload is used
-    default: JsonElement? = null,
-    constValue: JsonElement? = null,
-): BooleanPropertyDefinition =
-    BooleanPropertyDefinition(
-        type = type,
-        description = description,
-        nullable = nullable,
-        enum = enum?.toJsonElements(),
-        default = default,
-        constValue = constValue,
-    )
+@Serializable
+public data class GenericPropertyDefinition(
+    @Serializable(with = StringOrListSerializer::class)
+    val type: List<String>? = null,
+    val description: String? = null,
+    val nullable: Boolean? = null,
+    @Serializable(with = PolymorphicEnumSerializer::class)
+    val enum: List<JsonElement>? = null,
+    val default: JsonElement? = null,
+    @SerialName("const") val constValue: JsonElement? = null,
+) : PropertyDefinition
 
 /**
  * Represents a reference to another element

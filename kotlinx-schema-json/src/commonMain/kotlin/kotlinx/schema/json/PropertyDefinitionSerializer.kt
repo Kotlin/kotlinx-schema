@@ -111,9 +111,9 @@ public class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
             }
 
             else -> {
-                // If no type is specified, default to string
+                // If no type is specified, use GenericPropertyDefinition for maximum flexibility
                 json.decodeFromJsonElement(
-                    StringPropertyDefinition.serializer(),
+                    GenericPropertyDefinition.serializer(),
                     jsonElement,
                 )
             }
@@ -225,6 +225,8 @@ public class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
             is ArrayPropertyDefinition -> encodeTyped(encoder, value)
 
             is ObjectPropertyDefinition -> encodeTyped(encoder, value)
+
+            is GenericPropertyDefinition -> encodeTyped(encoder, value)
 
             // Composition-based property definitions
             is OneOfPropertyDefinition -> encodeTyped(encoder, value)
