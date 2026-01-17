@@ -193,78 +193,68 @@ public class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
         encodePropertyDefinition(jsonEncoder, value)
     }
 
+    /**
+     * Encodes a [PropertyDefinition] to JSON.
+     *
+     * Uses a type-safe dispatch mechanism to encode each property definition type.
+     * The when expression is exhaustive, ensuring compile-time safety when new
+     * PropertyDefinition types are added.
+     *
+     * Special handling:
+     * - [BooleanSchemaDefinition]: Encoded as primitive boolean (true/false)
+     * - All other types: Encoded using their respective serializers
+     */
     private fun encodePropertyDefinition(
         encoder: JsonEncoder,
         value: PropertyDefinition,
     ) {
         when (value) {
-            is BooleanSchemaDefinition -> {
-                // Serialize as primitive boolean, not object
-                encoder.encodeJsonElement(JsonPrimitive(value.value))
-            }
+            // Special case: boolean schemas serialize as primitives, not objects
+            is BooleanSchemaDefinition -> encodeBooleanSchema(encoder, value)
 
-            is StringPropertyDefinition -> {
-                encoder.encodeSerializableValue(
-                    StringPropertyDefinition.serializer(),
-                    value,
-                )
-            }
+            // Value-based property definitions
+            is StringPropertyDefinition -> encodeTyped(encoder, value)
+            is NumericPropertyDefinition -> encodeTyped(encoder, value)
+            is BooleanPropertyDefinition -> encodeTyped(encoder, value)
+            is ArrayPropertyDefinition -> encodeTyped(encoder, value)
+            is ObjectPropertyDefinition -> encodeTyped(encoder, value)
 
-            is NumericPropertyDefinition -> {
-                encoder.encodeSerializableValue(
-                    NumericPropertyDefinition.serializer(),
-                    value,
-                )
-            }
+            // Composition-based property definitions
+            is OneOfPropertyDefinition -> encodeTyped(encoder, value)
+            is AnyOfPropertyDefinition -> encodeTyped(encoder, value)
+            is AllOfPropertyDefinition -> encodeTyped(encoder, value)
 
-            is ArrayPropertyDefinition -> {
-                encoder.encodeSerializableValue(
-                    ArrayPropertyDefinition.serializer(),
-                    value,
-                )
-            }
-
-            is ObjectPropertyDefinition -> {
-                encoder.encodeSerializableValue(
-                    ObjectPropertyDefinition.serializer(),
-                    value,
-                )
-            }
-
-            is ReferencePropertyDefinition -> {
-                encoder.encodeSerializableValue(
-                    ReferencePropertyDefinition.serializer(),
-                    value,
-                )
-            }
-
-            is BooleanPropertyDefinition -> {
-                encoder.encodeSerializableValue(
-                    BooleanPropertyDefinition.serializer(),
-                    value,
-                )
-            }
-
-            is OneOfPropertyDefinition -> {
-                encoder.encodeSerializableValue(
-                    OneOfPropertyDefinition.serializer(),
-                    value,
-                )
-            }
-
-            is AnyOfPropertyDefinition -> {
-                encoder.encodeSerializableValue(
-                    AnyOfPropertyDefinition.serializer(),
-                    value,
-                )
-            }
-
-            is AllOfPropertyDefinition -> {
-                encoder.encodeSerializableValue(
-                    AllOfPropertyDefinition.serializer(),
-                    value,
-                )
-            }
+            // Reference property definition
+            is ReferencePropertyDefinition -> encodeTyped(encoder, value)
         }
+    }
+
+    /**
+     * Encodes a boolean schema as a primitive JSON boolean.
+     *
+     * Boolean schemas (true/false) are special in JSON Schema - they represent
+     * schemas that always accept (true) or always reject (false) values.
+     */
+    private fun encodeBooleanSchema(
+        encoder: JsonEncoder,
+        value: BooleanSchemaDefinition,
+    ) {
+        encoder.encodeJsonElement(JsonPrimitive(value.value))
+    }
+
+    /**
+     * Generic encoding function for typed property definitions.
+     *
+     * Uses reified type parameters to obtain the correct serializer at compile time,
+     * eliminating boilerplate while maintaining type safety.
+     *
+     * This approach follows the Open/Closed Principle - the encoding logic is
+     * centralized, but each PropertyDefinition type provides its own serializer.
+     */
+    private inline fun <reified T : PropertyDefinition> encodeTyped(
+        encoder: JsonEncoder,
+        value: T,
+    ) {
+        encoder.encodeSerializableValue(kotlinx.serialization.serializer<T>(), value)
     }
 }
