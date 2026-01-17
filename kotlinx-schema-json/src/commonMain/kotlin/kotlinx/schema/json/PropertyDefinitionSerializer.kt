@@ -68,7 +68,7 @@ public class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
                 )
             }
 
-            jsonElement.containsKey("\$ref") -> {
+            jsonElement.containsKey($$"$ref") -> {
                 json.decodeFromJsonElement(
                     ReferencePropertyDefinition.serializer(),
                     jsonElement,

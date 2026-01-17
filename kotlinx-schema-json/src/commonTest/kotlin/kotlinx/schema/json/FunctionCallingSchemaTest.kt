@@ -257,4 +257,114 @@ class FunctionCallingSchemaTest {
 
         deserializeAndSerialize<FunctionCallingSchema>(originalJson)
     }
+
+    @Test
+    fun `encodeToString extension function works correctly`() {
+        // language=json
+        val jsonString =
+            """
+            {
+              "name": "test_encode_string",
+              "description": "Test encodeToString extension",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "param": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+            """.trimIndent()
+
+        val schema = json.decodeFromString<FunctionCallingSchema>(jsonString)
+
+        // Call the extension function
+        val encoded = schema.encodeToString(json)
+
+        // Verify it produces valid JSON that can be decoded back
+        val decoded = json.decodeFromString<FunctionCallingSchema>(encoded)
+        decoded.name shouldBe "test_encode_string"
+        decoded.description shouldBe "Test encodeToString extension"
+    }
+
+    @Test
+    fun `encodeToJsonObject extension function works correctly`() {
+        // language=json
+        val jsonString =
+            """
+            {
+              "name": "test_encode_object",
+              "title": "Test Title",
+              "description": "Test encodeToJsonObject extension",
+              "strict": false,
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "arg": {
+                    "type": "number"
+                  }
+                },
+                "required": ["arg"]
+              }
+            }
+            """.trimIndent()
+
+        val schema = json.decodeFromString<FunctionCallingSchema>(jsonString)
+
+        // Call the extension function
+        val jsonObject = schema.encodeToJsonObject(json)
+
+        // Verify the JsonObject structure
+        jsonObject["name"]?.toString() shouldBe "\"test_encode_object\""
+        jsonObject["title"]?.toString() shouldBe "\"Test Title\""
+        jsonObject["description"]?.toString() shouldBe "\"Test encodeToJsonObject extension\""
+        jsonObject["strict"]?.toString() shouldBe "false"
+        jsonObject["parameters"].shouldNotBeNull()
+    }
+
+    @Test
+    fun `encodeToString uses default Json when not specified`() {
+        // language=json
+        val jsonString =
+            """
+            {
+              "name": "default_json_test",
+              "parameters": {
+                "type": "object"
+              }
+            }
+            """.trimIndent()
+
+        val schema = json.decodeFromString<FunctionCallingSchema>(jsonString)
+
+        // Call without specifying Json instance (uses default)
+        val encoded = schema.encodeToString()
+
+        // Should still be valid JSON
+        val decoded = Json.decodeFromString<FunctionCallingSchema>(encoded)
+        decoded.name shouldBe "default_json_test"
+    }
+
+    @Test
+    fun `encodeToJsonObject uses default Json when not specified`() {
+        // language=json
+        val jsonString =
+            """
+            {
+              "name": "default_json_object_test",
+              "parameters": {
+                "type": "object"
+              }
+            }
+            """.trimIndent()
+
+        val schema = json.decodeFromString<FunctionCallingSchema>(jsonString)
+
+        // Call without specifying Json instance (uses default)
+        val jsonObject = schema.encodeToJsonObject()
+
+        jsonObject["name"].shouldNotBeNull()
+        jsonObject["parameters"].shouldNotBeNull()
+    }
 }

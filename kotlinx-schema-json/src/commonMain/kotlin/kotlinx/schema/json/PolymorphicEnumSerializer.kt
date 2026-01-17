@@ -34,9 +34,7 @@ public class PolymorphicEnumSerializer : KSerializer<List<JsonElement>?> {
             decoder as? JsonDecoder
                 ?: error("PolymorphicEnumSerializer can only be used with JSON")
 
-        val element = jsonDecoder.decodeJsonElement()
-
-        return when (element) {
+        return when (val element = jsonDecoder.decodeJsonElement()) {
             is JsonArray -> element.toList()
             else -> throw SerializationException("Expected JsonArray for enum, got ${element::class.simpleName}")
         }
@@ -96,9 +94,7 @@ public class ArrayEnumSerializer : KSerializer<List<JsonArray>?> {
             decoder as? JsonDecoder
                 ?: error("ArrayEnumSerializer can only be used with JSON")
 
-        val element = jsonDecoder.decodeJsonElement()
-
-        return when (element) {
+        return when (val element = jsonDecoder.decodeJsonElement()) {
             is JsonArray -> {
                 element.map { jsonElement ->
                     when (jsonElement) {
@@ -154,9 +150,7 @@ public class ObjectEnumSerializer : KSerializer<List<JsonObject>?> {
             decoder as? JsonDecoder
                 ?: error("ObjectEnumSerializer can only be used with JSON")
 
-        val element = jsonDecoder.decodeJsonElement()
-
-        return when (element) {
+        return when (val element = jsonDecoder.decodeJsonElement()) {
             is JsonArray -> {
                 element.map { jsonElement ->
                     when (jsonElement) {
@@ -327,13 +321,17 @@ public class BooleanEnumSerializer : KSerializer<List<Boolean>?> {
         // Try string "true"/"false" or number (non-zero = true)
         val result =
             when {
-                jsonElement.isString ->
+                jsonElement.isString -> {
                     when (jsonElement.content.lowercase()) {
                         "true" -> true
                         "false" -> false
                         else -> null
                     }
-                else -> jsonElement.content.toDoubleOrNull()?.let { it != 0.0 }
+                }
+
+                else -> {
+                    jsonElement.content.toDoubleOrNull()?.let { it != 0.0 }
+                }
             }
 
         return result
