@@ -7,6 +7,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.encodeToJsonElement
@@ -146,6 +147,20 @@ public interface PropertiesContainer {
      * or `null` if no such property exists or the property is not an allOf.
      */
     public fun allOfProperty(name: String): AllOfPropertyDefinition? = properties?.get(name) as? AllOfPropertyDefinition
+
+    /**
+     * Retrieves the boolean schema definition associated with the specified property name.
+     *
+     * Note: This is different from [booleanProperty] which returns [BooleanPropertyDefinition]
+     * (a schema for boolean values). This method returns [BooleanSchemaDefinition] which
+     * represents a boolean schema (true/false as the entire schema).
+     *
+     * @param name The name of the property to fetch from the object definition.
+     * @return The corresponding [BooleanSchemaDefinition] if the property exists and is a boolean schema,
+     * or `null` if no such property exists or the property is not a boolean schema.
+     */
+    public fun booleanSchemaProperty(name: String): BooleanSchemaDefinition? =
+        properties?.get(name) as? BooleanSchemaDefinition
 }
 
 /**
@@ -170,8 +185,8 @@ public interface PropertiesContainer {
 public data class JsonSchemaDefinition(
     @SerialName($$"$id") public val id: String? = null,
     @SerialName($$"$schema") public val schema: String? = null,
-    @EncodeDefault
-    public val type: String = "object",
+    @Serializable(with = StringOrListSerializer::class) @EncodeDefault
+    public val type: List<String> = listOf("object"),
     public override val properties: Map<String, PropertyDefinition> = emptyMap(),
     public val required: List<String> = emptyList(),
     /**
@@ -202,6 +217,24 @@ public data class JsonSchemaDefinition(
  */
 @Serializable(with = PropertyDefinitionSerializer::class)
 public sealed interface PropertyDefinition
+
+/**
+ * Represents a boolean schema in JSON Schema.
+ *
+ * Boolean schemas provide simple validation semantics:
+ * - `true` schema: accepts/allows any value (always valid)
+ * - `false` schema: rejects/disallows any value (always invalid)
+ *
+ * These are commonly used in:
+ * - `items` to allow/disallow additional array items
+ * - Polymorphic compositions (oneOf/anyOf/allOf)
+ *
+ * @property value true for "always valid", false for "always invalid"
+ */
+@Serializable
+public data class BooleanSchemaDefinition(
+    val value: Boolean,
+) : PropertyDefinition
 
 /**
  * Represents a value-based property definition in a JSON Schema.
@@ -237,6 +270,7 @@ public data class StringPropertyDefinition(
     override val description: String? = null,
     override val nullable: Boolean? = null,
     val format: String? = null,
+    @Serializable(with = StringEnumSerializer::class)
     val enum: List<String>? = null,
     val minLength: Int? = null,
     val maxLength: Int? = null,
@@ -253,6 +287,8 @@ public data class NumericPropertyDefinition(
     @Serializable(with = StringOrListSerializer::class) override val type: List<String>,
     override val description: String? = null,
     override val nullable: Boolean? = null,
+    @Serializable(with = NumericEnumSerializer::class)
+    val enum: List<Double>? = null,
     val multipleOf: Double? = null,
     val minimum: Double? = null,
     val exclusiveMinimum: Double? = null,
@@ -271,6 +307,8 @@ public data class ArrayPropertyDefinition(
         listOf("array"),
     override val description: String? = null,
     override val nullable: Boolean? = null,
+    @Serializable(with = ArrayEnumSerializer::class)
+    val enum: List<JsonArray>? = null,
     val items: PropertyDefinition? = null,
     val minItems: UInt? = null,
     val maxItems: UInt? = null,
@@ -286,6 +324,8 @@ public data class ObjectPropertyDefinition(
         listOf("object"),
     override val description: String? = null,
     override val nullable: Boolean? = null,
+    @Serializable(with = ObjectEnumSerializer::class)
+    val enum: List<JsonObject>? = null,
     override val properties: Map<String, PropertyDefinition>? = null,
     val required: List<String>? = null,
     /**
@@ -310,9 +350,33 @@ public data class BooleanPropertyDefinition(
         listOf("boolean"),
     override val description: String? = null,
     override val nullable: Boolean? = null,
+    @Serializable(with = BooleanEnumSerializer::class)
+    val enum: List<Boolean>? = null,
     val default: JsonElement? = null,
     @SerialName("const") val constValue: JsonElement? = null,
 ) : ValuePropertyDefinition
+
+/**
+ * Represents a property definition without specific type constraints.
+ *
+ * Used for schemas that:
+ * - Have no type specified
+ * - Have multiple types
+ * - Have heterogeneous enums with mixed types
+ *
+ * This allows maximum flexibility while still supporting validation keywords like enum.
+ */
+@Serializable
+public data class GenericPropertyDefinition(
+    @Serializable(with = StringOrListSerializer::class)
+    val type: List<String>? = null,
+    val description: String? = null,
+    val nullable: Boolean? = null,
+    @Serializable(with = PolymorphicEnumSerializer::class)
+    val enum: List<JsonElement>? = null,
+    val default: JsonElement? = null,
+    @SerialName("const") val constValue: JsonElement? = null,
+) : PropertyDefinition
 
 /**
  * Represents a reference to another element

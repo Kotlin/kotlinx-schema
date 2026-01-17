@@ -6,7 +6,6 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import kotlinx.schema.generator.core.SchemaGeneratorService
 import kotlinx.schema.json.ArrayPropertyDefinition
-import kotlinx.schema.json.BooleanPropertyDefinition
 import kotlinx.schema.json.JsonSchema
 import kotlinx.schema.json.NumericPropertyDefinition
 import kotlinx.schema.json.ObjectPropertyDefinition
@@ -31,13 +30,15 @@ class JsonSchemaTypesTest {
 
     @Test
     fun `Should handle all numeric types correctly`() {
-        val schema = generator.generateSchema(WithNumericTypes::class)
-        val properties = schema.schema.properties
+        val jsonSchema = generator.generateSchema(WithNumericTypes::class)
+        val schema = jsonSchema.schema
+        val properties = schema.properties
 
         // Non-nullable integer types
-        val intProperty = properties["intVal"] as NumericPropertyDefinition
-        intProperty.type shouldBe listOf("integer")
-        intProperty.nullable.shouldBeNull()
+        schema.numericProperty("intVal") shouldNotBeNull {
+            type shouldBe listOf("integer")
+            nullable.shouldBeNull()
+        }
 
         val longProperty = properties["longVal"] as NumericPropertyDefinition
         longProperty.type shouldBe listOf("integer")
@@ -79,9 +80,15 @@ class JsonSchemaTypesTest {
         val statusProperty = properties["status"] as StringPropertyDefinition
         statusProperty.type shouldBe listOf("string")
         statusProperty.nullable.shouldBeNull()
-        statusProperty.enum.shouldNotBeNull()
-        statusProperty.enum!!.size shouldBe 3
-        statusProperty.enum!! shouldContainAll listOf("ACTIVE", "INACTIVE", "PENDING")
+        statusProperty.enum shouldNotBeNull {
+            size shouldBe 3
+            this shouldContainAll
+                listOf(
+                    "ACTIVE",
+                    "INACTIVE",
+                    "PENDING",
+                )
+        }
 
         val optStatusProperty = properties["optStatus"] as StringPropertyDefinition
         optStatusProperty.type shouldBe listOf("string")

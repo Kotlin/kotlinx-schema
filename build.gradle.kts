@@ -1,3 +1,5 @@
+import org.gradle.internal.impldep.org.jsoup.nodes.Document
+
 plugins {
     kotlin("plugin.serialization") version libs.versions.kotlin apply false
     alias(libs.plugins.androidLibrary) apply false
