@@ -15,7 +15,7 @@ langchain4j = "1.10.0"
 logging = "7.0.14"
 mockk = "1.14.7"
 slf4j = "2.0.17"
-vanniktechMavenPublish = "0.35.0"
+vanniktechMavenPublish = "0.36.0"
 
 [libraries]
 kotlin-logging = { group = "io.github.oshai", name = "kotlin-logging", version.ref = "logging" }
