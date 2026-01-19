@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0          http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example</groupId>
+    <artifactId>maven-kotlinx-schema-ksp</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <description>
+        Maven project is a Demo for kotlinx-schema-ksp, a Kotlin KSP symbol processor,
+        that generates JSON schemas for Kotlin classes.
+    </description>
+
+    <properties>
+        <kotlin.version>2.3.0</kotlin.version>
+        <maven.compiler.release>25</maven.compiler.release>
+        <ksp.plugin.version>0.2.0</ksp.plugin.version>
+        <kotlinx-schema.version>0.0.4</kotlinx-schema.version>
+        <kotest.version>6.0.7</kotest.version>
+        <kotlinx-serialization.version>1.10.0-RC</kotlinx-serialization.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jetbrains.kotlinx</groupId>
+            <artifactId>kotlinx-schema-annotations-jvm</artifactId>
+            <version>${kotlinx-schema.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlinx</groupId>
+            <artifactId>kotlinx-serialization-json-jvm</artifactId>
+            <version>${kotlinx-serialization.version}</version>
+        </dependency>
+
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-test-junit5</artifactId>
+            <version>${kotlin.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.kotest</groupId>
+            <artifactId>kotest-assertions-core-jvm</artifactId>
+            <version>${kotest.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.kotest</groupId>
+            <artifactId>kotest-assertions-json-jvm</artifactId>
+            <version>${kotest.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>me.kpavlov.ksp.maven</groupId>
+                <artifactId>ksp-maven-plugin</artifactId>
+                <version>${ksp.plugin.version}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.jetbrains.kotlinx</groupId>
+                        <artifactId>kotlinx-schema-ksp</artifactId>
+                        <version>${kotlinx-schema.version}</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>process-main-sources</id>
+                        <goals>
+                            <goal>process</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                    </execution>
+                    <execution>
+                        <id>process-test-sources</id>
+                        <goals>
+                            <goal>process-test</goal>
+                        </goals>
+                        <phase>generate-test-sources</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <version>${kotlin.version}</version>
+                <executions>
+                    <execution>
+                        <id>compile</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <phase>compile</phase>
+                    </execution>
+                    <execution>
+                        <id>test-compile</id>
+                        <goals>
+                            <goal>test-compile</goal>
+                        </goals>
+                        <phase>test-compile</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.4</version>
+            </plugin>
+        </plugins>
+        <sourceDirectory>src/main/kotlin</sourceDirectory>
+        <testSourceDirectory>src/test/kotlin</testSourceDirectory>
+    </build>
+</project>

@@ -56,3 +56,10 @@ integration-test:clean publish
 	@echo "🧪🧩 Starting Integration tests..."
 	@(cd gradle-plugin-integration-tests && ./gradlew clean kotlinUpgradePackageLock build -PkotlinxSchemaVersion=1-SNAPSHOT --no-daemon --stacktrace)
 	@echo "✅ Integration tests complete!"
+
+.PHONY: examples
+examples:
+	@echo "Running examples..."
+	@(cd examples/maven-ksp && mvn clean package)
+	@(cd examples/gradle-google-ksp && ./gradlew clean build --no-daemon --rerun-tasks)
+	@echo "✅ Examples complete!"

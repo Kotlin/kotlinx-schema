@@ -7,7 +7,7 @@ updates:
     directories: 
     - "/"
     - "/gradle-plugin-integration-tests"
-    - "/examples/ksp-gradle"
+    - "/examples/gradle-google-ksp"
     schedule:
       interval: "daily"
     # Ignoring
@@ -15,6 +15,14 @@ updates:
       # Kotlin majority updates
       - dependency-name: "org.jetbrains.kotlin*"
         update-types: [ "version-update:semver-major" ]
+    labels:
+      - "dependencies"
+
+  - package-ecosystem: "maven"
+    directories:
+      - "/examples/maven-ksp"
+    schedule:
+      interval: "daily"
     labels:
       - "dependencies"
 
