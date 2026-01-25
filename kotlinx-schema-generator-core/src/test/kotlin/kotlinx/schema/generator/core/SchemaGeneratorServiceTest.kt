@@ -14,15 +14,15 @@ class SchemaGeneratorServiceTest {
         override fun schemaType(): KClass<String> = String::class
 
         override fun generateSchema(target: Int): String {
-            error("Not yet implemented")
+            error("Not needed for test")
         }
 
         override fun generateSchemaString(target: Int): String {
-            error("Not yet implemented")
+            error("Not needed for test")
         }
 
         override fun encodeToString(schema: String): String {
-            error("Not yet implemented")
+            error("Not needed for test")
         }
     }
 

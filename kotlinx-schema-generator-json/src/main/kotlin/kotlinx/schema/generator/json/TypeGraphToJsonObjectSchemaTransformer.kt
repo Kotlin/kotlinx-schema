@@ -1,5 +1,6 @@
 package kotlinx.schema.generator.json
 
+import kotlinx.schema.generator.core.ir.AbstractTypeGraphTransformer
 import kotlinx.schema.generator.core.ir.EnumNode
 import kotlinx.schema.generator.core.ir.ListNode
 import kotlinx.schema.generator.core.ir.MapNode
@@ -8,7 +9,6 @@ import kotlinx.schema.generator.core.ir.PolymorphicNode
 import kotlinx.schema.generator.core.ir.PrimitiveKind
 import kotlinx.schema.generator.core.ir.PrimitiveNode
 import kotlinx.schema.generator.core.ir.TypeGraph
-import kotlinx.schema.generator.core.ir.TypeGraphTransformer
 import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeNode
 import kotlinx.schema.generator.core.ir.TypeRef
@@ -21,7 +21,10 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
 /** Emits JSON Schema from Schema IR following the Standard rules used previously. */
-public class TypeGraphToJsonObjectSchemaTransformer : TypeGraphTransformer<JsonObject> {
+public class TypeGraphToJsonObjectSchemaTransformer :
+    AbstractTypeGraphTransformer<JsonObject, JsonSchemaTransformerConfig>(
+        config = JsonSchemaTransformerConfig.Default,
+    ) {
     @Suppress("CyclomaticComplexMethod", "LongMethod", "NestedBlockDepth")
     override fun transform(
         graph: TypeGraph,
@@ -82,9 +85,9 @@ public class TypeGraphToJsonObjectSchemaTransformer : TypeGraphTransformer<JsonO
             return if (!nullable) base else base.withNullableTypeUnion()
         }
 
-        emitNode = { id, node ->
+        emitNode = { _, node ->
             when (node) {
-                is PrimitiveNode ->
+                is PrimitiveNode -> {
                     buildJsonObject {
                         put(
                             JsonSchemaConsts.Keys.TYPE,
@@ -98,15 +101,17 @@ public class TypeGraphToJsonObjectSchemaTransformer : TypeGraphTransformer<JsonO
                         )
                         node.description?.let { put(JsonSchemaConsts.Keys.DESCRIPTION, it) }
                     }
+                }
 
-                is EnumNode ->
+                is EnumNode -> {
                     buildJsonObject {
                         put(JsonSchemaConsts.Keys.TYPE, JsonSchemaConsts.Types.STRING)
                         put(JsonSchemaConsts.Keys.ENUM, JsonArray(node.entries.map { JsonPrimitive(it) }))
                         node.description?.let { put(JsonSchemaConsts.Keys.DESCRIPTION, it) }
                     }
+                }
 
-                is ObjectNode ->
+                is ObjectNode -> {
                     buildJsonObject {
                         put(JsonSchemaConsts.Keys.TYPE, JsonSchemaConsts.Types.OBJECT)
                         val props =
@@ -131,22 +136,25 @@ public class TypeGraphToJsonObjectSchemaTransformer : TypeGraphTransformer<JsonO
                         put(JsonSchemaConsts.Keys.ADDITIONAL_PROPERTIES, JsonPrimitive(false))
                         node.description?.let { put(JsonSchemaConsts.Keys.DESCRIPTION, it) }
                     }
+                }
 
-                is ListNode ->
+                is ListNode -> {
                     buildJsonObject {
                         put(JsonSchemaConsts.Keys.TYPE, JsonSchemaConsts.Types.ARRAY)
                         put(JsonSchemaConsts.Keys.ITEMS, emitRef(node.element))
                         node.description?.let { put(JsonSchemaConsts.Keys.DESCRIPTION, it) }
                     }
+                }
 
-                is MapNode ->
+                is MapNode -> {
                     buildJsonObject {
                         put(JsonSchemaConsts.Keys.TYPE, JsonSchemaConsts.Types.OBJECT)
                         put(JsonSchemaConsts.Keys.ADDITIONAL_PROPERTIES, emitRef(node.value))
                         node.description?.let { put(JsonSchemaConsts.Keys.DESCRIPTION, it) }
                     }
+                }
 
-                is PolymorphicNode ->
+                is PolymorphicNode -> {
                     buildJsonObject {
                         put(
                             JsonSchemaConsts.Keys.ONE_OF,
@@ -165,6 +173,7 @@ public class TypeGraphToJsonObjectSchemaTransformer : TypeGraphTransformer<JsonO
                         )
                         node.description?.let { put(JsonSchemaConsts.Keys.DESCRIPTION, it) }
                     }
+                }
             }
         }
 
@@ -205,12 +214,24 @@ public class TypeGraphToJsonObjectSchemaTransformer : TypeGraphTransformer<JsonO
                     }
                 }
 
-                is TypeRef.Inline ->
+                is TypeRef.Inline -> {
                     when (val n = ref.node) {
-                        is PrimitiveNode -> primitiveWithNullability(n, ref.nullable)
-                        is EnumNode -> enumWithNullability(n, ref.nullable)
-                        is ListNode -> listWithNullability(n, ref.nullable)
-                        is MapNode -> mapWithNullability(n, ref.nullable)
+                        is PrimitiveNode -> {
+                            primitiveWithNullability(n, ref.nullable)
+                        }
+
+                        is EnumNode -> {
+                            enumWithNullability(n, ref.nullable)
+                        }
+
+                        is ListNode -> {
+                            listWithNullability(n, ref.nullable)
+                        }
+
+                        is MapNode -> {
+                            mapWithNullability(n, ref.nullable)
+                        }
+
                         is ObjectNode -> {
                             val base = emitNode(TypeId(n.name), n)
                             if (ref.nullable) wrapNullableType(base) else base
@@ -240,6 +261,7 @@ public class TypeGraphToJsonObjectSchemaTransformer : TypeGraphTransformer<JsonO
                             }
                         }
                     }
+                }
             }
         }
 

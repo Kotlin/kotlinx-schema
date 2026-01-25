@@ -18,7 +18,7 @@ class AbstractSchemaGeneratorTest {
     private lateinit var introspector: SchemaIntrospector<KClass<*>>
 
     @MockK
-    private lateinit var emitter: TypeGraphTransformer<Map<String, String>>
+    private lateinit var emitter: TypeGraphTransformer<Map<String, String>, *>
 
     @MockK
     private lateinit var typeGraph: TypeGraph
@@ -31,7 +31,7 @@ class AbstractSchemaGeneratorTest {
     fun setUp() {
         generator =
             object : AbstractSchemaGenerator<KClass<*>, Map<String, String>>(introspector, emitter) {
-                override fun getRootName(target: KClass<*>): String = target.qualifiedName!!
+                override fun getRootName(target: KClass<*>): String = requireNotNull(target.qualifiedName)
 
                 override fun targetType(): KClass<KClass<*>> = KClass::class
 

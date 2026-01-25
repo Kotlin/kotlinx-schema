@@ -3,7 +3,7 @@
 .PHONY: build
 build:clean
 	@echo "🔨 Coverage reports..."
-	@./gradlew \
+	@./gradlew --rerun-tasks \
 		build \
 		koverLog koverXmlReport koverHtmlReport
 	@echo "✅ Build complete!"

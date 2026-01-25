@@ -16,7 +16,7 @@ class FunctionCallingSchemaGeneratorTest {
                 FunctionCallingSchema::class,
             ),
         ) {
-            "ReflectionFunctionCallingSchemaGenerator must be registered"
+            "${ReflectionFunctionCallingSchemaGenerator::class} must be registered"
         }
 
     object SimplePrimitives {

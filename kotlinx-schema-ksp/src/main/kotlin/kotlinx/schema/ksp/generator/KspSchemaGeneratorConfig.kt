@@ -20,7 +20,7 @@ import kotlinx.serialization.KSerializer
  */
 internal data class KspSchemaGeneratorConfig<T : Any, R : Any>(
     val introspector: SchemaIntrospector<T>,
-    val transformer: TypeGraphTransformer<R>,
+    val transformer: TypeGraphTransformer<R, *>,
     val serializer: KSerializer<R>,
     val jsonPrettyPrint: Boolean,
     val jsonEncodeDefaults: Boolean,
