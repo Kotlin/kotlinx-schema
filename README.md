@@ -12,7 +12,6 @@
 [![JVM](https://img.shields.io/badge/JVM-17+-red.svg?logo=jvm)](http://java.com)
 [![License](https://img.shields.io/badge/License-Apache_2.0-yellow.svg)](LICENSE)
 
-
 # kotlinx-schema
 
 **Generate JSON schemas and LLM function calling schemas from Kotlin code — including classes you don't own.**
@@ -20,6 +19,10 @@
 > [!IMPORTANT]
 > Given the highly experimental nature of this work, nothing is settled in stone.
 > [Kotlinx-schema-json](kotlinx-schema-json) might eventually be moved to [kotlinx-serialization](https://github.com/Kotlin/kotlinx.serialization).
+
+Quick Links:
+
+- [Project Architecture](docs/architecture.md)
 
 ## Key Features
 
@@ -1244,89 +1247,6 @@ val schema = jsonSchema {
 - Serialization/deserialization examples
 - Function calling schema for LLM APIs
 
-## Project architecture
-
-```mermaid
-C4Context
-    title kotlinx-schema
-
-    Boundary(lib, "kotlinx-schema") {
-
-        System(kxsGenCore, "kotlinx-schema-generator-core")
-        System(kxsAnnotations, "kotlinx-schema-annotations")
-        System(kxsGenJson, "kotlinx-schema-generator-json")
-        System(kxsJsn, "kotlinx-schema-json")
-        System(kxsKsp, "kotlinx-schema-ksp")
-
-        System(kxsGradle, "kotlinx-schema-gradle-plugin")
-    }
-
-    Rel(kxsGenJson, kxsGenCore, "uses")
-    Rel(kxsGenJson, kxsJsn, "uses")
-    Rel(kxsGenCore, kxsAnnotations, "knows")
-    Rel(kxsKsp, kxsGenJson, "uses")
-    
-    Rel(kxsGradle, kxsKsp, "uses")
-
-    Boundary(userCode, "User's Application Code") {
-        System_Ext(userModels, "User Domain Models")
-        System_Ext(userModelsExt, "User Models Extensions")
-        Rel(userModelsExt, userModels, "uses")
-    }
-
-    Rel(userModels, kxsAnnotations, "uses")
-    Rel(kxsKsp, userModelsExt, "generates")
-    
-```
-
-Top-level modules you might interact with:
-
-- **kotlinx-schema-annotations** — runtime annotations: @Schema and @Description
-- **kotlinx-schema-json** — type-safe models and DSL for building JSON Schema definitions programmatically
-- **kotlinx-schema-generator-core** — internal representation (IR) for schema descriptions, introspection utils, generator interfaces
-- **kotlinx-schema-generator-json** — JSON Schema transformer from the IR
-- **kotlinx-schema-ksp** — KSP processor that scans your code and generates the extension properties:
-    - `KClass<T>.jsonSchema: JsonObject`
-    - `KClass<T>.jsonSchemaString: String`
-- **kotlinx-schema-gradle-plugin** — Gradle plugin (id: "org.jetbrains.kotlinx.schema.ksp") that:
-    - Applies KSP automatically
-    - Adds the KSP processor dependency
-    - Wires generated sources into your source sets
-    - Sets up multiplatform task dependencies
-- **gradle-plugin-integration-tests** — Independent build that includes the main project; demonstrates real MPP usage and integration testing
-- **ksp-integration-tests** — KSP end‑to‑end tests for generation without the Gradle plugin
-
-### Workflow
-
-```mermaid
-sequenceDiagram
-    actor C as Client
-    participant S as SchemaGeneratorService
-    participant G as SchemaGenerator
-    participant I as SchemaIntrospector
-    participant T as TypeGraphTransformer
-    
-    C->>S: getGenerator(T::class, R::class)
-    S-->>G: find
-    activate G
-    S-->>C: SchemaGenerator
-    C->>G: generate(T) : R?
-
-    G->>I: introspect(T)
-    I-->>G: TypeGraph
-
-    G->>T: transform(graph = TypeGraph, rootName)
-    T-->>G: schema (R)
-    G-->>C: schema (R)
-    deactivate G
-```
-1. _Client_ (KSP Processor or Java class) calls _SchemaGeneratorService_ to lookup _SchemaGenerator_ 
-   by target type T and expected schema class. _SchemaGeneratorService_ returns _SchemaGenerator_, if any.
-2. _Client_ (KSP Processor or Java class) calls _SchemaGenerator_ to generate a Schema string representation, 
-and, optionally, object a Schema string representation.
-3. SchemaGenerator invokes SchemaIntrospector to convert an object into _TypeGraph_
-4. _TypeGraphTransformer_ converts a _TypeGraph_ to a target representation (e.g., JSON Schema)
-   and returns it to SchemaGenerator
 
 ## Building and Contributing
 
