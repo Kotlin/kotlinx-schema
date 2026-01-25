@@ -21,29 +21,29 @@ import kotlin.reflect.KClass
  * val schema = generator.generateSchema(::greet)
  * ```
  */
-public class ReflectionFunctionCallingSchemaGenerator
-    @JvmOverloads
-    public constructor(
-        private val json: Json = Json,
-    ) : AbstractSchemaGenerator<KCallable<*>, FunctionCallingSchema>(
-            introspector = ReflectionFunctionIntrospector,
-            typeGraphTransformer = TypeGraphToFunctionCallingSchemaTransformer(json),
-        ) {
-        override fun getRootName(target: KCallable<*>): String = target.name
+public class ReflectionFunctionCallingSchemaGenerator(
+    private val json: Json,
+) : AbstractSchemaGenerator<KCallable<*>, FunctionCallingSchema>(
+        introspector = ReflectionFunctionIntrospector,
+        typeGraphTransformer = TypeGraphToFunctionCallingSchemaTransformer(json),
+    ) {
+    public constructor() : this(json = Json { encodeDefaults = false })
 
-        override fun targetType(): KClass<KCallable<*>> = KCallable::class
+    override fun getRootName(target: KCallable<*>): String = target.name
 
-        override fun schemaType(): KClass<FunctionCallingSchema> = FunctionCallingSchema::class
+    override fun targetType(): KClass<KCallable<*>> = KCallable::class
 
-        override fun encodeToString(schema: FunctionCallingSchema): String = json.encodeToString(schema)
+    override fun schemaType(): KClass<FunctionCallingSchema> = FunctionCallingSchema::class
 
-        public companion object {
-            /**
-             * A default instance of [ReflectionFunctionCallingSchemaGenerator] with default configuration.
-             *
-             * This instance can be used to generate tool schemas from Kotlin functions
-             * without requiring explicit instantiation.
-             */
-            public val Default: ReflectionFunctionCallingSchemaGenerator = ReflectionFunctionCallingSchemaGenerator()
-        }
+    override fun encodeToString(schema: FunctionCallingSchema): String = json.encodeToString(schema)
+
+    public companion object {
+        /**
+         * A default instance of [ReflectionFunctionCallingSchemaGenerator] with default configuration.
+         *
+         * This instance can be used to generate tool schemas from Kotlin functions
+         * without requiring explicit instantiation.
+         */
+        public val Default: ReflectionFunctionCallingSchemaGenerator = ReflectionFunctionCallingSchemaGenerator()
     }
+}

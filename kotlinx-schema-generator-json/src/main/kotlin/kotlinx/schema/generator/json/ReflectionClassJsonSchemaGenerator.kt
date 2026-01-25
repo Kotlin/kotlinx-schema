@@ -3,6 +3,7 @@ package kotlinx.schema.generator.json
 import kotlinx.schema.generator.core.AbstractSchemaGenerator
 import kotlinx.schema.generator.reflect.ReflectionIntrospector
 import kotlinx.schema.json.JsonSchema
+import kotlinx.serialization.json.Json
 import kotlin.reflect.KClass
 
 /**
@@ -13,34 +14,46 @@ import kotlin.reflect.KClass
  * with a configurable `JsonSchemaConfig` to define schema generation behavior.
  *
  * @constructor Creates an instance of `ReflectionClassJsonSchemaGenerator`.
- * @param jsonSchemaConfig Configuration for generating JSON Schemas, such as formatting details
- * and handling of optional nullable properties. Defaults to [JsonSchemaConfig.Default].
+ * @param config Configuration for generating JSON Schemas, such as formatting details
+ * and handling of optional nullable properties. Defaults to [JsonSchemaTransformerConfig.Default].
  */
-public class ReflectionClassJsonSchemaGenerator
-    @JvmOverloads
-    public constructor(
-        private val jsonSchemaConfig: JsonSchemaConfig = JsonSchemaConfig.Default,
-    ) : AbstractSchemaGenerator<KClass<out Any>, JsonSchema>(
-            introspector = ReflectionIntrospector,
-            typeGraphTransformer = TypeGraphToJsonSchemaTransformer(config = jsonSchemaConfig),
-        ) {
-        override fun getRootName(target: KClass<out Any>): String = target.qualifiedName ?: "Anonymous"
+public class ReflectionClassJsonSchemaGenerator(
+    private val json: Json,
+    config: JsonSchemaTransformerConfig,
+) : AbstractSchemaGenerator<KClass<out Any>, JsonSchema>(
+        introspector = ReflectionIntrospector,
+        typeGraphTransformer =
+            TypeGraphToJsonSchemaTransformer(
+                config = config,
+                json = json,
+            ),
+    ) {
+    public constructor() : this(
+        json = Json { encodeDefaults = false },
+        config = JsonSchemaTransformerConfig.Default,
+    )
 
-        override fun targetType(): KClass<KClass<out Any>> = KClass::class
+    override fun getRootName(target: KClass<out Any>): String = target.qualifiedName ?: "Anonymous"
 
-        override fun schemaType(): KClass<JsonSchema> = JsonSchema::class
+    override fun targetType(): KClass<KClass<out Any>> = KClass::class
 
-        override fun encodeToString(schema: JsonSchema): String = jsonSchemaConfig.json.encodeToString(schema)
+    override fun schemaType(): KClass<JsonSchema> = JsonSchema::class
 
-        public companion object {
-            /**
-             * A default instance of the [ReflectionClassJsonSchemaGenerator] class, preconfigured
-             * with the default settings defined in [JsonSchemaConfig.Default].
-             *
-             * This instance can be used to generate JSON schema representations of Kotlin
-             * objects using reflection-based introspection. It simplifies the creation
-             * of schemas without requiring explicit configuration.
-             */
-            public val Default: ReflectionClassJsonSchemaGenerator = ReflectionClassJsonSchemaGenerator()
-        }
+    override fun encodeToString(schema: JsonSchema): String = json.encodeToString(schema)
+
+    public companion object {
+        /**
+         * A default instance of the [ReflectionClassJsonSchemaGenerator] class, preconfigured
+         * with the default settings defined in [JsonSchemaTransformerConfig.Default].
+         *
+         * This instance can be used to generate JSON schema representations of Kotlin
+         * objects using reflection-based introspection. It simplifies the creation
+         * of schemas without requiring explicit configuration.
+         */
+        public val Default: ReflectionClassJsonSchemaGenerator =
+            ReflectionClassJsonSchemaGenerator(
+                json = Json { encodeDefaults = false },
+                config = JsonSchemaTransformerConfig.Default,
+            )
     }
+}

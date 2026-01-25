@@ -1,5 +1,6 @@
 package kotlinx.schema.generator.json
 
+import kotlinx.schema.generator.core.ir.AbstractTypeGraphTransformer
 import kotlinx.schema.generator.core.ir.DefaultPresence
 import kotlinx.schema.generator.core.ir.EnumNode
 import kotlinx.schema.generator.core.ir.ListNode
@@ -9,7 +10,6 @@ import kotlinx.schema.generator.core.ir.PolymorphicNode
 import kotlinx.schema.generator.core.ir.PrimitiveKind
 import kotlinx.schema.generator.core.ir.PrimitiveNode
 import kotlinx.schema.generator.core.ir.TypeGraph
-import kotlinx.schema.generator.core.ir.TypeGraphTransformer
 import kotlinx.schema.generator.core.ir.TypeNode
 import kotlinx.schema.generator.core.ir.TypeRef
 import kotlinx.schema.json.AnyOfPropertyDefinition
@@ -28,32 +28,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.encodeToJsonElement
 
-public data class JsonSchemaConfig(
-    /**
-     * Controls how optional nullable properties are represented in JSON Schema.
-     *
-     * When `true`: `val age: Int? = null` becomes:
-     *   - Included in "required" array
-     *   - Type is `["integer", "null"]`
-     *   - `"default": null` is set
-     *
-     * When false (default): Such properties are omitted from "required"
-     */
-    val treatNullableOptionalAsRequired: Boolean = false,
-    val json: Json = Json,
-) {
-    public companion object {
-        /**
-         * Default configuration instance for JSON Schema generation.
-         *
-         * Provides a preconfigured instance of [JsonSchemaConfig] with the default settings.
-         *
-         * Can be used as a baseline configuration or as a convenient default for most use cases.
-         */
-        public val Default: JsonSchemaConfig = JsonSchemaConfig()
-    }
-}
-
 /**
  * Transforms [TypeGraph] IR into JSON Schema Draft 2020-12 format.
  *
@@ -61,16 +35,17 @@ public data class JsonSchemaConfig(
  * Supports primitives, collections, objects, enums, and sealed hierarchies with discriminators.
  * Nullable sealed types use `anyOf` with null option.
  *
- * @property config JSON Schema generation configuration
  * @param json JSON encoder for schema elements
  */
 @Suppress("TooManyFunctions")
 public class TypeGraphToJsonSchemaTransformer
     @JvmOverloads
     public constructor(
-        public val config: JsonSchemaConfig = JsonSchemaConfig.Default,
+        public override val config: JsonSchemaTransformerConfig,
         private val json: Json = Json { encodeDefaults = false },
-    ) : TypeGraphTransformer<JsonSchema> {
+    ) : AbstractTypeGraphTransformer<JsonSchema, JsonSchemaTransformerConfig>(
+            config = config,
+        ) {
         /**
          * Transforms a type graph into a JSON Schema.
          *
@@ -251,6 +226,21 @@ public class TypeGraphToJsonSchemaTransformer
                     )
                 }
             }
+
+        /**
+         * Converts all nodes in the graph to a map of definitions.
+         * Used by TypeGraphToJsonObjectSchemaTransformer to populate $defs.
+         *
+         * @param graph Type graph with all nodes
+         * @return Map of type IDs to their property definitions
+         */
+        internal fun convertAllNodesToDefinitions(graph: TypeGraph): Map<String, PropertyDefinition> {
+            val definitions = mutableMapOf<String, PropertyDefinition>()
+            graph.nodes.forEach { (id, node) ->
+                definitions[id.value] = convertNode(node, nullable = false, graph, definitions)
+            }
+            return definitions
+        }
 
         /**
          * Converts object nodes (classes, data classes) to object property definitions.

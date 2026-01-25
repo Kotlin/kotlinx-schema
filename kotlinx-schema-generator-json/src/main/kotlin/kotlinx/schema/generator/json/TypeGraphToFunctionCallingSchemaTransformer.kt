@@ -1,5 +1,6 @@
 package kotlinx.schema.generator.json
 
+import kotlinx.schema.generator.core.ir.AbstractTypeGraphTransformer
 import kotlinx.schema.generator.core.ir.EnumNode
 import kotlinx.schema.generator.core.ir.ListNode
 import kotlinx.schema.generator.core.ir.MapNode
@@ -7,7 +8,6 @@ import kotlinx.schema.generator.core.ir.ObjectNode
 import kotlinx.schema.generator.core.ir.PrimitiveKind
 import kotlinx.schema.generator.core.ir.PrimitiveNode
 import kotlinx.schema.generator.core.ir.TypeGraph
-import kotlinx.schema.generator.core.ir.TypeGraphTransformer
 import kotlinx.schema.generator.core.ir.TypeNode
 import kotlinx.schema.generator.core.ir.TypeRef
 import kotlinx.schema.json.ArrayPropertyDefinition
@@ -20,6 +20,7 @@ import kotlinx.schema.json.StringPropertyDefinition
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.schema.generator.json.FunctionCallingSchemaTransformerConfig.Companion.Default as DefaultConfig
 
 /**
  * Transforms a [TypeGraph] into a [FunctionCallingSchema] for tool/function schema representation.
@@ -35,9 +36,12 @@ public class TypeGraphToFunctionCallingSchemaTransformer
     @JvmOverloads
     public constructor(
         private val json: Json = Json { encodeDefaults = false },
-        private val requiredFieldStrategy: RequiredFieldStrategy = RequiredFieldStrategy.ALL_REQUIRED,
-    ) : TypeGraphTransformer<FunctionCallingSchema> {
-        override fun transform(
+        public override val config: FunctionCallingSchemaTransformerConfig = DefaultConfig,
+    ) : AbstractTypeGraphTransformer<
+            FunctionCallingSchema,
+            FunctionCallingSchemaTransformerConfig,
+        >(config = config) {
+        public override fun transform(
             graph: TypeGraph,
             rootName: String,
         ): FunctionCallingSchema =
@@ -84,7 +88,7 @@ public class TypeGraphToFunctionCallingSchemaTransformer
                 }
 
             val requiredFields =
-                when (requiredFieldStrategy) {
+                when (config.requiredFieldStrategy) {
                     RequiredFieldStrategy.ALL_REQUIRED -> {
                         // All properties are required
                         node.properties.map { it.name }
@@ -256,7 +260,7 @@ public class TypeGraphToFunctionCallingSchemaTransformer
                 }
 
             val requiredFields =
-                when (requiredFieldStrategy) {
+                when (config.requiredFieldStrategy) {
                     RequiredFieldStrategy.ALL_REQUIRED -> {
                         // All properties are required
                         node.properties.map { it.name }

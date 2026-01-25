@@ -2,7 +2,6 @@ package kotlinx.schema.generator.json
 
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.nulls.shouldBeNull
-import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import kotlinx.schema.json.ArrayPropertyDefinition
 import kotlinx.schema.json.BooleanPropertyDefinition
@@ -18,7 +17,7 @@ import kotlin.test.Test
 class JsonSchemaConfigTest {
     @Test
     fun `treatNullableOptionalAsRequired true should add null to type array`() {
-        val config = JsonSchemaConfig(treatNullableOptionalAsRequired = true)
+        val config = JsonSchemaTransformerConfig(treatNullableOptionalAsRequired = true)
         val transformer = TypeGraphToJsonSchemaTransformer(config)
         val typeGraph =
             kotlinx.schema.generator.reflect.ReflectionIntrospector
@@ -48,7 +47,7 @@ class JsonSchemaConfigTest {
 
     @Test
     fun `treatNullableOptionalAsRequired false should not include optionals in required`() {
-        val config = JsonSchemaConfig(treatNullableOptionalAsRequired = false)
+        val config = JsonSchemaTransformerConfig(treatNullableOptionalAsRequired = false)
         val transformer = TypeGraphToJsonSchemaTransformer(config)
         val typeGraph =
             kotlinx.schema.generator.reflect.ReflectionIntrospector
@@ -64,7 +63,7 @@ class JsonSchemaConfigTest {
 
     @Test
     fun `treatNullableOptionalAsRequired should handle all property types`() {
-        val config = JsonSchemaConfig(treatNullableOptionalAsRequired = true)
+        val config = JsonSchemaTransformerConfig(treatNullableOptionalAsRequired = true)
         val transformer = TypeGraphToJsonSchemaTransformer(config)
         val typeGraph =
             kotlinx.schema.generator.reflect.ReflectionIntrospector
@@ -105,8 +104,8 @@ class JsonSchemaConfigTest {
 
     @Test
     fun `Default config should have correct defaults`() {
-        val config = JsonSchemaConfig.Default
+        val config = JsonSchemaTransformerConfig.Default
         config.treatNullableOptionalAsRequired shouldBe false
-        config.json.shouldNotBeNull()
+        config.requiredFieldStrategy shouldBe RequiredFieldStrategy.ALL_REQUIRED
     }
 }

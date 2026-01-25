@@ -14,7 +14,7 @@ import kotlinx.schema.generator.core.ir.TypeGraphTransformer
  */
 public abstract class AbstractSchemaGenerator<T : Any, R : Any>(
     protected val introspector: SchemaIntrospector<T>,
-    protected val typeGraphTransformer: TypeGraphTransformer<R>,
+    protected val typeGraphTransformer: TypeGraphTransformer<R, *>,
 ) : SchemaGenerator<T, R> {
     protected abstract fun getRootName(target: T): String
 
