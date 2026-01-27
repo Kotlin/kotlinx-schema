@@ -88,26 +88,21 @@ public class TypeGraphToFunctionCallingSchemaTransformer
                 }
 
             val requiredFields =
-                when (config.requiredFieldStrategy) {
-                    RequiredFieldStrategy.ALL_REQUIRED -> {
-                        // All properties are required
-                        node.properties.map { it.name }
-                    }
-
-                    RequiredFieldStrategy.NON_NULLABLE_REQUIRED -> {
-                        // Only non-nullable properties are required
-                        node.properties.filter { !it.type.nullable }.map { it.name }
-                    }
-
-                    RequiredFieldStrategy.USE_DEFAULT_PRESENCE -> {
-                        // Use the required set from the ObjectNode (respects DefaultPresence)
-                        node.required.toList()
-                    }
+                if (config.respectDefaultPresence) {
+                    // Use the required set from the ObjectNode (respects DefaultPresence)
+                    node.required.toList()
+                } else if (config.requireNullableFields) {
+                    // All properties are required (strict mode)
+                    node.properties.map { it.name }
+                } else {
+                    // Only non-nullable properties are required
+                    node.properties.filter { !it.type.nullable }.map { it.name }
                 }
 
             return FunctionCallingSchema(
                 name = node.name,
                 description = node.description ?: "",
+                strict = if (config.strictSchemaFlag) true else null,
                 parameters =
                     ObjectPropertyDefinition(
                         properties = properties,
@@ -260,21 +255,15 @@ public class TypeGraphToFunctionCallingSchemaTransformer
                 }
 
             val requiredFields =
-                when (config.requiredFieldStrategy) {
-                    RequiredFieldStrategy.ALL_REQUIRED -> {
-                        // All properties are required
-                        node.properties.map { it.name }
-                    }
-
-                    RequiredFieldStrategy.NON_NULLABLE_REQUIRED -> {
-                        // Only non-nullable properties are required
-                        node.properties.filter { !it.type.nullable }.map { it.name }
-                    }
-
-                    RequiredFieldStrategy.USE_DEFAULT_PRESENCE -> {
-                        // Use the required set from the ObjectNode (respects DefaultPresence)
-                        node.required.toList()
-                    }
+                if (config.respectDefaultPresence) {
+                    // Use the required set from the ObjectNode (respects DefaultPresence)
+                    node.required.toList()
+                } else if (config.requireNullableFields) {
+                    // All properties are required (strict mode)
+                    node.properties.map { it.name }
+                } else {
+                    // Only non-nullable properties are required
+                    node.properties.filter { !it.type.nullable }.map { it.name }
                 }
 
             return ObjectPropertyDefinition(

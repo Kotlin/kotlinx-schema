@@ -98,7 +98,7 @@ public class TypeGraphToJsonSchemaTransformer
 
             return JsonSchema(
                 name = rootName,
-                strict = false,
+                strict = config.strictSchemaFlag,
                 description = null,
                 schema = schemaDefinition,
             )
@@ -252,60 +252,61 @@ public class TypeGraphToJsonSchemaTransformer
             graph: TypeGraph,
             definitions: MutableMap<String, PropertyDefinition>,
         ): PropertyDefinition {
-            // Build required list based on config and DefaultPresence
+            // Build required list based on config flags
             val required =
-                if (config.treatNullableOptionalAsRequired) {
-                    // Include all properties in required
-                    node.properties.map { it.name }
-                } else {
-                    // Only include properties without defaults (Required) in required list
-                    node.properties
-                        .filter { property ->
-                            property.defaultPresence == DefaultPresence.Required
-                        }.map { it.name }
+                when {
+                    config.respectDefaultPresence -> {
+                        // Use introspector's DefaultPresence: only fields without defaults are required
+                        node.properties
+                            .filter { property ->
+                                property.defaultPresence == DefaultPresence.Required
+                            }.map { it.name }
+                    }
+
+                    config.requireNullableFields -> {
+                        // All fields required (including nullables) - strict mode
+                        node.properties.map { it.name }
+                    }
+
+                    else -> {
+                        // Only non-nullable fields required
+                        node.properties
+                            .filter { property ->
+                                !property.type.nullable
+                            }.map { it.name }
+                    }
                 }.toSet()
 
             // Convert all properties
             val properties =
                 node.properties.associate { property ->
-                    val isNullable =
-                        when (val typeRef = property.type) {
-                            is TypeRef.Inline -> typeRef.nullable
-                            is TypeRef.Ref -> typeRef.nullable
-                        }
                     val hasDefault = property.defaultPresence != DefaultPresence.Required
+                    val isRequired = property.name in required
 
                     val propertyDef = convertTypeRef(property.type, graph, definitions)
 
-                    // Adjust based on config and property characteristics
-                    val adjustedDef =
-                        when {
-                            // When treatNullableOptionalAsRequired=true and property has default (is optional):
-                            // add "null" to type array and set default value
-                            config.treatNullableOptionalAsRequired && hasDefault && isNullable -> {
-                                addNullToTypeAndSetDefault(propertyDef)
-                            }
-
-                            // Property without default (required): remove nullable flag
-                            !hasDefault -> {
-                                removeNullableFlag(propertyDef)
-                            }
-
-                            // Properties with defaults when config is false: set the default value
-                            hasDefault -> {
-                                setDefaultValue(propertyDef, property.defaultValue)
-                            }
-
-                            else -> {
-                                propertyDef
-                            }
+                    // Remove nullable flag if property is required (in required array)
+                    // Convention: nullable flag is only used for optional properties
+                    val withoutNullableIfRequired =
+                        if (isRequired) {
+                            removeNullableFlag(propertyDef)
+                        } else {
+                            propertyDef
                         }
 
-                    // Add the property description if available
+                    // Set default value if property has one
+                    val withDefault =
+                        if (hasDefault && property.defaultValue != null) {
+                            setDefaultValue(withoutNullableIfRequired, property.defaultValue)
+                        } else {
+                            withoutNullableIfRequired
+                        }
+
+                    // Add description if available
                     val finalDef =
-                        adjustedDef.let { def ->
-                            property.description?.let { setDescription(def, it) } ?: def
-                        }
+                        property.description?.let { desc ->
+                            setDescription(withDefault, desc)
+                        } ?: withDefault
                     property.name to finalDef
                 }
 
@@ -440,7 +441,7 @@ public class TypeGraphToJsonSchemaTransformer
                     definitions[typeName] = subtypeDefinition
 
                     // Return a reference to this definition
-                    ReferencePropertyDefinition(ref = "#/\$defs/$typeName")
+                    ReferencePropertyDefinition(ref = $$"#/$defs/$$typeName")
                 }
 
             // Convert discriminator with proper $ref paths
