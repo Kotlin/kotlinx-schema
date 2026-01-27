@@ -2,7 +2,7 @@
 agp = "8.10.1"
 detekt = "2.0.0-alpha.1"
 dokka = "2.1.0"
-jackson = "2.18.5" # pin it
+jackson = "2.21" # pin it
 junit = "6.0.2"
 junit-pioneer = "2.3.0"
 koog = "0.6.0"
