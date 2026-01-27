@@ -1,6 +1,4 @@
 package kotlinx.schema.generator.reflect
-
-import kotlinx.schema.generator.core.ir.DefaultPresence
 import kotlinx.schema.generator.core.ir.Discriminator
 import kotlinx.schema.generator.core.ir.ObjectNode
 import kotlinx.schema.generator.core.ir.PolymorphicNode
@@ -180,7 +178,7 @@ public object ReflectionIntrospector : SchemaIntrospector<KClass<*>> {
                         name = propertyName,
                         type = typeRef,
                         description = description,
-                        defaultPresence = if (hasDefault) DefaultPresence.Absent else DefaultPresence.Required,
+                        hasDefaultValue = hasDefault,
                         defaultValue = defaultValue,
                     )
 

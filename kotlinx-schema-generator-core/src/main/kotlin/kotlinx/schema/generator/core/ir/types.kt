@@ -86,7 +86,7 @@ public data class Property(
     val type: TypeRef,
     val description: String? = null,
     val deprecated: Boolean = false,
-    val defaultPresence: DefaultPresence = DefaultPresence.Absent,
+    val hasDefaultValue: Boolean = false,
     val defaultValue: Any? = null,
     val annotations: Map<String, String?> = emptyMap(),
 )
@@ -107,5 +107,3 @@ public data class Discriminator(
     val mapping: Map<String, TypeId>? = null,
 )
 
-/** How a property default behaves relative to required-ness. */
-public enum class DefaultPresence { Absent, HasDefault, Required }

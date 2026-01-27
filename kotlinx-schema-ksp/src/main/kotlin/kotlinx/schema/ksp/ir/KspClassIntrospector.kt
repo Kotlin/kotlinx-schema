@@ -7,7 +7,6 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.Modifier
 import com.google.devtools.ksp.symbol.Nullability
-import kotlinx.schema.generator.core.ir.DefaultPresence
 import kotlinx.schema.generator.core.ir.Discriminator
 import kotlinx.schema.generator.core.ir.EnumNode
 import kotlinx.schema.generator.core.ir.ObjectNode
@@ -159,7 +158,7 @@ internal class KspClassIntrospector : SchemaIntrospector<KSClassDeclaration> {
                             val desc =
                                 p.annotations.firstNotNullOfOrNull { it.descriptionOrNull() } // todo: gen kdoc
                             val tref = toRef(pType)
-                            val presence = if (p.hasDefault) DefaultPresence.Absent else DefaultPresence.Required
+                            val hasDefaultValue = p.hasDefault
                             if (!p.hasDefault) required += name
                             // Note: KSP does not provide access to default value expressions at compile-time.
                             // https://github.com/google/ksp/issues/1868
@@ -169,7 +168,7 @@ internal class KspClassIntrospector : SchemaIntrospector<KSClassDeclaration> {
                                     name = name,
                                     type = tref,
                                     description = desc,
-                                    defaultPresence = presence,
+                                    hasDefaultValue = hasDefaultValue,
                                     defaultValue = null,
                                 )
                         }
@@ -182,14 +181,14 @@ internal class KspClassIntrospector : SchemaIntrospector<KSClassDeclaration> {
                                     ?: prop.descriptionFromKdoc()
                             val tref = toRef(pType)
                             // KSP doesn't easily provide default presence here; treat as required conservatively
-                            val presence = DefaultPresence.Required
+                            val hasDefaultValue = false
                             required += name
                             props +=
                                 Property(
                                     name = name,
                                     type = tref,
                                     description = desc,
-                                    defaultPresence = presence,
+                                    hasDefaultValue = hasDefaultValue,
                                     defaultValue = null,
                                 )
                         }

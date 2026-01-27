@@ -1,7 +1,6 @@
 package kotlinx.schema.generator.json
 
 import kotlinx.schema.generator.core.ir.AbstractTypeGraphTransformer
-import kotlinx.schema.generator.core.ir.DefaultPresence
 import kotlinx.schema.generator.core.ir.EnumNode
 import kotlinx.schema.generator.core.ir.ListNode
 import kotlinx.schema.generator.core.ir.MapNode
@@ -256,10 +255,10 @@ public class TypeGraphToJsonSchemaTransformer
             val required =
                 when {
                     config.respectDefaultPresence -> {
-                        // Use introspector's DefaultPresence: only fields without defaults are required
+                        // Use introspector's hasDefaultValue: only fields without defaults are required
                         node.properties
                             .filter { property ->
-                                property.defaultPresence == DefaultPresence.Required
+                                !property.hasDefaultValue
                             }.map { it.name }
                     }
 
@@ -280,7 +279,7 @@ public class TypeGraphToJsonSchemaTransformer
             // Convert all properties
             val properties =
                 node.properties.associate { property ->
-                    val hasDefault = property.defaultPresence != DefaultPresence.Required
+                    val hasDefault = property.hasDefaultValue
                     val isRequired = property.name in required
 
                     val propertyDef = convertTypeRef(property.type, graph, definitions)

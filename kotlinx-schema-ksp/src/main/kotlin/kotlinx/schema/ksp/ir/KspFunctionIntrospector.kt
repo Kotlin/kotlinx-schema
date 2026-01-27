@@ -3,7 +3,6 @@ package kotlinx.schema.ksp.ir
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.Nullability
-import kotlinx.schema.generator.core.ir.DefaultPresence
 import kotlinx.schema.generator.core.ir.ObjectNode
 import kotlinx.schema.generator.core.ir.PrimitiveKind
 import kotlinx.schema.generator.core.ir.PrimitiveNode
@@ -78,7 +77,7 @@ internal class KspFunctionIntrospector : SchemaIntrospector<KSFunctionDeclaratio
                     name = paramName,
                     type = typeRef,
                     description = description,
-                    defaultPresence = DefaultPresence.Required,
+                    hasDefaultValue = false,
                     defaultValue = null, // KSP cannot extract default values at compile-time
                 )
 

@@ -38,9 +38,9 @@ public open class JsonSchemaConfig(
      */
     public val strictSchemaFlag: Boolean = false,
     /**
-     * Whether to respect DefaultPresence from the introspector for determining required fields.
+     * Whether to respect hasDefaultValue from the introspector for determining required fields.
      *
-     * When `true`: Uses `DefaultPresence.Required` from introspector. Fields without defaults
+     * When `true`: Uses `hasDefaultValue` from introspector. Fields without defaults
      * are marked as required, fields with defaults are optional.
      *
      * When `false`: Uses [requireNullableFields] to determine required field behavior.
