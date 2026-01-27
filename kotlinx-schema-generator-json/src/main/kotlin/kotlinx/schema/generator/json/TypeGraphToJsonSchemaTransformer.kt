@@ -41,9 +41,9 @@ import kotlinx.serialization.json.encodeToJsonElement
 public class TypeGraphToJsonSchemaTransformer
     @JvmOverloads
     public constructor(
-        public override val config: JsonSchemaTransformerConfig,
+        public override val config: JsonSchemaConfig,
         private val json: Json = Json { encodeDefaults = false },
-    ) : AbstractTypeGraphTransformer<JsonSchema, JsonSchemaTransformerConfig>(
+    ) : AbstractTypeGraphTransformer<JsonSchema, JsonSchemaConfig>(
             config = config,
         ) {
         /**

@@ -22,8 +22,8 @@ import kotlinx.serialization.json.put
 
 /** Emits JSON Schema from Schema IR following the Standard rules used previously. */
 public class TypeGraphToJsonObjectSchemaTransformer :
-    AbstractTypeGraphTransformer<JsonObject, JsonSchemaTransformerConfig>(
-        config = JsonSchemaTransformerConfig.Default,
+    AbstractTypeGraphTransformer<JsonObject, JsonSchemaConfig>(
+        config = JsonSchemaConfig.Default,
     ) {
     @Suppress("CyclomaticComplexMethod", "LongMethod", "NestedBlockDepth")
     override fun transform(

@@ -1,7 +1,7 @@
 package kotlinx.schema.generator.json
 
-import kotlinx.schema.generator.json.JsonSchemaTransformerConfig.Companion.Default
-import kotlinx.schema.generator.json.JsonSchemaTransformerConfig.Companion.Strict
+import kotlinx.schema.generator.json.JsonSchemaConfig.Companion.Default
+import kotlinx.schema.generator.json.JsonSchemaConfig.Companion.Strict
 
 /**
  * Configuration for JSON Schema transformers.
@@ -27,7 +27,7 @@ import kotlinx.schema.generator.json.JsonSchemaTransformerConfig.Companion.Stric
  * @see [OpenAI Structured Outputs](https://platform.openai.com/docs/guides/function-calling)
  * @author Konstantin Pavlov
  */
-public open class JsonSchemaTransformerConfig(
+public open class JsonSchemaConfig(
     /**
      * Whether to set the `strict: true` flag in output schemas.
      *
@@ -103,8 +103,8 @@ public open class JsonSchemaTransformerConfig(
          * **Note**: Works best with reflection-based introspection.
          * With KSP, behaves like [Strict] (all fields required).
          */
-        public val Default: JsonSchemaTransformerConfig =
-            JsonSchemaTransformerConfig(
+        public val Default: JsonSchemaConfig =
+            JsonSchemaConfig(
                 strictSchemaFlag = false,
                 respectDefaultPresence = true,
                 requireNullableFields = true, // ignored when respectDefaultPresence=true
@@ -118,8 +118,8 @@ public open class JsonSchemaTransformerConfig(
          *
          * **Note**: Identical to [Default]. Kept for backward compatibility.
          */
-        public val Simple: JsonSchemaTransformerConfig =
-            JsonSchemaTransformerConfig(
+        public val Simple: JsonSchemaConfig =
+            JsonSchemaConfig(
                 strictSchemaFlag = false,
                 respectDefaultPresence = true,
                 requireNullableFields = true, // ignored when respectDefaultPresence=true
@@ -135,58 +135,11 @@ public open class JsonSchemaTransformerConfig(
          *
          * See [OpenAI Structured Outputs](https://platform.openai.com/docs/guides/function-calling)
          */
-        public val Strict: JsonSchemaTransformerConfig =
-            JsonSchemaTransformerConfig(
+        public val Strict: JsonSchemaConfig =
+            JsonSchemaConfig(
                 strictSchemaFlag = true,
                 respectDefaultPresence = false,
                 requireNullableFields = true,
-            )
-    }
-}
-
-/**
- * Configuration for function calling schema transformers.
- *
- * Extends [JsonSchemaTransformerConfig] with defaults optimized for LLM function calling.
- * By default, uses strict mode settings to comply with OpenAI function calling requirements.
- *
- * @see [OpenAI Function Calling](https://platform.openai.com/docs/guides/function-calling)
- */
-public class FunctionCallingSchemaTransformerConfig(
-    strictSchemaFlag: Boolean = true,
-    respectDefaultPresence: Boolean = false,
-    requireNullableFields: Boolean = true,
-) : JsonSchemaTransformerConfig(
-        strictSchemaFlag = strictSchemaFlag,
-        respectDefaultPresence = respectDefaultPresence,
-        requireNullableFields = requireNullableFields,
-    ) {
-    public companion object {
-        /**
-         * Default configuration for function calling schemas (strict mode enabled).
-         *
-         * - Strict flag: enabled
-         * - All fields required including nullables
-         * - Union type nullable handling
-         */
-        public val Default: FunctionCallingSchemaTransformerConfig =
-            FunctionCallingSchemaTransformerConfig(
-                strictSchemaFlag = true,
-                respectDefaultPresence = false,
-                requireNullableFields = true,
-            )
-
-        /**
-         * Non-strict configuration for legacy function calling schemas.
-         *
-         * - Strict flag: disabled
-         * - Only non-nullable fields required
-         */
-        public val NonStrict: FunctionCallingSchemaTransformerConfig =
-            FunctionCallingSchemaTransformerConfig(
-                strictSchemaFlag = false,
-                respectDefaultPresence = false,
-                requireNullableFields = false,
             )
     }
 }

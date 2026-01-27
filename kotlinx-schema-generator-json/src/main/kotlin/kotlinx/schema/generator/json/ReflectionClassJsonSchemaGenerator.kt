@@ -15,11 +15,11 @@ import kotlin.reflect.KClass
  *
  * @constructor Creates an instance of `ReflectionClassJsonSchemaGenerator`.
  * @param config Configuration for generating JSON Schemas, such as formatting details
- * and handling of optional nullable properties. Defaults to [JsonSchemaTransformerConfig.Default].
+ * and handling of optional nullable properties. Defaults to [JsonSchemaConfig.Default].
  */
 public class ReflectionClassJsonSchemaGenerator(
     private val json: Json,
-    config: JsonSchemaTransformerConfig,
+    config: JsonSchemaConfig,
 ) : AbstractSchemaGenerator<KClass<out Any>, JsonSchema>(
         introspector = ReflectionIntrospector,
         typeGraphTransformer =
@@ -30,7 +30,7 @@ public class ReflectionClassJsonSchemaGenerator(
     ) {
     public constructor() : this(
         json = Json { encodeDefaults = false },
-        config = JsonSchemaTransformerConfig.Default,
+        config = JsonSchemaConfig.Default,
     )
 
     override fun getRootName(target: KClass<out Any>): String = target.qualifiedName ?: "Anonymous"
@@ -44,7 +44,7 @@ public class ReflectionClassJsonSchemaGenerator(
     public companion object {
         /**
          * A default instance of the [ReflectionClassJsonSchemaGenerator] class, preconfigured
-         * with the default settings defined in [JsonSchemaTransformerConfig.Default].
+         * with the default settings defined in [JsonSchemaConfig.Default].
          *
          * This instance can be used to generate JSON schema representations of Kotlin
          * objects using reflection-based introspection. It simplifies the creation
@@ -53,7 +53,7 @@ public class ReflectionClassJsonSchemaGenerator(
         public val Default: ReflectionClassJsonSchemaGenerator =
             ReflectionClassJsonSchemaGenerator(
                 json = Json { encodeDefaults = false },
-                config = JsonSchemaTransformerConfig.Default,
+                config = JsonSchemaConfig.Default,
             )
     }
 }

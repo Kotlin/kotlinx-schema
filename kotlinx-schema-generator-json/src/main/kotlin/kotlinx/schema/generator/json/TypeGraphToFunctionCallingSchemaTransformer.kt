@@ -20,7 +20,7 @@ import kotlinx.schema.json.StringPropertyDefinition
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.encodeToJsonElement
-import kotlinx.schema.generator.json.FunctionCallingSchemaTransformerConfig.Companion.Default as DefaultConfig
+import kotlinx.schema.generator.json.FunctionCallingSchemaConfig.Companion.Default as DefaultConfig
 
 /**
  * Transforms a [TypeGraph] into a [FunctionCallingSchema] for tool/function schema representation.
@@ -36,10 +36,10 @@ public class TypeGraphToFunctionCallingSchemaTransformer
     @JvmOverloads
     public constructor(
         private val json: Json = Json { encodeDefaults = false },
-        public override val config: FunctionCallingSchemaTransformerConfig = DefaultConfig,
+        public override val config: FunctionCallingSchemaConfig = DefaultConfig,
     ) : AbstractTypeGraphTransformer<
             FunctionCallingSchema,
-            FunctionCallingSchemaTransformerConfig,
+            FunctionCallingSchemaConfig,
         >(config = config) {
         public override fun transform(
             graph: TypeGraph,
