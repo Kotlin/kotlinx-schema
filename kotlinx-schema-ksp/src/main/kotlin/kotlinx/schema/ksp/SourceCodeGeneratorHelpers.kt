@@ -16,16 +16,17 @@ internal object SourceCodeGeneratorHelpers {
      * Determines whether to generate schema object functions/properties.
      *
      * Priority:
-     * 1. KSP processor option (kotlinx.schema.withSchemaObject)
-     * 2. @Schema annotation parameter (withSchemaObject)
+     * 1. @Schema annotation parameter (withSchemaObject) - most specific
+     * 2. KSP processor option (kotlinx.schema.withSchemaObject) - global fallback
      * 3. Default: false
      */
     fun shouldGenerateSchemaObject(
         options: Map<String, String>,
         parameters: Map<String, Any?>,
     ): Boolean =
-        options[OPTION_WITH_SCHEMA_OBJECT]?.let { it == "true" }
-            ?: (parameters[PARAM_WITH_SCHEMA_OBJECT] == true)
+        (parameters[PARAM_WITH_SCHEMA_OBJECT] as? Boolean)
+            ?: options[OPTION_WITH_SCHEMA_OBJECT]?.let { it == "true" }
+            ?: false
 
     /**
      * Escapes a string for use as a Kotlin raw string literal.

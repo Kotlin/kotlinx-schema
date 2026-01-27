@@ -154,4 +154,109 @@ class SchemaExtensionProcessorTest {
             logger.error(match { it.contains("Error") && it.contains("KSP Processor Options") })
         }
     }
+
+    @Test
+    fun `processor accepts valid visibility option - public`() {
+        // Given
+        val options = mapOf("kotlinx.schema.visibility" to "public")
+        subject =
+            SchemaExtensionProcessor(
+                codeGenerator,
+                logger,
+                options,
+            )
+
+        val emptySymbols = emptySequence<KSAnnotated>()
+        every { resolver.getSymbolsWithAnnotation("kotlinx.schema.Schema") } returns emptySymbols
+
+        // When
+        val result = subject.process(resolver)
+
+        // Then
+        result.shouldBeEmpty()
+    }
+
+    @Test
+    fun `processor accepts valid visibility option - internal`() {
+        // Given
+        val options = mapOf("kotlinx.schema.visibility" to "internal")
+        subject =
+            SchemaExtensionProcessor(
+                codeGenerator,
+                logger,
+                options,
+            )
+
+        val emptySymbols = emptySequence<KSAnnotated>()
+        every { resolver.getSymbolsWithAnnotation("kotlinx.schema.Schema") } returns emptySymbols
+
+        // When
+        val result = subject.process(resolver)
+
+        // Then
+        result.shouldBeEmpty()
+    }
+
+    @Test
+    fun `processor accepts valid visibility option - private`() {
+        // Given
+        val options = mapOf("kotlinx.schema.visibility" to "private")
+        subject =
+            SchemaExtensionProcessor(
+                codeGenerator,
+                logger,
+                options,
+            )
+
+        val emptySymbols = emptySequence<KSAnnotated>()
+        every { resolver.getSymbolsWithAnnotation("kotlinx.schema.Schema") } returns emptySymbols
+
+        // When
+        val result = subject.process(resolver)
+
+        // Then
+        result.shouldBeEmpty()
+    }
+
+    @Test
+    fun `processor accepts valid visibility option - empty string`() {
+        // Given
+        val options = mapOf("kotlinx.schema.visibility" to "")
+        subject =
+            SchemaExtensionProcessor(
+                codeGenerator,
+                logger,
+                options,
+            )
+
+        val emptySymbols = emptySequence<KSAnnotated>()
+        every { resolver.getSymbolsWithAnnotation("kotlinx.schema.Schema") } returns emptySymbols
+
+        // When
+        val result = subject.process(resolver)
+
+        // Then
+        result.shouldBeEmpty()
+    }
+
+    @Test
+    fun `processor handles missing visibility option (defaults to empty)`() {
+        // Given
+        val options = emptyMap<String, String>()
+        subject =
+            SchemaExtensionProcessor(
+                codeGenerator,
+                logger,
+                options,
+            )
+
+        val emptySymbols = emptySequence<KSAnnotated>()
+        every { resolver.getSymbolsWithAnnotation("kotlinx.schema.Schema") } returns emptySymbols
+
+        // When
+        val result = subject.process(resolver)
+
+        // Then
+        result.shouldBeEmpty()
+    }
 }

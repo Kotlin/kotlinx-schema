@@ -1,5 +1,4 @@
 import dev.detekt.gradle.extensions.FailOnSeverity
-import org.gradle.internal.impldep.org.jsoup.nodes.Document
 
 plugins {
     kotlin("plugin.serialization") version libs.versions.kotlin apply false
