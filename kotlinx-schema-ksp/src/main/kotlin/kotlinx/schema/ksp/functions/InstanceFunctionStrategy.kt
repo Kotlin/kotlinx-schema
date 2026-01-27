@@ -8,6 +8,7 @@ import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import kotlinx.schema.generator.json.TypeGraphToFunctionCallingSchemaTransformer
 import kotlinx.schema.json.FunctionCallingSchema
 import kotlinx.schema.ksp.SourceCodeGeneratorHelpers
+import kotlinx.schema.ksp.SourceCodeGeneratorHelpers.buildKClassExtensions
 import kotlinx.schema.ksp.SourceCodeGeneratorHelpers.escapeForKotlinString
 import kotlinx.schema.ksp.generator.KspSchemaGeneratorConfig
 import kotlinx.schema.ksp.generator.UnifiedKspSchemaGenerator
@@ -115,10 +116,11 @@ internal class InstanceFunctionStrategy : SchemaGenerationStrategy<KSFunctionDec
 
         // Get parent class information
         val parent = declaration.parentDeclaration as KSClassDeclaration
-        val className = parent.qualifiedName?.asString() ?: run {
-            val simpleClassName = parent.simpleName.asString()
-            "$packageName.$simpleClassName"
-        }
+        val className =
+            parent.qualifiedName?.asString() ?: run {
+                val simpleClassName = parent.simpleName.asString()
+                "$packageName.$simpleClassName"
+            }
 
         // Handle generic type parameters with star projection
         val typeParameters = parent.typeParameters
@@ -152,66 +154,4 @@ internal class InstanceFunctionStrategy : SchemaGenerationStrategy<KSFunctionDec
         file.write(sourceCode.toByteArray())
         file.close()
     }
-
-    /**
-     * Builds the complete source code for the KClass extension functions.
-     *
-     * @param packageName The package name for the generated file
-     * @param classNameWithGenerics The class name with generic parameters (e.g., "MyClass<*>")
-     * @param functionName The function name
-     * @param schemaString The function calling schema JSON string
-     * @param context Generation context for determining what to generate
-     * @return Complete Kotlin source code as a string
-     */
-    private fun buildKClassExtensions(
-        packageName: String,
-        classNameWithGenerics: String,
-        functionName: String,
-        schemaString: String,
-        context: CodeGenerationContext,
-    ): String =
-        buildString {
-            // File header with suppressions
-            append(
-                SourceCodeGeneratorHelpers.generateFileHeader(
-                    packageName = packageName,
-                    additionalSuppressions = listOf("FunctionOnlyReturningConstant", "UnusedReceiverParameter"),
-                ),
-            )
-
-            // Generate schema string extension function (always)
-            append(
-                SourceCodeGeneratorHelpers.generateKDoc(
-                    targetName = functionName,
-                    description = "extension function providing input parameters JSON schema as string",
-                ),
-            )
-            append(
-                // language=kotlin
-                """
-                |public fun kotlin.reflect.KClass<$classNameWithGenerics>.${functionName}JsonSchemaString(): String =
-                |    // language=JSON
-                |    ${schemaString.escapeForKotlinString()}
-                |
-                """.trimMargin(),
-            )
-
-            // Generate schema object extension function (conditional)
-            if (SourceCodeGeneratorHelpers.shouldGenerateSchemaObject(context.options, context.parameters)) {
-                append(
-                    SourceCodeGeneratorHelpers.generateKDoc(
-                        targetName = functionName,
-                        description = "extension function providing input parameters JSON schema as JsonObject",
-                    ),
-                )
-                append(
-                    // language=kotlin
-                    """
-                |public fun kotlin.reflect.KClass<$classNameWithGenerics>.${functionName}JsonSchema(): kotlinx.serialization.json.JsonObject =
-                |    kotlinx.serialization.json.Json.decodeFromString(this.${functionName}JsonSchemaString())
-                |
-                    """.trimMargin(),
-                )
-            }
-        }
 }

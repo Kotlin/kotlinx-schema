@@ -28,6 +28,7 @@ dependencies {
 
 ksp {
     arg("kotlinx.schema.withSchemaObject", "true")
+    arg("kotlinx.schema.visibility", "internal")
 }
 
 // KSP generates sources to build/generated/ksp/main/kotlin

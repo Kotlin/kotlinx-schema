@@ -8,11 +8,13 @@ import kotlinx.schema.generator.json.TypeGraphToFunctionCallingSchemaTransformer
 import kotlinx.schema.json.FunctionCallingSchema
 import kotlinx.schema.ksp.SourceCodeGeneratorHelpers
 import kotlinx.schema.ksp.SourceCodeGeneratorHelpers.escapeForKotlinString
+import kotlinx.schema.ksp.SourceCodeGeneratorHelpers.visibilityPrefix
 import kotlinx.schema.ksp.generator.KspSchemaGeneratorConfig
 import kotlinx.schema.ksp.generator.UnifiedKspSchemaGenerator
 import kotlinx.schema.ksp.ir.KspFunctionIntrospector
 import kotlinx.schema.ksp.strategy.CodeGenerationContext
 import kotlinx.schema.ksp.strategy.SchemaGenerationStrategy
+import kotlinx.schema.ksp.strategy.visibility
 
 /**
  * Strategy for generating schemas for top-level function declarations.
@@ -154,10 +156,12 @@ internal class TopLevelFunctionStrategy : SchemaGenerationStrategy<KSFunctionDec
                     description = "function providing input parameters JSON schema as string",
                 ),
             )
+            val visibilityPrefix = visibilityPrefix(context)
+
             append(
                 // language=kotlin
                 """
-                |public fun ${functionName}JsonSchemaString(): String =
+                |${visibilityPrefix}fun ${functionName}JsonSchemaString(): String =
                 |    // language=JSON
                 |    ${schemaString.escapeForKotlinString()}
                 |
@@ -175,7 +179,7 @@ internal class TopLevelFunctionStrategy : SchemaGenerationStrategy<KSFunctionDec
                 append(
                     // language=kotlin
                     """
-                |public fun ${functionName}JsonSchema(): kotlinx.serialization.json.JsonObject =
+                |${visibilityPrefix}fun ${functionName}JsonSchema(): kotlinx.serialization.json.JsonObject =
                 |    kotlinx.serialization.json.Json.decodeFromString(${functionName}JsonSchemaString())
                 |
                     """.trimMargin(),

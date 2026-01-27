@@ -1,3 +1,4 @@
+import dev.detekt.gradle.extensions.FailOnSeverity
 import org.gradle.internal.impldep.org.jsoup.nodes.Document
 
 plugins {
@@ -72,6 +73,7 @@ subprojects {
     detekt {
         config = files("$rootDir/detekt.yml")
         buildUponDefaultConfig = true
+        failOnSeverity.set(FailOnSeverity.Warning)
     }
 }
 

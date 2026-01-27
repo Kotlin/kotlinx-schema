@@ -1,5 +1,10 @@
 package kotlinx.schema.ksp
 
+import kotlinx.schema.ksp.SchemaExtensionProcessor.Companion.OPTION_WITH_SCHEMA_OBJECT
+import kotlinx.schema.ksp.SchemaExtensionProcessor.Companion.PARAM_WITH_SCHEMA_OBJECT
+import kotlinx.schema.ksp.strategy.CodeGenerationContext
+import kotlinx.schema.ksp.strategy.visibility
+
 /**
  * Shared utilities for source code generation.
  *
@@ -7,9 +12,6 @@ package kotlinx.schema.ksp
  * and FunctionSourceCodeGenerator to avoid code duplication.
  */
 internal object SourceCodeGeneratorHelpers {
-    const val PARAM_WITH_SCHEMA_OBJECT = "withSchemaObject"
-    const val OPTION_WITH_SCHEMA_OBJECT = "kotlinx.schema.$PARAM_WITH_SCHEMA_OBJECT"
-
     /**
      * Determines whether to generate schema object functions/properties.
      *
@@ -94,4 +96,93 @@ internal object SourceCodeGeneratorHelpers {
         | */
         | 
         """.trimMargin()
+
+    /**
+     * Builds the complete source code for the KClass extension functions.
+     *
+     * @param packageName The package name for the generated file
+     * @param classNameWithGenerics The companion object qualified name with generic parameters
+     * (e.g., `MyClass.Companion<*>`)
+     * @param functionName The function name
+     * @param schemaString The function calling schema JSON string
+     * @param context Generation context for determining what to generate
+     * @return Complete Kotlin source code as a string
+     */
+    @Suppress("LongParameterList")
+    fun buildKClassExtensions(
+        packageName: String,
+        classNameWithGenerics: String,
+        functionName: String,
+        schemaString: String,
+        context: CodeGenerationContext,
+    ): String =
+        buildString {
+            // File header with suppressions
+            append(
+                generateFileHeader(
+                    packageName = packageName,
+                    additionalSuppressions = listOf("FunctionOnlyReturningConstant", "UnusedReceiverParameter"),
+                ),
+            )
+
+            // Generate schema string extension function (always)
+            append(
+                generateKDoc(
+                    targetName = functionName,
+                    description = "extension function providing input parameters JSON schema as string",
+                ),
+            )
+
+            val ownerPrefix =
+                if (classNameWithGenerics.isNotBlank()) {
+                    "kotlin.reflect.KClass<$classNameWithGenerics>."
+                } else {
+                    ""
+                }
+
+            val visibilityPrefix = visibilityPrefix(context)
+
+            append(
+                // language=kotlin
+                """
+                |${visibilityPrefix}fun $ownerPrefix${functionName}JsonSchemaString(): String =
+                |    // language=JSON
+                |    ${schemaString.escapeForKotlinString()}
+                |
+                """.trimMargin(),
+            )
+
+            // Generate schema object extension function (conditional)
+            if (shouldGenerateSchemaObject(context.options, context.parameters)) {
+                append(
+                    generateKDoc(
+                        targetName = functionName,
+                        description = "extension function providing input parameters JSON schema as JsonObject",
+                    ),
+                )
+                append(
+                    // language=kotlin
+                    """
+                |${visibilityPrefix}fun $ownerPrefix${functionName}JsonSchema(): kotlinx.serialization.json.JsonObject =
+                |    kotlinx.serialization.json.Json.decodeFromString(this.${functionName}JsonSchemaString())
+                |
+                    """.trimMargin(),
+                )
+            }
+        }
+
+    /**
+     * Determines and returns the visibility prefix for a given code generation context.
+     * The visibility prefix is derived from the visibility settings of the provided context.
+     * If a non-blank visibility is specified, it appends a trailing space; otherwise,
+     * it returns an empty string.
+     *
+     * @param context The context providing visibility settings for code generation.
+     * @return A string representing the visibility prefix (e.g., "public ", "internal ",
+     *         "private ", or an empty string if no visibility is specified).
+     */
+    fun visibilityPrefix(context: CodeGenerationContext): String {
+        val visibility = context.visibility()
+        return if (visibility.isNotBlank()) "$visibility " else ""
+    }
 }

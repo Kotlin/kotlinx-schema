@@ -1,6 +1,7 @@
 package kotlinx.schema.ksp.strategy
 
 import com.google.devtools.ksp.processing.KSPLogger
+import kotlinx.schema.ksp.SchemaExtensionProcessor.Companion.OPTION_VISIBILITY
 
 /**
  * Context data for schema code generation.
@@ -17,3 +18,13 @@ internal data class CodeGenerationContext(
     val parameters: Map<String, Any?>,
     val logger: KSPLogger,
 )
+
+internal fun CodeGenerationContext.visibility(): String {
+    val visibility =
+        this.options[OPTION_VISIBILITY]
+            ?.trim()
+            ?.takeIf { it.isNotEmpty() }
+            .orEmpty()
+    require(visibility in setOf("public", "internal", "private", "")) { "Invalid visibility option: $visibility" }
+    return visibility
+}

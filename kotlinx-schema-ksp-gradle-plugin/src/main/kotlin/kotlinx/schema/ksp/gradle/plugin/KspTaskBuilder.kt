@@ -100,6 +100,7 @@ internal class KspTaskBuilder(
             options["kotlinx.schema.rootPackage"] = extension.rootPackage.get()
         }
         options["kotlinx.schema.withSchemaObject"] = extension.withSchemaObject.get().toString()
+        options["kotlinx.schema.visibility"] = extension.visibility.get()
         return options
     }
 
