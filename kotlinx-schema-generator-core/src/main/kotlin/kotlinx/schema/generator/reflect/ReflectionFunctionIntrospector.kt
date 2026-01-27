@@ -1,6 +1,4 @@
 package kotlinx.schema.generator.reflect
-
-import kotlinx.schema.generator.core.ir.DefaultPresence
 import kotlinx.schema.generator.core.ir.ObjectNode
 import kotlinx.schema.generator.core.ir.PrimitiveNode
 import kotlinx.schema.generator.core.ir.Property
@@ -107,7 +105,7 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>> 
                         name = paramName,
                         type = typeRef,
                         description = description,
-                        defaultPresence = if (hasDefault) DefaultPresence.Absent else DefaultPresence.Required,
+                        hasDefaultValue = hasDefault,
                     )
 
                 if (!hasDefault) {
@@ -168,7 +166,7 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>> 
                         name = propertyName,
                         type = typeRef,
                         description = property?.let { extractDescription(it.annotations) },
-                        defaultPresence = if (hasDefault) DefaultPresence.Absent else DefaultPresence.Required,
+                        hasDefaultValue = hasDefault,
                         defaultValue = defaultValue,
                     )
 

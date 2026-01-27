@@ -5,7 +5,6 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.schema.Description
-import kotlinx.schema.generator.core.ir.DefaultPresence
 import kotlinx.schema.generator.core.ir.EnumNode
 import kotlinx.schema.generator.core.ir.ListNode
 import kotlinx.schema.generator.core.ir.MapNode
@@ -75,7 +74,7 @@ class ReflectionIntrospectorTest {
         // Verify property with description and required status
         props.getValue("name").apply {
             description shouldBe "The name of the user"
-            defaultPresence shouldBe DefaultPresence.Required
+            hasDefaultValue shouldBe false
             type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
                 inline.node.shouldBeInstanceOf<PrimitiveNode> { prim ->
                     prim.kind shouldBe PrimitiveKind.STRING
@@ -86,7 +85,7 @@ class ReflectionIntrospectorTest {
 
         // age is nullable but still required (no default value)
         props.getValue("age").apply {
-            defaultPresence shouldBe DefaultPresence.Required
+            hasDefaultValue shouldBe false
             type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
                 inline.node.shouldBeInstanceOf<PrimitiveNode> { prim ->
                     prim.kind shouldBe PrimitiveKind.INT
@@ -95,9 +94,9 @@ class ReflectionIntrospectorTest {
             }
         }
 
-        // email has default value, so defaultPresence should be Absent
+        // email has default value, so hasDefaultValue should be true
         props.getValue("email").apply {
-            defaultPresence shouldBe DefaultPresence.Absent
+            hasDefaultValue shouldBe true
             type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
                 inline.node.shouldBeInstanceOf<PrimitiveNode> { prim ->
                     prim.kind shouldBe PrimitiveKind.STRING
@@ -107,12 +106,12 @@ class ReflectionIntrospectorTest {
 
         // tags is required (no default)
         props.getValue("tags").apply {
-            defaultPresence shouldBe DefaultPresence.Required
+            hasDefaultValue shouldBe false
         }
 
         // attributes is nullable but required (no default)
         props.getValue("attributes").apply {
-            defaultPresence shouldBe DefaultPresence.Required
+            hasDefaultValue shouldBe false
         }
 
         // Verify collection types
