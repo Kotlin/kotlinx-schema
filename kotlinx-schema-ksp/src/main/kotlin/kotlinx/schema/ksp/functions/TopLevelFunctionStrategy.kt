@@ -14,6 +14,7 @@ import kotlinx.schema.ksp.generator.UnifiedKspSchemaGenerator
 import kotlinx.schema.ksp.ir.KspFunctionIntrospector
 import kotlinx.schema.ksp.strategy.CodeGenerationContext
 import kotlinx.schema.ksp.strategy.SchemaGenerationStrategy
+import kotlinx.schema.ksp.strategy.shouldGenerateSchemaObject
 import kotlinx.schema.ksp.strategy.visibility
 
 /**
@@ -169,7 +170,7 @@ internal class TopLevelFunctionStrategy : SchemaGenerationStrategy<KSFunctionDec
             )
 
             // Generate schema object function (conditional)
-            if (SourceCodeGeneratorHelpers.shouldGenerateSchemaObject(context.options, context.parameters)) {
+            if (context.shouldGenerateSchemaObject()) {
                 append(
                     SourceCodeGeneratorHelpers.generateKDoc(
                         targetName = functionName,

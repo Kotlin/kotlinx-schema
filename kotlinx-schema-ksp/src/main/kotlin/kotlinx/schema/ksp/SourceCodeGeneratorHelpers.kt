@@ -3,6 +3,7 @@ package kotlinx.schema.ksp
 import kotlinx.schema.ksp.SchemaExtensionProcessor.Companion.OPTION_WITH_SCHEMA_OBJECT
 import kotlinx.schema.ksp.SchemaExtensionProcessor.Companion.PARAM_WITH_SCHEMA_OBJECT
 import kotlinx.schema.ksp.strategy.CodeGenerationContext
+import kotlinx.schema.ksp.strategy.shouldGenerateSchemaObject
 import kotlinx.schema.ksp.strategy.visibility
 
 /**
@@ -12,22 +13,6 @@ import kotlinx.schema.ksp.strategy.visibility
  * and FunctionSourceCodeGenerator to avoid code duplication.
  */
 internal object SourceCodeGeneratorHelpers {
-    /**
-     * Determines whether to generate schema object functions/properties.
-     *
-     * Priority:
-     * 1. @Schema annotation parameter (withSchemaObject) - most specific
-     * 2. KSP processor option (kotlinx.schema.withSchemaObject) - global fallback
-     * 3. Default: false
-     */
-    fun shouldGenerateSchemaObject(
-        options: Map<String, String>,
-        parameters: Map<String, Any?>,
-    ): Boolean =
-        (parameters[PARAM_WITH_SCHEMA_OBJECT] as? Boolean)
-            ?: options[OPTION_WITH_SCHEMA_OBJECT]?.let { it == "true" }
-            ?: false
-
     /**
      * Escapes a string for use as a Kotlin raw string literal.
      *
@@ -154,7 +139,7 @@ internal object SourceCodeGeneratorHelpers {
             )
 
             // Generate schema object extension function (conditional)
-            if (shouldGenerateSchemaObject(context.options, context.parameters)) {
+            if (context.shouldGenerateSchemaObject()) {
                 append(
                     generateKDoc(
                         targetName = functionName,

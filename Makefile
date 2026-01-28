@@ -1,9 +1,12 @@
 .SHELLFLAGS := -e -o pipefail -c
 
+.PHONY: all
+all:build integration-test
+
 .PHONY: build
 build:clean
 	@echo "🔨 Coverage reports..."
-	@./gradlew --rerun-tasks \
+	@./gradlew --rerun-tasks kotlinUpgradePackageLock \
 		build \
 		koverLog koverXmlReport koverHtmlReport
 	@echo "✅ Build complete!"

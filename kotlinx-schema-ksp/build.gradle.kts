@@ -14,8 +14,9 @@ kotlin {
         implementation(project(":kotlinx-schema-generator-json"))
         implementation(libs.ksp.api)
         // tests
-        testImplementation(libs.kotlin.test)
+        testImplementation(libs.junit.jupiter.params)
         testImplementation(libs.kotest.assertions.core)
+        testImplementation(libs.kotlin.test)
         testImplementation(libs.mockk)
     }
 }

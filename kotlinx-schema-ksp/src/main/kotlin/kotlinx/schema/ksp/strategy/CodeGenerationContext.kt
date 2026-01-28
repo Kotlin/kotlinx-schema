@@ -2,7 +2,8 @@ package kotlinx.schema.ksp.strategy
 
 import com.google.devtools.ksp.processing.KSPLogger
 import kotlinx.schema.ksp.SchemaExtensionProcessor.Companion.OPTION_VISIBILITY
-import kotlinx.schema.ksp.SchemaExtensionProcessor.Companion.PARAM_VISIBILITY
+import kotlinx.schema.ksp.SchemaExtensionProcessor.Companion.OPTION_WITH_SCHEMA_OBJECT
+import kotlinx.schema.ksp.SchemaExtensionProcessor.Companion.PARAM_WITH_SCHEMA_OBJECT
 
 /**
  * Context data for schema code generation.
@@ -33,13 +34,36 @@ internal data class CodeGenerationContext(
  */
 internal fun CodeGenerationContext.visibility(): String {
     val visibility =
-        (this.parameters[PARAM_VISIBILITY] as? String)
-            ?.trim()
-            ?.takeIf { it.isNotEmpty() }
-            ?: this.options[OPTION_VISIBILITY]
-                ?.trim()
-                ?.takeIf { it.isNotEmpty() }
-            .orEmpty()
+        this
+            .resolve(
+                paramName = null,
+                optionName = OPTION_VISIBILITY,
+            ).orEmpty()
+            .trim()
     require(visibility in setOf("public", "internal", "private", "")) { "Invalid visibility option: $visibility" }
     return visibility
 }
+
+private fun CodeGenerationContext.resolve(
+    paramName: String? = null,
+    optionName: String,
+): String? =
+    if (paramName != null && parameters.containsKey(paramName)) {
+        parameters[paramName]?.toString()
+    } else if (options.containsKey(optionName)) {
+        options[optionName]
+    } else {
+        null
+    }
+
+/**
+ * Determines whether to generate schema object functions/properties.
+ *
+ * Priority:
+ * 1. @Schema annotation parameter (withSchemaObject) - most specific
+ * 2. KSP processor option (kotlinx.schema.withSchemaObject) - global fallback
+ * 3. Default: false
+ */
+internal fun CodeGenerationContext.shouldGenerateSchemaObject(): Boolean =
+    resolve(paramName = PARAM_WITH_SCHEMA_OBJECT, optionName = OPTION_WITH_SCHEMA_OBJECT)
+        ?.let { it == "true" } ?: false

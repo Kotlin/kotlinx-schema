@@ -1,11 +1,12 @@
 package com.example.shapes
 
 import io.kotest.assertions.json.shouldEqualJson
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
 import kotlin.test.Test
 import kotlin.test.assertContains
 
 class ShapeSchemaTest {
-
     @Test
     fun `Circle demonstrates KDoc and Description annotation`() {
         val schema = Circle::class.jsonSchemaString
@@ -17,10 +18,10 @@ class ShapeSchemaTest {
         assertContains(schema, "Radius in units (must be positive)")
 
         // Properties with defaults are optional
-        schema shouldEqualJson """
+        schema shouldEqualJson $$"""
         {
-            "${'$'}id": "com.example.shapes.Circle",
-            "${'$'}defs": {
+            "$id": "com.example.shapes.Circle",
+            "$defs": {
                 "com.example.shapes.Circle": {
                     "type": "object",
                     "properties": {
@@ -36,7 +37,7 @@ class ShapeSchemaTest {
                     "description": "A circle defined by its radius."
                 }
             },
-            "${'$'}ref": "#/${'$'}defs/com.example.shapes.Circle"
+            "$ref": "#/$defs/com.example.shapes.Circle"
         }
         """
     }
@@ -70,5 +71,29 @@ class ShapeSchemaTest {
 
         // Descriptions from @Description and KDoc
         assertContains(schema, "Name of this drawing")
+    }
+
+    @Test
+    fun `should generate function schema`() {
+        val functionCallSchema = calculateAreaJsonSchemaString()
+        functionCallSchema shouldEqualJson
+            """
+            {
+                "type":"function",
+                "name":"calculateArea",
+                "description":"We don't care how it is calculated, just that it is.",
+                "strict":true,
+                "parameters": {
+                  "type":"object",
+                  "properties": {
+                    "shape": {"type":"string"}
+                  },
+                  "required":["shape"],
+                  "additionalProperties":false
+                }
+            }
+            """.trimIndent()
+
+        Json.encodeToString(calculateAreaJsonSchema().jsonObject) shouldEqualJson functionCallSchema
     }
 }

@@ -5,6 +5,8 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 
 /**
  * Unit tests for CodeGenerationContext extension functions.
@@ -12,12 +14,34 @@ import org.junit.jupiter.api.Test
 class CodeGenerationContextTest {
     private val mockLogger: KSPLogger = mockk(relaxed = true)
 
-    @Test
-    fun `visibility() returns public when option is public`() {
+    @ParameterizedTest(name = "option={0} => {2}")
+    @CsvSource(
+        value = [
+            "null, ''", // default
+            "'', ''", // default
+            "public, public",
+            "internal, internal",
+            "private, private",
+            "'  \t', ''", // trim whitespace
+            "'  private  ', private", // trim whitespace
+        ],
+        nullValues = ["null"],
+    )
+    fun `should return visibility`(
+        optionVisibility: String?,
+        expectedVisibility: String,
+    ) {
         // Given
+        val options =
+            if (optionVisibility != null) {
+                mapOf("kotlinx.schema.visibility" to optionVisibility)
+            } else {
+                emptyMap()
+            }
+
         val context =
             CodeGenerationContext(
-                options = mapOf("kotlinx.schema.visibility" to "public"),
+                options = options,
                 parameters = emptyMap(),
                 logger = mockLogger,
             )
@@ -26,75 +50,7 @@ class CodeGenerationContextTest {
         val result = context.visibility()
 
         // Then
-        result shouldBe "public"
-    }
-
-    @Test
-    fun `visibility() returns internal when option is internal`() {
-        // Given
-        val context =
-            CodeGenerationContext(
-                options = mapOf("kotlinx.schema.visibility" to "internal"),
-                parameters = emptyMap(),
-                logger = mockLogger,
-            )
-
-        // When
-        val result = context.visibility()
-
-        // Then
-        result shouldBe "internal"
-    }
-
-    @Test
-    fun `visibility() returns private when option is private`() {
-        // Given
-        val context =
-            CodeGenerationContext(
-                options = mapOf("kotlinx.schema.visibility" to "private"),
-                parameters = emptyMap(),
-                logger = mockLogger,
-            )
-
-        // When
-        val result = context.visibility()
-
-        // Then
-        result shouldBe "private"
-    }
-
-    @Test
-    fun `visibility() returns empty string when option is empty`() {
-        // Given
-        val context =
-            CodeGenerationContext(
-                options = mapOf("kotlinx.schema.visibility" to ""),
-                parameters = emptyMap(),
-                logger = mockLogger,
-            )
-
-        // When
-        val result = context.visibility()
-
-        // Then
-        result shouldBe ""
-    }
-
-    @Test
-    fun `visibility() returns empty string when option is missing`() {
-        // Given
-        val context =
-            CodeGenerationContext(
-                options = emptyMap(),
-                parameters = emptyMap(),
-                logger = mockLogger,
-            )
-
-        // When
-        val result = context.visibility()
-
-        // Then
-        result shouldBe ""
+        result shouldBe expectedVisibility
     }
 
     @Test
@@ -116,63 +72,12 @@ class CodeGenerationContextTest {
     }
 
     @Test
-    fun `visibility() trims whitespace from option value`() {
-        // Given
-        val context =
-            CodeGenerationContext(
-                options = mapOf("kotlinx.schema.visibility" to "  public  "),
-                parameters = emptyMap(),
-                logger = mockLogger,
-            )
-
-        // When
-        val result = context.visibility()
-
-        // Then
-        result shouldBe "public"
-    }
-
-    @Test
-    fun `visibility() reads from annotation parameter when option is not set`() {
-        // Given
-        val context =
-            CodeGenerationContext(
-                options = emptyMap(),
-                parameters = mapOf("visibility" to "internal"),
-                logger = mockLogger,
-            )
-
-        // When
-        val result = context.visibility()
-
-        // Then
-        result shouldBe "internal"
-    }
-
-    @Test
-    fun `visibility() annotation parameter takes precedence over option`() {
-        // Given
-        val context =
-            CodeGenerationContext(
-                options = mapOf("kotlinx.schema.visibility" to "public"),
-                parameters = mapOf("visibility" to "internal"),
-                logger = mockLogger,
-            )
-
-        // When
-        val result = context.visibility()
-
-        // Then
-        result shouldBe "internal"
-    }
-
-    @Test
     fun `visibility() throws exception for invalid annotation parameter value`() {
         // Given
         val context =
             CodeGenerationContext(
-                options = emptyMap(),
-                parameters = mapOf("visibility" to "protected"),
+                options = mapOf("kotlinx.schema.visibility" to "protected"),
+                parameters = emptyMap(),
                 logger = mockLogger,
             )
 
@@ -182,56 +87,5 @@ class CodeGenerationContextTest {
                 context.visibility()
             }
         exception.message shouldBe "Invalid visibility option: protected"
-    }
-
-    @Test
-    fun `visibility() trims whitespace from annotation parameter value`() {
-        // Given
-        val context =
-            CodeGenerationContext(
-                options = emptyMap(),
-                parameters = mapOf("visibility" to "  private  "),
-                logger = mockLogger,
-            )
-
-        // When
-        val result = context.visibility()
-
-        // Then
-        result shouldBe "private"
-    }
-
-    @Test
-    fun `visibility() returns empty string when annotation parameter is empty`() {
-        // Given
-        val context =
-            CodeGenerationContext(
-                options = emptyMap(),
-                parameters = mapOf("visibility" to ""),
-                logger = mockLogger,
-            )
-
-        // When
-        val result = context.visibility()
-
-        // Then
-        result shouldBe ""
-    }
-
-    @Test
-    fun `visibility() returns empty string when annotation parameter is whitespace only`() {
-        // Given
-        val context =
-            CodeGenerationContext(
-                options = emptyMap(),
-                parameters = mapOf("visibility" to "   "),
-                logger = mockLogger,
-            )
-
-        // When
-        val result = context.visibility()
-
-        // Then
-        result shouldBe ""
     }
 }

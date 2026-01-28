@@ -34,8 +34,6 @@ internal class SchemaExtensionProcessor(
 
         const val PARAM_WITH_SCHEMA_OBJECT = "withSchemaObject"
 
-        const val PARAM_VISIBILITY = "visibility"
-
         /**
          * A constant representing a configuration key used to specify whether schema generation should include
          * an extension property that provides a schema as a Kotlin object,e.g. `JsonObject`.
@@ -69,7 +67,14 @@ internal class SchemaExtensionProcessor(
          */
         const val OPTION_ROOT_PACKAGE = "kotlinx.schema.rootPackage"
 
-        const val OPTION_VISIBILITY = "kotlinx.schema.$PARAM_VISIBILITY"
+        /**
+         * Represents the key used to retrieve the visibility modifier for generated schema classes/functions
+         * from the compiler options passed to the plugin. This option allows users to specify
+         * the visibility level (e.g., public, internal, private, "") for the generated schema classes and functions.
+         *
+         * Usage of this parameter is optional; if not provided, the default visibility is used.
+         */
+        const val OPTION_VISIBILITY = "kotlinx.schema.visibility"
     }
 
     // Strategy instances for different declaration types

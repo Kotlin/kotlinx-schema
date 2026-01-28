@@ -11,6 +11,7 @@ import kotlinx.schema.ksp.generator.UnifiedKspSchemaGenerator
 import kotlinx.schema.ksp.ir.KspClassIntrospector
 import kotlinx.schema.ksp.strategy.CodeGenerationContext
 import kotlinx.schema.ksp.strategy.SchemaGenerationStrategy
+import kotlinx.schema.ksp.strategy.shouldGenerateSchemaObject
 import kotlinx.serialization.json.JsonObject
 
 /**
@@ -146,6 +147,9 @@ internal class ClassSchemaStrategy : SchemaGenerationStrategy<KSClassDeclaration
                 ),
             )
 
+            // Determine visibility modifier based on context
+            val visibilityPrefix = SourceCodeGeneratorHelpers.visibilityPrefix(context)
+
             // Generate jsonSchemaString extension property (always)
             append(
                 SourceCodeGeneratorHelpers.generateKDoc(
@@ -156,7 +160,7 @@ internal class ClassSchemaStrategy : SchemaGenerationStrategy<KSClassDeclaration
             append(
                 // language=kotlin
                 """
-                |public val kotlin.reflect.KClass<$classNameWithGenerics>.jsonSchemaString: String
+                |${visibilityPrefix}val kotlin.reflect.KClass<$classNameWithGenerics>.jsonSchemaString: String
                 |    get() =
                 |        // language=JSON
                 |        ${schemaString.escapeForKotlinString()}
@@ -165,7 +169,7 @@ internal class ClassSchemaStrategy : SchemaGenerationStrategy<KSClassDeclaration
             )
 
             // Generate jsonSchema extension property (conditional)
-            if (SourceCodeGeneratorHelpers.shouldGenerateSchemaObject(context.options, context.parameters)) {
+            if (context.shouldGenerateSchemaObject()) {
                 append(
                     SourceCodeGeneratorHelpers.generateKDoc(
                         targetName = classNameWithGenerics,
@@ -175,7 +179,7 @@ internal class ClassSchemaStrategy : SchemaGenerationStrategy<KSClassDeclaration
                 append(
                     // language=kotlin
                     """
-                |public val kotlin.reflect.KClass<$classNameWithGenerics>.jsonSchema: kotlinx.serialization.json.JsonObject
+                |${visibilityPrefix}val kotlin.reflect.KClass<$classNameWithGenerics>.jsonSchema: kotlinx.serialization.json.JsonObject
                 |    get() = kotlinx.serialization.json.Json.decodeFromString<kotlinx.serialization.json.JsonObject>(jsonSchemaString)
                 |
                     """.trimMargin(),
