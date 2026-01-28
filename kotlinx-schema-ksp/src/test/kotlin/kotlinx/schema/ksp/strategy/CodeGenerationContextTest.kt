@@ -14,7 +14,52 @@ import org.junit.jupiter.params.provider.CsvSource
 class CodeGenerationContextTest {
     private val mockLogger: KSPLogger = mockk(relaxed = true)
 
-    @ParameterizedTest(name = "option={0} => {2}")
+    @ParameterizedTest(name = "option={0} param={1} => {2}")
+    @CsvSource(
+        value = [
+            "null, null, false", // default
+            "null, true, true",
+            "true, null, true",
+            "false, true, true", // parameter overrides option
+            "true, false, false", // parameter overrides option
+        ],
+        nullValues = ["null"],
+    )
+    fun `should return shouldGenerateSchemaObject`(
+        option: Boolean?,
+        parameter: Boolean?,
+        expected: Boolean,
+    ) {
+        // Given
+        val options =
+            if (option != null) {
+                mapOf("kotlinx.schema.withSchemaObject" to option.toString())
+            } else {
+                emptyMap()
+            }
+
+        val parameters =
+            if (parameter != null) {
+                mapOf("withSchemaObject" to parameter.toString())
+            } else {
+                emptyMap()
+            }
+
+        val context =
+            CodeGenerationContext(
+                options = options,
+                parameters = parameters,
+                logger = mockLogger,
+            )
+
+        // When
+        val result = context.shouldGenerateSchemaObject()
+
+        // Then
+        result shouldBe expected
+    }
+
+    @ParameterizedTest(name = "option={0} => {1}")
     @CsvSource(
         value = [
             "null, ''", // default
