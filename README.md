@@ -22,6 +22,7 @@
 
 Quick Links:
 
+- [KSP Configuration Guide](docs/ksp.md)
 - [Project Architecture](docs/architecture.md)
 
 ## Key Features
@@ -97,65 +98,47 @@ data class Address(
 
 ### Configuration
 
-### Using Standard KSP Plugin
+For complete KSP processor configuration options and examples, see **[KSP Configuration Guide](docs/ksp.md)**.
 
-You can configure KSP processor manually using the standard Google KSP plugin.
+#### Quick Setup
 
-#### Multiplatform (metadata processing)
+**Multiplatform:**
 
 ```kotlin
 plugins {
     kotlin("multiplatform")
-    id("com.google.devtools.ksp") version "2.3.4" // check https://github.com/google/ksp/releases
+    id("com.google.devtools.ksp") version "2.3.4"
 }
 
 dependencies {
-    // Add KSP processor for metadata (common code)
     add("kspCommonMainMetadata", "org.jetbrains.kotlinx:kotlinx-schema-ksp:<version>")
-
-    // Runtime dependencies
     implementation("org.jetbrains.kotlinx:kotlinx-schema-annotations:<version>")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:<version>")
 }
 
 kotlin {
     sourceSets.commonMain {
-        // Make generated sources visible to metadata compilation
         kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
-    }
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.dsl.KotlinCompile<*>>().all {
-    if (name != "kspCommonMainKotlinMetadata") {
-        dependsOn("kspCommonMainKotlinMetadata")
     }
 }
 ```
 
-#### JVM Only
+**JVM:**
 
 ```kotlin
 plugins {
     kotlin("jvm")
-    id("com.google.devtools.ksp") version "2.3.4" // check https://github.com/google/ksp/releases
+    id("com.google.devtools.ksp") version "2.3.4"
 }
 
 dependencies {
-    // Add KSP processor for main source set
     ksp("org.jetbrains.kotlinx:kotlinx-schema-ksp:<version>")
-
-    // Runtime dependencies
     implementation("org.jetbrains.kotlinx:kotlinx-schema-annotations:<version>")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:<version>")
 }
-
-// Make generated sources visible to compilation
-sourceSets.main {
-    kotlin.srcDir("build/generated/ksp/main/kotlin")
-}
 ```
 
-> **Note:** The KSP plugin version should match your Kotlin version. See the [KSP release table](https://github.com/google/ksp/releases) for compatibility.
+> **📖 See [KSP Configuration Guide](docs/ksp.md)** for processor options, annotation parameters, and advanced configuration.
 
 ### Use the Generated Extensions
 
@@ -246,53 +229,7 @@ dependencies {
 - For an example project, see [gradle-plugin-integration-tests](./gradle-plugin-integration-tests).
 </details>
 
-### Configuration Options
-
-##### `enabled`
-Enable or disable schema generation.
-- **Type:** `Boolean`
-- **Default:** `true`
-- **Example:** `enabled.set(false)`
-
-##### `rootPackage`
-Process only classes in the specified package and its subpackages. Improves build performance in large projects.
-- **Type:** `String`
-- **Default:** All packages
-- **Example:** `rootPackage.set("com.example.models")`
-
-##### `withSchemaObject`
-Generate `jsonSchema: JsonObject` property in addition to `jsonSchemaString: String`.
-
-- **Type:** `Boolean`
-- **Default:** `false`
-- **Precedence:**
-  1. **Global option** (if set): Overrides all per-class annotations
-  2. **Per-class annotation** (fallback): `@Schema(withSchemaObject = true)`
-
-**Example with global setting:**
-```kotlin
-kotlinxSchema {
-    withSchemaObject.set(true)  // Applies to ALL classes
-}
-
-@Schema(withSchemaObject = false)  // IGNORED - global setting takes precedence
-data class User(val name: String)  // ✅ Generates both jsonSchemaString and jsonSchema
-
-@Schema  // IGNORED - global setting takes precedence
-data class Product(val id: Long)  // ✅ Generates both (due to global setting)
-```
-
-**Example with per-class annotations (no global setting):**
-```kotlin
-@Schema(withSchemaObject = true)   // ✅ Generates both extensions
-data class User(val name: String)
-
-@Schema(withSchemaObject = false)  // ✅ Only generates jsonSchemaString
-data class Address(val street: String)
-
-@Schema  // ✅ Only generates jsonSchemaString (annotation default)
-data class Product(val id: Long)
-```
+> **📖 For configuration options (`enabled`, `rootPackage`, `withSchemaObject`, `visibility`) and annotation parameters, see [KSP Configuration Guide](docs/ksp.md).**
 
 ## Runtime schema generation
 
