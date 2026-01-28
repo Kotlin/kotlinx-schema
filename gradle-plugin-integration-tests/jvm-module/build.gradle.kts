@@ -10,6 +10,7 @@ kotlinxSchema {
     enabled.set(true)
     rootPackage.set("kotlinx.schema.jvm")
     withSchemaObject.set(true)
+    // visibility.set("internal")
 }
 
 kotlin {
