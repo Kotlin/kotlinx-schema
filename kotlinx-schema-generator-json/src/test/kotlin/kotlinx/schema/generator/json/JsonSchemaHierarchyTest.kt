@@ -8,6 +8,7 @@ import kotlin.test.Test
 
 class JsonSchemaHierarchyTest {
     @Description("Represents an animal")
+    @Suppress("unused")
     sealed class Animal {
         @Description("Animal's name")
         abstract val name: String
@@ -75,6 +76,10 @@ class JsonSchemaHierarchyTest {
                   "type": "object",
                   "description": "Represents a cat",
                   "properties": {
+                    "type": {
+                      "type": "string",
+                      "default": "Cat"
+                    },
                     "name": {
                       "type": "string",
                       "description": "Animal's name"
@@ -89,13 +94,17 @@ class JsonSchemaHierarchyTest {
                       "default": 9
                     }
                   },
-                  "required": ["name", "color"],
+                  "required": ["type", "name", "color"],
                   "additionalProperties": false
                 },
                 "Dog": {
                   "type": "object",
                   "description": "Represents a dog",
                   "properties": {
+                    "type": {
+                      "type": "string",
+                      "default": "Dog"
+                    },
                     "name": {
                       "type": "string",
                       "description": "Animal's name"
@@ -110,7 +119,7 @@ class JsonSchemaHierarchyTest {
                       "default": false
                     }
                   },
-                  "required": ["name", "breed"],
+                  "required": ["type", "name", "breed"],
                   "additionalProperties": false
                 }
               }
@@ -173,6 +182,10 @@ class JsonSchemaHierarchyTest {
                   "type": "object",
                   "description": "Represents a cat",
                   "properties": {
+                    "type": {
+                      "type": "string",
+                      "default": "Cat"
+                    },
                     "name": {
                       "type": "string",
                       "description": "Animal's name"
@@ -187,13 +200,17 @@ class JsonSchemaHierarchyTest {
                       "default": 9
                     }
                   },
-                  "required": ["name", "color"],
+                  "required": ["type", "name", "color"],
                   "additionalProperties": false
                 },
                 "Dog": {
                   "type": "object",
                   "description": "Represents a dog",
                   "properties": {
+                    "type": {
+                      "type": "string",
+                      "default": "Dog"
+                    },
                     "name": {
                       "type": "string",
                       "description": "Animal's name"
@@ -208,7 +225,7 @@ class JsonSchemaHierarchyTest {
                       "default": false
                     }
                   },
-                  "required": ["name", "breed"],
+                  "required": ["type", "name", "breed"],
                   "additionalProperties": false
                 }
               }

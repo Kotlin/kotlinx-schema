@@ -13,10 +13,6 @@ import kotlinx.schema.json.StringPropertyDefinition
 import kotlin.reflect.KClass
 import kotlin.test.Test
 
-/**
- * Comprehensive tests for JSON schema generation covering all type scenarios.
- * Tests primitive types, collections, enums, nested objects, and nullable handling.
- */
 class JsonSchemaTypesTest {
     private val generator =
         requireNotNull(
