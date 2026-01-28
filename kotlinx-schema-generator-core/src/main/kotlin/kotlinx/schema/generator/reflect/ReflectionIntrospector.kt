@@ -1,7 +1,9 @@
 package kotlinx.schema.generator.reflect
+
 import kotlinx.schema.generator.core.ir.Discriminator
 import kotlinx.schema.generator.core.ir.ObjectNode
 import kotlinx.schema.generator.core.ir.PolymorphicNode
+import kotlinx.schema.generator.core.ir.PrimitiveKind
 import kotlinx.schema.generator.core.ir.PrimitiveNode
 import kotlinx.schema.generator.core.ir.Property
 import kotlinx.schema.generator.core.ir.SchemaIntrospector
@@ -117,7 +119,6 @@ public object ReflectionIntrospector : SchemaIntrospector<KClass<*>> {
                 subtypes = subtypes,
                 discriminator =
                     Discriminator(
-                        name = "type",
                         required = true,
                         mapping = discriminatorMapping,
                     ),
@@ -125,6 +126,7 @@ public object ReflectionIntrospector : SchemaIntrospector<KClass<*>> {
             )
         }
 
+        @Suppress("LongMethod", "CyclomaticComplexMethod")
         override fun createObjectNode(klass: KClass<*>): ObjectNode {
             val properties = mutableListOf<Property>()
             val requiredProperties = mutableSetOf<String>()
@@ -135,12 +137,14 @@ public object ReflectionIntrospector : SchemaIntrospector<KClass<*>> {
                     .mapNotNull { it.classifier as? KClass<*> }
                     .filter { it.isSealed }
 
-            // Build a map of parent property descriptions
+            // Build a map of parent property descriptions and properties
             val parentPropertyDescriptions = mutableMapOf<String, String>()
+            val parentProperties = mutableSetOf<String>()
             sealedParents.forEach { parent ->
                 parent.members
                     .filterIsInstance<KProperty<*>>()
                     .forEach { prop ->
+                        parentProperties.add(prop.name)
                         val desc = extractDescription(prop.annotations)
                         if (desc != null) {
                             parentPropertyDescriptions[prop.name] = desc
@@ -148,12 +152,28 @@ public object ReflectionIntrospector : SchemaIntrospector<KClass<*>> {
                     }
             }
 
+            // If this is a subtype of a sealed class, add the discriminator property
+            if (sealedParents.isNotEmpty()) {
+                val typeName = klass.simpleName ?: "Unknown"
+                properties +=
+                    Property(
+                        name = "type",
+                        type = TypeRef.Inline(PrimitiveNode(PrimitiveKind.STRING), false),
+                        description = null,
+                        hasDefaultValue = false, // Not a default value, it's a const discriminator
+                        defaultValue = typeName, // Store the fixed value for const generation
+                    )
+                requiredProperties += "type"
+            }
+
             // Try to extract default values by creating an instance
             val defaultValues = DefaultValueExtractor.extractDefaultValues(klass)
 
             // Extract properties from primary constructor
+            val processedProperties = mutableSetOf<String>()
             klass.constructors.firstOrNull()?.parameters?.forEach { param ->
                 val propertyName = param.name ?: return@forEach
+                processedProperties.add(propertyName)
                 val hasDefault = param.isOptional
 
                 // Find the corresponding property to get annotations
@@ -183,6 +203,36 @@ public object ReflectionIntrospector : SchemaIntrospector<KClass<*>> {
                     )
 
                 if (!hasDefault) {
+                    requiredProperties += propertyName
+                }
+            }
+
+            // Add inherited properties from sealed parents that weren't in the constructor
+            val inheritedPropertyNames = parentProperties - processedProperties
+            inheritedPropertyNames.forEach { propertyName ->
+                // Find the property in the current class (inherited)
+                val property =
+                    klass.members
+                        .filterIsInstance<KProperty<*>>()
+                        .firstOrNull { it.name == propertyName }
+
+                if (property != null) {
+                    val typeRef = convertKTypeToTypeRef(property.returnType)
+                    val description = parentPropertyDescriptions[propertyName]
+
+                    // For inherited properties, try to get the fixed value from the instance
+                    val fixedValue = defaultValues[propertyName]
+
+                    properties +=
+                        Property(
+                            name = propertyName,
+                            type = typeRef,
+                            description = description,
+                            hasDefaultValue = fixedValue != null,
+                            defaultValue = fixedValue,
+                        )
+
+                    // Inherited properties with fixed values are required
                     requiredProperties += propertyName
                 }
             }

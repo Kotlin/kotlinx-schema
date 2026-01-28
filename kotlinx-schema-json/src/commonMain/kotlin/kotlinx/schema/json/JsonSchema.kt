@@ -401,7 +401,8 @@ public data class ReferencePropertyDefinition(
  */
 @Serializable
 public data class Discriminator(
-    val propertyName: String,
+    @EncodeDefault
+    val propertyName: String = "type",
     val mapping: Map<String, String>? = null,
 )
 

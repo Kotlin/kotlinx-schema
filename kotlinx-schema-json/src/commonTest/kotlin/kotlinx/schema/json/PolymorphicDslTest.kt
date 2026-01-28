@@ -494,7 +494,7 @@ internal class PolymorphicDslTest {
                                 property("itemType") {
                                     required = true
                                     oneOf {
-                                        discriminator(propertyName = "type") {
+                                        discriminator {
                                             "product" mappedTo "#/definitions/ProductItem"
                                             "service" mappedTo "#/definitions/ServiceItem"
                                             "discount" mappedTo "#/definitions/DiscountItem"

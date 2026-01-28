@@ -25,8 +25,22 @@ internal object DefaultValueExtractor {
             doExtractDefaultValues(klass)
         }
 
-    @Suppress("CyclomaticComplexMethod", "ReturnCount")
+    @Suppress("CyclomaticComplexMethod", "ThrowsCount", "LongMethod", "ReturnCount")
     private fun doExtractDefaultValues(klass: KClass<*>): Map<String, Any?> {
+        // For object instances (singletons), get the instance directly
+        klass.objectInstance?.let { instance ->
+            return klass.members
+                .filterIsInstance<KProperty1<Any, *>>()
+                .associate { prop ->
+                    prop.name to
+                        try {
+                            prop.get(instance)
+                        } catch (e: java.lang.reflect.InvocationTargetException) {
+                            throw e.cause ?: e
+                        }
+                }.filterValues { it != null }
+        }
+
         val constructor = klass.primaryConstructor ?: return emptyMap()
         val requiredParams = constructor.parameters.filter { !it.isOptional }
 

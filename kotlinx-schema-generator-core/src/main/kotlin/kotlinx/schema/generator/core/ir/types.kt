@@ -102,8 +102,7 @@ public data class SubtypeRef(
  * (typically discriminator value equals subtype serial name).
  */
 public data class Discriminator(
-    val name: String,
+    val name: String = "type",
     val required: Boolean,
     val mapping: Map<String, TypeId>? = null,
 )
-

@@ -425,7 +425,7 @@ internal class PolymorphicPropertyDefinitionTest {
                         ReferencePropertyDefinition(ref = "#/definitions/TypeA"),
                         ReferencePropertyDefinition(ref = "#/definitions/TypeB"),
                     ),
-                discriminator = Discriminator(propertyName = "type"),
+                discriminator = Discriminator(),
                 description = "Discriminator with implicit mapping",
             )
 

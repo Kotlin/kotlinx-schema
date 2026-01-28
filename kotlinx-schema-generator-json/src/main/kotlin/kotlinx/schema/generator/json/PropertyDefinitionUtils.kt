@@ -15,6 +15,24 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
 /**
+ * Sets the const value on a property definition.
+ * Only StringPropertyDefinition, NumericPropertyDefinition, and BooleanPropertyDefinition support const values.
+ */
+internal fun setConstValue(
+    propertyDef: PropertyDefinition,
+    constValue: Any?,
+): PropertyDefinition {
+    val jsonElement = toJsonElement(constValue) ?: return propertyDef
+
+    return when (propertyDef) {
+        is StringPropertyDefinition -> propertyDef.copy(constValue = jsonElement)
+        is NumericPropertyDefinition -> propertyDef.copy(constValue = jsonElement)
+        is BooleanPropertyDefinition -> propertyDef.copy(constValue = jsonElement)
+        else -> propertyDef // Arrays and objects don't support const
+    }
+}
+
+/**
  * Sets the default value on a property definition.
  */
 internal fun setDefaultValue(
