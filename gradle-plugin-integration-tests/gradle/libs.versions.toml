@@ -1,6 +1,6 @@
 [versions]
 dokka = "2.1.0"
-jackson = "2.18.5" # pin it
+jackson = "2.21" # pin it
 junit = "6.0.2"
 kotest = "6.1.0"
 kotlin = "2.2.21"
