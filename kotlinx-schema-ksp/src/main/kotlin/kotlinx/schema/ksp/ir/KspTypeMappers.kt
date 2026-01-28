@@ -56,36 +56,73 @@ internal object KspTypeMappers {
         val qn = type.declaration.qualifiedName?.asString() ?: return null
 
         return when (qn) {
-            "kotlin.collections.List", "kotlin.collections.Set" -> {
+            "kotlin.collections.Iterable",
+            "kotlin.collections.MutableIterable",
+            "kotlin.collections.Collection",
+            "kotlin.collections.MutableCollection",
+            "kotlin.collections.List",
+            "kotlin.collections.MutableList",
+            "kotlin.collections.Set",
+            "kotlin.collections.MutableSet",
+            "kotlin.Array",
+            "kotlin.BooleanArray",
+            "kotlin.ByteArray",
+            "kotlin.ShortArray",
+            "kotlin.IntArray",
+            "kotlin.LongArray",
+            "kotlin.FloatArray",
+            "kotlin.DoubleArray",
+            "kotlin.CharArray",
+            -> {
                 listOrSetTypeRef(type, nullable, recursiveMapper)
             }
 
-            "kotlin.collections.Map" -> {
+            "kotlin.collections.Map",
+            "kotlin.collections.MutableMap",
+            -> {
                 mapTypeRef(type, nullable, recursiveMapper)
             }
 
-            "kotlin.Array" -> {
-                arrayTypeRef(type, nullable, recursiveMapper)
+            else -> {
+                null
             }
-
-            else -> null
         }
     }
 
     /**
-     * Creates TypeRef for List/Set collections.
+     * Creates TypeRef for List/Set/Array collections.
      */
     private fun listOrSetTypeRef(
         type: KSType,
         nullable: Boolean,
         recursiveMapper: (KSType) -> TypeRef,
     ): TypeRef {
-        val elem = type.arguments.firstOrNull()?.type?.resolve()
+        val qn = type.declaration.qualifiedName?.asString()
+        val primitiveElemKind =
+            when (qn) {
+                "kotlin.BooleanArray" -> PrimitiveKind.BOOLEAN
+                "kotlin.ByteArray", "kotlin.ShortArray", "kotlin.IntArray" -> PrimitiveKind.INT
+                "kotlin.LongArray" -> PrimitiveKind.LONG
+                "kotlin.FloatArray" -> PrimitiveKind.FLOAT
+                "kotlin.DoubleArray" -> PrimitiveKind.DOUBLE
+                "kotlin.CharArray" -> PrimitiveKind.STRING
+                else -> null
+            }
+
         val elementRef =
-            if (elem != null) {
-                recursiveMapper(elem)
+            if (primitiveElemKind != null) {
+                TypeRef.Inline(PrimitiveNode(primitiveElemKind))
             } else {
-                TypeRef.Inline(PrimitiveNode(PrimitiveKind.STRING))
+                val elem =
+                    type.arguments
+                        .firstOrNull()
+                        ?.type
+                        ?.resolve()
+                if (elem != null) {
+                    recursiveMapper(elem)
+                } else {
+                    TypeRef.Inline(PrimitiveNode(PrimitiveKind.STRING))
+                }
             }
         return TypeRef.Inline(ListNode(element = elementRef), nullable)
     }
@@ -98,8 +135,16 @@ internal object KspTypeMappers {
         nullable: Boolean,
         recursiveMapper: (KSType) -> TypeRef,
     ): TypeRef {
-        val keyType = type.arguments.getOrNull(0)?.type?.resolve()
-        val valueType = type.arguments.getOrNull(1)?.type?.resolve()
+        val keyType =
+            type.arguments
+                .getOrNull(0)
+                ?.type
+                ?.resolve()
+        val valueType =
+            type.arguments
+                .getOrNull(1)
+                ?.type
+                ?.resolve()
 
         val keyRef =
             if (keyType != null) {
@@ -116,23 +161,5 @@ internal object KspTypeMappers {
             }
 
         return TypeRef.Inline(MapNode(key = keyRef, value = valueRef), nullable)
-    }
-
-    /**
-     * Creates TypeRef for Array collections.
-     */
-    private fun arrayTypeRef(
-        type: KSType,
-        nullable: Boolean,
-        recursiveMapper: (KSType) -> TypeRef,
-    ): TypeRef {
-        val elem = type.arguments.firstOrNull()?.type?.resolve()
-        val elementRef =
-            if (elem != null) {
-                recursiveMapper(elem)
-            } else {
-                TypeRef.Inline(PrimitiveNode(PrimitiveKind.STRING))
-            }
-        return TypeRef.Inline(ListNode(element = elementRef), nullable)
     }
 }

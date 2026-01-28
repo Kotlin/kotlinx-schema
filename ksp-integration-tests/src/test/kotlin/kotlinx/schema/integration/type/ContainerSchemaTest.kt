@@ -9,10 +9,10 @@ import kotlin.test.Test
 class ContainerSchemaTest {
     @Test
     fun `generates schema with generic type parameter resolution`() {
-        val schema = Container::class.jsonSchemaString
+        val schemaString = Container::class.jsonSchemaString
 
         // language=json
-        schema shouldEqualJson
+        schemaString shouldEqualJson
             $$"""
             {
               "$id": "kotlinx.schema.integration.type.Container",
