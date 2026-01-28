@@ -1,6 +1,5 @@
 package kotlinx.schema.ksp.ir
 
-import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSAnnotation
 import kotlinx.schema.generator.core.ir.Introspections
 
@@ -31,7 +30,3 @@ internal fun KSAnnotation.descriptionOrNull(): String? {
         annotationArguments = args,
     )
 }
-
-internal fun KSAnnotated.descriptionOrDefault(defaultValue: String? = null): String? =
-    annotations.firstNotNullOfOrNull { it.descriptionOrNull() }
-        ?: defaultValue

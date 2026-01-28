@@ -28,27 +28,20 @@ import kotlinx.schema.generator.core.ir.TypeRef
  * Does NOT support:
  * - Lambda parameters with complex signatures
  */
-@Suppress("ReturnCount", "MaxLineLength", "NestedBlockDepth", "LongMethod", "CyclomaticComplexMethod")
 internal class KspFunctionIntrospector : SchemaIntrospector<KSFunctionDeclaration> {
     override fun introspect(root: KSFunctionDeclaration): TypeGraph {
         val nodes = LinkedHashMap<TypeId, TypeNode>()
 
         fun toRef(type: KSType): TypeRef {
-            val nullable = type.nullability == Nullability.NULLABLE
-
-            // Try primitive types first
-            KspTypeMappers.primitiveFor(type)?.let { prim ->
-                return TypeRef.Inline(prim, nullable)
-            }
-
-            // Try collection types (List, Set, Map, Array)
-            KspTypeMappers.collectionTypeRefOrNull(type, ::toRef)?.let { collectionRef ->
-                return collectionRef
-            }
+            // Try basic types (primitives and collections)
+            resolveBasicTypeOrNull(type, ::toRef)?.let { return it }
 
             // For complex types (data classes, enums, etc.), use simplified approach
             // Function schemas inline complex types as strings for simplicity
-            return TypeRef.Inline(PrimitiveNode(PrimitiveKind.STRING), nullable)
+            return TypeRef.Inline(
+                PrimitiveNode(PrimitiveKind.STRING),
+                type.nullability == Nullability.NULLABLE,
+            )
         }
 
         // Extract function information
@@ -66,28 +59,24 @@ internal class KspFunctionIntrospector : SchemaIntrospector<KSFunctionDeclaratio
             val typeRef = toRef(paramType)
 
             // Extract description from annotations or KDoc
-            val description =
-                param.annotations.firstNotNullOfOrNull { it.descriptionOrNull() }
+            val description = extractDescription(param) { null }
 
             // KSP limitation: hasDefault doesn't reliably detect default values in the same compilation unit
             // For function calling schemas, all parameters are marked as required by default (including nullable)
             // Nullable types are represented with union types: ["string", "null"]
             properties +=
-                Property(
+                createProperty(
                     name = paramName,
                     type = typeRef,
                     description = description,
                     hasDefaultValue = false,
-                    defaultValue = null, // KSP cannot extract default values at compile-time
                 )
 
             requiredProperties += paramName
         }
 
         // Extract function description
-        val functionDescription =
-            root.annotations.firstNotNullOfOrNull { it.descriptionOrNull() }
-                ?: root.descriptionFromKdoc()
+        val functionDescription = extractDescription(root) { root.descriptionFromKdoc() }
 
         val objectNode =
             ObjectNode(

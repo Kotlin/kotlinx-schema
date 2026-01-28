@@ -1,7 +1,5 @@
 package kotlinx.schema.ksp
 
-import kotlinx.schema.ksp.SchemaExtensionProcessor.Companion.OPTION_WITH_SCHEMA_OBJECT
-import kotlinx.schema.ksp.SchemaExtensionProcessor.Companion.PARAM_WITH_SCHEMA_OBJECT
 import kotlinx.schema.ksp.strategy.CodeGenerationContext
 import kotlinx.schema.ksp.strategy.shouldGenerateSchemaObject
 import kotlinx.schema.ksp.strategy.visibility

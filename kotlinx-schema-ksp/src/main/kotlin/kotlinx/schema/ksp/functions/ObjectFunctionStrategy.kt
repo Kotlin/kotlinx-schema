@@ -7,9 +7,7 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import kotlinx.schema.generator.json.TypeGraphToFunctionCallingSchemaTransformer
 import kotlinx.schema.json.FunctionCallingSchema
-import kotlinx.schema.ksp.SourceCodeGeneratorHelpers
 import kotlinx.schema.ksp.SourceCodeGeneratorHelpers.buildKClassExtensions
-import kotlinx.schema.ksp.SourceCodeGeneratorHelpers.escapeForKotlinString
 import kotlinx.schema.ksp.generator.KspSchemaGeneratorConfig
 import kotlinx.schema.ksp.generator.UnifiedKspSchemaGenerator
 import kotlinx.schema.ksp.ir.KspFunctionIntrospector

@@ -15,7 +15,6 @@ import kotlinx.schema.ksp.ir.KspFunctionIntrospector
 import kotlinx.schema.ksp.strategy.CodeGenerationContext
 import kotlinx.schema.ksp.strategy.SchemaGenerationStrategy
 import kotlinx.schema.ksp.strategy.shouldGenerateSchemaObject
-import kotlinx.schema.ksp.strategy.visibility
 
 /**
  * Strategy for generating schemas for top-level function declarations.
