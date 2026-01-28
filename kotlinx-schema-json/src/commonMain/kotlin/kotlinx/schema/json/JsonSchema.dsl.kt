@@ -760,7 +760,9 @@ public class StringPropertyBuilder internal constructor() {
                     is List<*> -> {
                         value.map { item ->
                             when (item) {
-                                is String -> item
+                                is String -> {
+                                    item
+                                }
 
                                 is JsonPrimitive -> {
                                     // Validate that JsonPrimitive contains a string
@@ -1008,7 +1010,9 @@ public class NumericPropertyBuilder internal constructor(
                     is List<*> -> {
                         value.map { item ->
                             when (item) {
-                                is Number -> item.toDouble()
+                                is Number -> {
+                                    item.toDouble()
+                                }
 
                                 is JsonPrimitive -> {
                                     // Validate that JsonPrimitive contains a number and extract it
@@ -1219,7 +1223,9 @@ public class BooleanPropertyBuilder internal constructor() {
                     is List<*> -> {
                         value.map { item ->
                             when (item) {
-                                is Boolean -> item
+                                is Boolean -> {
+                                    item
+                                }
 
                                 is JsonPrimitive -> {
                                     // Validate that JsonPrimitive contains a boolean and extract it
@@ -1416,37 +1422,64 @@ public class GenericPropertyBuilder internal constructor() {
         set(value) {
             _enum =
                 when (value) {
-                    is List<*> -> value.map { convertToJsonElement(it) }
-                    null -> null
-                    else ->
+                    is List<*> -> {
+                        value.map { convertToJsonElement(it) }
+                    }
+
+                    null -> {
+                        null
+                    }
+
+                    else -> {
                         throw IllegalArgumentException(
                             "Enum must be a List or null, but got: ${value::class.simpleName}",
                         )
+                    }
                 }
         }
 
     private fun convertToJsonElement(value: Any?): JsonElement =
         when (value) {
-            is JsonElement -> value
-            is String -> JsonPrimitive(value)
-            is Number -> JsonPrimitive(value)
-            is Boolean -> JsonPrimitive(value)
-            null -> JsonNull
-            is List<*> ->
+            is JsonElement -> {
+                value
+            }
+
+            is String -> {
+                JsonPrimitive(value)
+            }
+
+            is Number -> {
+                JsonPrimitive(value)
+            }
+
+            is Boolean -> {
+                JsonPrimitive(value)
+            }
+
+            null -> {
+                JsonNull
+            }
+
+            is List<*> -> {
                 JsonArray(
                     value.map { convertToJsonElement(it) },
                 )
-            is Map<*, *> ->
+            }
+
+            is Map<*, *> -> {
                 JsonObject(
                     value.mapKeys { it.key.toString() }.mapValues { (_, v) ->
                         convertToJsonElement(v)
                     },
                 )
-            else ->
+            }
+
+            else -> {
                 throw IllegalArgumentException(
                     "Generic property enum must contain JsonElement, String, Number, Boolean, null, List, or Map, " +
                         "but got: ${value::class.simpleName}",
                 )
+            }
         }
 
     private var _default: JsonElement? = null
@@ -1461,13 +1494,20 @@ public class GenericPropertyBuilder internal constructor() {
         set(value) {
             _default =
                 when (value) {
-                    is JsonElement -> value
-                    null -> null
-                    else ->
+                    is JsonElement -> {
+                        value
+                    }
+
+                    null -> {
+                        null
+                    }
+
+                    else -> {
                         error(
                             "Generic property default must be JsonElement or null, " +
                                 "but got: ${value::class.simpleName}",
                         )
+                    }
                 }
         }
 
@@ -1483,13 +1523,20 @@ public class GenericPropertyBuilder internal constructor() {
         set(value) {
             _constValue =
                 when (value) {
-                    is JsonElement -> value
-                    null -> null
-                    else ->
+                    is JsonElement -> {
+                        value
+                    }
+
+                    null -> {
+                        null
+                    }
+
+                    else -> {
                         error(
                             "Generic property constValue must be JsonElement or null, " +
                                 "but got: ${value::class.simpleName}",
                         )
+                    }
                 }
         }
 
@@ -1598,7 +1645,9 @@ public class ArrayPropertyBuilder internal constructor() {
                     is List<*> -> {
                         value.map { item ->
                             when (item) {
-                                is JsonArray -> item
+                                is JsonArray -> {
+                                    item
+                                }
 
                                 null -> {
                                     throw IllegalArgumentException(
@@ -1607,10 +1656,12 @@ public class ArrayPropertyBuilder internal constructor() {
                                     )
                                 }
 
-                                else -> throw IllegalArgumentException(
-                                    "Array property enum must contain only JsonArray values or null, " +
-                                        "but got: ${item::class.simpleName}",
-                                )
+                                else -> {
+                                    throw IllegalArgumentException(
+                                        "Array property enum must contain only JsonArray values or null, " +
+                                            "but got: ${item::class.simpleName}",
+                                    )
+                                }
                             }
                         }
                     }
@@ -2329,7 +2380,7 @@ public class OneOfPropertyBuilder internal constructor() : PolymorphicOptionsCol
      * ```
      */
     public fun discriminator(
-        propertyName: String,
+        propertyName: String = "type",
         block: DiscriminatorBuilder.() -> Unit = {},
     ) {
         require(propertyName.isNotEmpty()) { "Discriminator propertyName cannot be empty" }
