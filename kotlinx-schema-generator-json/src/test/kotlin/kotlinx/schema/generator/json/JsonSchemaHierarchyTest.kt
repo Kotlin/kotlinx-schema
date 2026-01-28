@@ -58,27 +58,27 @@ class JsonSchemaHierarchyTest {
               "description": "Represents an animal",
               "oneOf": [
                 {
-                  "$ref": "#/$defs/Cat"
+                  "$ref": "#/$defs/Animal.Cat"
                 },
                 {
-                  "$ref": "#/$defs/Dog"
+                  "$ref": "#/$defs/Animal.Dog"
                 }
               ],
               "discriminator": {
                 "propertyName": "type",
                 "mapping": {
-                  "Cat": "#/$defs/Cat",
-                  "Dog": "#/$defs/Dog"
+                  "Cat": "#/$defs/Animal.Cat",
+                  "Dog": "#/$defs/Animal.Dog"
                 }
               },
               "$defs": {
-                "Cat": {
+                "Animal.Cat": {
                   "type": "object",
                   "description": "Represents a cat",
                   "properties": {
                     "type": {
                       "type": "string",
-                      "default": "Cat"
+                      "default": "Animal.Cat"
                     },
                     "name": {
                       "type": "string",
@@ -97,13 +97,13 @@ class JsonSchemaHierarchyTest {
                   "required": ["type", "name", "color"],
                   "additionalProperties": false
                 },
-                "Dog": {
+                "Animal.Dog": {
                   "type": "object",
                   "description": "Represents a dog",
                   "properties": {
                     "type": {
                       "type": "string",
-                      "default": "Dog"
+                      "default": "Animal.Dog"
                     },
                     "name": {
                       "type": "string",
@@ -155,17 +155,17 @@ class JsonSchemaHierarchyTest {
                     {
                       "oneOf": [
                         {
-                          "$ref": "#/$defs/Cat"
+                          "$ref": "#/$defs/Animal.Cat"
                         },
                         {
-                          "$ref": "#/$defs/Dog"
+                          "$ref": "#/$defs/Animal.Dog"
                         }
                       ],
                       "discriminator": {
                         "propertyName": "type",
                         "mapping": {
-                          "Cat": "#/$defs/Cat",
-                          "Dog": "#/$defs/Dog"
+                          "Cat": "#/$defs/Animal.Cat",
+                          "Dog": "#/$defs/Animal.Dog"
                         }
                       }
                     },
@@ -178,13 +178,13 @@ class JsonSchemaHierarchyTest {
               "required": ["animal"],
               "additionalProperties": false,
               "$defs": {
-                "Cat": {
+                "Animal.Cat": {
                   "type": "object",
                   "description": "Represents a cat",
                   "properties": {
                     "type": {
                       "type": "string",
-                      "default": "Cat"
+                      "default": "Animal.Cat"
                     },
                     "name": {
                       "type": "string",
@@ -203,13 +203,13 @@ class JsonSchemaHierarchyTest {
                   "required": ["type", "name", "color"],
                   "additionalProperties": false
                 },
-                "Dog": {
+                "Animal.Dog": {
                   "type": "object",
                   "description": "Represents a dog",
                   "properties": {
                     "type": {
                       "type": "string",
-                      "default": "Dog"
+                      "default": "Animal.Dog"
                     },
                     "name": {
                       "type": "string",

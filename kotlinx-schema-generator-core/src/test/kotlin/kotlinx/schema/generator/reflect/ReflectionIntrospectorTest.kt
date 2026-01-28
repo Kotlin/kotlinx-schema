@@ -174,20 +174,20 @@ class ReflectionIntrospectorTest {
             required shouldBe true
         }
 
-        // Ensure subtypes discovered and object nodes present
+        // Verify subtypes use qualified names (Parent.Child pattern)
         val subtypeIds = polyNode.subtypes.map { it.id.value }.toSet()
         subtypeIds.shouldContainExactlyInAnyOrder(
             setOf(
-                Shape.Circle::class.simpleName,
-                Shape.Rectangle::class.simpleName,
+                "Shape.Circle",
+                "Shape.Rectangle",
             ),
         )
 
-        // Verify each subtype has correct description
-        val circleNode = graph.nodes[TypeId("Circle")].shouldNotBeNull().shouldBeInstanceOf<ObjectNode>()
+        // Verify each subtype node is registered with qualified name
+        val circleNode = graph.nodes[TypeId("Shape.Circle")].shouldNotBeNull().shouldBeInstanceOf<ObjectNode>()
         circleNode.description shouldBe "Circle shape"
 
-        val rectangleNode = graph.nodes[TypeId("Rectangle")].shouldNotBeNull().shouldBeInstanceOf<ObjectNode>()
+        val rectangleNode = graph.nodes[TypeId("Shape.Rectangle")].shouldNotBeNull().shouldBeInstanceOf<ObjectNode>()
         rectangleNode.description shouldBe "Rectangle shape"
     }
 }

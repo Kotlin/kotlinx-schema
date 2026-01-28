@@ -19,9 +19,10 @@ kotlin {
         api(project(":kotlinx-schema-json"))
 
         // test dependencies
-        testImplementation(libs.kotlin.test)
+        testImplementation(libs.junit.pioneer)
         testImplementation(libs.kotest.assertions.core)
         testImplementation(libs.kotest.assertions.json)
+        testImplementation(libs.kotlin.test)
     }
 
     compilerOptions {

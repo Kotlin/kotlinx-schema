@@ -10,12 +10,10 @@ class SealedHierarchyTest {
         val json =
             Json {
                 encodeDefaults = false
-                prettyPrint = true
             }
         val schema =
             ReflectionClassJsonSchemaGenerator(
-                json =
-                json,
+                json = json,
                 config = JsonSchemaConfig.Strict,
             ).generateSchema(ExampleA::class)
         val actual = json.encodeToString(schema)
@@ -31,15 +29,15 @@ class SealedHierarchyTest {
                    "additionalProperties": false,
                    "oneOf": [
                      {
-                       "$ref": "#/$defs/ExampleB"
+                       "$ref": "#/$defs/ExampleA.ExampleB"
                      }
                    ],
                    "$defs": {
-                     "ExampleB": {
+                     "ExampleA.ExampleB": {
                        "type": "object",
                        "properties": {
                          "type": {
-                           "const": "ExampleB",
+                           "const": "ExampleA.ExampleB",
                            "type": "string"
                          },
                          "someProp": {

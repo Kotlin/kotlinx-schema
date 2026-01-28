@@ -68,9 +68,9 @@ class TypeGraphToJsonObjectSchemaTransformerTest {
         val animalDef = defs["kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal"] as JsonObject
         val oneOf = animalDef["oneOf"] as JsonArray
         oneOf.size shouldBe 2
-        // Subtype IDs are simple names in this case
+        // Subtype IDs use qualified names (Parent.Child) to avoid collisions
         val refs = oneOf.map { (it as JsonObject)[$$"$ref"].toString() }.sorted()
-        refs.shouldBe(listOf($$"\"#/$defs/Cat\"", $$"\"#/$defs/Dog\""))
+        refs.shouldBe(listOf($$"\"#/$defs/Animal.Cat\"", $$"\"#/$defs/Animal.Dog\""))
     }
 
     data class SimplePerson(

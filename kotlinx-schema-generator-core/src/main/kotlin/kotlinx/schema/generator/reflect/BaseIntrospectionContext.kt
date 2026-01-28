@@ -80,13 +80,40 @@ internal abstract class BaseIntrospectionContext {
     /**
      * Converts a KClass to a TypeRef, handling caching and nullability.
      * Can be overridden by subclasses to add custom type handling (e.g., sealed classes).
+     *
+     * Default implementation handles primitives, collections, enums, and objects.
+     * Subclasses can override to add sealed class handling or other specialized behavior.
      */
     @Suppress("ReturnCount")
-    internal abstract fun convertToTypeRef(
+    internal open fun convertToTypeRef(
         klass: KClass<*>,
         nullable: Boolean = false,
         useSimpleName: Boolean = false,
-    ): TypeRef
+    ): TypeRef {
+        // Check cache first
+        typeRefCache[klass]?.let { cachedRef ->
+            return if (nullable && !cachedRef.nullable) {
+                cachedRef.withNullable(true)
+            } else {
+                cachedRef
+            }
+        }
+
+        // Try to convert to primitive type
+        primitiveKindFor(klass)?.let { primitiveKind ->
+            val ref = TypeRef.Inline(PrimitiveNode(primitiveKind), nullable)
+            if (!nullable) typeRefCache[klass] = ref
+            return ref
+        }
+
+        // Handle different type categories
+        return when {
+            isListLike(klass) -> handleListType(klass, nullable)
+            Map::class.java.isAssignableFrom(klass.java) -> handleMapType(klass, nullable)
+            isEnumClass(klass) -> handleEnumType(klass, nullable)
+            else -> handleObjectType(klass, nullable, useSimpleName)
+        }
+    }
 
     /**
      * Handles list-like types (List, Collection, Iterable).
@@ -146,17 +173,18 @@ internal abstract class BaseIntrospectionContext {
         klass: KClass<*>,
         nullable: Boolean,
         useSimpleName: Boolean,
+        parentPrefix: String? = null,
     ): TypeRef {
         val id =
-            if (useSimpleName) {
-                TypeId(klass.simpleName ?: "Unknown")
-            } else {
-                createTypeId(klass)
+            when {
+                parentPrefix != null -> TypeId(generateQualifiedName(klass, parentPrefix))
+                useSimpleName -> TypeId(klass.simpleName ?: "Unknown")
+                else -> createTypeId(klass)
             }
 
         if (shouldProcessClass(klass, id)) {
             markAsVisiting(klass)
-            val objectNode = createObjectNode(klass)
+            val objectNode = createObjectNode(klass, parentPrefix)
             discoveredNodes[id] = objectNode
             unmarkAsVisiting(klass)
         }
@@ -169,8 +197,14 @@ internal abstract class BaseIntrospectionContext {
     /**
      * Creates an ObjectNode from a KClass.
      * This is the main extension point for subclasses to customize how properties are extracted.
+     *
+     * @param klass The class to create an ObjectNode for
+     * @param parentPrefix Optional parent prefix for qualified naming (used for sealed subclasses)
      */
-    protected abstract fun createObjectNode(klass: KClass<*>): ObjectNode
+    protected abstract fun createObjectNode(
+        klass: KClass<*>,
+        parentPrefix: String? = null,
+    ): ObjectNode
 
     /**
      * Checks if a class should be processed (not already discovered and not currently being visited).
@@ -193,4 +227,40 @@ internal abstract class BaseIntrospectionContext {
     protected fun unmarkAsVisiting(klass: KClass<*>) {
         visitingClasses -= klass
     }
+
+    /**
+     * Generates a qualified type name for a class, optionally prefixed with parent name.
+     * Used for sealed class subclasses to avoid name collisions (e.g., "Parent.Child").
+     *
+     * @param klass The class to generate a name for
+     * @param parentPrefix Optional parent prefix (typically the sealed parent's simple name)
+     * @return Qualified name like "Parent.Child" if parentPrefix provided, otherwise simple name
+     */
+    protected fun generateQualifiedName(
+        klass: KClass<*>,
+        parentPrefix: String?,
+    ): String {
+        val simpleName = klass.simpleName ?: "Unknown"
+        return if (parentPrefix != null) {
+            "$parentPrefix.$simpleName"
+        } else {
+            simpleName
+        }
+    }
+
+    /**
+     * Finds a property in a class by name.
+     * Used when extracting metadata from constructor parameters to find corresponding property annotations.
+     *
+     * @param klass The class to search in
+     * @param propertyName The name of the property to find
+     * @return The property if found, null otherwise
+     */
+    protected fun findPropertyByName(
+        klass: KClass<*>,
+        propertyName: String,
+    ): kotlin.reflect.KProperty<*>? =
+        klass.members
+            .filterIsInstance<kotlin.reflect.KProperty<*>>()
+            .firstOrNull { it.name == propertyName }
 }

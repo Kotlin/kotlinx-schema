@@ -43,38 +43,19 @@ public object ReflectionIntrospector : SchemaIntrospector<KClass<*>> {
     @Suppress("TooManyFunctions")
     private class IntrospectionContext : BaseIntrospectionContext() {
         /**
-         * Overrides base convertToTypeRef to add sealed class handling.
+         * Overrides base convertToTypeRef to add sealed class handling before object handling.
          */
-        @Suppress("ReturnCount")
         override fun convertToTypeRef(
             klass: KClass<*>,
             nullable: Boolean,
             useSimpleName: Boolean,
         ): TypeRef {
-            // Check cache first
-            typeRefCache[klass]?.let { cachedRef ->
-                return if (nullable && !cachedRef.nullable) {
-                    cachedRef.withNullable(true)
-                } else {
-                    cachedRef
-                }
+            // Handle sealed classes specially (before calling super)
+            if (klass.isSealed) {
+                return handleSealedType(klass, nullable)
             }
-
-            // Try to convert to primitive type
-            primitiveKindFor(klass)?.let { primitiveKind ->
-                val ref = TypeRef.Inline(PrimitiveNode(primitiveKind), nullable)
-                if (!nullable) typeRefCache[klass] = ref
-                return ref
-            }
-
-            // Handle different type categories, including sealed classes
-            return when {
-                isListLike(klass) -> handleListType(klass, nullable)
-                Map::class.java.isAssignableFrom(klass.java) -> handleMapType(klass, nullable)
-                isEnumClass(klass) -> handleEnumType(klass, nullable)
-                klass.isSealed -> handleSealedType(klass, nullable)
-                else -> handleObjectType(klass, nullable, useSimpleName)
-            }
+            // Delegate to base implementation for all other cases
+            return super.convertToTypeRef(klass, nullable, useSimpleName)
         }
 
         private fun handleSealedType(
@@ -88,9 +69,10 @@ public object ReflectionIntrospector : SchemaIntrospector<KClass<*>> {
                 val polymorphicNode = createPolymorphicNode(klass)
                 discoveredNodes[id] = polymorphicNode
 
-                // Process each sealed subclass
+                // Process each sealed subclass with parent-qualified names
+                val parentName = klass.simpleName ?: "UnknownSealed"
                 klass.sealedSubclasses.forEach { subclass ->
-                    convertToTypeRef(subclass, nullable = false, useSimpleName = true)
+                    handleObjectType(subclass, nullable = false, useSimpleName = false, parentPrefix = parentName)
                 }
 
                 unmarkAsVisiting(klass)
@@ -102,20 +84,22 @@ public object ReflectionIntrospector : SchemaIntrospector<KClass<*>> {
         }
 
         private fun createPolymorphicNode(klass: KClass<*>): PolymorphicNode {
+            val parentName = klass.simpleName ?: "UnknownSealed"
+
             val subtypes =
                 klass.sealedSubclasses.map { subclass ->
-                    SubtypeRef(TypeId(subclass.simpleName ?: "Unknown"))
+                    SubtypeRef(TypeId(generateQualifiedName(subclass, parentName)))
                 }
 
             // Build discriminator mapping: discriminator value -> TypeId
             val discriminatorMapping =
                 klass.sealedSubclasses.associate { subclass ->
                     val simpleName = subclass.simpleName ?: "Unknown"
-                    simpleName to TypeId(simpleName)
+                    simpleName to TypeId(generateQualifiedName(subclass, parentName))
                 }
 
             return PolymorphicNode(
-                baseName = klass.simpleName ?: "UnknownSealed",
+                baseName = parentName,
                 subtypes = subtypes,
                 discriminator =
                     Discriminator(
@@ -127,7 +111,10 @@ public object ReflectionIntrospector : SchemaIntrospector<KClass<*>> {
         }
 
         @Suppress("LongMethod", "CyclomaticComplexMethod")
-        override fun createObjectNode(klass: KClass<*>): ObjectNode {
+        override fun createObjectNode(
+            klass: KClass<*>,
+            parentPrefix: String?,
+        ): ObjectNode {
             val properties = mutableListOf<Property>()
             val requiredProperties = mutableSetOf<String>()
 
@@ -154,7 +141,7 @@ public object ReflectionIntrospector : SchemaIntrospector<KClass<*>> {
 
             // If this is a subtype of a sealed class, add the discriminator property
             if (sealedParents.isNotEmpty()) {
-                val typeName = klass.simpleName ?: "Unknown"
+                val typeName = generateQualifiedName(klass, parentPrefix)
                 properties +=
                     Property(
                         name = "type",
@@ -177,10 +164,7 @@ public object ReflectionIntrospector : SchemaIntrospector<KClass<*>> {
                 val hasDefault = param.isOptional
 
                 // Find the corresponding property to get annotations
-                val property =
-                    klass.members
-                        .filterIsInstance<KProperty<*>>()
-                        .firstOrNull { it.name == propertyName }
+                val property = findPropertyByName(klass, propertyName)
 
                 val propertyType = param.type
                 val typeRef = convertKTypeToTypeRef(propertyType)
@@ -211,10 +195,7 @@ public object ReflectionIntrospector : SchemaIntrospector<KClass<*>> {
             val inheritedPropertyNames = parentProperties - processedProperties
             inheritedPropertyNames.forEach { propertyName ->
                 // Find the property in the current class (inherited)
-                val property =
-                    klass.members
-                        .filterIsInstance<KProperty<*>>()
-                        .firstOrNull { it.name == propertyName }
+                val property = findPropertyByName(klass, propertyName)
 
                 if (property != null) {
                     val typeRef = convertKTypeToTypeRef(property.returnType)

@@ -86,11 +86,10 @@ internal class JsonSchemaSerializationTest {
     fun `Should de-serialize Schema with id and schema`() {
         // language=json
         val json =
-            """
+            $$"""
             {
-            
-                "${'$'}schema": "https://json-schema.org/draft-07/schema", 
-                "${'$'}id": "https://example.com/schemas/product", 
+                "$schema": "https://json-schema.org/draft-07/schema", 
+                "$id": "https://example.com/schemas/product", 
                 "type" : "object",
                 "properties" : {
                   "name" : {
@@ -124,7 +123,7 @@ internal class JsonSchemaSerializationTest {
     fun `Should deserialize complex JsonSchema`() {
         // language=json
         val json =
-            """
+            $$"""
             {
               "name": "ComplexSchema",
               "strict": true,
@@ -223,7 +222,7 @@ internal class JsonSchemaSerializationTest {
                     "const": false
                   },
                   "reference": {
-                    "${'$'}ref": "#/definitions/ExternalType"
+                    "$ref": "#/definitions/ExternalType"
                   }
                 },
                 "required": ["id", "email", "status"],
@@ -265,7 +264,7 @@ internal class JsonSchemaSerializationTest {
             type shouldBe listOf("string")
             nullable shouldBe null
             format shouldBe "email"
-            pattern shouldBe "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+\$"
+            pattern shouldBe $$"^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
             description shouldBe "Email address"
             minLength shouldBe 5
             maxLength shouldBe 100
@@ -404,7 +403,7 @@ internal class JsonSchemaSerializationTest {
     fun `Should serialize and deserialize polymorphic schema with defs and ref`() {
         // language=json
         val json =
-            """
+            $$"""
             {
               "name": "Animal",
               "strict": false,
@@ -414,20 +413,20 @@ internal class JsonSchemaSerializationTest {
                 "description": "Animal hierarchy",
                 "oneOf": [
                   {
-                    "${'$'}ref": "#/${'$'}defs/Cat"
+                    "$ref": "#/$defs/Cat"
                   },
                   {
-                    "${'$'}ref": "#/${'$'}defs/Dog"
+                    "$ref": "#/$defs/Dog"
                   }
                 ],
                 "discriminator": {
                   "propertyName": "type",
                   "mapping": {
-                    "Cat": "#/${'$'}defs/Cat",
-                    "Dog": "#/${'$'}defs/Dog"
+                    "Cat": "#/$defs/Cat",
+                    "Dog": "#/$defs/Dog"
                   }
                 },
-                "${'$'}defs": {
+                "$defs": {
                   "Cat": {
                     "type": "object",
                     "description": "A cat",
@@ -476,11 +475,11 @@ internal class JsonSchemaSerializationTest {
             shouldHaveSize(2)
             this[0] shouldNotBeNull {
                 this as ReferencePropertyDefinition
-                ref shouldBe "#/\$defs/Cat"
+                ref shouldBe $$"#/$defs/Cat"
             }
             this[1] shouldNotBeNull {
                 this as ReferencePropertyDefinition
-                ref shouldBe "#/\$defs/Dog"
+                ref shouldBe $$"#/$defs/Dog"
             }
         }
 
@@ -489,8 +488,8 @@ internal class JsonSchemaSerializationTest {
             propertyName shouldBe "type"
             mapping shouldNotBeNull {
                 shouldHaveSize(2)
-                this["Cat"] shouldBe "#/\$defs/Cat"
-                this["Dog"] shouldBe "#/\$defs/Dog"
+                this["Cat"] shouldBe $$"#/$defs/Cat"
+                this["Dog"] shouldBe $$"#/$defs/Dog"
             }
         }
 
@@ -538,7 +537,7 @@ internal class JsonSchemaSerializationTest {
     fun `Should serialize and deserialize nullable polymorphic schema with anyOf`() {
         // language=json
         val json =
-            """
+            $$"""
             {
               "name": "Container",
               "strict": false,
@@ -551,17 +550,17 @@ internal class JsonSchemaSerializationTest {
                       {
                         "oneOf": [
                           {
-                            "${'$'}ref": "#/${'$'}defs/Cat"
+                            "$ref": "#/$defs/Cat"
                           },
                           {
-                            "${'$'}ref": "#/${'$'}defs/Dog"
+                            "$ref": "#/$defs/Dog"
                           }
                         ],
                         "discriminator": {
                           "propertyName": "type",
                           "mapping": {
-                            "Cat": "#/${'$'}defs/Cat",
-                            "Dog": "#/${'$'}defs/Dog"
+                            "Cat": "#/$defs/Cat",
+                            "Dog": "#/$defs/Dog"
                           }
                         }
                       },
@@ -573,7 +572,7 @@ internal class JsonSchemaSerializationTest {
                 },
                 "required": ["animal"],
                 "additionalProperties": false,
-                "${'$'}defs": {
+                "$defs": {
                   "Cat": {
                     "type": "object",
                     "properties": {
@@ -616,7 +615,7 @@ internal class JsonSchemaSerializationTest {
                 oneOf shouldHaveSize 2
                 oneOf[0] shouldNotBeNull {
                     this as ReferencePropertyDefinition
-                    ref shouldBe "#/\$defs/Cat"
+                    ref shouldBe $$"#/$defs/Cat"
                 }
                 discriminator shouldNotBeNull {
                     propertyName shouldBe "type"

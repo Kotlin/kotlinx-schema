@@ -42,41 +42,6 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>> 
     @Suppress("TooManyFunctions")
     private class IntrospectionContext : BaseIntrospectionContext() {
         /**
-         * Converts a KClass to a TypeRef, handling caching and nullability.
-         * Can be overridden by subclasses to add custom type handling (e.g., sealed classes).
-         */
-        @Suppress("ReturnCount")
-        override fun convertToTypeRef(
-            klass: KClass<*>,
-            nullable: Boolean,
-            useSimpleName: Boolean,
-        ): TypeRef {
-            // Check cache for non-nullable version, adjust if needed
-            typeRefCache[klass]?.let { cachedRef ->
-                return if (nullable && !cachedRef.nullable) {
-                    cachedRef.withNullable(true)
-                } else {
-                    cachedRef
-                }
-            }
-
-            // Try to convert to primitive type
-            primitiveKindFor(klass)?.let { primitiveKind ->
-                val ref = TypeRef.Inline(PrimitiveNode(primitiveKind), nullable)
-                if (!nullable) typeRefCache[klass] = ref
-                return ref
-            }
-
-            // Handle different type categories
-            return when {
-                isListLike(klass) -> handleListType(klass, nullable)
-                Map::class.java.isAssignableFrom(klass.java) -> handleMapType(klass, nullable)
-                isEnumClass(klass) -> handleEnumType(klass, nullable)
-                else -> handleObjectType(klass, nullable, useSimpleName)
-            }
-        }
-
-        /**
          * Converts a KCallable (function) to a TypeRef representing its parameters as an object.
          */
         fun convertFunctionToTypeRef(callable: KCallable<*>): TypeRef {
@@ -125,7 +90,10 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>> 
             return TypeRef.Ref(id, nullable = false)
         }
 
-        override fun createObjectNode(klass: KClass<*>): ObjectNode {
+        override fun createObjectNode(
+            klass: KClass<*>,
+            parentPrefix: String?,
+        ): ObjectNode {
             // Check for @Serializable annotation - not supported
             val hasSerializable =
                 klass.annotations.any {
@@ -150,10 +118,7 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>> 
                 val hasDefault = param.isOptional
 
                 // Find the corresponding property to get annotations
-                val property =
-                    klass.members
-                        .filterIsInstance<KProperty1<*, *>>()
-                        .firstOrNull { it.name == propertyName }
+                val property = findPropertyByName(klass, propertyName)
 
                 val propertyType = param.type
                 val typeRef = convertKTypeToTypeRef(propertyType)
