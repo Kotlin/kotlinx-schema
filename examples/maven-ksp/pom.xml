@@ -15,7 +15,7 @@
     <properties>
         <kotlin.version>2.3.0</kotlin.version>
         <maven.compiler.release>25</maven.compiler.release>
-        <ksp.plugin.version>0.2.0</ksp.plugin.version>
+        <ksp.plugin.version>0.3.0</ksp.plugin.version>
         <kotlinx-schema.version>0.0.5</kotlinx-schema.version>
         <kotest.version>6.1.2</kotest.version>
         <kotlinx-serialization.version>1.10.0</kotlinx-serialization.version>
@@ -73,6 +73,7 @@
                 <groupId>me.kpavlov.ksp.maven</groupId>
                 <artifactId>ksp-maven-plugin</artifactId>
                 <version>${ksp.plugin.version}</version>
+                <extensions>true</extensions>
                 <dependencies>
                     <dependency>
                         <groupId>org.jetbrains.kotlinx</groupId>
@@ -80,22 +81,6 @@
                         <version>${kotlinx-schema.version}</version>
                     </dependency>
                 </dependencies>
-                <executions>
-                    <execution>
-                        <id>process-main-sources</id>
-                        <goals>
-                            <goal>process</goal>
-                        </goals>
-                        <phase>generate-sources</phase>
-                    </execution>
-                    <execution>
-                        <id>process-test-sources</id>
-                        <goals>
-                            <goal>process-test</goal>
-                        </goals>
-                        <phase>generate-test-sources</phase>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
