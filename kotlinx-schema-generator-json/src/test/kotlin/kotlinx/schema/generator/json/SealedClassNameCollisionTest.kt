@@ -77,9 +77,6 @@ class SealedClassNameCollisionTest {
         json.encodeToString(schema) shouldEqualJson
             $$"""
             {
-              "name": "$${ApiResponse::class.qualifiedName}",
-              "strict": false,
-              "schema": {
                 "type": "object",
                 "properties": {
                   "resultA": {
@@ -156,7 +153,6 @@ class SealedClassNameCollisionTest {
                     "additionalProperties": false
                   }
                 }
-              }
             }
             """.trimIndent()
     }

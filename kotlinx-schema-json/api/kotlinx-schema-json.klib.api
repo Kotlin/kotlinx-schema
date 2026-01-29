@@ -205,7 +205,7 @@ final class kotlinx.schema.json/FunctionCallingSchema { // kotlinx.schema.json/F
 }
 
 final class kotlinx.schema.json/JsonSchema { // kotlinx.schema.json/JsonSchema|null[0]
-    constructor <init>(kotlin/String, kotlin/Boolean = ..., kotlin/String? = ..., kotlinx.schema.json/JsonSchemaDefinition) // kotlinx.schema.json/JsonSchema.<init>|<init>(kotlin.String;kotlin.Boolean;kotlin.String?;kotlinx.schema.json.JsonSchemaDefinition){}[0]
+    constructor <init>(kotlin/String, kotlin/Boolean = ..., kotlin/String? = ..., kotlinx.schema.json/JsonSchemaDefinition) // kotlinx.schema.json/JsonSchema.<init>|<init>(kotlin.String;kotlin.Boolean;kotlin.String?;kotlinx.schema.json.JsonSchema){}[0]
 
     final val description // kotlinx.schema.json/JsonSchema.description|{}description[0]
         final fun <get-description>(): kotlin/String? // kotlinx.schema.json/JsonSchema.description.<get-description>|<get-description>(){}[0]
@@ -220,7 +220,7 @@ final class kotlinx.schema.json/JsonSchema { // kotlinx.schema.json/JsonSchema|n
     final fun component2(): kotlin/Boolean // kotlinx.schema.json/JsonSchema.component2|component2(){}[0]
     final fun component3(): kotlin/String? // kotlinx.schema.json/JsonSchema.component3|component3(){}[0]
     final fun component4(): kotlinx.schema.json/JsonSchemaDefinition // kotlinx.schema.json/JsonSchema.component4|component4(){}[0]
-    final fun copy(kotlin/String = ..., kotlin/Boolean = ..., kotlin/String? = ..., kotlinx.schema.json/JsonSchemaDefinition = ...): kotlinx.schema.json/JsonSchema // kotlinx.schema.json/JsonSchema.copy|copy(kotlin.String;kotlin.Boolean;kotlin.String?;kotlinx.schema.json.JsonSchemaDefinition){}[0]
+    final fun copy(kotlin/String = ..., kotlin/Boolean = ..., kotlin/String? = ..., kotlinx.schema.json/JsonSchemaDefinition = ...): kotlinx.schema.json/JsonSchema // kotlinx.schema.json/JsonSchema.copy|copy(kotlin.String;kotlin.Boolean;kotlin.String?;kotlinx.schema.json.JsonSchema){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.schema.json/JsonSchema.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // kotlinx.schema.json/JsonSchema.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // kotlinx.schema.json/JsonSchema.toString|toString(){}[0]
@@ -295,7 +295,7 @@ final class kotlinx.schema.json/JsonSchemaDefinition { // kotlinx.schema.json/Js
 
         final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // kotlinx.schema.json/JsonSchemaDefinition.$serializer.childSerializers|childSerializers(){}[0]
         final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlinx.schema.json/JsonSchemaDefinition // kotlinx.schema.json/JsonSchemaDefinition.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
-        final fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.schema.json/JsonSchemaDefinition) // kotlinx.schema.json/JsonSchemaDefinition.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.schema.json.JsonSchemaDefinition){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, kotlinx.schema.json/JsonSchemaDefinition) // kotlinx.schema.json/JsonSchemaDefinition.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlinx.schema.json.JsonSchema){}[0]
     }
 
     final object Companion { // kotlinx.schema.json/JsonSchemaDefinition.Companion|null[0]

@@ -12,6 +12,7 @@ public object JsonSchemaConstants {
         public const val SCHEMA: String = $$"$schema"
         public const val ID: String = $$"$id"
         public const val DEFS: String = $$"$defs"
+        public const val COMMENT: String = $$"$comment"
 
         // Type definition keys
         public const val TYPE: String = "type"

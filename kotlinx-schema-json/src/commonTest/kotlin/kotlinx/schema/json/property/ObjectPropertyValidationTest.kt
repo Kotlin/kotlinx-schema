@@ -10,12 +10,9 @@ internal class ObjectPropertyValidationTest {
     @Test
     fun `object property default accepts map`() {
         jsonSchema {
-            name = "Test"
-            schema {
-                property("field") {
-                    obj {
-                        default = mapOf("a" to 1, "b" to 2)
-                    }
+            property("field") {
+                obj {
+                    default = mapOf("a" to 1, "b" to 2)
                 }
             }
         }
@@ -24,15 +21,12 @@ internal class ObjectPropertyValidationTest {
     @Test
     fun `object property default accepts JsonElement`() {
         jsonSchema {
-            name = "Test"
-            schema {
-                property("field") {
-                    obj {
-                        default =
-                            kotlinx.serialization.json.buildJsonObject {
-                                put("x", JsonPrimitive(10))
-                            }
-                    }
+            property("field") {
+                obj {
+                    default =
+                        kotlinx.serialization.json.buildJsonObject {
+                            put("x", JsonPrimitive(10))
+                        }
                 }
             }
         }
@@ -41,12 +35,9 @@ internal class ObjectPropertyValidationTest {
     @Test
     fun `object property default accepts null`() {
         jsonSchema {
-            name = "Test"
-            schema {
-                property("field") {
-                    obj {
-                        default = null
-                    }
+            property("field") {
+                obj {
+                    default = null
                 }
             }
         }
@@ -57,12 +48,9 @@ internal class ObjectPropertyValidationTest {
         val error =
             assertFailsWith<IllegalStateException> {
                 jsonSchema {
-                    name = "Test"
-                    schema {
-                        property("field") {
-                            obj {
-                                default = "not an object"
-                            }
+                    property("field") {
+                        obj {
+                            default = "not an object"
                         }
                     }
                 }
@@ -76,12 +64,9 @@ internal class ObjectPropertyValidationTest {
         val error =
             assertFailsWith<IllegalStateException> {
                 jsonSchema {
-                    name = "Test"
-                    schema {
-                        property("field") {
-                            obj {
-                                default = 123
-                            }
+                    property("field") {
+                        obj {
+                            default = 123
                         }
                     }
                 }
@@ -95,12 +80,9 @@ internal class ObjectPropertyValidationTest {
         val error =
             assertFailsWith<IllegalStateException> {
                 jsonSchema {
-                    name = "Test"
-                    schema {
-                        property("field") {
-                            obj {
-                                default = true
-                            }
+                    property("field") {
+                        obj {
+                            default = true
                         }
                     }
                 }
@@ -118,12 +100,9 @@ internal class ObjectPropertyValidationTest {
         val error =
             assertFailsWith<IllegalStateException> {
                 jsonSchema {
-                    name = "Test"
-                    schema {
-                        property("field") {
-                            obj {
-                                default = Bar("test")
-                            }
+                    property("field") {
+                        obj {
+                            default = Bar("test")
                         }
                     }
                 }

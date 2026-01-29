@@ -20,15 +20,11 @@ internal class JsonSchemaDslTest {
     fun `simple string schema serialization round-trip`() {
         val schema =
             jsonSchema {
-                name = "UserEmail"
-                strict = false
-                schema {
-                    property("email") {
-                        required = true
-                        string {
-                            description = "Email address"
-                            format = "email"
-                        }
+                property("email") {
+                    required = true
+                    string {
+                        description = "Email address"
+                        format = "email"
                     }
                 }
             }
@@ -37,9 +33,6 @@ internal class JsonSchemaDslTest {
         val expectedJson =
             """
             {
-              "name": "UserEmail",
-              "strict": false,
-              "schema": {
                 "type": "object",
                 "properties": {
                   "email": {
@@ -49,27 +42,23 @@ internal class JsonSchemaDslTest {
                   }
                 },
                 "required": ["email"]
-              }
             }
             """.trimIndent()
 
         val deserialized = serializeAndDeserialize(schema, expectedJson)
 
-        deserialized.name shouldBe schema.name
-        deserialized.strict shouldBe schema.strict
+        deserialized.required shouldBe schema.required
+        deserialized.properties shouldBe schema.properties
     }
 
     @Test
     fun `schema with string enum serialization round-trip`() {
         val schema =
             jsonSchema {
-                name = "UserStatus"
-                schema {
-                    property("status") {
-                        string {
-                            description = "Current status"
-                            enum = listOf("active", "inactive", "pending")
-                        }
+                property("status") {
+                    string {
+                        description = "Current status"
+                        enum = listOf("active", "inactive", "pending")
                     }
                 }
             }
@@ -78,9 +67,6 @@ internal class JsonSchemaDslTest {
         val expectedJson =
             """
             {
-              "name": "UserStatus",
-              "strict": false,
-              "schema": {
                 "type": "object",
                 "properties": {
                   "status": {
@@ -89,7 +75,6 @@ internal class JsonSchemaDslTest {
                     "enum": ["active", "inactive", "pending"]
                   }
                 }
-              }
             }
             """.trimIndent()
 
@@ -100,15 +85,12 @@ internal class JsonSchemaDslTest {
     fun `schema with numeric constraints serialization round-trip`() {
         val schema =
             jsonSchema {
-                name = "Score"
-                schema {
-                    property("score") {
-                        number {
-                            description = "User score"
-                            minimum = 0.0
-                            maximum = 100.0
-                            multipleOf = 0.5
-                        }
+                property("score") {
+                    number {
+                        description = "User score"
+                        minimum = 0.0
+                        maximum = 100.0
+                        multipleOf = 0.5
                     }
                 }
             }
@@ -117,9 +99,6 @@ internal class JsonSchemaDslTest {
         val expectedJson =
             """
             {
-              "name": "Score",
-              "strict": false,
-              "schema": {
                 "type": "object",
                 "properties": {
                   "score": {
@@ -130,7 +109,6 @@ internal class JsonSchemaDslTest {
                     "maximum": 100.0
                   }
                 }
-              }
             }
             """.trimIndent()
 
@@ -141,15 +119,13 @@ internal class JsonSchemaDslTest {
     fun `schema with array property serialization round-trip`() {
         val schema =
             jsonSchema {
-                name = "Tags"
-                schema {
-                    property("tags") {
-                        array {
-                            description = "List of tags"
-                            minItems = 1
-                            maxItems = 10
-                            ofString()
-                        }
+                description = "Tags"
+                property("tags") {
+                    array {
+                        description = "List of tags"
+                        minItems = 1
+                        maxItems = 10
+                        ofString()
                     }
                 }
             }
@@ -158,9 +134,7 @@ internal class JsonSchemaDslTest {
         val expectedJson =
             """
             {
-              "name": "Tags",
-              "strict": false,
-              "schema": {
+                "description": "Tags",
                 "type": "object",
                 "properties": {
                   "tags": {
@@ -173,12 +147,11 @@ internal class JsonSchemaDslTest {
                     "maxItems": 10
                   }
                 }
-              }
             }
             """.trimIndent()
 
         val deserialized = serializeAndDeserialize(schema, expectedJson, json)
-        val tagsProperty = deserialized.schema.properties["tags"] as ArrayPropertyDefinition
+        val tagsProperty = deserialized.properties["tags"] as ArrayPropertyDefinition
         tagsProperty.minItems shouldBe 1u
         tagsProperty.maxItems shouldBe 10u
     }
@@ -187,21 +160,18 @@ internal class JsonSchemaDslTest {
     fun `schema with nested object serialization round-trip`() {
         val schema =
             jsonSchema {
-                name = "Metadata"
-                schema {
-                    property("metadata") {
-                        obj {
-                            description = "User metadata"
-                            property("createdAt") {
-                                required = true
-                                string {
-                                    format = "date-time"
-                                }
+                property("metadata") {
+                    obj {
+                        description = "User metadata"
+                        property("createdAt") {
+                            required = true
+                            string {
+                                format = "date-time"
                             }
-                            property("updatedAt") {
-                                string {
-                                    format = "date-time"
-                                }
+                        }
+                        property("updatedAt") {
+                            string {
+                                format = "date-time"
                             }
                         }
                     }
@@ -212,9 +182,6 @@ internal class JsonSchemaDslTest {
         val expectedJson =
             """
             {
-              "name": "Metadata",
-              "strict": false,
-              "schema": {
                 "type": "object",
                 "properties": {
                   "metadata": {
@@ -233,7 +200,6 @@ internal class JsonSchemaDslTest {
                     "required": ["createdAt"]
                   }
                 }
-              }
             }
             """.trimIndent()
 
@@ -244,34 +210,27 @@ internal class JsonSchemaDslTest {
     fun `schema with reference property serialization round-trip`() {
         val schema =
             jsonSchema {
-                name = "User"
-                schema {
-                    property("profile") {
-                        reference("#/definitions/Profile")
-                    }
+                property("profile") {
+                    reference("#/definitions/Profile")
                 }
             }
 
         // language=json
         val expectedJson =
-            """
+            $$"""
             {
-              "name": "User",
-              "strict": false,
-              "schema": {
                 "type": "object",
                 "properties": {
                   "profile": {
-                    "${'$'}ref": "#/definitions/Profile"
+                    "$ref": "#/definitions/Profile"
                   }
                 }
-              }
             }
             """.trimIndent()
 
         val deserialized = serializeAndDeserialize(schema, expectedJson, json)
 
-        val profileProperty = deserialized.schema.properties["profile"] as ReferencePropertyDefinition
+        val profileProperty = deserialized.properties["profile"] as ReferencePropertyDefinition
         profileProperty.ref shouldBe "#/definitions/Profile"
     }
 
@@ -279,64 +238,56 @@ internal class JsonSchemaDslTest {
     fun `schema with id and schema fields serialization round-trip`() {
         val schema =
             jsonSchema {
-                name = "Product"
-                schema {
-                    id = "https://example.com/schemas/product"
-                    schema = "https://json-schema.org/draft-07/schema"
-                    property("name") {
-                        string()
-                    }
+                description = "Product"
+                id = "https://example.com/schemas/product"
+                schema = "https://json-schema.org/draft-07/schema"
+                property("name") {
+                    string()
                 }
             }
 
         // language=json
         val expectedJson =
-            """
+            $$"""
             {
-              "name": "Product",
-              "strict": false,
-              "schema": {
+              "description": "Product",
                 "type": "object",
-                "${'$'}id": "https://example.com/schemas/product",
-                "${'$'}schema": "https://json-schema.org/draft-07/schema",
+                "$id": "https://example.com/schemas/product",
+                "$schema": "https://json-schema.org/draft-07/schema",
                 "properties": {
                   "name": {
                     "type": "string"
                   }
                 }
-              }
             }
             """.trimIndent()
 
         val deserialized = serializeAndDeserialize(schema, expectedJson, json)
 
-        deserialized.schema.id shouldBe "https://example.com/schemas/product"
-        deserialized.schema.schema shouldBe "https://json-schema.org/draft-07/schema"
+        deserialized.id shouldBe "https://example.com/schemas/product"
+        deserialized.schema shouldBe "https://json-schema.org/draft-07/schema"
     }
 
     @Test
     fun `schema with default values serialization round-trip`() {
         val schema =
             jsonSchema {
-                name = "Config"
-                schema {
-                    property("enabled") {
-                        boolean {
-                            description = "Feature enabled"
-                            default = true
-                        }
+                property("enabled") {
+                    boolean {
+                        description = "Feature enabled"
+                        default = true
                     }
-                    property("name") {
-                        string {
-                            description = "Config name"
-                            default = "default"
-                        }
+                }
+                property("name") {
+                    string {
+                        description = "Config name"
+                        default = "default"
                     }
-                    property("count") {
-                        integer {
-                            description = "Item count"
-                            default = 10
-                        }
+                }
+                property("count") {
+                    integer {
+                        description = "Item count"
+                        default = 10
                     }
                 }
             }
@@ -345,9 +296,6 @@ internal class JsonSchemaDslTest {
         val expectedJson =
             """
             {
-              "name": "Config",
-              "strict": false,
-              "schema": {
                 "type": "object",
                 "properties": {
                   "enabled": {
@@ -366,7 +314,6 @@ internal class JsonSchemaDslTest {
                     "default": 10
                   }
                 }
-              }
             }
             """.trimIndent()
 
@@ -377,13 +324,11 @@ internal class JsonSchemaDslTest {
     fun `schema with nullable property serialization round-trip`() {
         val schema =
             jsonSchema {
-                name = "OptionalField"
-                schema {
-                    property("optional") {
-                        string {
-                            description = "Optional string field"
-                            nullable = true
-                        }
+                description = "OptionalField"
+                property("optional") {
+                    string {
+                        description = "Optional string field"
+                        nullable = true
                     }
                 }
             }
@@ -392,9 +337,7 @@ internal class JsonSchemaDslTest {
         val expectedJson =
             """
             {
-              "name": "OptionalField",
-              "strict": false,
-              "schema": {
+                "description": "OptionalField",
                 "type": "object",
                 "properties": {
                   "optional": {
@@ -403,7 +346,6 @@ internal class JsonSchemaDslTest {
                     "nullable": true
                   }
                 }
-              }
             }
             """.trimIndent()
 
@@ -414,43 +356,39 @@ internal class JsonSchemaDslTest {
     fun `complex schema serialization round-trip`() {
         val schema =
             jsonSchema {
-                name = "ComplexSchema"
-                strict = true
                 description = "A complex schema with various field types"
-                schema {
-                    additionalProperties = false
+                additionalProperties = false
 
-                    property("id") {
-                        required = true
-                        string {
-                            format = "uuid"
-                            description = "Unique identifier"
-                        }
+                property("id") {
+                    required = true
+                    string {
+                        format = "uuid"
+                        description = "Unique identifier"
                     }
+                }
 
-                    property("email") {
-                        required = true
-                        string {
-                            format = "email"
-                            description = "Email address"
-                            minLength = 5
-                            maxLength = 100
-                        }
+                property("email") {
+                    required = true
+                    string {
+                        format = "email"
+                        description = "Email address"
+                        minLength = 5
+                        maxLength = 100
                     }
+                }
 
-                    property("tags") {
-                        array {
-                            description = "List of tags"
-                            ofString()
-                        }
+                property("tags") {
+                    array {
+                        description = "List of tags"
+                        ofString()
                     }
+                }
 
-                    property("metadata") {
-                        obj {
-                            description = "Additional metadata"
-                            property("version") {
-                                integer()
-                            }
+                property("metadata") {
+                    obj {
+                        description = "Additional metadata"
+                        property("version") {
+                            integer()
                         }
                     }
                 }
@@ -460,10 +398,7 @@ internal class JsonSchemaDslTest {
         val expectedJson =
             """
             {
-              "name": "ComplexSchema",
-              "strict": true,
-              "description": "A complex schema with various field types",
-              "schema": {
+                "description": "A complex schema with various field types",
                 "type": "object",
                 "properties": {
                   "id": {
@@ -497,31 +432,25 @@ internal class JsonSchemaDslTest {
                 },
                 "required": ["id", "email"],
                 "additionalProperties": false
-              }
             }
             """.trimIndent()
 
         val deserialized = serializeAndDeserialize(schema, expectedJson, json)
 
-        deserialized.name shouldBe schema.name
-        deserialized.strict shouldBe schema.strict
         deserialized.description shouldBe schema.description
-        deserialized.schema.required shouldBe schema.schema.required
-        deserialized.schema.additionalProperties shouldBe schema.schema.additionalProperties
+        deserialized.required shouldBe schema.required
+        deserialized.additionalProperties shouldBe schema.additionalProperties
     }
 
     @Test
     fun `schema with integer property serialization round-trip`() {
         val schema =
             jsonSchema {
-                name = "Age"
-                schema {
-                    property("age") {
-                        integer {
-                            description = "Person's age"
-                            minimum = 0.0
-                            maximum = 150.0
-                        }
+                property("age") {
+                    integer {
+                        description = "Person's age"
+                        minimum = 0.0
+                        maximum = 150.0
                     }
                 }
             }
@@ -530,9 +459,6 @@ internal class JsonSchemaDslTest {
         val expectedJson =
             """
             {
-              "name": "Age",
-              "strict": false,
-              "schema": {
                 "type": "object",
                 "properties": {
                   "age": {
@@ -542,13 +468,12 @@ internal class JsonSchemaDslTest {
                     "maximum": 150.0
                   }
                 }
-              }
             }
             """.trimIndent()
 
         val deserialized = serializeAndDeserialize(schema, expectedJson, json)
 
-        val ageProp = deserialized.schema.properties["age"] as NumericPropertyDefinition
+        val ageProp = deserialized.properties["age"] as NumericPropertyDefinition
         ageProp.type shouldBe listOf("integer")
         ageProp.minimum shouldBe 0.0
         ageProp.maximum shouldBe 150.0
@@ -558,24 +483,21 @@ internal class JsonSchemaDslTest {
     fun `schema with array of objects serialization round-trip`() {
         val schema =
             jsonSchema {
-                name = "Steps"
-                schema {
-                    property("steps") {
-                        array {
-                            description = "Processing steps"
-                            ofObject {
-                                additionalProperties = kotlinx.serialization.json.JsonPrimitive(false)
-                                property("explanation") {
-                                    required = true
-                                    string {
-                                        description = "Step explanation"
-                                    }
+                property("steps") {
+                    array {
+                        description = "Processing steps"
+                        ofObject {
+                            additionalProperties = kotlinx.serialization.json.JsonPrimitive(false)
+                            property("explanation") {
+                                required = true
+                                string {
+                                    description = "Step explanation"
                                 }
-                                property("output") {
-                                    required = true
-                                    string {
-                                        description = "Step output"
-                                    }
+                            }
+                            property("output") {
+                                required = true
+                                string {
+                                    description = "Step output"
                                 }
                             }
                         }
@@ -587,9 +509,6 @@ internal class JsonSchemaDslTest {
         val expectedJson =
             """
             {
-              "name": "Steps",
-              "strict": false,
-              "schema": {
                 "type": "object",
                 "properties": {
                   "steps": {
@@ -612,13 +531,12 @@ internal class JsonSchemaDslTest {
                     }
                   }
                 }
-              }
             }
             """.trimIndent()
 
         val deserialized = serializeAndDeserialize(schema, expectedJson, json)
 
-        val stepsProp = deserialized.schema.properties["steps"] as ArrayPropertyDefinition
+        val stepsProp = deserialized.properties["steps"] as ArrayPropertyDefinition
         val itemsObj = stepsProp.items as ObjectPropertyDefinition
         itemsObj.required shouldBe listOf("explanation", "output")
         itemsObj.additionalProperties shouldBe kotlinx.serialization.json.JsonPrimitive(false)
@@ -628,19 +546,17 @@ internal class JsonSchemaDslTest {
     fun `schema with const value serialization round-trip`() {
         val schema =
             jsonSchema {
-                name = "ApiVersion"
-                schema {
-                    property("version") {
-                        string {
-                            description = "API version"
-                            constValue = "v1.0"
-                        }
+                description = "ApiVersion"
+                property("version") {
+                    string {
+                        description = "API version"
+                        constValue = "v1.0"
                     }
-                    property("flag") {
-                        boolean {
-                            description = "Constant flag"
-                            constValue = false
-                        }
+                }
+                property("flag") {
+                    boolean {
+                        description = "Constant flag"
+                        constValue = false
                     }
                 }
             }
@@ -649,9 +565,7 @@ internal class JsonSchemaDslTest {
         val expectedJson =
             """
             {
-              "name": "ApiVersion",
-              "strict": false,
-              "schema": {
+                "description": "ApiVersion",
                 "type": "object",
                 "properties": {
                   "version": {
@@ -665,7 +579,6 @@ internal class JsonSchemaDslTest {
                     "const": false
                   }
                 }
-              }
             }
             """.trimIndent()
 
@@ -676,15 +589,12 @@ internal class JsonSchemaDslTest {
     fun `schema with exclusive bounds serialization round-trip`() {
         val schema =
             jsonSchema {
-                name = "Precision"
-                schema {
-                    property("precision") {
-                        number {
-                            description = "Precision value"
-                            exclusiveMinimum = 0.0
-                            exclusiveMaximum = 1.0
-                            constValue = 0.5
-                        }
+                property("precision") {
+                    number {
+                        description = "Precision value"
+                        exclusiveMinimum = 0.0
+                        exclusiveMaximum = 1.0
+                        constValue = 0.5
                     }
                 }
             }
@@ -693,9 +603,6 @@ internal class JsonSchemaDslTest {
         val expectedJson =
             """
             {
-              "name": "Precision",
-              "strict": false,
-              "schema": {
                 "type": "object",
                 "properties": {
                   "precision": {
@@ -706,13 +613,12 @@ internal class JsonSchemaDslTest {
                     "const": 0.5
                   }
                 }
-              }
             }
             """.trimIndent()
 
         val deserialized = serializeAndDeserialize(schema, expectedJson, json)
 
-        val precisionProp = deserialized.schema.properties["precision"] as NumericPropertyDefinition
+        val precisionProp = deserialized.properties["precision"] as NumericPropertyDefinition
         precisionProp.exclusiveMinimum shouldBe 0.0
         precisionProp.exclusiveMaximum shouldBe 1.0
     }

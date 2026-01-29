@@ -19,7 +19,6 @@ import kotlinx.schema.json.JsonSchema
 import kotlinx.schema.json.JsonSchemaConstants.Types.INTEGER_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.NULL_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.NUMBER_TYPE
-import kotlinx.schema.json.JsonSchemaDefinition
 import kotlinx.schema.json.NumericPropertyDefinition
 import kotlinx.schema.json.ObjectPropertyDefinition
 import kotlinx.schema.json.OneOfPropertyDefinition
@@ -81,12 +80,7 @@ public class TypeGraphToJsonSchemaTransformer
                     }
                 }
 
-            return JsonSchema(
-                name = rootName,
-                strict = config.strictSchemaFlag,
-                description = null,
-                schema = schemaDefinition,
-            )
+            return schemaDefinition
         }
 
         /**
@@ -96,8 +90,8 @@ public class TypeGraphToJsonSchemaTransformer
             rootName: String,
             rootDefinition: ObjectPropertyDefinition,
             definitions: Map<String, PropertyDefinition>,
-        ): JsonSchemaDefinition =
-            JsonSchemaDefinition(
+        ): JsonSchema =
+            JsonSchema(
                 id = getSchemaId(rootName),
                 schema = getSchemaUri(),
                 properties = rootDefinition.properties ?: emptyMap(),
@@ -114,8 +108,8 @@ public class TypeGraphToJsonSchemaTransformer
             rootName: String,
             rootDefinition: OneOfPropertyDefinition,
             definitions: Map<String, PropertyDefinition>,
-        ): JsonSchemaDefinition =
-            JsonSchemaDefinition(
+        ): JsonSchema =
+            JsonSchema(
                 id = getSchemaId(rootName),
                 schema = getSchemaUri(),
                 properties = emptyMap(),
@@ -135,8 +129,8 @@ public class TypeGraphToJsonSchemaTransformer
         private fun createDefaultSchemaDefinition(
             rootName: String,
             definitions: Map<String, PropertyDefinition>,
-        ): JsonSchemaDefinition =
-            JsonSchemaDefinition(
+        ): JsonSchema =
+            JsonSchema(
                 id = getSchemaId(rootName),
                 schema = getSchemaUri(),
                 properties = emptyMap(),

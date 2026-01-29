@@ -10,12 +10,9 @@ internal class NumericPropertyValidationTest {
     @Test
     fun `numeric property default accepts integer`() {
         jsonSchema {
-            name = "Test"
-            schema {
-                property("field") {
-                    number {
-                        default = 123
-                    }
+            property("field") {
+                number {
+                    default = 123
                 }
             }
         }
@@ -24,12 +21,9 @@ internal class NumericPropertyValidationTest {
     @Test
     fun `numeric property default accepts double`() {
         jsonSchema {
-            name = "Test"
-            schema {
-                property("field") {
-                    number {
-                        default = 12.34
-                    }
+            property("field") {
+                number {
+                    default = 12.34
                 }
             }
         }
@@ -38,12 +32,9 @@ internal class NumericPropertyValidationTest {
     @Test
     fun `numeric property default accepts long`() {
         jsonSchema {
-            name = "Test"
-            schema {
-                property("field") {
-                    number {
-                        default = 123L
-                    }
+            property("field") {
+                number {
+                    default = 123L
                 }
             }
         }
@@ -52,12 +43,9 @@ internal class NumericPropertyValidationTest {
     @Test
     fun `numeric property default accepts JsonElement`() {
         jsonSchema {
-            name = "Test"
-            schema {
-                property("field") {
-                    number {
-                        default = JsonPrimitive(123)
-                    }
+            property("field") {
+                number {
+                    default = JsonPrimitive(123)
                 }
             }
         }
@@ -66,12 +54,9 @@ internal class NumericPropertyValidationTest {
     @Test
     fun `numeric property default accepts null`() {
         jsonSchema {
-            name = "Test"
-            schema {
-                property("field") {
-                    number {
-                        default = null
-                    }
+            property("field") {
+                number {
+                    default = null
                 }
             }
         }
@@ -82,12 +67,9 @@ internal class NumericPropertyValidationTest {
         val error =
             assertFailsWith<IllegalStateException> {
                 jsonSchema {
-                    name = "Test"
-                    schema {
-                        property("field") {
-                            number {
-                                default = "not a number"
-                            }
+                    property("field") {
+                        number {
+                            default = "not a number"
                         }
                     }
                 }
@@ -101,12 +83,9 @@ internal class NumericPropertyValidationTest {
         val error =
             assertFailsWith<IllegalStateException> {
                 jsonSchema {
-                    name = "Test"
-                    schema {
-                        property("field") {
-                            number {
-                                default = true
-                            }
+                    property("field") {
+                        number {
+                            default = true
                         }
                     }
                 }
@@ -118,12 +97,9 @@ internal class NumericPropertyValidationTest {
     @Test
     fun `numeric property constValue accepts number`() {
         jsonSchema {
-            name = "Test"
-            schema {
-                property("field") {
-                    number {
-                        constValue = 789
-                    }
+            property("field") {
+                number {
+                    constValue = 789
                 }
             }
         }
@@ -134,12 +110,9 @@ internal class NumericPropertyValidationTest {
         val error =
             assertFailsWith<IllegalStateException> {
                 jsonSchema {
-                    name = "Test"
-                    schema {
-                        property("field") {
-                            number {
-                                constValue = "not a number"
-                            }
+                    property("field") {
+                        number {
+                            constValue = "not a number"
                         }
                     }
                 }

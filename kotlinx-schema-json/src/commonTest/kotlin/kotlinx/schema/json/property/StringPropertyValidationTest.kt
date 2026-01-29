@@ -10,12 +10,9 @@ internal class StringPropertyValidationTest {
     @Test
     fun `string property default accepts string`() {
         jsonSchema {
-            name = "Test"
-            schema {
-                property("field") {
-                    string {
-                        default = "valid string"
-                    }
+            property("field") {
+                string {
+                    default = "valid string"
                 }
             }
         }
@@ -24,12 +21,9 @@ internal class StringPropertyValidationTest {
     @Test
     fun `string property default accepts JsonElement`() {
         jsonSchema {
-            name = "Test"
-            schema {
-                property("field") {
-                    string {
-                        default = JsonPrimitive("valid")
-                    }
+            property("field") {
+                string {
+                    default = JsonPrimitive("valid")
                 }
             }
         }
@@ -38,12 +32,9 @@ internal class StringPropertyValidationTest {
     @Test
     fun `string property default accepts null`() {
         jsonSchema {
-            name = "Test"
-            schema {
-                property("field") {
-                    string {
-                        default = null
-                    }
+            property("field") {
+                string {
+                    default = null
                 }
             }
         }
@@ -54,12 +45,9 @@ internal class StringPropertyValidationTest {
         val error =
             assertFailsWith<IllegalStateException> {
                 jsonSchema {
-                    name = "Test"
-                    schema {
-                        property("field") {
-                            string {
-                                default = 123
-                            }
+                    property("field") {
+                        string {
+                            default = 123
                         }
                     }
                 }
@@ -73,12 +61,9 @@ internal class StringPropertyValidationTest {
         val error =
             assertFailsWith<IllegalStateException> {
                 jsonSchema {
-                    name = "Test"
-                    schema {
-                        property("field") {
-                            string {
-                                default = true
-                            }
+                    property("field") {
+                        string {
+                            default = true
                         }
                     }
                 }
@@ -96,12 +81,9 @@ internal class StringPropertyValidationTest {
         val error =
             assertFailsWith<IllegalStateException> {
                 jsonSchema {
-                    name = "Test"
-                    schema {
-                        property("field") {
-                            string {
-                                default = Foo(42)
-                            }
+                    property("field") {
+                        string {
+                            default = Foo(42)
                         }
                     }
                 }
@@ -113,12 +95,9 @@ internal class StringPropertyValidationTest {
     @Test
     fun `string property constValue accepts string`() {
         jsonSchema {
-            name = "Test"
-            schema {
-                property("field") {
-                    string {
-                        constValue = "fixed value"
-                    }
+            property("field") {
+                string {
+                    constValue = "fixed value"
                 }
             }
         }
@@ -129,12 +108,9 @@ internal class StringPropertyValidationTest {
         val error =
             assertFailsWith<IllegalStateException> {
                 jsonSchema {
-                    name = "Test"
-                    schema {
-                        property("field") {
-                            string {
-                                constValue = 456
-                            }
+                    property("field") {
+                        string {
+                            constValue = 456
                         }
                     }
                 }

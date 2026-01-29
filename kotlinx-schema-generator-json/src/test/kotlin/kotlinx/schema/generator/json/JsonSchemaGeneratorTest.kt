@@ -56,9 +56,6 @@ class JsonSchemaGeneratorTest {
         // language=json
         val expectedSchema = """ 
         {
-            "name": "${Person::class.qualifiedName}",
-            "strict": false,
-            "schema": {
               "description": "Personal information",
               "required": [ "firstName" ],
               "type": "object",
@@ -69,7 +66,6 @@ class JsonSchemaGeneratorTest {
                 }
               },
               "additionalProperties": false
-            }
         }
         """
 
@@ -83,9 +79,6 @@ class JsonSchemaGeneratorTest {
         // language=json
         val expectedSchema = """ 
         {
-            "name": "${Pet::class.qualifiedName}",
-            "strict": false,
-            "schema": {
               "description": "Pet information",
               "required": [ "name" ],
               "type": "object",
@@ -96,7 +89,6 @@ class JsonSchemaGeneratorTest {
                 }
               },
               "additionalProperties": false
-            }
         }
         """
         verifySchema(schema, expectedSchema)
@@ -109,9 +101,6 @@ class JsonSchemaGeneratorTest {
         // language=json
         val expectedSchema = """ 
         {
-            "name": "${Cat::class.qualifiedName}",
-            "strict": false,
-            "schema": {
               "description": "Cat information",
               "required": ["toes" , "name"],
               "type": "object",
@@ -126,7 +115,6 @@ class JsonSchemaGeneratorTest {
                 }
               },
               "additionalProperties": false
-            }
         }
         """
         verifySchema(schema, expectedSchema)
@@ -149,9 +137,6 @@ class JsonSchemaGeneratorTest {
         // language=json
         val expectedSchema = """
         {
-            "name": "Anonymous",
-            "strict": false,
-            "schema": {
               "description": "A user model",
               "required": [ "name", "age", "tags", "attributes" ],
               "type": "object",
@@ -181,7 +166,6 @@ class JsonSchemaGeneratorTest {
                 }
               },
               "additionalProperties": false
-            }
         }
         """
 
@@ -195,9 +179,6 @@ class JsonSchemaGeneratorTest {
         // language=json
         val expectedSchema = """
         {
-            "name": "${WithEnum::class.qualifiedName}",
-            "strict": false,
-            "schema": {
               "required": [ "color" ],
               "type": "object",
               "properties": {
@@ -208,7 +189,6 @@ class JsonSchemaGeneratorTest {
                 }
               },
               "additionalProperties": false
-            }
         }
         """
 

@@ -20,9 +20,6 @@ class SealedHierarchyTest {
         actual shouldEqualJson
             $$"""
                 {
-                "name": "kotlinx.schema.generator.json.ExampleA",
-                "strict": true,
-                "schema": {
                    "$schema": "https://json-schema.org/draft/2020-12/schema",
                    "$id": "kotlinx.schema.generator.json.ExampleA",
                    "type": "object",
@@ -52,7 +49,6 @@ class SealedHierarchyTest {
                        "additionalProperties": false
                      }
                    }
-                 }
              }
             """.trimIndent()
     }

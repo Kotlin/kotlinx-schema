@@ -50,9 +50,6 @@ class JsonSchemaHierarchyTest {
         // language=json
         val expectedSchema = $$"""
         {
-            "name": "$${Animal::class.qualifiedName}",
-            "strict": false,
-            "schema": {
               "type": "object",
               "additionalProperties": false,
               "description": "Represents an animal",
@@ -123,7 +120,6 @@ class JsonSchemaHierarchyTest {
                   "additionalProperties": false
                 }
               }
-            }
         }
         """
         verifySchema(schema, expectedSchema)
@@ -143,9 +139,6 @@ class JsonSchemaHierarchyTest {
         // language=json
         val expectedSchema = $$"""
         {
-            "name": "$${AnimalContainer::class.qualifiedName}",
-            "strict": false,
-            "schema": {
               "type": "object",
               "description": "Container with nullable animal",
               "properties": {
@@ -229,7 +222,6 @@ class JsonSchemaHierarchyTest {
                   "additionalProperties": false
                 }
               }
-            }
         }
         """
 

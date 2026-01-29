@@ -1,9 +1,9 @@
 package kotlinx.schema.ksp.type
 
+import TypeGraphToJsonObjectSchemaTransformer
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import kotlinx.schema.generator.json.TypeGraphToJsonObjectSchemaTransformer
 import kotlinx.schema.ksp.SourceCodeGeneratorHelpers
 import kotlinx.schema.ksp.SourceCodeGeneratorHelpers.escapeForKotlinString
 import kotlinx.schema.ksp.generator.KspSchemaGeneratorConfig
