@@ -22,6 +22,18 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-bom</artifactId>
+                <version>${kotlin.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>
@@ -105,6 +117,13 @@
                         <phase>test-compile</phase>
                     </execution>
                 </executions>
+                <configuration>
+                    <javaParameters>true</javaParameters>
+                    <args>
+                        <arg>-Xjvm-default=all</arg>
+                        <arg>-Xannotation-default-target=param-property</arg>
+                    </args>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
