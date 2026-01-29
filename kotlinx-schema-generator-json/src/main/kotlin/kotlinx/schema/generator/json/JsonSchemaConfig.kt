@@ -126,12 +126,8 @@ public open class JsonSchemaConfig(
                 "Choose one: union types [\"string\", \"null\"] OR nullable field."
         }
 
-        if (!useUnionTypes && !useNullableField) {
-            // Warning: no nullable representation at all
-            println(
-                "WARNING: Both useUnionTypes and useNullableField are false. " +
-                    "Nullable types will not be distinguished from non-nullable.",
-            )
+        require(useUnionTypes || useNullableField) {
+            "Either useUnionTypes or useNullableField must be enabled..."
         }
     }
 

@@ -119,6 +119,11 @@ kotlinxSchema {
 }
 ```
 
+**Notes:**
+- You do NOT need to apply the KSP plugin yourself — the Gradle plugin does it.
+- You do NOT need to add generated source directories — the plugin does it.
+- For an example project, see [gradle-plugin-integration-tests](https://github.com/Kotlin/kotlinx-schema/tree/main/gradle-plugin-integration-tests).
+
 ### Maven Plugin
 
 You may also run schema generation with KSP in your Maven projects.
