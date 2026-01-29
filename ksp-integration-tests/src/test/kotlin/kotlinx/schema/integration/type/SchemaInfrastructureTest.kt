@@ -56,10 +56,12 @@ class SchemaInfrastructureTest {
         schemas.forEach { schema ->
             val jsonObj = Json.decodeFromString<JsonObject>(schema)
 
-            // Required JSON Schema fields must exist
+            // All schemas must have $id and $schema fields per JSON Schema Draft 2020-12
             assert(jsonObj.containsKey("\$id")) { "Schema must have \$id field" }
-            assert(jsonObj.containsKey("\$defs")) { "Schema must have \$defs field" }
-            assert(jsonObj.containsKey("\$ref")) { "Schema must have \$ref field" }
+            assert(jsonObj.containsKey("\$schema")) { "Schema must have \$schema field pointing to Draft 2020-12" }
+
+            // Unwrapped schemas should NOT have root-level $ref
+            assert(!jsonObj.containsKey("\$ref")) { "Schema should not have root-level \$ref in unwrapped format" }
         }
     }
 

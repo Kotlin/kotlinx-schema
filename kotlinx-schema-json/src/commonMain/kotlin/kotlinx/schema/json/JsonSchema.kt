@@ -177,10 +177,17 @@ public interface PropertiesContainer {
 @Suppress("LongParameterList")
 public data class JsonSchema(
     @EncodeDefault(EncodeDefault.Mode.NEVER)
-    @SerialName(ID) public val id: String? = null,
+    @SerialName(ID)
+    public val id: String? = null,
     @EncodeDefault(EncodeDefault.Mode.NEVER)
-    @SerialName(SCHEMA) public val schema: String? = null,
-    @Serializable(with = StringOrListSerializer::class) @EncodeDefault
+    @SerialName(SCHEMA)
+    public val schema: String? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName(COMMENT)
+    public val comment: String? = null,
+    public val description: String? = null,
+    @Serializable(with = StringOrListSerializer::class)
+    @EncodeDefault
     public val type: List<String> = OBJECT_TYPE,
     public override val properties: Map<String, PropertyDefinition> = emptyMap(),
     public val required: List<String> = emptyList(),
@@ -193,14 +200,11 @@ public data class JsonSchema(
      * - `JsonObject`: a schema defining the type of additional properties (e.g., for Maps)
      */
     public val additionalProperties: JsonElement? = null,
-    public val description: String? = null,
     public val items: PropertyDefinition? = null,
     public val oneOf: List<PropertyDefinition>? = null,
     public val discriminator: Discriminator? = null,
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     @SerialName(DEFS) public val defs: Map<String, PropertyDefinition>? = null,
-    @EncodeDefault(EncodeDefault.Mode.NEVER)
-    @SerialName(COMMENT) public val comment: String? = null,
 ) : PropertiesContainer
 
 /**

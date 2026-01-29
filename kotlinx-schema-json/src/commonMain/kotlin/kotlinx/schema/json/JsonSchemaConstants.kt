@@ -4,6 +4,8 @@ package kotlinx.schema.json
  * Collection of special constants, such as keys and data types, from JSON schema definition.
  */
 public object JsonSchemaConstants {
+    public const val JSON_SCHEMA_ID_DRAFT202012: String = "https://json-schema.org/draft/2020-12/schema"
+
     /**
      * JSON Schema keys.
      */

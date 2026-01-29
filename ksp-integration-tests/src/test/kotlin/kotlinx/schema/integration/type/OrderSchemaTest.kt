@@ -17,6 +17,36 @@ class OrderSchemaTest {
             $$"""
             {
               "$id": "kotlinx.schema.integration.type.Order",
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Unique order identifier"
+                },
+                "customer": {
+                  "$ref": "#/$defs/kotlinx.schema.integration.type.Person",
+                  "description": "The customer who placed the order"
+                },
+                "shippingAddress": {
+                  "$ref": "#/$defs/kotlinx.schema.integration.type.Address",
+                  "description": "Destination address for shipment"
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/kotlinx.schema.integration.type.Product"
+                  },
+                  "description": "List of items included in the order"
+                },
+                "status": {
+                  "$ref": "#/$defs/kotlinx.schema.integration.type.Status",
+                  "description": "Current status of the order"
+                }
+              },
+              "required": ["id", "customer", "shippingAddress", "items", "status"],
+              "additionalProperties": false,
+              "description": "An order placed by a customer containing multiple items.",
               "$defs": {
                 "kotlinx.schema.integration.type.Person": {
                   "type": "object",
@@ -101,40 +131,8 @@ class OrderSchemaTest {
                   "type": "string",
                   "enum": ["ACTIVE", "INACTIVE", "PENDING"],
                   "description": "Current lifecycle status of an entity."
-                },
-                "kotlinx.schema.integration.type.Order": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string",
-                      "description": "Unique order identifier"
-                    },
-                    "customer": {
-                      "$ref": "#/$defs/kotlinx.schema.integration.type.Person",
-                      "description": "The customer who placed the order"
-                    },
-                    "shippingAddress": {
-                      "$ref": "#/$defs/kotlinx.schema.integration.type.Address",
-                      "description": "Destination address for shipment"
-                    },
-                    "items": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/$defs/kotlinx.schema.integration.type.Product"
-                      },
-                      "description": "List of items included in the order"
-                    },
-                    "status": {
-                      "$ref": "#/$defs/kotlinx.schema.integration.type.Status",
-                      "description": "Current status of the order"
-                    }
-                  },
-                  "required": ["id", "customer", "shippingAddress", "items", "status"],
-                  "additionalProperties": false,
-                  "description": "An order placed by a customer containing multiple items."
                 }
-              },
-              "$ref": "#/$defs/kotlinx.schema.integration.type.Order"
+              }
             }
             """.trimIndent()
     }

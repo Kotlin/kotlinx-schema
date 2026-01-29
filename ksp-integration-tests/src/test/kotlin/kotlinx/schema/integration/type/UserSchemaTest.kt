@@ -15,39 +15,35 @@ class UserSchemaTest {
             $$"""
             {
               "$id": "kotlinx.schema.integration.type.User",
-              "$defs": {
-                "kotlinx.schema.integration.type.User": {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string",
-                      "description": "The name of the user"
-                    },
-                    "age": {
-                      "type": ["integer", "null"]
-                    },
-                    "email": {
-                      "type": "string"
-                    },
-                    "tags": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    },
-                    "attributes": {
-                      "type": ["object", "null"],
-                      "additionalProperties": {
-                        "type": "integer"
-                      }
-                    }
-                  },
-                  "required": ["name", "age", "tags", "attributes"],
-                  "additionalProperties": false,
-                  "description": "A user model"
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "The name of the user"
+                },
+                "age": {
+                  "type": ["integer", "null"]
+                },
+                "email": {
+                  "type": "string"
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "attributes": {
+                  "type": ["object", "null"],
+                  "additionalProperties": {
+                    "type": "integer"
+                  }
                 }
               },
-              "$ref": "#/$defs/kotlinx.schema.integration.type.User"
+              "required": ["name", "age", "tags", "attributes"],
+              "additionalProperties": false,
+              "description": "A user model"
             }
             """.trimIndent()
     }

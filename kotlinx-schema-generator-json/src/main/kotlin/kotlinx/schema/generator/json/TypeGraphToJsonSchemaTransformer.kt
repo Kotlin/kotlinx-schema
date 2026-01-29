@@ -16,6 +16,7 @@ import kotlinx.schema.json.ArrayPropertyDefinition
 import kotlinx.schema.json.BooleanPropertyDefinition
 import kotlinx.schema.json.Discriminator
 import kotlinx.schema.json.JsonSchema
+import kotlinx.schema.json.JsonSchemaConstants.JSON_SCHEMA_ID_DRAFT202012
 import kotlinx.schema.json.JsonSchemaConstants.Types.INTEGER_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.NULL_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.NUMBER_TYPE
@@ -28,8 +29,6 @@ import kotlinx.schema.json.StringPropertyDefinition
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.encodeToJsonElement
-
-private const val JSON_SCHEMA_ID_DRAFT202012 = "https://json-schema.org/draft/2020-12/schema"
 
 /**
  * Transforms [TypeGraph] IR into JSON Schema Draft 2020-12 format.

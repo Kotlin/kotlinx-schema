@@ -16,14 +16,15 @@ class AnimalSchemaTest {
             $$"""
             {
               "$id": "kotlinx.schema.integration.type.Animal",
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Multicellular eukaryotic organism of the kingdom Metazoa",
+              "oneOf": [
+                { "$ref": "#/$defs/kotlinx.schema.integration.type.Animal.Cat" },
+                { "$ref": "#/$defs/kotlinx.schema.integration.type.Animal.Dog" }
+              ],
               "$defs": {
-                "kotlinx.schema.integration.type.Animal": {
-                  "oneOf": [
-                    { "$ref": "#/$defs/kotlinx.schema.integration.type.Animal.Cat" },
-                    { "$ref": "#/$defs/kotlinx.schema.integration.type.Animal.Dog" }
-                  ],
-                  "description": "Multicellular eukaryotic organism of the kingdom Metazoa"
-                },
                 "kotlinx.schema.integration.type.Animal.Cat": {
                   "type": "object",
                   "properties": {
@@ -52,8 +53,7 @@ class AnimalSchemaTest {
                   "required": ["name", "type"],
                   "additionalProperties": false
                 }
-              },
-              "$ref": "#/$defs/kotlinx.schema.integration.type.Animal"
+              }
             }
             """.trimIndent()
     }
