@@ -131,14 +131,8 @@ and include the annotations library in your project.
 <plugin>
     <groupId>me.kpavlov.ksp.maven</groupId>
     <artifactId>ksp-maven-plugin</artifactId>
-    <version>0.2.0</version>
-    <executions>
-        <execution>
-            <goals>
-                <goal>process</goal>
-            </goals>
-        </execution>
-    </executions>
+    <version>0.3.0</version>
+    <extensions>true</extensions>
     <dependencies>
         <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>
