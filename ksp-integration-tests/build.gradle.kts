@@ -19,8 +19,10 @@ dependencies {
     implementation(libs.langchain4j.core)
 
     testImplementation(kotlin("test"))
+    testImplementation(libs.junit.pioneer)
     testImplementation(libs.kotest.assertions.core)
     testImplementation(libs.kotest.assertions.json)
+    testImplementation(project(":kotlinx-schema-generator-json"))
 
     // KSP processor
     ksp(project(":kotlinx-schema-ksp"))

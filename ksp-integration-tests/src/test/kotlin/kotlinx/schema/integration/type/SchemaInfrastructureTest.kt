@@ -1,12 +1,16 @@
 package kotlinx.schema.integration.type
 
+import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import kotlinx.schema.generator.json.ReflectionClassJsonSchemaGenerator
+import kotlinx.schema.json.encodeToJsonObject
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import org.junitpioneer.jupiter.Issue
 import kotlin.test.Test
 
 /**
@@ -111,8 +115,8 @@ class SchemaInfrastructureTest {
 
         // Works for complex nested structures
         Order::class.jsonSchema shouldNotBeNull {
-            assert(this["\$id"]?.toString()?.contains("Order") == true) {
-                "Order schema should have \$id containing 'Order'"
+            assert(this[$$"$id"]?.toString()?.contains("Order") == true) {
+                $$"Order schema should have $id containing 'Order'"
             }
         }
 
@@ -126,5 +130,16 @@ class SchemaInfrastructureTest {
         // Compile-time verification that KSP skips non-@Schema classes
         val clazz = NonAnnotatedClass::class
         clazz shouldNotBe null
+    }
+
+    @Test
+    @Issue("https://github.com/Kotlin/kotlinx-schema/issues/45")
+    fun reflectionGeneratorParityTest() {
+        val schema = Order::class.jsonSchema
+        val reflectionSchema =
+            ReflectionClassJsonSchemaGenerator()
+                .generateSchema(Order::class)
+                .encodeToJsonObject()
+        schema shouldBeEqualToComparingFields reflectionSchema
     }
 }
