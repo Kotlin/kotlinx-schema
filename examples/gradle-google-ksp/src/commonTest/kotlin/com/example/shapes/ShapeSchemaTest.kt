@@ -2,7 +2,7 @@ package com.example.shapes
 
 import io.kotest.assertions.json.shouldEqualJson
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.JsonObject
 import kotlin.test.Test
 import kotlin.test.assertContains
 
@@ -75,8 +75,9 @@ class ShapeSchemaTest {
 
     @Test
     fun `should generate function schema`() {
-        val functionCallSchema = calculateAreaJsonSchemaString()
-        functionCallSchema shouldEqualJson
+        val functionCallSchema: JsonObject = calculateAreaJsonSchema()
+        val functionCallSchemaString: String = calculateAreaJsonSchemaString()
+        functionCallSchemaString shouldEqualJson
             """
             {
                 "type":"function",
@@ -94,6 +95,6 @@ class ShapeSchemaTest {
             }
             """.trimIndent()
 
-        Json.encodeToString(calculateAreaJsonSchema().jsonObject) shouldEqualJson functionCallSchema
+        Json.encodeToString(functionCallSchema) shouldEqualJson functionCallSchemaString
     }
 }
