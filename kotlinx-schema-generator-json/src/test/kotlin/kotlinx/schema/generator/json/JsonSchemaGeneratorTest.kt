@@ -54,8 +54,10 @@ class JsonSchemaGeneratorTest {
         val schema = generator.generateSchema(Person::class)
 
         // language=json
-        val expectedSchema = """ 
+        val expectedSchema = $$"""
         {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.generator.json.JsonSchemaGeneratorTest.Person",
               "description": "Personal information",
               "required": [ "firstName" ],
               "type": "object",
@@ -77,8 +79,10 @@ class JsonSchemaGeneratorTest {
         val schema = generator.generateSchema(Pet::class)
 
         // language=json
-        val expectedSchema = """ 
+        val expectedSchema = $$"""
         {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.generator.json.JsonSchemaGeneratorTest.Pet",
               "description": "Pet information",
               "required": [ "name" ],
               "type": "object",
@@ -99,8 +103,10 @@ class JsonSchemaGeneratorTest {
         val schema = generator.generateSchema(Cat::class)
 
         // language=json
-        val expectedSchema = """ 
+        val expectedSchema = $$"""
         {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.generator.json.JsonSchemaGeneratorTest.Cat",
               "description": "Cat information",
               "required": ["toes" , "name"],
               "type": "object",
@@ -135,8 +141,10 @@ class JsonSchemaGeneratorTest {
         val schema = generator.generateSchema(User::class)
 
         // language=json
-        val expectedSchema = """
+        val expectedSchema = $$"""
         {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "User",
               "description": "A user model",
               "required": [ "name", "age", "tags", "attributes" ],
               "type": "object",
@@ -146,7 +154,7 @@ class JsonSchemaGeneratorTest {
                   "description": "The name of the user"
                 },
                 "age": {
-                  "type": "integer"
+                  "type": ["integer", "null"]
                 },
                 "email": {
                   "type": "string",
@@ -159,7 +167,7 @@ class JsonSchemaGeneratorTest {
                   }
                 },
                 "attributes": {
-                  "type": "object",
+                  "type": ["object", "null"],
                   "additionalProperties": {
                     "type": "integer"
                   }
@@ -177,8 +185,10 @@ class JsonSchemaGeneratorTest {
         val schema = generator.generateSchema(WithEnum::class)
 
         // language=json
-        val expectedSchema = """
+        val expectedSchema = $$"""
         {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.generator.json.JsonSchemaGeneratorTest.WithEnum",
               "required": [ "color" ],
               "type": "object",
               "properties": {

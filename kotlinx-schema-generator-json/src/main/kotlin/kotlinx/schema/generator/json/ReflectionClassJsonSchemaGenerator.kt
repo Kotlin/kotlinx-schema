@@ -33,7 +33,8 @@ public class ReflectionClassJsonSchemaGenerator(
         config = JsonSchemaConfig.Default,
     )
 
-    override fun getRootName(target: KClass<out Any>): String = target.qualifiedName ?: "Anonymous"
+    override fun getRootName(target: KClass<out Any>): String =
+        target.qualifiedName ?: target.simpleName ?: "Anonymous"
 
     override fun targetType(): KClass<KClass<out Any>> = KClass::class
 

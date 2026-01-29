@@ -17,9 +17,19 @@ import kotlinx.schema.json.BooleanPropertyDefinition
 import kotlinx.schema.json.Discriminator
 import kotlinx.schema.json.JsonSchema
 import kotlinx.schema.json.JsonSchemaConstants.JSON_SCHEMA_ID_DRAFT202012
+import kotlinx.schema.json.JsonSchemaConstants.Types.ARRAY_OR_NULL_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.ARRAY_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.BOOLEAN_OR_NULL_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.BOOLEAN_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.INTEGER_OR_NULL_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.INTEGER_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.NULL_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.NUMBER_OR_NULL_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.NUMBER_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.OBJECT_OR_NULL_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.OBJECT_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.STRING_OR_NULL_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.STRING_TYPE
 import kotlinx.schema.json.NumericPropertyDefinition
 import kotlinx.schema.json.ObjectPropertyDefinition
 import kotlinx.schema.json.OneOfPropertyDefinition
@@ -74,6 +84,22 @@ public class TypeGraphToJsonSchemaTransformer
                         )
                     }
 
+                    is StringPropertyDefinition -> {
+                        createStringSchemaDefinition(rootName, rootDefinition, definitions)
+                    }
+
+                    is NumericPropertyDefinition -> {
+                        createNumericSchemaDefinition(rootName, rootDefinition, definitions)
+                    }
+
+                    is BooleanPropertyDefinition -> {
+                        createBooleanSchemaDefinition(rootName, rootDefinition, definitions)
+                    }
+
+                    is ArrayPropertyDefinition -> {
+                        createArraySchemaDefinition(rootName, rootDefinition, definitions)
+                    }
+
                     else -> {
                         createDefaultSchemaDefinition(rootName, definitions)
                     }
@@ -91,8 +117,8 @@ public class TypeGraphToJsonSchemaTransformer
             definitions: Map<String, PropertyDefinition>,
         ): JsonSchema =
             JsonSchema(
-                id = getSchemaId(rootName),
-                schema = getSchemaUri(),
+                schema = JSON_SCHEMA_ID_DRAFT202012,
+                id = formatSchemaId(rootName),
                 properties = rootDefinition.properties ?: emptyMap(),
                 required = rootDefinition.required ?: emptyList(),
                 additionalProperties = rootDefinition.additionalProperties,
@@ -109,16 +135,92 @@ public class TypeGraphToJsonSchemaTransformer
             definitions: Map<String, PropertyDefinition>,
         ): JsonSchema =
             JsonSchema(
-                id = getSchemaId(rootName),
-                schema = getSchemaUri(),
+                schema = JSON_SCHEMA_ID_DRAFT202012,
+                id = formatSchemaId(rootName),
                 properties = emptyMap(),
                 required = emptyList(),
                 additionalProperties = JsonPrimitive(false),
                 description = rootDefinition.description,
                 oneOf = rootDefinition.oneOf,
-                // Discriminator is OpenAPI-specific, not part of JSON Schema 2020-12
-                // Include it for backward compatibility in non-strict mode, omit in strict mode
-                discriminator = if (config.strictSchemaFlag) null else rootDefinition.discriminator,
+                discriminator = if (config.includeDiscriminator) rootDefinition.discriminator else null,
+                defs = definitions.takeIf { it.isNotEmpty() },
+            )
+
+        /**
+         * Creates schema definition for string/enum root types.
+         */
+        private fun createStringSchemaDefinition(
+            rootName: String,
+            rootDefinition: StringPropertyDefinition,
+            definitions: Map<String, PropertyDefinition>,
+        ): JsonSchema =
+            JsonSchema(
+                schema = JSON_SCHEMA_ID_DRAFT202012,
+                id = formatSchemaId(rootName),
+                type = rootDefinition.type,
+                `enum` = rootDefinition.enum,
+                description = rootDefinition.description,
+                properties = emptyMap(),
+                required = emptyList(),
+                additionalProperties = null,
+                defs = definitions.takeIf { it.isNotEmpty() },
+            )
+
+        /**
+         * Creates schema definition for numeric root types.
+         */
+        private fun createNumericSchemaDefinition(
+            rootName: String,
+            rootDefinition: NumericPropertyDefinition,
+            definitions: Map<String, PropertyDefinition>,
+        ): JsonSchema =
+            JsonSchema(
+                schema = JSON_SCHEMA_ID_DRAFT202012,
+                id = formatSchemaId(rootName),
+                type = rootDefinition.type,
+                description = rootDefinition.description,
+                properties = emptyMap(),
+                required = emptyList(),
+                additionalProperties = null,
+                defs = definitions.takeIf { it.isNotEmpty() },
+            )
+
+        /**
+         * Creates schema definition for boolean root types.
+         */
+        private fun createBooleanSchemaDefinition(
+            rootName: String,
+            rootDefinition: BooleanPropertyDefinition,
+            definitions: Map<String, PropertyDefinition>,
+        ): JsonSchema =
+            JsonSchema(
+                schema = JSON_SCHEMA_ID_DRAFT202012,
+                id = formatSchemaId(rootName),
+                type = rootDefinition.type,
+                description = rootDefinition.description,
+                properties = emptyMap(),
+                required = emptyList(),
+                additionalProperties = null,
+                defs = definitions.takeIf { it.isNotEmpty() },
+            )
+
+        /**
+         * Creates schema definition for array root types.
+         */
+        private fun createArraySchemaDefinition(
+            rootName: String,
+            rootDefinition: ArrayPropertyDefinition,
+            definitions: Map<String, PropertyDefinition>,
+        ): JsonSchema =
+            JsonSchema(
+                schema = JSON_SCHEMA_ID_DRAFT202012,
+                id = formatSchemaId(rootName),
+                type = rootDefinition.type,
+                description = rootDefinition.description,
+                items = rootDefinition.items,
+                properties = emptyMap(),
+                required = emptyList(),
+                additionalProperties = null,
                 defs = definitions.takeIf { it.isNotEmpty() },
             )
 
@@ -130,17 +232,20 @@ public class TypeGraphToJsonSchemaTransformer
             definitions: Map<String, PropertyDefinition>,
         ): JsonSchema =
             JsonSchema(
-                id = getSchemaId(rootName),
-                schema = getSchemaUri(),
+                schema = JSON_SCHEMA_ID_DRAFT202012,
+                id = formatSchemaId(rootName),
                 properties = emptyMap(),
                 required = emptyList(),
                 additionalProperties = JsonPrimitive(false),
                 defs = definitions.takeIf { it.isNotEmpty() },
             )
 
-        private fun getSchemaId(rootName: String): String? = if (config.strictSchemaFlag) rootName else null
-
-        private fun getSchemaUri(): String? = if (config.strictSchemaFlag) JSON_SCHEMA_ID_DRAFT202012 else null
+        /**
+         * Formats a qualified name as a schema ID.
+         * Currently returns the qualified name as-is since '#' cannot be used in definition names
+         * (it would break $ref references like "#/$defs/Name").
+         */
+        private fun formatSchemaId(qualifiedName: String): String = qualifiedName
 
         /**
          * Converts a type reference to a property definition.
@@ -219,6 +324,12 @@ public class TypeGraphToJsonSchemaTransformer
                 is PolymorphicNode -> convertPolymorphic(node, nullable, graph, definitions)
             }
 
+        /**
+         * Determines the nullable flag value based on config and nullable parameter.
+         */
+        private fun getNullableFlag(nullable: Boolean): Boolean? =
+            if (!config.useUnionTypes && nullable && config.useNullableField) true else null
+
         private fun convertPrimitive(
             node: PrimitiveNode,
             nullable: Boolean,
@@ -226,31 +337,33 @@ public class TypeGraphToJsonSchemaTransformer
             when (node.kind) {
                 PrimitiveKind.STRING -> {
                     StringPropertyDefinition(
+                        type = if (nullable && config.useUnionTypes) STRING_OR_NULL_TYPE else STRING_TYPE,
                         description = null,
-                        nullable = if (nullable) true else null,
+                        nullable = getNullableFlag(nullable),
                     )
                 }
 
                 PrimitiveKind.BOOLEAN -> {
                     BooleanPropertyDefinition(
+                        type = if (nullable && config.useUnionTypes) BOOLEAN_OR_NULL_TYPE else BOOLEAN_TYPE,
                         description = null,
-                        nullable = if (nullable) true else null,
+                        nullable = getNullableFlag(nullable),
                     )
                 }
 
                 PrimitiveKind.INT, PrimitiveKind.LONG -> {
                     NumericPropertyDefinition(
-                        type = INTEGER_TYPE,
+                        type = if (nullable && config.useUnionTypes) INTEGER_OR_NULL_TYPE else INTEGER_TYPE,
                         description = null,
-                        nullable = if (nullable) true else null,
+                        nullable = getNullableFlag(nullable),
                     )
                 }
 
                 PrimitiveKind.FLOAT, PrimitiveKind.DOUBLE -> {
                     NumericPropertyDefinition(
-                        type = NUMBER_TYPE,
+                        type = if (nullable && config.useUnionTypes) NUMBER_OR_NULL_TYPE else NUMBER_TYPE,
                         description = null,
-                        nullable = if (nullable) true else null,
+                        nullable = getNullableFlag(nullable),
                     )
                 }
             }
@@ -307,11 +420,10 @@ public class TypeGraphToJsonSchemaTransformer
                         }
 
                     // Set const or default value if property has one
-                    // In strict mode: use const for required properties with fixed values
-                    // In non-strict mode: always use default for backward compatibility
+                    // Use const for required properties with fixed values in all modes
                     val withDefaultOrConst =
                         if (property.defaultValue != null) {
-                            if (config.strictSchemaFlag && isRequired) {
+                            if (isRequired) {
                                 setConstValue(withoutNullableIfRequired, property.defaultValue)
                             } else {
                                 setDefaultValue(withoutNullableIfRequired, property.defaultValue)
@@ -329,8 +441,9 @@ public class TypeGraphToJsonSchemaTransformer
                 }
 
             return ObjectPropertyDefinition(
+                type = if (nullable && config.useUnionTypes) OBJECT_OR_NULL_TYPE else OBJECT_TYPE,
                 description = node.description,
-                nullable = if (nullable) true else null,
+                nullable = getNullableFlag(nullable),
                 properties = properties,
                 required = required.toList(),
                 additionalProperties = JsonPrimitive(false),
@@ -342,8 +455,9 @@ public class TypeGraphToJsonSchemaTransformer
             nullable: Boolean,
         ): PropertyDefinition =
             StringPropertyDefinition(
+                type = if (nullable && config.useUnionTypes) STRING_OR_NULL_TYPE else STRING_TYPE,
                 description = node.description,
-                nullable = if (nullable) true else null,
+                nullable = getNullableFlag(nullable),
                 enum = node.entries,
             )
 
@@ -355,8 +469,9 @@ public class TypeGraphToJsonSchemaTransformer
         ): PropertyDefinition {
             val items = convertTypeRef(node.element, graph, definitions)
             return ArrayPropertyDefinition(
+                type = if (nullable && config.useUnionTypes) ARRAY_OR_NULL_TYPE else ARRAY_TYPE,
                 description = null,
-                nullable = if (nullable) true else null,
+                nullable = getNullableFlag(nullable),
                 items = items,
             )
         }
@@ -373,8 +488,9 @@ public class TypeGraphToJsonSchemaTransformer
             val additionalPropertiesSchema = json.encodeToJsonElement(valuePropertyDef)
 
             return ObjectPropertyDefinition(
+                type = if (nullable && config.useUnionTypes) OBJECT_OR_NULL_TYPE else OBJECT_TYPE,
                 description = null,
-                nullable = if (nullable) true else null,
+                nullable = getNullableFlag(nullable),
                 additionalProperties = additionalPropertiesSchema,
             )
         }
@@ -408,20 +524,24 @@ public class TypeGraphToJsonSchemaTransformer
                     definitions[typeName] = subtypeDefinition
 
                     // Return a reference to this definition
-                    ReferencePropertyDefinition(ref = $$"#/$defs/$$typeName")
+                    ReferencePropertyDefinition(ref = "#/\$defs/$typeName")
                 }
 
-            // Convert discriminator with proper $ref paths
+            // Convert discriminator with proper $ref paths if includeDiscriminator is enabled
             val discriminator =
-                node.discriminator?.let { disc ->
-                    val mapping =
-                        disc.mapping?.mapValues { (_, typeId) ->
-                            $$"#/$defs/$${typeId.value}"
-                        }
-                    Discriminator(
-                        propertyName = disc.name,
-                        mapping = mapping,
-                    )
+                if (config.includeDiscriminator) {
+                    node.discriminator?.let { disc ->
+                        val mapping =
+                            disc.mapping?.mapValues { (_, typeId) ->
+                                "#/\$defs/${typeId.value}"
+                            }
+                        Discriminator(
+                            propertyName = disc.name,
+                            mapping = mapping,
+                        )
+                    }
+                } else {
+                    null
                 }
 
             val oneOfDef =

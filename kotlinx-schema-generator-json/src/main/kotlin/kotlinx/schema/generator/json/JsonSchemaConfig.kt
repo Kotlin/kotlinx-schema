@@ -6,39 +6,38 @@ import kotlinx.schema.generator.json.JsonSchemaConfig.Companion.Strict
 /**
  * Configuration for JSON Schema transformers.
  *
- * Controls schema generation behavior with individual flags for strict mode compliance
- * and required field handling. Use the [Strict] preset for full OpenAI Strict Mode compliance.
+ * Controls schema generation behavior with individual flags for nullable handling
+ * and required field handling. Use the [Strict] preset for full JSON Schema Draft 2020-12 compliance.
  *
  * ## Configuration Flags
  *
- * The three flags work together to control required field behavior:
+ * ### Required Field Behavior
  *
  * | respectDefaultPresence | requireNullableFields | Behavior |
- * |------------------------|----------------------|----------|
+ * |------------------------|-----------------------|----------|
  * | true | ignored | Use introspector's DefaultPresence (fields with defaults are optional) |
- * | false | true | All fields required (strict mode) |
+ * | false | true | All fields required (including nullables) - strict mode |
  * | false | false | Only non-nullable fields required |
  *
- * @property strictSchemaFlag Whether to set `strict: true` flag in output schemas
- * @property respectDefaultPresence Whether to use introspector's DefaultPresence for determining required fields
- * @property requireNullableFields Whether to include nullable fields in required array
- *          (when not using default presence)
+ * ### Nullable Type Representation
  *
- * @see [OpenAI Structured Outputs](https://platform.openai.com/docs/guides/function-calling)
+ * | useUnionTypes | useNullableField | Output |
+ * |---------------|------------------|--------|
+ * | true | false | `{"type": ["string", "null"]}` (JSON Schema Draft 2020-12) |
+ * | false | true | `{"type": "string", "nullable": true}` (legacy OpenAPI) |
+ * | false | false | `{"type": "string"}` (no nullable indication) |
+ *
+ * @property respectDefaultPresence Whether to use introspector's DefaultPresence for determining required fields
+ * @property requireNullableFields Whether nullable fields must be present in JSON (when not using default presence)
+ * @property useUnionTypes Whether to use union types for nullable fields (JSON Schema Draft 2020-12)
+ * @property useNullableField Whether to emit the nullable field for nullable types (legacy OpenAPI)
+ *
+ * @see [JSON Schema Draft 2020-12](https://json-schema.org/draft/2020-12/json-schema-core.html)
  * @author Konstantin Pavlov
  */
 public open class JsonSchemaConfig(
     /**
-     * Whether to set the `strict: true` flag in output schemas.
-     *
-     * When `true`, the generated schema includes `"strict": true` in the JSON output.
-     * Required for OpenAI Structured Outputs and function calling strict mode.
-     *
-     * Default: `false`
-     */
-    public val strictSchemaFlag: Boolean = false,
-    /**
-     * Whether to respect hasDefaultValue from the introspector for determining required fields.
+     * Whether to use hasDefaultValue from introspector to determine required fields.
      *
      * When `true`: Uses `hasDefaultValue` from introspector. Fields without defaults
      * are marked as required, fields with defaults are optional.
@@ -52,17 +51,14 @@ public open class JsonSchemaConfig(
      */
     public val respectDefaultPresence: Boolean = false,
     /**
-     * Whether to include nullable fields in the required array.
+     * Whether nullable fields must be present in JSON.
      *
      * Only applies when [respectDefaultPresence] is `false`.
      *
-     * When `true`: All fields (including nullable ones) are in the required array.
-     * Nullable fields use union types: `["string", "null"]`. Required for OpenAI Strict Mode.
+     * When `true`: Nullable fields ARE in the required array (must be present, can be null).
+     * When `false`: Nullable fields are NOT in the required array (can be omitted).
      *
-     * When `false`: Only non-nullable fields are in the required array.
-     * Nullable fields are truly optional and can be omitted.
-     *
-     * Example with `requireNullableFields = true`:
+     * Example with `requireNullableFields = true` (strict mode):
      * ```kotlin
      * fun writeLog(level: String, exception: String? = null)
      * ```
@@ -88,58 +84,134 @@ public open class JsonSchemaConfig(
      * }
      * ```
      *
-     * Default: `true`
+     * Default: `true` (Draft 2020-12 strict mode)
      */
     public val requireNullableFields: Boolean = true,
+    /**
+     * Whether to use union types for nullable fields.
+     *
+     * When `true`: Generates `["string", "null"]` (JSON Schema Draft 2020-12 standard).
+     * When `false`: Uses nullable field instead (see [useNullableField]).
+     *
+     * Default: `true`
+     */
+    public val useUnionTypes: Boolean = true,
+    /**
+     * Whether to emit the nullable field for nullable types.
+     *
+     * When `true`: Adds `"nullable": true` (legacy OpenAPI compatibility).
+     * When `false`: Omits nullable field (standard JSON Schema).
+     *
+     * **Note**: Ignored when [useUnionTypes] is `true`.
+     *
+     * Default: `false`
+     */
+    public val useNullableField: Boolean = false,
+    /**
+     * Whether to include discriminator in polymorphic schemas.
+     *
+     * When `true`: Includes discriminator object in oneOf schemas (OpenAPI 3.x compatibility).
+     * When `false`: Omits discriminator (standard JSON Schema Draft 2020-12).
+     *
+     * Note: Discriminator is an OpenAPI extension, not part of JSON Schema specification.
+     *
+     * Default: `false`
+     */
+    public val includeDiscriminator: Boolean = false,
 ) {
+    init {
+        // Validate flag combinations
+        require(!useUnionTypes || !useNullableField) {
+            "Cannot use both useUnionTypes and useNullableField. " +
+                "Choose one: union types [\"string\", \"null\"] OR nullable field."
+        }
+
+        if (!useUnionTypes && !useNullableField) {
+            // Warning: no nullable representation at all
+            println(
+                "WARNING: Both useUnionTypes and useNullableField are false. " +
+                    "Nullable types will not be distinguished from non-nullable.",
+            )
+        }
+    }
+
     public companion object {
         /**
-         * Default configuration for standard JSON Schema generation.
+         * Default configuration for standard JSON Schema Draft 2020-12 generation.
          *
-         * - Strict flag: disabled
          * - Uses default presence detection (fields with defaults are optional)
-         * - Standard nullable handling
+         * - Uses union types for nullable fields: `["string", "null"]`
+         * - Nullable fields are required (must be present in JSON)
          *
          * **Note**: Works best with reflection-based introspection.
          * With KSP, behaves like [Strict] (all fields required).
          */
         public val Default: JsonSchemaConfig =
             JsonSchemaConfig(
-                strictSchemaFlag = false,
                 respectDefaultPresence = true,
-                requireNullableFields = true, // ignored when respectDefaultPresence=true
+                requireNullableFields = true,
+                useUnionTypes = true,
+                useNullableField = false,
+                includeDiscriminator = false,
             )
 
         /**
          * Simplified configuration using default presence detection.
          *
-         * - Strict flag: disabled
          * - Required fields based on default values (uses introspector's DefaultPresence)
+         * - Uses union types for nullable fields
          *
          * **Note**: Identical to [Default]. Kept for backward compatibility.
          */
         public val Simple: JsonSchemaConfig =
             JsonSchemaConfig(
-                strictSchemaFlag = false,
                 respectDefaultPresence = true,
-                requireNullableFields = true, // ignored when respectDefaultPresence=true
+                requireNullableFields = true,
+                useUnionTypes = true,
+                useNullableField = false,
+                includeDiscriminator = false,
             )
 
         /**
-         * Configuration for full OpenAI Strict Mode compliance:
-         *  - `strictSchemaFlag = true` - sets `strict: true` in output
-         *  - `respectDefaultPresence = false` - ignore default values
-         *  - `requireNullableFields = true` - all fields in required array with union types
+         * Configuration for full JSON Schema Draft 2020-12 compliance:
+         *  - `respectDefaultPresence = false` - ignore default values (KSP limitation)
+         *  - `requireNullableFields = true` - all fields in required array (including nullables)
+         *  - `useUnionTypes = true` - union types for nullable fields
          *
-         * Use this when generating schemas for OpenAI function calling APIs with strict mode enabled.
+         * Use this when generating schemas that must strictly comply with JSON Schema Draft 2020-12,
+         * or when using with OpenAI function calling APIs with strict mode enabled.
          *
-         * See [OpenAI Structured Outputs](https://platform.openai.com/docs/guides/function-calling)
+         * See [JSON Schema Draft 2020-12](https://json-schema.org/draft/2020-12/json-schema-core.html)
          */
         public val Strict: JsonSchemaConfig =
             JsonSchemaConfig(
-                strictSchemaFlag = true,
                 respectDefaultPresence = false,
                 requireNullableFields = true,
+                useUnionTypes = true,
+                useNullableField = false,
+                includeDiscriminator = false,
+            )
+
+        /**
+         * Configuration for OpenAPI 3.x compatibility:
+         *  - `respectDefaultPresence = true` - respect default values when available
+         *  - `requireNullableFields = false` - nullable fields are optional
+         *  - `useUnionTypes = false` - use nullable field instead of union types
+         *  - `useNullableField = true` - emit "nullable": true for OpenAPI
+         *  - `includeDiscriminator = true` - include discriminator for polymorphic types
+         *
+         * Use this when generating schemas for OpenAPI 3.x specifications.
+         * OpenAPI 3.x uses a subset of JSON Schema with some extensions.
+         *
+         * See [OpenAPI 3.1 Specification](https://spec.openapis.org/oas/v3.1.0)
+         */
+        public val OpenAPI: JsonSchemaConfig =
+            JsonSchemaConfig(
+                respectDefaultPresence = true,
+                requireNullableFields = false,
+                useUnionTypes = false,
+                useNullableField = true,
+                includeDiscriminator = true,
             )
     }
 }

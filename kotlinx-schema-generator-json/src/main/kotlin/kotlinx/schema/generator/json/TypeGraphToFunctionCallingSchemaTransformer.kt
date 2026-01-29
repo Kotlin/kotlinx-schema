@@ -114,7 +114,7 @@ public class TypeGraphToFunctionCallingSchemaTransformer
             return FunctionCallingSchema(
                 name = node.name,
                 description = node.description ?: "",
-                strict = if (config.strictSchemaFlag) true else null,
+                strict = if (config.strictMode) true else null,
                 parameters =
                     ObjectPropertyDefinition(
                         properties = properties,

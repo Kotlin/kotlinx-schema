@@ -13,9 +13,10 @@ class JsonSchemaConfigTest {
     fun `respectDefaultPresence true should use default presence for required fields`() {
         val config =
             JsonSchemaConfig(
-                strictSchemaFlag = false,
                 respectDefaultPresence = true,
                 requireNullableFields = true, // ignored when respectDefaultPresence=true
+                useUnionTypes = true,
+                useNullableField = false,
             )
         val transformer = TypeGraphToJsonSchemaTransformer(config)
         val typeGraph =
@@ -34,9 +35,10 @@ class JsonSchemaConfigTest {
     fun `requireNullableFields true should include all fields in required`() {
         val config =
             JsonSchemaConfig(
-                strictSchemaFlag = false,
                 respectDefaultPresence = false,
                 requireNullableFields = true,
+                useUnionTypes = true,
+                useNullableField = false,
             )
         val transformer = TypeGraphToJsonSchemaTransformer(config)
         val typeGraph =
@@ -55,9 +57,10 @@ class JsonSchemaConfigTest {
     fun `requireNullableFields false should only include non-nullable fields in required`() {
         val config =
             JsonSchemaConfig(
-                strictSchemaFlag = false,
                 respectDefaultPresence = false,
                 requireNullableFields = false,
+                useUnionTypes = true,
+                useNullableField = false,
             )
         val transformer = TypeGraphToJsonSchemaTransformer(config)
         val typeGraph =
