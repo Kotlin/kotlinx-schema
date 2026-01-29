@@ -2,7 +2,7 @@
 koog = "0.6.0"
 kotest = "6.1.2"
 kotlinxSerialization = "1.10.0"
-ksp = "2.3.4"
+ksp = "2.3.5"
 kotlin = "2.3.0"
 
 [libraries]
