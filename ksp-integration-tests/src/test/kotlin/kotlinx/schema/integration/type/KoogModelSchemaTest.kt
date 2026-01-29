@@ -15,8 +15,9 @@ class KoogModelSchemaTest {
         schema shouldEqualJson
             $$"""
             {
-              "$id": "kotlinx.schema.integration.type.KoogModel",
               "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.integration.type.KoogModel",
+              "description": "A purchasable product with pricing and inventory info.",
               "type": "object",
               "properties": {
                 "id": {
@@ -41,15 +42,14 @@ class KoogModelSchemaTest {
                 },
                 "tags": {
                   "type": "array",
+                  "description": "List of tags for categorization and search",
                   "items": {
                     "type": "string"
-                  },
-                  "description": "List of tags for categorization and search"
+                  }
                 }
               },
-              "required": ["id", "name", "description", "price"],
-              "additionalProperties": false,
-              "description": "A purchasable product with pricing and inventory info."
+              "required": ["id", "name", "description", "price", "inStock", "tags"],
+              "additionalProperties": false
             }
             """.trimIndent()
     }

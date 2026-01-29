@@ -15,8 +15,9 @@ class AddressSchemaTest {
         schema shouldEqualJson
             $$"""
             {
-              "$id": "kotlinx.schema.integration.type.Address",
               "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.integration.type.Address",
+              "description": "A postal address for deliveries and billing.",
               "type": "object",
               "properties": {
                 "street": {
@@ -36,9 +37,8 @@ class AddressSchemaTest {
                   "description": "Two-letter ISO country code; defaults to US"
                 }
               },
-              "required": ["street", "city", "zipCode"],
-              "additionalProperties": false,
-              "description": "A postal address for deliveries and billing."
+              "required": ["street", "city", "zipCode", "country"],
+              "additionalProperties": false
             }
             """.trimIndent()
     }

@@ -15,11 +15,11 @@ class AnimalSchemaTest {
         schema shouldEqualJson
             $$"""
             {
-              "$id": "kotlinx.schema.integration.type.Animal",
               "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.integration.type.Animal",
+              "description": "Multicellular eukaryotic organism of the kingdom Metazoa",
               "type": "object",
               "additionalProperties": false,
-              "description": "Multicellular eukaryotic organism of the kingdom Metazoa",
               "oneOf": [
                 { "$ref": "#/$defs/kotlinx.schema.integration.type.Animal.Cat" },
                 { "$ref": "#/$defs/kotlinx.schema.integration.type.Animal.Dog" }
@@ -31,12 +31,9 @@ class AnimalSchemaTest {
                     "name": {
                       "type": "string",
                       "description": "Animal's name"
-                    },
-                    "type": {
-                      "const": "kotlinx.schema.integration.type.Animal.Cat"
                     }
                   },
-                  "required": ["name", "type"],
+                  "required": ["name"],
                   "additionalProperties": false
                 },
                 "kotlinx.schema.integration.type.Animal.Dog": {
@@ -45,12 +42,9 @@ class AnimalSchemaTest {
                     "name": {
                       "type": "string",
                       "description": "Animal's name"
-                    },
-                    "type": {
-                      "const": "kotlinx.schema.integration.type.Animal.Dog"
                     }
                   },
-                  "required": ["name", "type"],
+                  "required": ["name"],
                   "additionalProperties": false
                 }
               }

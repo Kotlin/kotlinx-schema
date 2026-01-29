@@ -14,8 +14,9 @@ class UserSchemaTest {
         schema shouldEqualJson
             $$"""
             {
-              "$id": "kotlinx.schema.integration.type.User",
               "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.integration.type.User",
+              "description": "A user model",
               "type": "object",
               "properties": {
                 "name": {
@@ -41,9 +42,8 @@ class UserSchemaTest {
                   }
                 }
               },
-              "required": ["name", "age", "tags", "attributes"],
-              "additionalProperties": false,
-              "description": "A user model"
+              "required": ["name", "age", "email", "tags", "attributes"],
+              "additionalProperties": false
             }
             """.trimIndent()
     }

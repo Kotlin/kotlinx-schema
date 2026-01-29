@@ -15,8 +15,8 @@ class ProductSchemaTest {
         schema shouldEqualJson
             $$"""
             {
-              "$id": "kotlinx.schema.integration.type.Product",
               "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.integration.type.Product",
               "type": "object",
               "properties": {
                 "id": {
@@ -41,13 +41,13 @@ class ProductSchemaTest {
                 },
                 "tags": {
                   "type": "array",
+                  "description": "List of tags for categorization and search",
                   "items": {
                     "type": "string"
-                  },
-                  "description": "List of tags for categorization and search"
+                  }
                 }
               },
-              "required": ["id", "name", "description", "price"],
+              "required": ["id", "name", "description", "price", "inStock", "tags"],
               "additionalProperties": false,
               "description": "A purchasable product with pricing and inventory info."
             }

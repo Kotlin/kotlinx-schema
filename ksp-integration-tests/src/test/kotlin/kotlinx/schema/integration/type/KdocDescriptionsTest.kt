@@ -15,8 +15,9 @@ class KdocDescriptionsTest {
             // language=json
             $$"""
              {
-                "$id": "kotlinx.schema.integration.type.Address",
                 "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "$id": "kotlinx.schema.integration.type.Address",
+                "description": "A postal address for deliveries and billing.",
                 "type": "object",
                 "properties": {
                     "street": {
@@ -39,10 +40,10 @@ class KdocDescriptionsTest {
                 "required": [
                     "street",
                     "city",
-                    "zipCode"
+                    "zipCode",
+                    "country"
                 ],
-                "additionalProperties": false,
-                "description": "A postal address for deliveries and billing."
+                "additionalProperties": false
             }
             """.trimIndent()
     }

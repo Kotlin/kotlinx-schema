@@ -16,8 +16,9 @@ class JacksonModelSchemaTest {
         schema shouldEqualJson
             $$"""
             {
-              "$id": "kotlinx.schema.integration.type.JacksonModel",
               "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.integration.type.JacksonModel",
+              "description": "A purchasable product using Jackson annotations.",
               "type": "object",
               "properties": {
                 "id": {
@@ -42,15 +43,14 @@ class JacksonModelSchemaTest {
                 },
                 "tags": {
                   "type": "array",
+                  "description": "List of tags for categorization and search",
                   "items": {
                     "type": "string"
-                  },
-                  "description": "List of tags for categorization and search"
+                  }
                 }
               },
-              "required": ["id", "name", "description", "price"],
-              "additionalProperties": false,
-              "description": "A purchasable product using Jackson annotations."
+              "required": ["id", "name", "description", "price", "inStock", "tags"],
+              "additionalProperties": false
             }
             """.trimIndent()
     }
