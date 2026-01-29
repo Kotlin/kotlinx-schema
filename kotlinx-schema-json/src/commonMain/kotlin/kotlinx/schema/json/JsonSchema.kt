@@ -2,6 +2,13 @@
 
 package kotlinx.schema.json
 
+import kotlinx.schema.json.JsonSchemaConstants.Keys.CONST
+import kotlinx.schema.json.JsonSchemaConstants.Keys.DEFS
+import kotlinx.schema.json.JsonSchemaConstants.Keys.REF
+import kotlinx.schema.json.JsonSchemaConstants.Types.ARRAY_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.BOOLEAN_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.OBJECT_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.STRING_TYPE
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
@@ -202,7 +209,7 @@ public data class JsonSchemaDefinition(
     public val items: PropertyDefinition? = null,
     public val oneOf: List<PropertyDefinition>? = null,
     public val discriminator: Discriminator? = null,
-    @SerialName($$"$defs") public val defs: Map<String, PropertyDefinition>? = null,
+    @SerialName(DEFS) public val defs: Map<String, PropertyDefinition>? = null,
 ) : PropertiesContainer
 
 /**
@@ -266,7 +273,7 @@ public sealed interface ValuePropertyDefinition : PropertyDefinition {
 @Serializable
 public data class StringPropertyDefinition(
     @Serializable(with = StringOrListSerializer::class) @EncodeDefault override val type: List<String> =
-        listOf("string"),
+        STRING_TYPE,
     override val description: String? = null,
     override val nullable: Boolean? = null,
     val format: String? = null,
@@ -304,7 +311,7 @@ public data class NumericPropertyDefinition(
 @Serializable
 public data class ArrayPropertyDefinition(
     @Serializable(with = StringOrListSerializer::class) @EncodeDefault override val type: List<String> =
-        listOf("array"),
+        ARRAY_TYPE,
     override val description: String? = null,
     override val nullable: Boolean? = null,
     @Serializable(with = ArrayEnumSerializer::class)
@@ -321,7 +328,7 @@ public data class ArrayPropertyDefinition(
 @Serializable
 public data class ObjectPropertyDefinition(
     @Serializable(with = StringOrListSerializer::class) @EncodeDefault override val type: List<String> =
-        listOf("object"),
+        OBJECT_TYPE,
     override val description: String? = null,
     override val nullable: Boolean? = null,
     @Serializable(with = ObjectEnumSerializer::class)
@@ -347,7 +354,7 @@ public data class ObjectPropertyDefinition(
 @Serializable
 public data class BooleanPropertyDefinition(
     @Serializable(with = StringOrListSerializer::class) @EncodeDefault override val type: List<String> =
-        listOf("boolean"),
+        BOOLEAN_TYPE,
     override val description: String? = null,
     override val nullable: Boolean? = null,
     @Serializable(with = BooleanEnumSerializer::class)
@@ -375,7 +382,7 @@ public data class GenericPropertyDefinition(
     @Serializable(with = PolymorphicEnumSerializer::class)
     val enum: List<JsonElement>? = null,
     val default: JsonElement? = null,
-    @SerialName("const") val constValue: JsonElement? = null,
+    @SerialName(CONST) val constValue: JsonElement? = null,
 ) : PropertyDefinition
 
 /**
@@ -383,7 +390,7 @@ public data class GenericPropertyDefinition(
  */
 @Serializable
 public data class ReferencePropertyDefinition(
-    @SerialName($$"$ref") val ref: String,
+    @SerialName(REF) val ref: String,
 ) : PropertyDefinition
 
 /**

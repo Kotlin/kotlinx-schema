@@ -1,6 +1,9 @@
 package kotlinx.schema.generator.core.ir
 
 import kotlinx.schema.generator.core.Config
+import kotlinx.schema.generator.core.ir.Introspections.descriptionAnnotationNames
+import kotlinx.schema.generator.core.ir.Introspections.descriptionValueAttributes
+import kotlinx.schema.generator.core.ir.Introspections.getDescriptionFromAnnotation
 
 /**
  * Utility object for annotation-based introspection, providing methods to process annotations,

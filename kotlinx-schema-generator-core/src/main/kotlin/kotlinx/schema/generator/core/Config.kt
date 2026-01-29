@@ -1,5 +1,6 @@
 package kotlinx.schema.generator.core
 
+import kotlinx.schema.generator.core.Config.descriptionAnnotationNames
 import java.io.IOException
 import java.util.Properties
 

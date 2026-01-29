@@ -2,6 +2,13 @@
 
 package kotlinx.schema.json
 
+import kotlinx.schema.json.JsonSchemaConstants.Keys.TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.ARRAY_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.BOOLEAN_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.INTEGER
+import kotlinx.schema.json.JsonSchemaConstants.Types.NUMBER
+import kotlinx.schema.json.JsonSchemaConstants.Types.OBJECT_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.STRING_TYPE
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -720,7 +727,7 @@ public class StringPropertyBuilder internal constructor() {
     /**
      * The JSON Schema type. Always ["string"] for this builder.
      */
-    public var type: List<String> = listOf("string")
+    public var type: List<String> = STRING_TYPE
 
     /**
      * Human-readable description of this property.
@@ -967,7 +974,7 @@ public class StringPropertyBuilder internal constructor() {
  */
 @JsonSchemaDsl
 public class NumericPropertyBuilder internal constructor(
-    type: String = "number",
+    type: String = NUMBER,
 ) {
     /**
      * The JSON Schema type. Either ["integer"] or ["number"].
@@ -1188,7 +1195,7 @@ public class BooleanPropertyBuilder internal constructor() {
     /**
      * The JSON Schema type. Always ["boolean"] for this builder.
      */
-    public var type: List<String> = listOf("boolean")
+    public var type: List<String> = BOOLEAN_TYPE
 
     /**
      * Human-readable description of this property.
@@ -1353,7 +1360,7 @@ public class BooleanPropertyBuilder internal constructor() {
  * - Heterogeneous enums
  *
  * This class is part of the JSON Schema DSL and cannot be instantiated directly.
- * Use [SchemaBuilder.generic] to create instances.
+ * Use [JsonSchemaDefinitionBuilder.property] to create instances.
  *
  * ## Example
  * ```kotlin
@@ -1604,7 +1611,7 @@ public class ArrayPropertyBuilder internal constructor() {
     /**
      * The JSON Schema type. Always ["array"] for this builder.
      */
-    public var type: List<String> = listOf("array")
+    public var type: List<String> = ARRAY_TYPE
 
     /**
      * Human-readable description of this property.
@@ -1798,14 +1805,14 @@ public class ArrayPropertyBuilder internal constructor() {
      * Specifies that array items are integers.
      */
     public fun ofInteger(block: NumericPropertyBuilder.() -> Unit = {}) {
-        itemsDefinition = NumericPropertyBuilder(type = "integer").apply(block).build()
+        itemsDefinition = NumericPropertyBuilder(type = INTEGER).apply(block).build()
     }
 
     /**
      * Specifies that array items are numbers (supports decimals).
      */
     public fun ofNumber(block: NumericPropertyBuilder.() -> Unit = {}) {
-        itemsDefinition = NumericPropertyBuilder(type = "number").apply(block).build()
+        itemsDefinition = NumericPropertyBuilder(type = NUMBER).apply(block).build()
     }
 
     /**
@@ -1912,7 +1919,7 @@ public class ObjectPropertyBuilder internal constructor() {
     /**
      * The JSON Schema type. Always ["object"] for this builder.
      */
-    public var type: List<String> = listOf("object")
+    public var type: List<String> = OBJECT_TYPE
 
     /**
      * Human-readable description of this property.
@@ -2184,12 +2191,12 @@ public fun PolymorphicOptionsCollector.string(block: StringPropertyBuilder.() ->
 
 /** Adds an integer schema option. */
 public fun PolymorphicOptionsCollector.integer(block: NumericPropertyBuilder.() -> Unit = {}) {
-    addOption(NumericPropertyBuilder(type = "integer").apply(block).build())
+    addOption(NumericPropertyBuilder(type = INTEGER).apply(block).build())
 }
 
 /** Adds a number schema option. */
 public fun PolymorphicOptionsCollector.number(block: NumericPropertyBuilder.() -> Unit = {}) {
-    addOption(NumericPropertyBuilder(type = "number").apply(block).build())
+    addOption(NumericPropertyBuilder(type = NUMBER).apply(block).build())
 }
 
 /** Adds a boolean schema option. */
@@ -2380,7 +2387,7 @@ public class OneOfPropertyBuilder internal constructor() : PolymorphicOptionsCol
      * ```
      */
     public fun discriminator(
-        propertyName: String = "type",
+        propertyName: String = TYPE,
         block: DiscriminatorBuilder.() -> Unit = {},
     ) {
         require(propertyName.isNotEmpty()) { "Discriminator propertyName cannot be empty" }

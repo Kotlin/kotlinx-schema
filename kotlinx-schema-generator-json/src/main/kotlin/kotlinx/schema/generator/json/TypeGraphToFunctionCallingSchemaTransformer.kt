@@ -13,6 +13,18 @@ import kotlinx.schema.generator.core.ir.TypeRef
 import kotlinx.schema.json.ArrayPropertyDefinition
 import kotlinx.schema.json.BooleanPropertyDefinition
 import kotlinx.schema.json.FunctionCallingSchema
+import kotlinx.schema.json.JsonSchemaConstants.Types.ARRAY_OR_NULL_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.ARRAY_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.BOOLEAN_OR_NULL_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.BOOLEAN_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.INTEGER_OR_NULL_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.INTEGER_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.NUMBER_OR_NULL_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.NUMBER_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.OBJECT_OR_NULL_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.OBJECT_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.STRING_OR_NULL_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.STRING_TYPE
 import kotlinx.schema.json.NumericPropertyDefinition
 import kotlinx.schema.json.ObjectPropertyDefinition
 import kotlinx.schema.json.PropertyDefinition
@@ -197,7 +209,7 @@ public class TypeGraphToFunctionCallingSchemaTransformer
             when (node.kind) {
                 PrimitiveKind.STRING -> {
                     StringPropertyDefinition(
-                        type = if (nullable) listOf("string", "null") else listOf("string"),
+                        type = if (nullable) STRING_OR_NULL_TYPE else STRING_TYPE,
                         description = node.description,
                         nullable = null,
                     )
@@ -205,23 +217,15 @@ public class TypeGraphToFunctionCallingSchemaTransformer
 
                 PrimitiveKind.BOOLEAN -> {
                     BooleanPropertyDefinition(
-                        type = if (nullable) listOf("boolean", "null") else listOf("boolean"),
+                        type = if (nullable) BOOLEAN_OR_NULL_TYPE else BOOLEAN_TYPE,
                         description = node.description,
                         nullable = null,
                     )
                 }
 
-                PrimitiveKind.INT -> {
+                PrimitiveKind.INT, PrimitiveKind.LONG -> {
                     NumericPropertyDefinition(
-                        type = if (nullable) listOf("integer", "null") else listOf("integer"),
-                        description = node.description,
-                        nullable = null,
-                    )
-                }
-
-                PrimitiveKind.LONG -> {
-                    NumericPropertyDefinition(
-                        type = if (nullable) listOf("integer", "null") else listOf("integer"),
+                        type = if (nullable) INTEGER_OR_NULL_TYPE else INTEGER_TYPE,
                         description = node.description,
                         nullable = null,
                     )
@@ -229,7 +233,7 @@ public class TypeGraphToFunctionCallingSchemaTransformer
 
                 PrimitiveKind.FLOAT, PrimitiveKind.DOUBLE -> {
                     NumericPropertyDefinition(
-                        type = if (nullable) listOf("number", "null") else listOf("number"),
+                        type = if (nullable) NUMBER_OR_NULL_TYPE else NUMBER_TYPE,
                         description = node.description,
                         nullable = null,
                     )
@@ -267,7 +271,7 @@ public class TypeGraphToFunctionCallingSchemaTransformer
                 }
 
             return ObjectPropertyDefinition(
-                type = if (nullable) listOf("object", "null") else listOf("object"),
+                type = if (nullable) OBJECT_OR_NULL_TYPE else OBJECT_TYPE,
                 description = node.description,
                 nullable = null,
                 properties = properties,
@@ -281,7 +285,7 @@ public class TypeGraphToFunctionCallingSchemaTransformer
             nullable: Boolean,
         ): PropertyDefinition =
             StringPropertyDefinition(
-                type = if (nullable) listOf("string", "null") else listOf("string"),
+                type = if (nullable) STRING_OR_NULL_TYPE else STRING_TYPE,
                 description = node.description,
                 nullable = null,
                 enum = node.entries,
@@ -294,7 +298,7 @@ public class TypeGraphToFunctionCallingSchemaTransformer
         ): PropertyDefinition {
             val items = convertTypeRef(node.element, graph)
             return ArrayPropertyDefinition(
-                type = if (nullable) listOf("array", "null") else listOf("array"),
+                type = if (nullable) ARRAY_OR_NULL_TYPE else ARRAY_TYPE,
                 description = node.description,
                 nullable = null,
                 items = items,
@@ -310,7 +314,7 @@ public class TypeGraphToFunctionCallingSchemaTransformer
             val additionalPropertiesSchema = json.encodeToJsonElement(valuePropertyDef)
 
             return ObjectPropertyDefinition(
-                type = if (nullable) listOf("object", "null") else listOf("object"),
+                type = if (nullable) OBJECT_OR_NULL_TYPE else OBJECT_TYPE,
                 description = node.description,
                 nullable = null,
                 additionalProperties = additionalPropertiesSchema,

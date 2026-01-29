@@ -1,6 +1,5 @@
 package kotlinx.schema.generator.reflect
 import kotlinx.schema.generator.core.ir.ObjectNode
-import kotlinx.schema.generator.core.ir.PrimitiveNode
 import kotlinx.schema.generator.core.ir.Property
 import kotlinx.schema.generator.core.ir.SchemaIntrospector
 import kotlinx.schema.generator.core.ir.TypeGraph
@@ -9,7 +8,6 @@ import kotlinx.schema.generator.core.ir.TypeRef
 import kotlin.reflect.KCallable
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
-import kotlin.reflect.KProperty1
 
 /**
  * Introspects Kotlin functions/methods using reflection to build a [TypeGraph].

@@ -16,6 +16,9 @@ import kotlinx.schema.json.ArrayPropertyDefinition
 import kotlinx.schema.json.BooleanPropertyDefinition
 import kotlinx.schema.json.Discriminator
 import kotlinx.schema.json.JsonSchema
+import kotlinx.schema.json.JsonSchemaConstants.Types.INTEGER_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.NULL_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.NUMBER_TYPE
 import kotlinx.schema.json.JsonSchemaDefinition
 import kotlinx.schema.json.NumericPropertyDefinition
 import kotlinx.schema.json.ObjectPropertyDefinition
@@ -230,7 +233,6 @@ public class TypeGraphToJsonSchemaTransformer
             when (node.kind) {
                 PrimitiveKind.STRING -> {
                     StringPropertyDefinition(
-                        type = listOf("string"),
                         description = null,
                         nullable = if (nullable) true else null,
                     )
@@ -238,23 +240,14 @@ public class TypeGraphToJsonSchemaTransformer
 
                 PrimitiveKind.BOOLEAN -> {
                     BooleanPropertyDefinition(
-                        type = listOf("boolean"),
                         description = null,
                         nullable = if (nullable) true else null,
                     )
                 }
 
-                PrimitiveKind.INT -> {
+                PrimitiveKind.INT, PrimitiveKind.LONG -> {
                     NumericPropertyDefinition(
-                        type = listOf("integer"),
-                        description = null,
-                        nullable = if (nullable) true else null,
-                    )
-                }
-
-                PrimitiveKind.LONG -> {
-                    NumericPropertyDefinition(
-                        type = listOf("integer"),
+                        type = INTEGER_TYPE,
                         description = null,
                         nullable = if (nullable) true else null,
                     )
@@ -262,7 +255,7 @@ public class TypeGraphToJsonSchemaTransformer
 
                 PrimitiveKind.FLOAT, PrimitiveKind.DOUBLE -> {
                     NumericPropertyDefinition(
-                        type = listOf("number"),
+                        type = NUMBER_TYPE,
                         description = null,
                         nullable = if (nullable) true else null,
                     )
@@ -343,7 +336,6 @@ public class TypeGraphToJsonSchemaTransformer
                 }
 
             return ObjectPropertyDefinition(
-                type = listOf("object"),
                 description = node.description,
                 nullable = if (nullable) true else null,
                 properties = properties,
@@ -357,7 +349,6 @@ public class TypeGraphToJsonSchemaTransformer
             nullable: Boolean,
         ): PropertyDefinition =
             StringPropertyDefinition(
-                type = listOf("string"),
                 description = node.description,
                 nullable = if (nullable) true else null,
                 enum = node.entries,
@@ -371,7 +362,6 @@ public class TypeGraphToJsonSchemaTransformer
         ): PropertyDefinition {
             val items = convertTypeRef(node.element, graph, definitions)
             return ArrayPropertyDefinition(
-                type = listOf("array"),
                 description = null,
                 nullable = if (nullable) true else null,
                 items = items,
@@ -390,7 +380,6 @@ public class TypeGraphToJsonSchemaTransformer
             val additionalPropertiesSchema = json.encodeToJsonElement(valuePropertyDef)
 
             return ObjectPropertyDefinition(
-                type = listOf("object"),
                 description = null,
                 nullable = if (nullable) true else null,
                 additionalProperties = additionalPropertiesSchema,
@@ -456,7 +445,7 @@ public class TypeGraphToJsonSchemaTransformer
                         listOf(
                             oneOfDef,
                             StringPropertyDefinition(
-                                type = listOf("null"),
+                                type = NULL_TYPE,
                                 description = null,
                                 nullable = null,
                             ),

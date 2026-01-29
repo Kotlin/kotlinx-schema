@@ -1,10 +1,9 @@
-package kotlinx.schema.generator.json.internal
+package kotlinx.schema.json
 
 /**
  * Collection of special constants, such as keys and data types, from JSON schema definition.
  */
-@Suppress("MissingKDocForPublicAPI")
-public object JsonSchemaConsts {
+public object JsonSchemaConstants {
     /**
      * JSON Schema keys.
      */
@@ -49,5 +48,20 @@ public object JsonSchemaConsts {
         public const val ARRAY: String = "array"
         public const val OBJECT: String = "object"
         public const val NULL: String = "null"
+        public const val ANY: String = "any"
+
+        public val ARRAY_TYPE: List<String> = listOf(ARRAY)
+        public val ARRAY_OR_NULL_TYPE: List<String> = listOf(ARRAY, NULL)
+        public val BOOLEAN_TYPE: List<String> = listOf(BOOLEAN)
+        public val BOOLEAN_OR_NULL_TYPE: List<String> = listOf(BOOLEAN, NULL)
+        public val INTEGER_TYPE: List<String> = listOf(INTEGER)
+        public val INTEGER_OR_NULL_TYPE: List<String> = listOf(INTEGER, NULL)
+        public val NUMBER_TYPE: List<String> = listOf(NUMBER)
+        public val NUMBER_OR_NULL_TYPE: List<String> = listOf(NUMBER, NULL)
+        public val OBJECT_TYPE: List<String> = listOf(OBJECT)
+        public val OBJECT_OR_NULL_TYPE: List<String> = listOf(OBJECT, NULL)
+        public val STRING_TYPE: List<String> = listOf(STRING)
+        public val STRING_OR_NULL_TYPE: List<String> = listOf(STRING, NULL)
+        public val NULL_TYPE: List<String> = listOf(NULL)
     }
 }

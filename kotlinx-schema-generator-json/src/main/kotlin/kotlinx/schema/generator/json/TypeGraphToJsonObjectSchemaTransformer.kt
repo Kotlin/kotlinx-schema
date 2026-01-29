@@ -12,7 +12,7 @@ import kotlinx.schema.generator.core.ir.TypeGraph
 import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeNode
 import kotlinx.schema.generator.core.ir.TypeRef
-import kotlinx.schema.generator.json.internal.JsonSchemaConsts
+import kotlinx.schema.json.JsonSchemaConstants
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -36,13 +36,20 @@ public class TypeGraphToJsonObjectSchemaTransformer :
         // Helpers for nullability
         fun JsonObject.withNullableTypeUnion(): JsonObject {
             val m = this.toMutableMap()
-            val t = m[JsonSchemaConsts.Keys.TYPE]
+            val t = m[JsonSchemaConstants.Keys.TYPE]
             if (t is JsonPrimitive) {
-                m[JsonSchemaConsts.Keys.TYPE] = JsonArray(listOf(t, JsonPrimitive(JsonSchemaConsts.Types.NULL)))
-            } else if (m.containsKey(JsonSchemaConsts.Keys.ONE_OF)) {
-                val arr = (m[JsonSchemaConsts.Keys.ONE_OF] as? JsonArray)?.toMutableList() ?: mutableListOf()
-                arr.add(buildJsonObject { put(JsonSchemaConsts.Keys.TYPE, JsonPrimitive(JsonSchemaConsts.Types.NULL)) })
-                m[JsonSchemaConsts.Keys.ONE_OF] = JsonArray(arr)
+                m[JsonSchemaConstants.Keys.TYPE] = JsonArray(listOf(t, JsonPrimitive(JsonSchemaConstants.Types.NULL)))
+            } else if (m.containsKey(JsonSchemaConstants.Keys.ONE_OF)) {
+                val arr = (m[JsonSchemaConstants.Keys.ONE_OF] as? JsonArray)?.toMutableList() ?: mutableListOf()
+                arr.add(
+                    buildJsonObject {
+                        put(
+                            JsonSchemaConstants.Keys.TYPE,
+                            JsonPrimitive(JsonSchemaConstants.Types.NULL),
+                        )
+                    },
+                )
+                m[JsonSchemaConstants.Keys.ONE_OF] = JsonArray(arr)
             }
             return JsonObject(m)
         }
@@ -90,30 +97,30 @@ public class TypeGraphToJsonObjectSchemaTransformer :
                 is PrimitiveNode -> {
                     buildJsonObject {
                         put(
-                            JsonSchemaConsts.Keys.TYPE,
+                            JsonSchemaConstants.Keys.TYPE,
                             when (node.kind) {
-                                PrimitiveKind.STRING -> JsonSchemaConsts.Types.STRING
-                                PrimitiveKind.BOOLEAN -> JsonSchemaConsts.Types.BOOLEAN
-                                PrimitiveKind.INT -> JsonSchemaConsts.Types.INTEGER
-                                PrimitiveKind.LONG -> JsonSchemaConsts.Types.INTEGER
-                                PrimitiveKind.FLOAT, PrimitiveKind.DOUBLE -> JsonSchemaConsts.Types.NUMBER
+                                PrimitiveKind.STRING -> JsonSchemaConstants.Types.STRING
+                                PrimitiveKind.BOOLEAN -> JsonSchemaConstants.Types.BOOLEAN
+                                PrimitiveKind.INT -> JsonSchemaConstants.Types.INTEGER
+                                PrimitiveKind.LONG -> JsonSchemaConstants.Types.INTEGER
+                                PrimitiveKind.FLOAT, PrimitiveKind.DOUBLE -> JsonSchemaConstants.Types.NUMBER
                             },
                         )
-                        node.description?.let { put(JsonSchemaConsts.Keys.DESCRIPTION, it) }
+                        node.description?.let { put(JsonSchemaConstants.Keys.DESCRIPTION, it) }
                     }
                 }
 
                 is EnumNode -> {
                     buildJsonObject {
-                        put(JsonSchemaConsts.Keys.TYPE, JsonSchemaConsts.Types.STRING)
-                        put(JsonSchemaConsts.Keys.ENUM, JsonArray(node.entries.map { JsonPrimitive(it) }))
-                        node.description?.let { put(JsonSchemaConsts.Keys.DESCRIPTION, it) }
+                        put(JsonSchemaConstants.Keys.TYPE, JsonSchemaConstants.Types.STRING)
+                        put(JsonSchemaConstants.Keys.ENUM, JsonArray(node.entries.map { JsonPrimitive(it) }))
+                        node.description?.let { put(JsonSchemaConstants.Keys.DESCRIPTION, it) }
                     }
                 }
 
                 is ObjectNode -> {
                     buildJsonObject {
-                        put(JsonSchemaConsts.Keys.TYPE, JsonSchemaConsts.Types.OBJECT)
+                        put(JsonSchemaConstants.Keys.TYPE, JsonSchemaConstants.Types.OBJECT)
                         val props =
                             buildJsonObject {
                                 for (p in node.properties) {
@@ -123,7 +130,7 @@ public class TypeGraphToJsonObjectSchemaTransformer :
                                     val merged =
                                         if (p.description != null) {
                                             val m = base.toMutableMap()
-                                            m[JsonSchemaConsts.Keys.DESCRIPTION] = JsonPrimitive(p.description)
+                                            m[JsonSchemaConstants.Keys.DESCRIPTION] = JsonPrimitive(p.description)
                                             JsonObject(m)
                                         } else {
                                             base
@@ -131,47 +138,47 @@ public class TypeGraphToJsonObjectSchemaTransformer :
                                     put(p.name, merged)
                                 }
                             }
-                        put(JsonSchemaConsts.Keys.PROPERTIES, props)
-                        put(JsonSchemaConsts.Keys.REQUIRED, JsonArray(node.required.map { JsonPrimitive(it) }))
-                        put(JsonSchemaConsts.Keys.ADDITIONAL_PROPERTIES, JsonPrimitive(false))
-                        node.description?.let { put(JsonSchemaConsts.Keys.DESCRIPTION, it) }
+                        put(JsonSchemaConstants.Keys.PROPERTIES, props)
+                        put(JsonSchemaConstants.Keys.REQUIRED, JsonArray(node.required.map { JsonPrimitive(it) }))
+                        put(JsonSchemaConstants.Keys.ADDITIONAL_PROPERTIES, JsonPrimitive(false))
+                        node.description?.let { put(JsonSchemaConstants.Keys.DESCRIPTION, it) }
                     }
                 }
 
                 is ListNode -> {
                     buildJsonObject {
-                        put(JsonSchemaConsts.Keys.TYPE, JsonSchemaConsts.Types.ARRAY)
-                        put(JsonSchemaConsts.Keys.ITEMS, emitRef(node.element))
-                        node.description?.let { put(JsonSchemaConsts.Keys.DESCRIPTION, it) }
+                        put(JsonSchemaConstants.Keys.TYPE, JsonSchemaConstants.Types.ARRAY)
+                        put(JsonSchemaConstants.Keys.ITEMS, emitRef(node.element))
+                        node.description?.let { put(JsonSchemaConstants.Keys.DESCRIPTION, it) }
                     }
                 }
 
                 is MapNode -> {
                     buildJsonObject {
-                        put(JsonSchemaConsts.Keys.TYPE, JsonSchemaConsts.Types.OBJECT)
-                        put(JsonSchemaConsts.Keys.ADDITIONAL_PROPERTIES, emitRef(node.value))
-                        node.description?.let { put(JsonSchemaConsts.Keys.DESCRIPTION, it) }
+                        put(JsonSchemaConstants.Keys.TYPE, JsonSchemaConstants.Types.OBJECT)
+                        put(JsonSchemaConstants.Keys.ADDITIONAL_PROPERTIES, emitRef(node.value))
+                        node.description?.let { put(JsonSchemaConstants.Keys.DESCRIPTION, it) }
                     }
                 }
 
                 is PolymorphicNode -> {
                     buildJsonObject {
                         put(
-                            JsonSchemaConsts.Keys.ONE_OF,
+                            JsonSchemaConstants.Keys.ONE_OF,
                             buildJsonArray {
                                 node.subtypes.forEach { st ->
                                     add(
                                         buildJsonObject {
                                             put(
-                                                JsonSchemaConsts.Keys.REF,
-                                                "${JsonSchemaConsts.Keys.REF_PREFIX}${st.id}",
+                                                JsonSchemaConstants.Keys.REF,
+                                                "${JsonSchemaConstants.Keys.REF_PREFIX}${st.id}",
                                             )
                                         },
                                     )
                                 }
                             },
                         )
-                        node.description?.let { put(JsonSchemaConsts.Keys.DESCRIPTION, it) }
+                        node.description?.let { put(JsonSchemaConstants.Keys.DESCRIPTION, it) }
                     }
                 }
             }
@@ -183,21 +190,21 @@ public class TypeGraphToJsonObjectSchemaTransformer :
                     if (ref.nullable) {
                         buildJsonObject {
                             put(
-                                JsonSchemaConsts.Keys.ONE_OF,
+                                JsonSchemaConstants.Keys.ONE_OF,
                                 buildJsonArray {
                                     add(
                                         buildJsonObject {
                                             put(
-                                                JsonSchemaConsts.Keys.REF,
-                                                "${JsonSchemaConsts.Keys.REF_PREFIX}${ref.id}",
+                                                JsonSchemaConstants.Keys.REF,
+                                                "${JsonSchemaConstants.Keys.REF_PREFIX}${ref.id}",
                                             )
                                         },
                                     )
                                     add(
                                         buildJsonObject {
                                             put(
-                                                JsonSchemaConsts.Keys.TYPE,
-                                                JsonPrimitive(JsonSchemaConsts.Types.NULL),
+                                                JsonSchemaConstants.Keys.TYPE,
+                                                JsonPrimitive(JsonSchemaConstants.Types.NULL),
                                             )
                                         },
                                     )
@@ -207,8 +214,8 @@ public class TypeGraphToJsonObjectSchemaTransformer :
                     } else {
                         buildJsonObject {
                             put(
-                                JsonSchemaConsts.Keys.REF,
-                                "${JsonSchemaConsts.Keys.REF_PREFIX}${ref.id}",
+                                JsonSchemaConstants.Keys.REF,
+                                "${JsonSchemaConstants.Keys.REF_PREFIX}${ref.id}",
                             )
                         }
                     }
@@ -242,14 +249,14 @@ public class TypeGraphToJsonObjectSchemaTransformer :
                             if (ref.nullable) {
                                 buildJsonObject {
                                     put(
-                                        JsonSchemaConsts.Keys.ONE_OF,
+                                        JsonSchemaConstants.Keys.ONE_OF,
                                         buildJsonArray {
                                             add(base)
                                             add(
                                                 buildJsonObject {
                                                     put(
-                                                        JsonSchemaConsts.Keys.TYPE,
-                                                        JsonPrimitive(JsonSchemaConsts.Types.NULL),
+                                                        JsonSchemaConstants.Keys.TYPE,
+                                                        JsonPrimitive(JsonSchemaConstants.Types.NULL),
                                                     )
                                                 },
                                             )
@@ -279,15 +286,16 @@ public class TypeGraphToJsonObjectSchemaTransformer :
                     val existing = defs[key] ?: return@forEach
                     val schema = existing.toMutableMap()
                     val props =
-                        (schema[JsonSchemaConsts.Keys.PROPERTIES] as? JsonObject)?.toMutableMap() ?: mutableMapOf()
-                    props[disc.name] = buildJsonObject { put(JsonSchemaConsts.Keys.CONST, JsonPrimitive(st.id.value)) }
-                    schema[JsonSchemaConsts.Keys.PROPERTIES] = JsonObject(props)
+                        (schema[JsonSchemaConstants.Keys.PROPERTIES] as? JsonObject)?.toMutableMap() ?: mutableMapOf()
+                    props[disc.name] =
+                        buildJsonObject { put(JsonSchemaConstants.Keys.CONST, JsonPrimitive(st.id.value)) }
+                    schema[JsonSchemaConstants.Keys.PROPERTIES] = JsonObject(props)
                     val required =
-                        (schema[JsonSchemaConsts.Keys.REQUIRED] as? JsonArray)?.toMutableList() ?: mutableListOf()
+                        (schema[JsonSchemaConstants.Keys.REQUIRED] as? JsonArray)?.toMutableList() ?: mutableListOf()
                     if (required.none { it is JsonPrimitive && it.content == disc.name }) {
                         required.add(JsonPrimitive(disc.name))
                     }
-                    schema[JsonSchemaConsts.Keys.REQUIRED] = JsonArray(required)
+                    schema[JsonSchemaConstants.Keys.REQUIRED] = JsonArray(required)
                     defs[key] = JsonObject(schema)
                 }
             }
@@ -295,8 +303,8 @@ public class TypeGraphToJsonObjectSchemaTransformer :
 
         val rootSchema = emitRef(graph.root)
         return buildJsonObject {
-            put(JsonSchemaConsts.Keys.ID, rootName)
-            if (defs.isNotEmpty()) put(JsonSchemaConsts.Keys.DEFS, JsonObject(defs))
+            put(JsonSchemaConstants.Keys.ID, rootName)
+            if (defs.isNotEmpty()) put(JsonSchemaConstants.Keys.DEFS, JsonObject(defs))
             rootSchema.entries.forEach { entry -> put(entry.key, entry.value) }
         }
     }
