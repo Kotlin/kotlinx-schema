@@ -15,38 +15,35 @@ class KdocDescriptionsTest {
             // language=json
             $$"""
              {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
                 "$id": "kotlinx.schema.integration.type.Address",
-                "$defs": {
-                    "kotlinx.schema.integration.type.Address": {
-                        "type": "object",
-                        "properties": {
-                            "street": {
-                                "type": "string",
-                                "description": "Street address, including house number"
-                            },
-                            "city": {
-                                "type": "string",
-                                "description": "City or town name"
-                            },
-                            "zipCode": {
-                                "type": "string",
-                                "description": "Postal or ZIP code"
-                            },
-                            "country": {
-                                "type": "string",
-                                "description": "Two-letter ISO country code; defaults to US"
-                            }
-                        },
-                        "required": [
-                            "street",
-                            "city",
-                            "zipCode"
-                        ],
-                        "additionalProperties": false,
-                        "description": "A postal address for deliveries and billing."
+                "description": "A postal address for deliveries and billing.",
+                "type": "object",
+                "properties": {
+                    "street": {
+                        "type": "string",
+                        "description": "Street address, including house number"
+                    },
+                    "city": {
+                        "type": "string",
+                        "description": "City or town name"
+                    },
+                    "zipCode": {
+                        "type": "string",
+                        "description": "Postal or ZIP code"
+                    },
+                    "country": {
+                        "type": "string",
+                        "description": "Two-letter ISO country code; defaults to US"
                     }
                 },
-                "$ref": "#/$defs/kotlinx.schema.integration.type.Address"
+                "required": [
+                    "street",
+                    "city",
+                    "zipCode",
+                    "country"
+                ],
+                "additionalProperties": false
             }
             """.trimIndent()
     }

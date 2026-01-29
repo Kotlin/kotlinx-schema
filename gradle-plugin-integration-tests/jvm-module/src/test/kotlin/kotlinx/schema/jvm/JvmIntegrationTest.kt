@@ -19,29 +19,25 @@ class JvmIntegrationTest {
         schemaString shouldEqualJson
             $$"""
             {
-                "$id": "kotlinx.schema.jvm.Person",
-                  "$defs": {
-                    "kotlinx.schema.jvm.Person": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "description": "Full name"
-                        },
-                        "email": {
-                          "type": "string",
-                          "description": "Email address"
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "email"
-                      ],
-                      "additionalProperties": false,
-                      "description": "Simple Person model for testing"
-                    }
-                  },
-                  "$ref": "#/$defs/kotlinx.schema.jvm.Person"
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.jvm.Person",
+              "description": "Simple Person model for testing",
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Full name"
+                },
+                "email": {
+                  "type": "string",
+                  "description": "Email address"
+                }
+              },
+              "required": [
+                "name",
+                "email"
+              ],
+              "additionalProperties": false
             }
             """.trimIndent()
 
@@ -57,29 +53,25 @@ class JvmIntegrationTest {
         schemaString shouldEqualJson
             $$"""
             {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
               "$id": "kotlinx.schema.jvm.Company",
-              "$defs": {
-                "kotlinx.schema.jvm.Company": {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string",
-                      "description": "Company name"
-                    },
-                    "employeeCount": {
-                      "type": "integer",
-                      "description": "Number of employees"
-                    }
-                  },
-                  "required": [
-                    "name",
-                    "employeeCount"
-                  ],
-                  "additionalProperties": false,
-                  "description": "Simple Company model for testing"
+              "description": "Simple Company model for testing",
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Company name"
+                },
+                "employeeCount": {
+                  "type": "integer",
+                  "description": "Number of employees"
                 }
               },
-              "$ref": "#/$defs/kotlinx.schema.jvm.Company"
+              "required": [
+                "name",
+                "employeeCount"
+              ],
+              "additionalProperties": false
             }
             """.trimIndent()
 

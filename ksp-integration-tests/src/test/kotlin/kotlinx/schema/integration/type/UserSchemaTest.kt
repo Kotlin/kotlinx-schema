@@ -14,40 +14,36 @@ class UserSchemaTest {
         schema shouldEqualJson
             $$"""
             {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
               "$id": "kotlinx.schema.integration.type.User",
-              "$defs": {
-                "kotlinx.schema.integration.type.User": {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string",
-                      "description": "The name of the user"
-                    },
-                    "age": {
-                      "type": ["integer", "null"]
-                    },
-                    "email": {
-                      "type": "string"
-                    },
-                    "tags": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    },
-                    "attributes": {
-                      "type": ["object", "null"],
-                      "additionalProperties": {
-                        "type": "integer"
-                      }
-                    }
-                  },
-                  "required": ["name", "age", "tags", "attributes"],
-                  "additionalProperties": false,
-                  "description": "A user model"
+              "description": "A user model",
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "The name of the user"
+                },
+                "age": {
+                  "type": ["integer", "null"]
+                },
+                "email": {
+                  "type": "string"
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "attributes": {
+                  "type": ["object", "null"],
+                  "additionalProperties": {
+                    "type": "integer"
+                  }
                 }
               },
-              "$ref": "#/$defs/kotlinx.schema.integration.type.User"
+              "required": ["name", "age", "email", "tags", "attributes"],
+              "additionalProperties": false
             }
             """.trimIndent()
     }

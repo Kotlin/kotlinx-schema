@@ -1,21 +1,46 @@
-public final class kotlinx/schema/generator/json/JsonSchemaConfig {
+public final class TypeGraphToJsonObjectSchemaTransformer : kotlinx/schema/generator/core/ir/AbstractTypeGraphTransformer {
+	public fun <init> ()V
+	public fun <init> (Lkotlinx/schema/generator/json/JsonSchemaConfig;)V
+	public fun <init> (Lkotlinx/schema/generator/json/JsonSchemaConfig;Lkotlinx/serialization/json/Json;)V
+	public fun <init> (Lkotlinx/schema/generator/json/JsonSchemaConfig;Lkotlinx/serialization/json/Json;Lkotlinx/schema/generator/json/TypeGraphToJsonSchemaTransformer;)V
+	public synthetic fun <init> (Lkotlinx/schema/generator/json/JsonSchemaConfig;Lkotlinx/serialization/json/Json;Lkotlinx/schema/generator/json/TypeGraphToJsonSchemaTransformer;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun getConfig ()Ljava/lang/Object;
+	public fun getConfig ()Lkotlinx/schema/generator/json/JsonSchemaConfig;
+	public synthetic fun transform (Lkotlinx/schema/generator/core/ir/TypeGraph;Ljava/lang/String;)Ljava/lang/Object;
+	public fun transform (Lkotlinx/schema/generator/core/ir/TypeGraph;Ljava/lang/String;)Lkotlinx/serialization/json/JsonObject;
+}
+
+public final class kotlinx/schema/generator/json/FunctionCallingSchemaConfig : kotlinx/schema/generator/json/JsonSchemaConfig {
+	public static final field Companion Lkotlinx/schema/generator/json/FunctionCallingSchemaConfig$Companion;
+	public fun <init> ()V
+	public fun <init> (ZZZZZ)V
+	public synthetic fun <init> (ZZZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getStrictMode ()Z
+}
+
+public final class kotlinx/schema/generator/json/FunctionCallingSchemaConfig$Companion {
+	public final fun getDefault ()Lkotlinx/schema/generator/json/FunctionCallingSchemaConfig;
+	public final fun getSimple ()Lkotlinx/schema/generator/json/FunctionCallingSchemaConfig;
+	public final fun getStrict ()Lkotlinx/schema/generator/json/FunctionCallingSchemaConfig;
+}
+
+public class kotlinx/schema/generator/json/JsonSchemaConfig {
 	public static final field Companion Lkotlinx/schema/generator/json/JsonSchemaConfig$Companion;
 	public fun <init> ()V
-	public fun <init> (ZLkotlinx/serialization/json/Json;)V
-	public synthetic fun <init> (ZLkotlinx/serialization/json/Json;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Z
-	public final fun component2 ()Lkotlinx/serialization/json/Json;
-	public final fun copy (ZLkotlinx/serialization/json/Json;)Lkotlinx/schema/generator/json/JsonSchemaConfig;
-	public static synthetic fun copy$default (Lkotlinx/schema/generator/json/JsonSchemaConfig;ZLkotlinx/serialization/json/Json;ILjava/lang/Object;)Lkotlinx/schema/generator/json/JsonSchemaConfig;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getJson ()Lkotlinx/serialization/json/Json;
-	public final fun getTreatNullableOptionalAsRequired ()Z
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
+	public fun <init> (ZZZZZ)V
+	public synthetic fun <init> (ZZZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getIncludeDiscriminator ()Z
+	public final fun getRequireNullableFields ()Z
+	public final fun getRespectDefaultPresence ()Z
+	public final fun getUseNullableField ()Z
+	public final fun getUseUnionTypes ()Z
 }
 
 public final class kotlinx/schema/generator/json/JsonSchemaConfig$Companion {
 	public final fun getDefault ()Lkotlinx/schema/generator/json/JsonSchemaConfig;
+	public final fun getOpenAPI ()Lkotlinx/schema/generator/json/JsonSchemaConfig;
+	public final fun getSimple ()Lkotlinx/schema/generator/json/JsonSchemaConfig;
+	public final fun getStrict ()Lkotlinx/schema/generator/json/JsonSchemaConfig;
 }
 
 public abstract interface class kotlinx/schema/generator/json/JsonSchemaGenerator : kotlinx/schema/generator/core/SchemaGenerator {
@@ -33,8 +58,7 @@ public final class kotlinx/schema/generator/json/JsonSchemaGenerator$DefaultImpl
 public final class kotlinx/schema/generator/json/ReflectionClassJsonSchemaGenerator : kotlinx/schema/generator/core/AbstractSchemaGenerator {
 	public static final field Companion Lkotlinx/schema/generator/json/ReflectionClassJsonSchemaGenerator$Companion;
 	public fun <init> ()V
-	public fun <init> (Lkotlinx/schema/generator/json/JsonSchemaConfig;)V
-	public synthetic fun <init> (Lkotlinx/schema/generator/json/JsonSchemaConfig;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lkotlinx/serialization/json/Json;Lkotlinx/schema/generator/json/JsonSchemaConfig;)V
 	public synthetic fun encodeToString (Ljava/lang/Object;)Ljava/lang/String;
 	public fun encodeToString (Lkotlinx/schema/json/JsonSchema;)Ljava/lang/String;
 	public synthetic fun getRootName (Ljava/lang/Object;)Ljava/lang/String;
@@ -50,7 +74,6 @@ public final class kotlinx/schema/generator/json/ReflectionFunctionCallingSchema
 	public static final field Companion Lkotlinx/schema/generator/json/ReflectionFunctionCallingSchemaGenerator$Companion;
 	public fun <init> ()V
 	public fun <init> (Lkotlinx/serialization/json/Json;)V
-	public synthetic fun <init> (Lkotlinx/serialization/json/Json;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public synthetic fun encodeToString (Ljava/lang/Object;)Ljava/lang/String;
 	public fun encodeToString (Lkotlinx/schema/json/FunctionCallingSchema;)Ljava/lang/String;
 	public synthetic fun getRootName (Ljava/lang/Object;)Ljava/lang/String;
@@ -62,65 +85,24 @@ public final class kotlinx/schema/generator/json/ReflectionFunctionCallingSchema
 	public final fun getDefault ()Lkotlinx/schema/generator/json/ReflectionFunctionCallingSchemaGenerator;
 }
 
-public final class kotlinx/schema/generator/json/TypeGraphToFunctionCallingSchemaTransformer : kotlinx/schema/generator/core/ir/TypeGraphTransformer {
+public final class kotlinx/schema/generator/json/TypeGraphToFunctionCallingSchemaTransformer : kotlinx/schema/generator/core/ir/AbstractTypeGraphTransformer {
 	public fun <init> ()V
 	public fun <init> (Lkotlinx/serialization/json/Json;)V
-	public synthetic fun <init> (Lkotlinx/serialization/json/Json;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lkotlinx/serialization/json/Json;Lkotlinx/schema/generator/json/FunctionCallingSchemaConfig;)V
+	public synthetic fun <init> (Lkotlinx/serialization/json/Json;Lkotlinx/schema/generator/json/FunctionCallingSchemaConfig;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun getConfig ()Ljava/lang/Object;
+	public fun getConfig ()Lkotlinx/schema/generator/json/FunctionCallingSchemaConfig;
 	public synthetic fun transform (Lkotlinx/schema/generator/core/ir/TypeGraph;Ljava/lang/String;)Ljava/lang/Object;
 	public fun transform (Lkotlinx/schema/generator/core/ir/TypeGraph;Ljava/lang/String;)Lkotlinx/schema/json/FunctionCallingSchema;
 }
 
-public final class kotlinx/schema/generator/json/TypeGraphToJsonObjectSchemaTransformer : kotlinx/schema/generator/core/ir/TypeGraphTransformer {
-	public fun <init> ()V
-	public synthetic fun transform (Lkotlinx/schema/generator/core/ir/TypeGraph;Ljava/lang/String;)Ljava/lang/Object;
-	public fun transform (Lkotlinx/schema/generator/core/ir/TypeGraph;Ljava/lang/String;)Lkotlinx/serialization/json/JsonObject;
-}
-
-public final class kotlinx/schema/generator/json/TypeGraphToJsonSchemaTransformer : kotlinx/schema/generator/core/ir/TypeGraphTransformer {
-	public fun <init> ()V
+public final class kotlinx/schema/generator/json/TypeGraphToJsonSchemaTransformer : kotlinx/schema/generator/core/ir/AbstractTypeGraphTransformer {
 	public fun <init> (Lkotlinx/schema/generator/json/JsonSchemaConfig;)V
 	public fun <init> (Lkotlinx/schema/generator/json/JsonSchemaConfig;Lkotlinx/serialization/json/Json;)V
 	public synthetic fun <init> (Lkotlinx/schema/generator/json/JsonSchemaConfig;Lkotlinx/serialization/json/Json;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getConfig ()Lkotlinx/schema/generator/json/JsonSchemaConfig;
+	public synthetic fun getConfig ()Ljava/lang/Object;
+	public fun getConfig ()Lkotlinx/schema/generator/json/JsonSchemaConfig;
 	public synthetic fun transform (Lkotlinx/schema/generator/core/ir/TypeGraph;Ljava/lang/String;)Ljava/lang/Object;
 	public fun transform (Lkotlinx/schema/generator/core/ir/TypeGraph;Ljava/lang/String;)Lkotlinx/schema/json/JsonSchema;
-}
-
-public final class kotlinx/schema/generator/json/internal/JsonSchemaConsts {
-	public static final field INSTANCE Lkotlinx/schema/generator/json/internal/JsonSchemaConsts;
-}
-
-public final class kotlinx/schema/generator/json/internal/JsonSchemaConsts$Keys {
-	public static final field ADDITIONAL_PROPERTIES Ljava/lang/String;
-	public static final field ALL_OF Ljava/lang/String;
-	public static final field ANY_OF Ljava/lang/String;
-	public static final field CONST Ljava/lang/String;
-	public static final field DEFS Ljava/lang/String;
-	public static final field DESCRIPTION Ljava/lang/String;
-	public static final field ENUM Ljava/lang/String;
-	public static final field ID Ljava/lang/String;
-	public static final field INSTANCE Lkotlinx/schema/generator/json/internal/JsonSchemaConsts$Keys;
-	public static final field ITEMS Ljava/lang/String;
-	public static final field NULLABLE Ljava/lang/String;
-	public static final field ONE_OF Ljava/lang/String;
-	public static final field PATTERN Ljava/lang/String;
-	public static final field PROPERTIES Ljava/lang/String;
-	public static final field REF Ljava/lang/String;
-	public static final field REF_PREFIX Ljava/lang/String;
-	public static final field REQUIRED Ljava/lang/String;
-	public static final field SCHEMA Ljava/lang/String;
-	public static final field TITLE Ljava/lang/String;
-	public static final field TYPE Ljava/lang/String;
-}
-
-public final class kotlinx/schema/generator/json/internal/JsonSchemaConsts$Types {
-	public static final field ARRAY Ljava/lang/String;
-	public static final field BOOLEAN Ljava/lang/String;
-	public static final field INSTANCE Lkotlinx/schema/generator/json/internal/JsonSchemaConsts$Types;
-	public static final field INTEGER Ljava/lang/String;
-	public static final field NULL Ljava/lang/String;
-	public static final field NUMBER Ljava/lang/String;
-	public static final field OBJECT Ljava/lang/String;
-	public static final field STRING Ljava/lang/String;
 }
 

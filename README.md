@@ -43,7 +43,7 @@ Quick Links:
 
 **Comprehensive Type Support:**
 - Enums, collections, maps, nested objects, nullability, generics (with star-projection)
-- Sealed class hierarchies with automatic `oneOf`/discriminator generation
+- Sealed class hierarchies with automatic `oneOf` generation
 - Proper union types for nullable parameters (`["string", "null"]`)
 - Type constraints (min/max, patterns, formats)
 - **Default values** (compile-time: tracked but not extracted; runtime: fully extracted)
@@ -98,8 +98,6 @@ data class Address(
 
 ### Configuration
 
-For complete KSP processor configuration options and examples, see **[KSP Configuration Guide](docs/ksp.md)**.
-
 #### Quick Setup
 
 **Multiplatform:**
@@ -137,99 +135,9 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:<version>")
 }
 ```
-
-> **📖 See [KSP Configuration Guide](docs/ksp.md)** for processor options, annotation parameters, and advanced configuration.
-
-### Use the Generated Extensions
-
-```kotlin
-val schemaString: String = Address::class.jsonSchemaString
-val schemaObject: kotlinx.serialization.json.JsonObject = Address::class.jsonSchema
-```
-
-### Using the Gradle Plugin (WIP)
-<details>
-<summary>This is "work in progress" yet</summary>
-
-_Gradle plugin "org.jetbrains.kotlinx.schema.ksp" isn't yet available on Gradle Plugins portal._
-
-**Kotlin Multiplatform:**
-
-```kotlin
-plugins {
-    kotlin("multiplatform")
-    id("org.jetbrains.kotlinx.schema.ksp") // version "<x.y.z>" if used outside this repository
-}
-
-// Configuration (all options are optional)
-kotlinxSchema {
-    // Enable or disable schema generation (optional, default: true)
-    enabled.set(true)
-
-    // Process only classes in this package and subpackages (optional, speeds up builds)
-    // Omit to process all packages
-    rootPackage.set("com.example.models")
-
-    // Generate jsonSchema: JsonObject property in addition to jsonSchemaString (optional, default: false)
-    // Can also be set per-class via @Schema(withSchemaObject = true)
-    // Global setting here overrides per-class annotations
-    withSchemaObject.set(true)
-}
-
-kotlin {
-    compilerOptions {
-        // Recommended: Apply annotations to both constructor params and properties
-        freeCompilerArgs.add("-Xannotation-default-target=param-property")
-    }
-
-    // Configure your targets
-    jvm()
-    js { nodejs() }
-    wasmJs { browser() }
-    iosArm64()
-    iosSimulatorArm64()
-
-    sourceSets {
-        commonMain {
-            dependencies {
-                // Required: Annotations for your code
-                implementation("org.jetbrains.kotlinx:kotlinx-schema-annotations:<version>")
-                // Required: For JsonObject in runtime APIs
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:<version>")
-            }
-        }
-    }
-}
-```
-
-**Single-target JVM:**
-
-```kotlin
-plugins {
-    kotlin("jvm")
-    id("org.jetbrains.kotlinx.schema.ksp") // version "<x.y.z>" if used outside this repository
-}
-
-// Configuration (all options are optional)
-kotlinxSchema {
-    enabled.set(true)              // Optional, default: true
-    rootPackage.set("com.example") // Optional, speeds up builds
-    withSchemaObject.set(false)    // Optional, default: false
-}
-
-dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-schema-annotations:<version>")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:<version>")
-}
-```
-
-**Notes:**
-- You do NOT need to apply the KSP plugin yourself — the Gradle plugin does it.
-- You do NOT need to add generated source directories — the plugin does it.
-- For an example project, see [gradle-plugin-integration-tests](./gradle-plugin-integration-tests).
-</details>
-
-> **📖 For configuration options (`enabled`, `rootPackage`, `withSchemaObject`, `visibility`) and annotation parameters, see [KSP Configuration Guide](docs/ksp.md).**
+> [!IMPORTANT]
+> For complete KSP processor configuration options and examples,
+> see **[KSP Configuration Guide](docs/ksp.md)**.
 
 ## Runtime schema generation
 
@@ -282,43 +190,39 @@ val schemaString: String = generator.generateSchemaString(User::class)
 
 ## What Gets Generated
 
-Schemas follow a `$id/$defs/$ref` layout. Example (pretty-printed):
+Schemas follow JSON Schema Draft 2020-12 format. Example (pretty-printed):
 
 ```json
 {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "com.example.Address",
-    "$defs": {
-        "com.example.Address": {
-            "type": "object",
-            "properties": {
-                "street": {
-                    "type": "string",
-                    "description": "Street address, including house number"
-                },
-                "city": {
-                    "type": "string",
-                    "description": "City or town name"
-                },
-                "zipCode": {
-                    "type": "string",
-                    "description": "Postal or ZIP code"
-                },
-                "country": {
-                    "type": "string",
-                    "description": "Two-letter ISO country code; defaults to US",
-                    "default": "US"
-                }
-            },
-            "required": [
-                "street",
-                "city",
-                "zipCode"
-            ],
-            "additionalProperties": false,
-            "description": "A postal address for deliveries and billing."
+    "type": "object",
+    "properties": {
+        "street": {
+            "type": "string",
+            "description": "Street address, including house number"
+        },
+        "city": {
+            "type": "string",
+            "description": "City or town name"
+        },
+        "zipCode": {
+            "type": "string",
+            "description": "Postal or ZIP code"
+        },
+        "country": {
+            "type": "string",
+            "description": "Two-letter ISO country code; defaults to US",
+            "default": "US"
         }
     },
-    "$ref": "#/$defs/com.example.Address"
+    "required": [
+        "street",
+        "city",
+        "zipCode"
+    ],
+    "additionalProperties": false,
+    "description": "A postal address for deliveries and billing."
 }
 ```
 
@@ -367,55 +271,51 @@ val schemaObject = Product::class.jsonSchema
 
 ```json
 {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "com.example.Product",
-    "$defs": {
-        "com.example.Product": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "description": "Unique identifier for the product"
-                },
-                "name": {
-                    "type": "string",
-                    "description": "Human-readable product name"
-                },
-                "description": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "description": "Optional detailed description of the product"
-                },
-                "price": {
-                    "type": "number",
-                    "description": "Unit price expressed as a decimal number"
-                },
-                "inStock": {
-                    "type": "boolean",
-                    "description": "Whether the product is currently in stock",
-                    "default": true
-                },
-                "tags": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "description": "List of tags for categorization and search",
-                    "default": []
-                }
-            },
-            "required": [
-                "id",
-                "name",
-                "description",
-                "price"
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "description": "Unique identifier for the product"
+        },
+        "name": {
+            "type": "string",
+            "description": "Human-readable product name"
+        },
+        "description": {
+            "type": [
+                "string",
+                "null"
             ],
-            "additionalProperties": false,
-            "description": "A purchasable product with pricing and inventory info."
+            "description": "Optional detailed description of the product"
+        },
+        "price": {
+            "type": "number",
+            "description": "Unit price expressed as a decimal number"
+        },
+        "inStock": {
+            "type": "boolean",
+            "description": "Whether the product is currently in stock",
+            "default": true
+        },
+        "tags": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "List of tags for categorization and search",
+            "default": []
         }
     },
-    "$ref": "#/$defs/com.example.Product"
+    "required": [
+        "id",
+        "name",
+        "description",
+        "price"
+    ],
+    "additionalProperties": false,
+    "description": "A purchasable product with pricing and inventory info."
 }
 ```
 
@@ -445,19 +345,15 @@ enum class Status {
 
 ```json
 {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "com.example.Status",
-    "$defs": {
-        "com.example.Status": {
-            "type": "string",
-            "enum": [
-                "ACTIVE",
-                "INACTIVE",
-                "PENDING"
-            ],
-            "description": "Current lifecycle status of an entity."
-        }
-    },
-    "$ref": "#/$defs/com.example.Status"
+    "type": "string",
+    "enum": [
+        "ACTIVE",
+        "INACTIVE",
+        "PENDING"
+    ],
+    "description": "Current lifecycle status of an entity."
 }
 ```
 
@@ -520,35 +416,34 @@ typing, instantiate the generic class with concrete types when you need them.
 
 ### Sealed class polymorphism
 
-The library automatically generates JSON schemas for Kotlin sealed class hierarchies using `oneOf` with discriminator support:
+The library automatically generates JSON schemas for Kotlin sealed class hierarchies using `oneOf`:
 
 ```kotlin
-@Description("Represents an animal")
+@Description("Multicellular eukaryotic organism of the kingdom Metazoa")
+@Schema
 sealed class Animal {
+    /**
+     * Animal's name
+     */
     @Description("Animal's name")
     abstract val name: String
 
-    @Description("Represents a dog")
+    @Schema(withSchemaObject = true)
     data class Dog(
+        @Description("Animal's name")
         override val name: String,
-        @Description("Dog's breed")
-        val breed: String,
-        @Description("Trained or not")
-        val isTrained: Boolean = false,
     ) : Animal()
 
-    @Description("Represents a cat")
+    @Schema(withSchemaObject = true)
     data class Cat(
+        @Description("Animal's name")
         override val name: String,
-        @Description("Cat's color")
-        val color: String,
-        @Description("Lives left")
-        val lives: Int = 9,
     ) : Animal()
 }
 
 val generator = ReflectionClassJsonSchemaGenerator.Default
 val schema = generator.generateSchema(Animal::class)
+println(schema.encodeToString(Json { prettyPrint = true }))
 ```
 
 <details>
@@ -556,70 +451,55 @@ val schema = generator.generateSchema(Animal::class)
 
 ```json
 {
-    "name": "com.example.Animal",
-    "strict": false,
-    "schema": {
-        "type": "object",
-        "additionalProperties": false,
-        "description": "Represents an animal",
-        "oneOf": [
-            {
-                "$ref": "#/$defs/Cat"
-            },
-            {
-                "$ref": "#/$defs/Dog"
-            }
-        ],
-        "discriminator": {
-            "propertyName": "type",
-            "mapping": {
-                "Cat": "#/$defs/Cat",
-                "Dog": "#/$defs/Dog"
-            }
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "kotlinx.schema.integration.type.Animal",
+    "description": "Multicellular eukaryotic organism of the kingdom Metazoa",
+    "type": "object",
+    "additionalProperties": false,
+    "oneOf": [
+        {
+            "$ref": "#/$defs/Animal.Cat"
         },
-        "$defs": {
-            "Cat": {
-                "type": "object",
-                "description": "Represents a cat",
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "Animal's name"
-                    },
-                    "color": {
-                        "type": "string",
-                        "description": "Cat's color"
-                    },
-                    "lives": {
-                        "type": "integer",
-                        "description": "Lives left",
-                        "default": 9
-                    }
+        {
+            "$ref": "#/$defs/Animal.Dog"
+        }
+    ],
+    "$defs": {
+        "Animal.Cat": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "Animal.Cat"
                 },
-                "required": ["name", "color"],
-                "additionalProperties": false
+                "name": {
+                    "type": "string",
+                    "description": "Animal's name"
+                }
             },
-            "Dog": {
-                "type": "object",
-                "description": "Represents a dog",
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "Animal's name"
-                    },
-                    "breed": {
-                        "type": "string",
-                        "description": "Dog's breed"
-                    },
-                    "isTrained": {
-                        "type": "boolean",
-                        "description": "Trained or not",
-                        "default": false
-                    }
+            "required": [
+                "type",
+                "name"
+            ],
+            "additionalProperties": false
+        },
+        "Animal.Dog": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "Animal.Dog"
                 },
-                "required": ["name", "breed"],
-                "additionalProperties": false
-            }
+                "name": {
+                    "type": "string",
+                    "description": "Animal's name"
+                }
+            },
+            "required": [
+                "type",
+                "name"
+            ],
+            "additionalProperties": false
         }
     }
 }
@@ -628,7 +508,6 @@ val schema = generator.generateSchema(Animal::class)
 
 **Key features:**
 - **`oneOf` with `$ref`**: Each sealed subclass is referenced from a `$defs` section
-- **Discriminator**: Automatically generated with `type` property mapping
 - **Property inheritance**: Base class properties included in each subtype
 - **Type safety**: Each subtype gets its own schema definition
 - **Default values**: Subtype properties with defaults (like `lives: Int = 9`) are included

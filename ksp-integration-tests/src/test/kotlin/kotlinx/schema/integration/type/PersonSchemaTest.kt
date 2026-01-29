@@ -16,29 +16,25 @@ class PersonSchemaTest {
             $$"""
             {
               "$id": "kotlinx.schema.integration.type.Person",
-              "$defs": {
-                "kotlinx.schema.integration.type.Person": {
-                  "type": "object",
-                  "properties": {
-                    "firstName": {
-                      "type": "string",
-                      "description": "Given name of the person"
-                    },
-                    "lastName": {
-                      "type": "string",
-                      "description": "Family name of the person"
-                    },
-                    "age": {
-                      "type": "integer",
-                      "description": "Age of the person in years"
-                    }
-                  },
-                  "required": ["firstName", "lastName", "age"],
-                  "additionalProperties": false,
-                  "description": "A person with a first and last name and age."
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "firstName": {
+                  "type": "string",
+                  "description": "Given name of the person"
+                },
+                "lastName": {
+                  "type": "string",
+                  "description": "Family name of the person"
+                },
+                "age": {
+                  "type": "integer",
+                  "description": "Age of the person in years"
                 }
               },
-              "$ref": "#/$defs/kotlinx.schema.integration.type.Person"
+              "required": ["firstName", "lastName", "age"],
+              "additionalProperties": false,
+              "description": "A person with a first and last name and age."
             }
             """.trimIndent()
     }

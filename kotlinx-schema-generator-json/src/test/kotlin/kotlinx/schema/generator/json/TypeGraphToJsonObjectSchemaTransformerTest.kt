@@ -1,85 +1,40 @@
 package kotlinx.schema.generator.json
 
+import TypeGraphToJsonObjectSchemaTransformer
 import io.kotest.matchers.shouldBe
-import kotlinx.schema.generator.reflect.ReflectionIntrospector
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonObject
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import kotlinx.schema.generator.core.ir.TypeGraph
+import kotlinx.schema.json.JsonSchema
 import kotlinx.serialization.json.JsonPrimitive
 import kotlin.test.Test
 
 class TypeGraphToJsonObjectSchemaTransformerTest {
     @Test
-    fun `should handle nullable types in JsonObject`() {
-        val transformer = TypeGraphToJsonObjectSchemaTransformer()
-        val typeGraph = ReflectionIntrospector.introspect(NullablePerson::class)
-        val json = transformer.transform(typeGraph, "NullablePerson")
+    fun `should delegate to TypeGraphToJsonSchemaTransformer and return JsonObject`() {
+        // Arrange
+        val mockTransformer = mockk<TypeGraphToJsonSchemaTransformer>()
+        val config = JsonSchemaConfig.Default
+        val transformer = TypeGraphToJsonObjectSchemaTransformer(config, jsonSchemaTransformer = mockTransformer)
 
-        val defs = json[$$"$defs"] as JsonObject
-        val personDef =
-            defs[
-                "kotlinx.schema.generator.json.TypeGraphToJsonObjectSchemaTransformerTest.NullablePerson",
-            ] as JsonObject
-        val properties = personDef["properties"] as JsonObject
-        val ageProp = properties["age"] as JsonObject
-        val typeArray = ageProp["type"] as JsonArray
-        typeArray.size shouldBe 2
-        typeArray.shouldBe(JsonArray(listOf(JsonPrimitive("integer"), JsonPrimitive("null"))))
-    }
+        val mockGraph = mockk<TypeGraph>()
+        val rootName = "TestRoot"
 
-    @Test
-    fun `should handle enums in JsonObject`() {
-        val transformer = TypeGraphToJsonObjectSchemaTransformer()
-        val typeGraph = ReflectionIntrospector.introspect(WithEnum::class)
-        val json = transformer.transform(typeGraph, "WithEnum")
-
-        val defs = json[$$"$defs"] as JsonObject
-        val statusDef = defs["kotlinx.schema.generator.json.Status"] as JsonObject
-        statusDef["type"] shouldBe JsonPrimitive("string")
-        statusDef["enum"] shouldBe
-            JsonArray(
-                listOf(
-                    JsonPrimitive("ACTIVE"),
-                    JsonPrimitive("INACTIVE"),
-                    JsonPrimitive("PENDING"),
-                ),
+        val expectedSchema =
+            JsonSchema(
+                description = "Test Description",
+                type = listOf("object"),
             )
+
+        every { mockTransformer.transform(mockGraph, rootName) } returns expectedSchema
+
+        // Act
+        val result = transformer.transform(mockGraph, rootName)
+
+        // Assert
+        verify { mockTransformer.transform(mockGraph, rootName) }
+
+        result["description"] shouldBe JsonPrimitive("Test Description")
     }
-
-    @Test
-    fun `should handle collections in JsonObject`() {
-        val transformer = TypeGraphToJsonObjectSchemaTransformer()
-        val typeGraph = ReflectionIntrospector.introspect(WithCollections::class)
-        val json = transformer.transform(typeGraph, "WithCollections")
-
-        val defs = json[$$"$defs"] as JsonObject
-        val collDef = defs["kotlinx.schema.generator.json.WithCollections"] as JsonObject
-        val properties = collDef["properties"] as JsonObject
-        (properties["items"] as JsonObject)["type"] shouldBe JsonPrimitive("array")
-        (properties["data"] as JsonObject)["type"] shouldBe JsonPrimitive("object")
-    }
-
-    @Test
-    fun `should handle polymorphism in JsonObject`() {
-        val transformer = TypeGraphToJsonObjectSchemaTransformer()
-        val typeGraph = ReflectionIntrospector.introspect(JsonSchemaHierarchyTest.AnimalContainer::class)
-        val json = transformer.transform(typeGraph, "AnimalContainer")
-
-        val defs = json[$$"$defs"] as JsonObject
-        val animalDef = defs["kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal"] as JsonObject
-        val oneOf = animalDef["oneOf"] as JsonArray
-        oneOf.size shouldBe 2
-        // Subtype IDs use qualified names (Parent.Child) to avoid collisions
-        val refs = oneOf.map { (it as JsonObject)[$$"$ref"].toString() }.sorted()
-        refs.shouldBe(listOf($$"\"#/$defs/Animal.Cat\"", $$"\"#/$defs/Animal.Dog\""))
-    }
-
-    data class SimplePerson(
-        val name: String,
-        val age: Int,
-    )
-
-    data class NullablePerson(
-        val name: String,
-        val age: Int?,
-    )
 }

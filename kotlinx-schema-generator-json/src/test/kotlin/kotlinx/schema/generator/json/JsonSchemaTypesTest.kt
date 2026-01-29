@@ -27,11 +27,10 @@ class JsonSchemaTypesTest {
     @Test
     fun `Should handle all numeric types correctly`() {
         val jsonSchema = generator.generateSchema(WithNumericTypes::class)
-        val schema = jsonSchema.schema
-        val properties = schema.properties
+        val properties = jsonSchema.properties
 
         // Non-nullable integer types
-        schema.numericProperty("intVal") shouldNotBeNull {
+        jsonSchema.numericProperty("intVal") shouldNotBeNull {
             type shouldBe listOf("integer")
             nullable.shouldBeNull()
         }
@@ -49,29 +48,29 @@ class JsonSchemaTypesTest {
         doubleProperty.type shouldBe listOf("number")
         doubleProperty.nullable.shouldBeNull()
 
-        // Nullable integer types
+        // Nullable integer types (using union types)
         val nullableIntProperty = properties["nullableInt"] as NumericPropertyDefinition
-        nullableIntProperty.type shouldBe listOf("integer")
-        nullableIntProperty.nullable shouldBe true
+        nullableIntProperty.type shouldBe listOf("integer", "null")
+        nullableIntProperty.nullable.shouldBeNull()
 
         val nullableLongProperty = properties["nullableLong"] as NumericPropertyDefinition
-        nullableLongProperty.type shouldBe listOf("integer")
-        nullableLongProperty.nullable shouldBe true
+        nullableLongProperty.type shouldBe listOf("integer", "null")
+        nullableLongProperty.nullable.shouldBeNull()
 
-        // Nullable floating point types
+        // Nullable floating point types (using union types)
         val nullableFloatProperty = properties["nullableFloat"] as NumericPropertyDefinition
-        nullableFloatProperty.type shouldBe listOf("number")
-        nullableFloatProperty.nullable shouldBe true
+        nullableFloatProperty.type shouldBe listOf("number", "null")
+        nullableFloatProperty.nullable.shouldBeNull()
 
         val nullableDoubleProperty = properties["nullableDouble"] as NumericPropertyDefinition
-        nullableDoubleProperty.type shouldBe listOf("number")
-        nullableDoubleProperty.nullable shouldBe true
+        nullableDoubleProperty.type shouldBe listOf("number", "null")
+        nullableDoubleProperty.nullable.shouldBeNull()
     }
 
     @Test
     fun `Should handle enum types`() {
         val schema = generator.generateSchema(WithEnum::class)
-        val properties = schema.schema.properties
+        val properties = schema.properties
 
         val statusProperty = properties["status"] as StringPropertyDefinition
         statusProperty.type shouldBe listOf("string")
@@ -87,8 +86,8 @@ class JsonSchemaTypesTest {
         }
 
         val optStatusProperty = properties["optStatus"] as StringPropertyDefinition
-        optStatusProperty.type shouldBe listOf("string")
-        optStatusProperty.nullable shouldBe true
+        optStatusProperty.type shouldBe listOf("string", "null")
+        optStatusProperty.nullable.shouldBeNull()
         optStatusProperty.enum.shouldNotBeNull()
     }
 
@@ -97,7 +96,7 @@ class JsonSchemaTypesTest {
     @Test
     fun `Should handle collection types`() {
         val schema = generator.generateSchema(WithCollections::class)
-        val properties = schema.schema.properties
+        val properties = schema.properties
 
         val itemsProperty = properties["items"] as ArrayPropertyDefinition
         itemsProperty.type shouldBe listOf("array")
@@ -110,18 +109,18 @@ class JsonSchemaTypesTest {
         dataProperty.additionalProperties.shouldNotBeNull()
 
         val optListProperty = properties["optList"] as ArrayPropertyDefinition
-        optListProperty.type shouldBe listOf("array")
-        optListProperty.nullable shouldBe true
+        optListProperty.type shouldBe listOf("array", "null")
+        optListProperty.nullable.shouldBeNull()
 
         val optMapProperty = properties["optMap"] as ObjectPropertyDefinition
-        optMapProperty.type shouldBe listOf("object")
-        optMapProperty.nullable shouldBe true
+        optMapProperty.type shouldBe listOf("object", "null")
+        optMapProperty.nullable.shouldBeNull()
     }
 
     @Test
     fun `Should handle list of nested objects`() {
         val schema = generator.generateSchema(ListOfNested::class)
-        val properties = schema.schema.properties
+        val properties = schema.properties
 
         val itemsProperty = properties["items"] as ArrayPropertyDefinition
         itemsProperty.items.shouldNotBeNull()
@@ -129,19 +128,21 @@ class JsonSchemaTypesTest {
         itemType.type shouldBe listOf("object")
 
         val optionalItemsProperty = properties["optionalItems"] as ArrayPropertyDefinition
-        optionalItemsProperty.nullable shouldBe true
+        optionalItemsProperty.type shouldBe listOf("array", "null")
+        optionalItemsProperty.nullable.shouldBeNull()
     }
 
     @Test
     fun `Should handle map of nested objects`() {
         val schema = generator.generateSchema(MapOfNested::class)
-        val properties = schema.schema.properties
+        val properties = schema.properties
 
         val dataProperty = properties["data"] as ObjectPropertyDefinition
         dataProperty.additionalProperties.shouldNotBeNull()
 
         val optionalDataProperty = properties["optionalData"] as ObjectPropertyDefinition
-        optionalDataProperty.nullable shouldBe true
+        optionalDataProperty.type shouldBe listOf("object", "null")
+        optionalDataProperty.nullable.shouldBeNull()
     }
 
     // Nested Object Tests
@@ -149,7 +150,7 @@ class JsonSchemaTypesTest {
     @Test
     fun `Should handle nested objects`() {
         val schema = generator.generateSchema(WithNested::class)
-        val properties = schema.schema.properties
+        val properties = schema.properties
 
         properties.size shouldBe 3
 
@@ -160,14 +161,14 @@ class JsonSchemaTypesTest {
         addressProperty.properties!!.size shouldBe 2
 
         val optAddressProperty = properties["optAddress"] as ObjectPropertyDefinition
-        optAddressProperty.type shouldBe listOf("object")
-        optAddressProperty.nullable shouldBe true
+        optAddressProperty.type shouldBe listOf("object", "null")
+        optAddressProperty.nullable.shouldBeNull()
     }
 
     @Test
     fun `Should handle deeply nested structures`() {
         val schema = generator.generateSchema(DeepNested::class)
-        val properties = schema.schema.properties
+        val properties = schema.properties
 
         val level1Property = properties["level1"] as ObjectPropertyDefinition
         level1Property.properties.shouldNotBeNull()
@@ -187,7 +188,7 @@ class JsonSchemaTypesTest {
     @Test
     fun `Should correctly distinguish required vs optional vs default`() {
         val schema = generator.generateSchema(MixedRequiredOptional::class)
-        val required = schema.schema.required
+        val required = schema.required
 
         // Only truly required (no defaults) should be in required list
         required.size shouldBe 2
@@ -197,7 +198,7 @@ class JsonSchemaTypesTest {
     @Test
     fun `Should handle class with all optional fields`() {
         val schema = generator.generateSchema(EmptyClass::class)
-        val required = schema.schema.required
+        val required = schema.required
 
         // No required fields
         required.size shouldBe 0
@@ -206,7 +207,7 @@ class JsonSchemaTypesTest {
     @Test
     fun `Should handle class with single required field`() {
         val schema = generator.generateSchema(SingleRequired::class)
-        val required = schema.schema.required
+        val required = schema.required
 
         required.size shouldBe 1
         required[0] shouldBe "value"
@@ -217,7 +218,7 @@ class JsonSchemaTypesTest {
     @Test
     fun `Should preserve descriptions through transformations`() {
         val schema = generator.generateSchema(MixedRequiredOptional::class)
-        val properties = schema.schema.properties
+        val properties = schema.properties
 
         val req1Property = properties["req1"] as StringPropertyDefinition
         req1Property.description shouldBe "Required string"
@@ -234,20 +235,20 @@ class JsonSchemaTypesTest {
     @Test
     fun `Should handle nullable optional fields with default config`() {
         val schema = generator.generateSchema(PersonWithOptionals::class)
-        val properties = schema.schema.properties
-        val required = schema.schema.required
+        val properties = schema.properties
+        val required = schema.required
 
         // Only required properties (no defaults) should be in required list
         required.size shouldBe 1
         required shouldContainAll listOf("name")
 
-        // Nullable optional fields should have nullable=true
+        // Nullable optional fields should use union types
         val ageProperty = properties["age"] as NumericPropertyDefinition
-        ageProperty.type shouldBe listOf("integer")
-        ageProperty.nullable shouldBe true
+        ageProperty.type shouldBe listOf("integer", "null")
+        ageProperty.nullable.shouldBeNull()
 
         val emailProperty = properties["email"] as StringPropertyDefinition
-        emailProperty.type shouldBe listOf("string")
-        emailProperty.nullable shouldBe true
+        emailProperty.type shouldBe listOf("string", "null")
+        emailProperty.nullable.shouldBeNull()
     }
 }

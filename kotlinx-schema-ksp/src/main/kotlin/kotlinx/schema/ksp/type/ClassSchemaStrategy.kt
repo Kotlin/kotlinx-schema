@@ -3,7 +3,9 @@ package kotlinx.schema.ksp.type
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import kotlinx.schema.generator.json.TypeGraphToJsonObjectSchemaTransformer
+import kotlinx.schema.generator.json.JsonSchemaConfig
+import kotlinx.schema.generator.json.TypeGraphToJsonSchemaTransformer
+import kotlinx.schema.json.JsonSchema
 import kotlinx.schema.ksp.SourceCodeGeneratorHelpers
 import kotlinx.schema.ksp.SourceCodeGeneratorHelpers.escapeForKotlinString
 import kotlinx.schema.ksp.generator.KspSchemaGeneratorConfig
@@ -12,7 +14,6 @@ import kotlinx.schema.ksp.ir.KspClassIntrospector
 import kotlinx.schema.ksp.strategy.CodeGenerationContext
 import kotlinx.schema.ksp.strategy.SchemaGenerationStrategy
 import kotlinx.schema.ksp.strategy.shouldGenerateSchemaObject
-import kotlinx.serialization.json.JsonObject
 
 /**
  * Strategy for generating schemas for class declarations.
@@ -48,10 +49,13 @@ internal class ClassSchemaStrategy : SchemaGenerationStrategy<KSClassDeclaration
         UnifiedKspSchemaGenerator(
             KspSchemaGeneratorConfig(
                 introspector = KspClassIntrospector(),
-                transformer = TypeGraphToJsonObjectSchemaTransformer(),
-                serializer = JsonObject.serializer(),
+                transformer =
+                    TypeGraphToJsonSchemaTransformer(
+                        config = JsonSchemaConfig.Strict,
+                    ),
+                serializer = JsonSchema.serializer(),
                 jsonPrettyPrint = true,
-                jsonEncodeDefaults = true,
+                jsonEncodeDefaults = false,
             ),
         )
 

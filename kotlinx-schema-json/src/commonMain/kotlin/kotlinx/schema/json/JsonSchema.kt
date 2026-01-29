@@ -2,9 +2,12 @@
 
 package kotlinx.schema.json
 
+import kotlinx.schema.json.JsonSchemaConstants.Keys.COMMENT
 import kotlinx.schema.json.JsonSchemaConstants.Keys.CONST
 import kotlinx.schema.json.JsonSchemaConstants.Keys.DEFS
+import kotlinx.schema.json.JsonSchemaConstants.Keys.ID
 import kotlinx.schema.json.JsonSchemaConstants.Keys.REF
+import kotlinx.schema.json.JsonSchemaConstants.Keys.SCHEMA
 import kotlinx.schema.json.JsonSchemaConstants.Types.ARRAY_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.BOOLEAN_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.OBJECT_TYPE
@@ -19,23 +22,6 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonObject
-
-/**
- * Represents a JSON Schema definition
- *
- * @property name The name of the schema.
- * @property strict Whether to enable strict schema adherence.
- * @property schema The actual JSON schema definition.
- *
- * @author Konstantin Pavlov
- */
-@Serializable
-public data class JsonSchema(
-    val name: String,
-    @EncodeDefault val strict: Boolean = false,
-    val description: String? = null,
-    val schema: JsonSchemaDefinition,
-)
 
 /**
  * Encodes the given [JsonSchema] instance into a [JsonObject] representation.
@@ -171,7 +157,7 @@ public interface PropertiesContainer {
 }
 
 /**
- * Represents a JSON Schema definition.
+ * Represents a JSON Schema model.
  *
  * @property id JSON Schema [$id](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-01#name-the-id-keyword)
  * @property schema JSON Schema [$schema](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-01#name-the-schema-keyword)
@@ -189,11 +175,22 @@ public interface PropertiesContainer {
  */
 @Serializable
 @Suppress("LongParameterList")
-public data class JsonSchemaDefinition(
-    @SerialName($$"$id") public val id: String? = null,
-    @SerialName($$"$schema") public val schema: String? = null,
-    @Serializable(with = StringOrListSerializer::class) @EncodeDefault
-    public val type: List<String> = listOf("object"),
+public data class JsonSchema(
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName(SCHEMA)
+    public val schema: String? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName(ID)
+    public val id: String? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName(COMMENT)
+    public val comment: String? = null,
+    public val description: String? = null,
+    @Serializable(with = StringOrListSerializer::class)
+    @EncodeDefault
+    public val type: List<String> = OBJECT_TYPE,
+    @Serializable(with = StringEnumSerializer::class)
+    public val enum: List<String>? = null,
     public override val properties: Map<String, PropertyDefinition> = emptyMap(),
     public val required: List<String> = emptyList(),
     /**
@@ -205,10 +202,10 @@ public data class JsonSchemaDefinition(
      * - `JsonObject`: a schema defining the type of additional properties (e.g., for Maps)
      */
     public val additionalProperties: JsonElement? = null,
-    public val description: String? = null,
     public val items: PropertyDefinition? = null,
     public val oneOf: List<PropertyDefinition>? = null,
     public val discriminator: Discriminator? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
     @SerialName(DEFS) public val defs: Map<String, PropertyDefinition>? = null,
 ) : PropertiesContainer
 

@@ -61,26 +61,23 @@ public annotation class JsonSchemaDsl
  * ## Schema with Multiple Property Types
  * ```kotlin
  * val schema = jsonSchema {
- *     name = "Config"
- *     schema {
- *         property("enabled") {
- *             boolean {
- *                 description = "Feature enabled"
- *                 default = true
- *             }
+ *     property("enabled") {
+ *         boolean {
+ *             description = "Feature enabled"
+ *             default = true
  *         }
- *         property("count") {
- *             integer {
- *                 description = "Item count"
- *                 default = 10
- *             }
+ *     }
+ *     property("count") {
+ *         integer {
+ *             description = "Item count"
+ *             default = 10
  *         }
- *         property("score") {
- *             number {
- *                 description = "User score"
- *                 minimum = 0.0
- *                 maximum = 100.0
- *             }
+ *     }
+ *     property("score") {
+ *         number {
+ *             description = "User score"
+ *             minimum = 0.0
+ *             maximum = 100.0
  *         }
  *     }
  * }
@@ -89,15 +86,12 @@ public annotation class JsonSchemaDsl
  * ## Schema with Arrays
  * ```kotlin
  * val schema = jsonSchema {
- *     name = "Tags"
- *     schema {
- *         property("tags") {
- *             array {
- *                 description = "List of tags"
- *                 minItems = 1
- *                 maxItems = 10
- *                 ofString()
- *             }
+ *     property("tags") {
+ *         array {
+ *             description = "List of tags"
+ *             minItems = 1
+ *             maxItems = 10
+ *             ofString()
  *         }
  *     }
  * }
@@ -106,16 +100,13 @@ public annotation class JsonSchemaDsl
  * ## Schema with Nested Objects
  * ```kotlin
  * val schema = jsonSchema {
- *     name = "Metadata"
- *     schema {
- *         property("metadata") {
- *             obj {
- *                 description = "User metadata"
- *                 property("createdAt") {
- *                     required = true
- *                     string {
- *                         format = "date-time"
- *                     }
+ *     property("metadata") {
+ *         obj {
+ *             description = "User metadata"
+ *             property("createdAt") {
+ *                 required = true
+ *                 string {
+ *                     format = "date-time"
  *                 }
  *             }
  *         }
@@ -130,80 +121,7 @@ public annotation class JsonSchemaDsl
 public fun jsonSchema(block: JsonSchemaBuilder.() -> Unit): JsonSchema = JsonSchemaBuilder().apply(block).build()
 
 /**
- * Builder for [JsonSchema] instances.
- *
- * This is the top-level builder used within the [jsonSchema] DSL function.
- * It configures the schema's metadata and delegates to [JsonSchemaDefinitionBuilder]
- * for the actual schema structure.
- *
- * ## Properties
- * - [name]: The schema name (required)
- * - [strict]: Whether the schema enforces strict validation (default: false)
- * - [description]: Optional human-readable description
- *
- * ## Example
- * ```kotlin
- * jsonSchema {
- *     name = "UserStatus"
- *     strict = true
- *     description = "Describes user account status"
- *     schema {
- *         property("status") {
- *             string {
- *                 enum = listOf("active", "inactive", "pending")
- *             }
- *         }
- *     }
- * }
- * ```
- *
- * @see jsonSchema
- * @see JsonSchemaDefinitionBuilder
- */
-@JsonSchemaDsl
-public class JsonSchemaBuilder {
-    /**
-     * The name of the schema. Must not be empty.
-     */
-    public var name: String = ""
-
-    /**
-     * Whether the schema enforces strict validation.
-     * Defaults to false.
-     */
-    public var strict: Boolean = false
-
-    /**
-     * Optional human-readable description of the schema.
-     */
-    public var description: String? = null
-
-    private var schemaDefinition: JsonSchemaDefinition? = null
-
-    /**
-     * Defines the schema structure and properties.
-     *
-     * @param block Configuration block for the schema definition
-     * @see JsonSchemaDefinitionBuilder
-     */
-    public fun schema(block: JsonSchemaDefinitionBuilder.() -> Unit) {
-        schemaDefinition = JsonSchemaDefinitionBuilder().apply(block).build()
-    }
-
-    public fun build(): JsonSchema {
-        require(name.isNotEmpty()) { "Schema name must not be empty" }
-        val schema = requireNotNull(schemaDefinition) { "Schema definition must be provided" }
-        return JsonSchema(
-            name = name,
-            strict = strict,
-            description = description,
-            schema = schema,
-        )
-    }
-}
-
-/**
- * Builder for [JsonSchemaDefinition].
+ * Builder for [JsonSchema].
  *
  * Defines the structure of a JSON Schema including its properties, constraints,
  * and metadata. This builder is used within the `schema { }` block of [JsonSchemaBuilder].
@@ -229,7 +147,7 @@ public class JsonSchemaBuilder {
  * @see PropertyBuilder
  */
 @JsonSchemaDsl
-public class JsonSchemaDefinitionBuilder {
+public class JsonSchemaBuilder {
     /**
      * Optional schema identifier (JSON Schema $id).
      */
@@ -320,8 +238,8 @@ public class JsonSchemaDefinitionBuilder {
         }
     }
 
-    public fun build(): JsonSchemaDefinition =
-        JsonSchemaDefinition(
+    public fun build(): JsonSchema =
+        JsonSchema(
             id = id,
             schema = schema,
             properties = properties,

@@ -10,12 +10,9 @@ internal class BooleanPropertyValidationTest {
     @Test
     fun `boolean property default accepts boolean`() {
         jsonSchema {
-            name = "Test"
-            schema {
-                property("field") {
-                    boolean {
-                        default = true
-                    }
+            property("field") {
+                boolean {
+                    default = true
                 }
             }
         }
@@ -24,12 +21,9 @@ internal class BooleanPropertyValidationTest {
     @Test
     fun `boolean property default accepts JsonElement`() {
         jsonSchema {
-            name = "Test"
-            schema {
-                property("field") {
-                    boolean {
-                        default = JsonPrimitive(false)
-                    }
+            property("field") {
+                boolean {
+                    default = JsonPrimitive(false)
                 }
             }
         }
@@ -38,12 +32,9 @@ internal class BooleanPropertyValidationTest {
     @Test
     fun `boolean property default accepts null`() {
         jsonSchema {
-            name = "Test"
-            schema {
-                property("field") {
-                    boolean {
-                        default = null
-                    }
+            property("field") {
+                boolean {
+                    default = null
                 }
             }
         }
@@ -54,12 +45,9 @@ internal class BooleanPropertyValidationTest {
         val error =
             assertFailsWith<IllegalStateException> {
                 jsonSchema {
-                    name = "Test"
-                    schema {
-                        property("field") {
-                            boolean {
-                                default = "not a boolean"
-                            }
+                    property("field") {
+                        boolean {
+                            default = "not a boolean"
                         }
                     }
                 }
@@ -73,12 +61,9 @@ internal class BooleanPropertyValidationTest {
         val error =
             assertFailsWith<IllegalStateException> {
                 jsonSchema {
-                    name = "Test"
-                    schema {
-                        property("field") {
-                            boolean {
-                                default = 123
-                            }
+                    property("field") {
+                        boolean {
+                            default = 123
                         }
                     }
                 }
@@ -90,12 +75,9 @@ internal class BooleanPropertyValidationTest {
     @Test
     fun `boolean property constValue accepts boolean`() {
         jsonSchema {
-            name = "Test"
-            schema {
-                property("field") {
-                    boolean {
-                        constValue = true
-                    }
+            property("field") {
+                boolean {
+                    constValue = true
                 }
             }
         }
@@ -106,12 +88,9 @@ internal class BooleanPropertyValidationTest {
         val error =
             assertFailsWith<IllegalStateException> {
                 jsonSchema {
-                    name = "Test"
-                    schema {
-                        property("field") {
-                            boolean {
-                                constValue = "not a boolean"
-                            }
+                    property("field") {
+                        boolean {
+                            constValue = "not a boolean"
                         }
                     }
                 }
@@ -125,12 +104,9 @@ internal class BooleanPropertyValidationTest {
         val error =
             assertFailsWith<IllegalStateException> {
                 jsonSchema {
-                    name = "Test"
-                    schema {
-                        property("field") {
-                            boolean {
-                                constValue = 123
-                            }
+                    property("field") {
+                        boolean {
+                            constValue = 123
                         }
                     }
                 }

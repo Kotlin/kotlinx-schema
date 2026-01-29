@@ -4,6 +4,7 @@ import io.kotest.assertions.json.shouldEqualJson
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.nulls.shouldNotBeNull
 import kotlinx.serialization.json.Json
+import org.intellij.lang.annotations.Language
 
 /**
  * Deserializes the input JSON string into an object of type [T],
@@ -16,6 +17,7 @@ import kotlinx.serialization.json.Json
  * @author Konstantin Pavlov
  */
 inline fun <reified T : Any> deserializeAndSerialize(
+    @Language("JSON")
     payload: String,
     jsonParser: Json = Json,
 ): T {
@@ -31,6 +33,7 @@ inline fun <reified T : Any> deserializeAndSerialize(
 
 inline fun <reified T : Any> serializeAndDeserialize(
     value: T,
+    @Language("JSON")
     expectedPayload: String,
     jsonParser: Json = Json,
 ): T {

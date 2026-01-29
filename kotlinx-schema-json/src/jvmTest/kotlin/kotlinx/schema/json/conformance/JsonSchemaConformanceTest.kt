@@ -1,6 +1,6 @@
 package kotlinx.schema.json.conformance
 
-import kotlinx.schema.json.JsonSchemaDefinition
+import kotlinx.schema.json.JsonSchema
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -15,9 +15,9 @@ import org.junit.jupiter.api.fail
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Conformance tests for JsonSchemaDefinition against the official JSON Schema Test Suite.
+ * Conformance tests for JsonSchema against the official JSON Schema Test Suite.
  *
- * Tests verify that schemas from the test suite can be successfully parsed into JsonSchemaDefinition.
+ * Tests verify that schemas from the test suite can be successfully parsed into JsonSchema.
  * Tests fail if parsing fails. Error messages are captured and included in the markdown report
  * (`build/reports/spec-coverage.md`).
  */
@@ -55,14 +55,15 @@ class JsonSchemaConformanceTest {
             DynamicContainer.dynamicContainer(
                 fileName,
                 testSuites
-                    // Filter out top-level boolean schemas since JsonSchemaDefinition only supports object schemas
+                    // Filter out top-level boolean schemas since JsonSchema only supports object schemas
                     // BooleanSchemaDefinition is supported as PropertyDefinition (nested in objects)
                     .filter { it.schema is JsonObject }
                     .map { testSuite ->
                         DynamicTest.dynamicTest(testSuite.description) {
-                            val result = runCatching {
-                                parseSchema(testSuite.schema)
-                            }
+                            val result =
+                                runCatching {
+                                    parseSchema(testSuite.schema)
+                                }
 
                             val failure = result.exceptionOrNull()
                             trackResult(
@@ -94,7 +95,7 @@ class JsonSchemaConformanceTest {
         }
     }
 
-    private fun parseSchema(schema: JsonElement): JsonSchemaDefinition {
+    private fun parseSchema(schema: JsonElement): JsonSchema {
         require(schema is JsonObject) { "Only JsonObject schemas are supported at top level" }
         return json.decodeFromJsonElement(schema)
     }

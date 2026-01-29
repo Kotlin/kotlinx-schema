@@ -19,29 +19,27 @@ class LangChain4jAnnotationsTest {
         schema shouldEqualJson
             $$"""
             {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
               "$id": "kotlinx.schema.integration.type.LangChain4jModel",
-              "$defs": {
-                "kotlinx.schema.integration.type.LangChain4jModel": {
-                  "type": "object",
-                  "properties": {
-                    "id": { "type": "integer", "description": "Unique identifier for the product" },
-                    "name": { "type": "string", "description": "Human-readable product name" },
-                    "description": { "type": ["string", "null"], "description": "Optional detailed description of the product" },
-                    "price": { "type": "number", "description": "Unit price expressed as a decimal number" },
-                    "inStock": { "type": "boolean", "description": "Whether the product is currently in stock" },
-                    "tags": { "type": "array", "items": { "type": "string" }, "description": "List of tags for categorization and search" }
-                  },
-                  "required": [
-                    "id",
-                    "name",
-                    "description",
-                    "price"
-                  ],
-                  "additionalProperties": false,
-                  "description": "A purchasable product using LangChain4j annotations."
-                }
+              "description": "A purchasable product using LangChain4j annotations.",
+              "type": "object",
+              "properties": {
+                "id": { "type": "integer", "description": "Unique identifier for the product" },
+                "name": { "type": "string", "description": "Human-readable product name" },
+                "description": { "type": ["string", "null"], "description": "Optional detailed description of the product" },
+                "price": { "type": "number", "description": "Unit price expressed as a decimal number" },
+                "inStock": { "type": "boolean", "description": "Whether the product is currently in stock" },
+                "tags": { "type": "array", "description": "List of tags for categorization and search", "items": { "type": "string" } }
               },
-              "$ref": "#/$defs/kotlinx.schema.integration.type.LangChain4jModel"
+              "required": [
+                "id",
+                "name",
+                "description",
+                "price",
+                "inStock",
+                "tags"
+              ],
+              "additionalProperties": false
             }
             """.trimIndent()
     }

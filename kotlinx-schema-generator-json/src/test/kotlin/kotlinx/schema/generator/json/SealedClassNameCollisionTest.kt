@@ -77,9 +77,8 @@ class SealedClassNameCollisionTest {
         json.encodeToString(schema) shouldEqualJson
             $$"""
             {
-              "name": "$${ApiResponse::class.qualifiedName}",
-              "strict": false,
-              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "$id": "kotlinx.schema.generator.json.SealedClassNameCollisionTest.ApiResponse",
                 "type": "object",
                 "properties": {
                   "resultA": {
@@ -87,13 +86,6 @@ class SealedClassNameCollisionTest {
                       { "$ref": "#/$defs/ResultA.Success" },
                       { "$ref": "#/$defs/ResultA.Unknown" }
                     ],
-                    "discriminator": {
-                      "propertyName": "type",
-                      "mapping": {
-                        "Success": "#/$defs/ResultA.Success",
-                        "Unknown": "#/$defs/ResultA.Unknown"
-                      }
-                    },
                     "description": "Result type A"
                   },
                   "resultB": {
@@ -101,13 +93,6 @@ class SealedClassNameCollisionTest {
                       { "$ref": "#/$defs/ResultB.Success" },
                       { "$ref": "#/$defs/ResultB.Unknown" }
                     ],
-                    "discriminator": {
-                      "propertyName": "type",
-                      "mapping": {
-                        "Success": "#/$defs/ResultB.Success",
-                        "Unknown": "#/$defs/ResultB.Unknown"
-                      }
-                    },
                     "description": "Result type B"
                   }
                 },
@@ -119,7 +104,7 @@ class SealedClassNameCollisionTest {
                     "type": "object",
                     "description": "Success result for A",
                     "properties": {
-                      "type": { "type": "string", "default": "ResultA.Success" },
+                      "type": { "type": "string", "const": "ResultA.Success" },
                       "value": { "type": "string" }
                     },
                     "required": ["type", "value"],
@@ -129,7 +114,7 @@ class SealedClassNameCollisionTest {
                     "type": "object",
                     "description": "Unknown error for A",
                     "properties": {
-                      "type": { "type": "string", "default": "ResultA.Unknown" },
+                      "type": { "type": "string", "const": "ResultA.Unknown" },
                       "code": { "type": "integer" }
                     },
                     "required": ["type", "code"],
@@ -139,7 +124,7 @@ class SealedClassNameCollisionTest {
                     "type": "object",
                     "description": "Success result for B",
                     "properties": {
-                      "type": { "type": "string", "default": "ResultB.Success" },
+                      "type": { "type": "string", "const": "ResultB.Success" },
                       "data": { "type": "integer" }
                     },
                     "required": ["type", "data"],
@@ -149,14 +134,13 @@ class SealedClassNameCollisionTest {
                     "type": "object",
                     "description": "Unknown error for B",
                     "properties": {
-                      "type": { "type": "string", "default": "ResultB.Unknown" },
+                      "type": { "type": "string", "const": "ResultB.Unknown" },
                       "message": { "type": "string" }
                     },
                     "required": ["type", "message"],
                     "additionalProperties": false
                   }
                 }
-              }
             }
             """.trimIndent()
     }

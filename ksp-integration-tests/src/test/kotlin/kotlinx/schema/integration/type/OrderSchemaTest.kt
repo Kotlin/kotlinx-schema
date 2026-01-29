@@ -16,10 +16,18 @@ class OrderSchemaTest {
         schema shouldEqualJson
             $$"""
             {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
               "$id": "kotlinx.schema.integration.type.Order",
-              "$defs": {
-                "kotlinx.schema.integration.type.Person": {
+              "description": "An order placed by a customer containing multiple items.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Unique order identifier"
+                },
+                "customer": {
                   "type": "object",
+                  "description": "The customer who placed the order",
                   "properties": {
                     "firstName": {
                       "type": "string",
@@ -35,11 +43,11 @@ class OrderSchemaTest {
                     }
                   },
                   "required": ["firstName", "lastName", "age"],
-                  "additionalProperties": false,
-                  "description": "A person with a first and last name and age."
+                  "additionalProperties": false
                 },
-                "kotlinx.schema.integration.type.Address": {
+                "shippingAddress": {
                   "type": "object",
+                  "description": "Destination address for shipment",
                   "properties": {
                     "street": {
                       "type": "string",
@@ -58,83 +66,56 @@ class OrderSchemaTest {
                       "description": "Two-letter ISO country code; defaults to US"
                     }
                   },
-                  "required": ["street", "city", "zipCode"],
-                  "additionalProperties": false,
-                  "description": "A postal address for deliveries and billing."
+                  "required": ["street", "city", "zipCode", "country"],
+                  "additionalProperties": false
                 },
-                "kotlinx.schema.integration.type.Product": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "integer",
-                      "description": "Unique identifier for the product"
-                    },
-                    "name": {
-                      "type": "string",
-                      "description": "Human-readable product name"
-                    },
-                    "description": {
-                      "type": ["string", "null"],
-                      "description": "Optional detailed description of the product"
-                    },
-                    "price": {
-                      "type": "number",
-                      "description": "Unit price expressed as a decimal number"
-                    },
-                    "inStock": {
-                      "type": "boolean",
-                      "description": "Whether the product is currently in stock"
-                    },
-                    "tags": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
+                "items": {
+                  "type": "array",
+                  "description": "List of items included in the order",
+                  "items": {
+                    "type": "object",
+                    "description": "A purchasable product with pricing and inventory info.",
+                    "properties": {
+                      "id": {
+                        "type": "integer",
+                        "description": "Unique identifier for the product"
                       },
-                      "description": "List of tags for categorization and search"
-                    }
-                  },
-                  "required": ["id", "name", "description", "price"],
-                  "additionalProperties": false,
-                  "description": "A purchasable product with pricing and inventory info."
+                      "name": {
+                        "type": "string",
+                        "description": "Human-readable product name"
+                      },
+                      "description": {
+                        "type": ["string", "null"],
+                        "description": "Optional detailed description of the product"
+                      },
+                      "price": {
+                        "type": "number",
+                        "description": "Unit price expressed as a decimal number"
+                      },
+                      "inStock": {
+                        "type": "boolean",
+                        "description": "Whether the product is currently in stock"
+                      },
+                      "tags": {
+                        "type": "array",
+                        "description": "List of tags for categorization and search",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": ["id", "name", "description", "price", "inStock", "tags"],
+                    "additionalProperties": false
+                  }
                 },
-                "kotlinx.schema.integration.type.Status": {
+                "status": {
                   "type": "string",
-                  "enum": ["ACTIVE", "INACTIVE", "PENDING"],
-                  "description": "Current lifecycle status of an entity."
-                },
-                "kotlinx.schema.integration.type.Order": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string",
-                      "description": "Unique order identifier"
-                    },
-                    "customer": {
-                      "$ref": "#/$defs/kotlinx.schema.integration.type.Person",
-                      "description": "The customer who placed the order"
-                    },
-                    "shippingAddress": {
-                      "$ref": "#/$defs/kotlinx.schema.integration.type.Address",
-                      "description": "Destination address for shipment"
-                    },
-                    "items": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/$defs/kotlinx.schema.integration.type.Product"
-                      },
-                      "description": "List of items included in the order"
-                    },
-                    "status": {
-                      "$ref": "#/$defs/kotlinx.schema.integration.type.Status",
-                      "description": "Current status of the order"
-                    }
-                  },
-                  "required": ["id", "customer", "shippingAddress", "items", "status"],
-                  "additionalProperties": false,
-                  "description": "An order placed by a customer containing multiple items."
+                  "description": "Current status of the order",
+                  "enum": ["ACTIVE", "INACTIVE", "PENDING"]
                 }
               },
-              "$ref": "#/$defs/kotlinx.schema.integration.type.Order"
+              "required": ["id", "customer", "shippingAddress", "items", "status"],
+              "additionalProperties": false
             }
             """.trimIndent()
     }

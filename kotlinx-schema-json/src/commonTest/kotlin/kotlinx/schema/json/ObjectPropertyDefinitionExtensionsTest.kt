@@ -10,40 +10,37 @@ class ObjectPropertyDefinitionExtensionsTest {
     fun `should access all types of properties in ObjectPropertyDefinition`() {
         val schema =
             jsonSchema {
-                name = "Test"
-                schema {
-                    property("obj") {
-                        obj {
-                            property("str") { string { description = "string description" } }
-                            property("num") { number { minimum = 10.0 } }
-                            property("bool") { boolean { } }
-                            property("nestedObj") { obj { } }
-                            property("arr") { array { minItems = 1 } }
-                            property("ref") { reference("#/defs/Other") }
-                            property("oneOf") {
-                                oneOf {
-                                    string()
-                                    integer()
-                                }
+                property("obj") {
+                    obj {
+                        property("str") { string { description = "string description" } }
+                        property("num") { number { minimum = 10.0 } }
+                        property("bool") { boolean { } }
+                        property("nestedObj") { obj { } }
+                        property("arr") { array { minItems = 1 } }
+                        property("ref") { reference("#/defs/Other") }
+                        property("oneOf") {
+                            oneOf {
+                                string()
+                                integer()
                             }
-                            property("anyOf") {
-                                anyOf {
-                                    string()
-                                    integer()
-                                }
+                        }
+                        property("anyOf") {
+                            anyOf {
+                                string()
+                                integer()
                             }
-                            property("allOf") {
-                                allOf {
-                                    string()
-                                    integer()
-                                }
+                        }
+                        property("allOf") {
+                            allOf {
+                                string()
+                                integer()
                             }
                         }
                     }
                 }
             }
 
-        val objDef = schema.schema.objectProperty("obj")
+        val objDef = schema.objectProperty("obj")
         assertObjectPropertyDefinition(objDef)
 
         assertNull(objDef?.stringProperty("num"))
@@ -83,61 +80,56 @@ class ObjectPropertyDefinitionExtensionsTest {
     fun `should access all types of properties in JsonSchemaDefinition`() {
         val schema =
             jsonSchema {
-                name = "Test"
-                schema {
-                    property("str") { string { description = "string description" } }
-                    property("num") { number { minimum = 10.0 } }
-                    property("bool") { boolean { } }
-                    property("obj") { obj { } }
-                    property("arr") { array { minItems = 1 } }
-                    property("ref") { reference("#/defs/Other") }
-                    property("oneOf") {
-                        oneOf {
-                            string()
-                            integer()
-                        }
+                property("str") { string { description = "string description" } }
+                property("num") { number { minimum = 10.0 } }
+                property("bool") { boolean { } }
+                property("obj") { obj { } }
+                property("arr") { array { minItems = 1 } }
+                property("ref") { reference("#/defs/Other") }
+                property("oneOf") {
+                    oneOf {
+                        string()
+                        integer()
                     }
-                    property("anyOf") {
-                        anyOf {
-                            string()
-                            integer()
-                        }
+                }
+                property("anyOf") {
+                    anyOf {
+                        string()
+                        integer()
                     }
-                    property("allOf") {
-                        allOf {
-                            string()
-                            integer()
-                        }
+                }
+                property("allOf") {
+                    allOf {
+                        string()
+                        integer()
                     }
                 }
             }
 
-        val schemaDef = schema.schema
-
-        schemaDef.stringProperty("str") shouldNotBeNull {
+        schema.stringProperty("str") shouldNotBeNull {
             description shouldBe "string description"
         }
-        schemaDef.numericProperty("num") shouldNotBeNull {
+        schema.numericProperty("num") shouldNotBeNull {
             minimum shouldBe 10.0
         }
-        schemaDef.booleanProperty("bool").shouldNotBeNull()
-        schemaDef.objectProperty("obj").shouldNotBeNull()
-        schemaDef.arrayProperty("arr") shouldNotBeNull {
+        schema.booleanProperty("bool").shouldNotBeNull()
+        schema.objectProperty("obj").shouldNotBeNull()
+        schema.arrayProperty("arr") shouldNotBeNull {
             minItems shouldBe 1u
         }
-        schemaDef.referenceProperty("ref") shouldNotBeNull {
+        schema.referenceProperty("ref") shouldNotBeNull {
             ref shouldBe "#/defs/Other"
         }
-        schemaDef.oneOfProperty("oneOf") shouldNotBeNull {
+        schema.oneOfProperty("oneOf") shouldNotBeNull {
             oneOf.size shouldBe 2
         }
-        schemaDef.anyOfProperty("anyOf") shouldNotBeNull {
+        schema.anyOfProperty("anyOf") shouldNotBeNull {
             anyOf.size shouldBe 2
         }
-        schemaDef.allOfProperty("allOf") shouldNotBeNull {
+        schema.allOfProperty("allOf") shouldNotBeNull {
             allOf.size shouldBe 2
         }
 
-        assertNull(schemaDef.stringProperty("num"))
+        assertNull(schema.stringProperty("num"))
     }
 }

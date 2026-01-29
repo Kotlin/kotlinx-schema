@@ -1,0 +1,14 @@
+public abstract class kotlinx/schema/ksp/gradle/plugin/KotlinxSchemaExtension {
+	public fun <init> ()V
+	public abstract fun getEnabled ()Lorg/gradle/api/provider/Property;
+	public abstract fun getRootPackage ()Lorg/gradle/api/provider/Property;
+	public abstract fun getVisibility ()Lorg/gradle/api/provider/Property;
+	public abstract fun getWithSchemaObject ()Lorg/gradle/api/provider/Property;
+}
+
+public final class kotlinx/schema/ksp/gradle/plugin/KotlinxSchemaPlugin : org/gradle/api/Plugin {
+	public fun <init> ()V
+	public synthetic fun apply (Ljava/lang/Object;)V
+	public fun apply (Lorg/gradle/api/Project;)V
+}
+

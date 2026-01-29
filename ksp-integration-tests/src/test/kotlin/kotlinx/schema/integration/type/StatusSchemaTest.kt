@@ -16,14 +16,10 @@ class StatusSchemaTest {
             $$"""
             {
               "$id": "kotlinx.schema.integration.type.Status",
-              "$defs": {
-                "kotlinx.schema.integration.type.Status": {
-                  "type": "string",
-                  "enum": ["ACTIVE", "INACTIVE", "PENDING"],
-                  "description": "Current lifecycle status of an entity."
-                }
-              },
-              "$ref": "#/$defs/kotlinx.schema.integration.type.Status"
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "enum": ["ACTIVE", "INACTIVE", "PENDING"],
+              "description": "Current lifecycle status of an entity."
             }
             """.trimIndent()
     }

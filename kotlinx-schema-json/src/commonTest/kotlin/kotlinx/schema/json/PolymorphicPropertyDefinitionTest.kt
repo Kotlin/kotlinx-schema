@@ -299,15 +299,12 @@ internal class PolymorphicPropertyDefinitionTest {
     fun `oneOf nested in property definition serialization round-trip`() {
         val schema =
             jsonSchema {
-                name = "FlexibleType"
-                schema {
-                    property("value") {
-                        required = true
-                        oneOf {
-                            description = "String or number value"
-                            string { minLength = 1 }
-                            number { minimum = 0.0 }
-                        }
+                property("value") {
+                    required = true
+                    oneOf {
+                        description = "String or number value"
+                        string { minLength = 1 }
+                        number { minimum = 0.0 }
                     }
                 }
             }
@@ -316,9 +313,6 @@ internal class PolymorphicPropertyDefinitionTest {
         val expectedJson =
             """
             {
-              "name": "FlexibleType",
-              "strict": false,
-              "schema": {
                 "type": "object",
                 "properties": {
                   "value": {
@@ -336,7 +330,6 @@ internal class PolymorphicPropertyDefinitionTest {
                   }
                 },
                 "required": ["value"]
-              }
             }
             """.trimIndent()
 

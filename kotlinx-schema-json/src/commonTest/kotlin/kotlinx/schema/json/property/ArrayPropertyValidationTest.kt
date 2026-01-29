@@ -10,12 +10,9 @@ internal class ArrayPropertyValidationTest {
     @Test
     fun `array property default accepts list`() {
         jsonSchema {
-            name = "Test"
-            schema {
-                property("field") {
-                    array {
-                        default = listOf("a", "b")
-                    }
+            property("field") {
+                array {
+                    default = listOf("a", "b")
                 }
             }
         }
@@ -24,15 +21,12 @@ internal class ArrayPropertyValidationTest {
     @Test
     fun `array property default accepts JsonElement`() {
         jsonSchema {
-            name = "Test"
-            schema {
-                property("field") {
-                    array {
-                        default =
-                            kotlinx.serialization.json.buildJsonArray {
-                                add(JsonPrimitive(1))
-                            }
-                    }
+            property("field") {
+                array {
+                    default =
+                        kotlinx.serialization.json.buildJsonArray {
+                            add(JsonPrimitive(1))
+                        }
                 }
             }
         }
@@ -41,12 +35,9 @@ internal class ArrayPropertyValidationTest {
     @Test
     fun `array property default accepts null`() {
         jsonSchema {
-            name = "Test"
-            schema {
-                property("field") {
-                    array {
-                        default = null
-                    }
+            property("field") {
+                array {
+                    default = null
                 }
             }
         }
@@ -57,12 +48,9 @@ internal class ArrayPropertyValidationTest {
         val error =
             assertFailsWith<IllegalStateException> {
                 jsonSchema {
-                    name = "Test"
-                    schema {
-                        property("field") {
-                            array {
-                                default = "not an array"
-                            }
+                    property("field") {
+                        array {
+                            default = "not an array"
                         }
                     }
                 }
@@ -76,12 +64,9 @@ internal class ArrayPropertyValidationTest {
         val error =
             assertFailsWith<IllegalStateException> {
                 jsonSchema {
-                    name = "Test"
-                    schema {
-                        property("field") {
-                            array {
-                                default = 123
-                            }
+                    property("field") {
+                        array {
+                            default = 123
                         }
                     }
                 }
@@ -95,12 +80,9 @@ internal class ArrayPropertyValidationTest {
         val error =
             assertFailsWith<IllegalStateException> {
                 jsonSchema {
-                    name = "Test"
-                    schema {
-                        property("field") {
-                            array {
-                                default = true
-                            }
+                    property("field") {
+                        array {
+                            default = true
                         }
                     }
                 }
@@ -118,12 +100,9 @@ internal class ArrayPropertyValidationTest {
         val error =
             assertFailsWith<IllegalStateException> {
                 jsonSchema {
-                    name = "Test"
-                    schema {
-                        property("field") {
-                            array {
-                                default = Foo(42)
-                            }
+                    property("field") {
+                        array {
+                            default = Foo(42)
                         }
                     }
                 }

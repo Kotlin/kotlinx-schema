@@ -23,9 +23,6 @@ internal class JsonSchemaSerializationTest {
         val json =
             """
             {
-              "name" : "Person",
-              "strict" : false,
-              "schema" : {
                 "type" : "object",
                 "properties" : {
                   "name" : {
@@ -50,15 +47,12 @@ internal class JsonSchemaSerializationTest {
                   }
                 },
                 "required" : [ "name", "age", "weight", "height", "married"]
-              }
             }
             """.trimIndent()
 
         val decodedSchema = deserializeAndSerialize<JsonSchema>(json, jsonParser)
 
-        decodedSchema.name shouldBe "Person"
-        decodedSchema.strict shouldBe false
-        decodedSchema.schema shouldNotBeNull {
+        decodedSchema shouldNotBeNull {
             type shouldBe listOf("object")
             required shouldBeEqual listOf("name", "age", "weight", "height", "married")
             properties shouldNotBeNull {
@@ -102,7 +96,7 @@ internal class JsonSchemaSerializationTest {
             }
             """.trimIndent()
 
-        val decodedSchema = deserializeAndSerialize<JsonSchemaDefinition>(json, jsonParser)
+        val decodedSchema = deserializeAndSerialize<JsonSchema>(json, jsonParser)
 
         decodedSchema shouldNotBeNull {
             schema shouldBe "https://json-schema.org/draft-07/schema"
@@ -125,10 +119,7 @@ internal class JsonSchemaSerializationTest {
         val json =
             $$"""
             {
-              "name": "ComplexSchema",
-              "strict": true,
-              "description": "A complex schema with various field types",
-              "schema": {
+                "description": "A complex schema with various field types",
                 "type": "object",
                 "properties": {
                   "id": {
@@ -227,26 +218,22 @@ internal class JsonSchemaSerializationTest {
                 },
                 "required": ["id", "email", "status"],
                 "additionalProperties": false
-              }
             }
             """.trimIndent()
 
         val decodedSchema = deserializeAndSerialize<JsonSchema>(json, jsonParser)
 
         // Basic validation
-        decodedSchema.name shouldBe "ComplexSchema"
-        decodedSchema.strict shouldBe true
         decodedSchema.description shouldBe "A complex schema with various field types"
 
         // Schema validation
-        val schemaDefinition = decodedSchema.schema
-        schemaDefinition.type shouldBe listOf("object")
-        schemaDefinition.additionalProperties shouldBe kotlinx.serialization.json.JsonPrimitive(false)
-        schemaDefinition.required shouldHaveSize 3
-        schemaDefinition.required shouldBe listOf("id", "email", "status")
+        decodedSchema.type shouldBe listOf("object")
+        decodedSchema.additionalProperties shouldBe kotlinx.serialization.json.JsonPrimitive(false)
+        decodedSchema.required shouldHaveSize 3
+        decodedSchema.required shouldBe listOf("id", "email", "status")
 
         // Properties validation
-        val schemaProperties = schemaDefinition.properties
+        val schemaProperties = decodedSchema.properties
         schemaProperties shouldHaveSize 13
 
         // String with format
@@ -405,9 +392,6 @@ internal class JsonSchemaSerializationTest {
         val json =
             $$"""
             {
-              "name": "Animal",
-              "strict": false,
-              "schema": {
                 "type": "object",
                 "additionalProperties": false,
                 "description": "Animal hierarchy",
@@ -456,22 +440,18 @@ internal class JsonSchemaSerializationTest {
                     "additionalProperties": false
                   }
                 }
-              }
             }
             """.trimIndent()
 
         val decodedSchema = deserializeAndSerialize<JsonSchema>(json, jsonParser)
 
         // Validate basic structure
-        decodedSchema.name shouldBe "Animal"
-        decodedSchema.strict shouldBe false
 
-        val schemaDefinition = decodedSchema.schema
-        schemaDefinition.type shouldBe listOf("object")
-        schemaDefinition.description shouldBe "Animal hierarchy"
+        decodedSchema.type shouldBe listOf("object")
+        decodedSchema.description shouldBe "Animal hierarchy"
 
         // Validate oneOf with $ref
-        schemaDefinition.oneOf shouldNotBeNull {
+        decodedSchema.oneOf shouldNotBeNull {
             shouldHaveSize(2)
             this[0] shouldNotBeNull {
                 this as ReferencePropertyDefinition
@@ -484,7 +464,7 @@ internal class JsonSchemaSerializationTest {
         }
 
         // Validate discriminator
-        schemaDefinition.discriminator shouldNotBeNull {
+        decodedSchema.discriminator shouldNotBeNull {
             propertyName shouldBe "type"
             mapping shouldNotBeNull {
                 shouldHaveSize(2)
@@ -494,7 +474,7 @@ internal class JsonSchemaSerializationTest {
         }
 
         // Validate $defs
-        schemaDefinition.defs shouldNotBeNull {
+        decodedSchema.defs shouldNotBeNull {
             shouldHaveSize(2)
             this["Cat"] shouldNotBeNull {
                 this as ObjectPropertyDefinition
@@ -539,9 +519,6 @@ internal class JsonSchemaSerializationTest {
         val json =
             $$"""
             {
-              "name": "Container",
-              "strict": false,
-              "schema": {
                 "type": "object",
                 "properties": {
                   "animal": {
@@ -594,17 +571,13 @@ internal class JsonSchemaSerializationTest {
                     "additionalProperties": false
                   }
                 }
-              }
             }
             """.trimIndent()
 
         val decodedSchema = deserializeAndSerialize<JsonSchema>(json, jsonParser)
 
-        decodedSchema.name shouldBe "Container"
-        val schemaDefinition = decodedSchema.schema
-
         // Validate properties with anyOf
-        schemaDefinition.properties["animal"] shouldNotBeNull {
+        decodedSchema.properties["animal"] shouldNotBeNull {
             this as AnyOfPropertyDefinition
             description shouldBe "Optional animal"
             anyOf shouldHaveSize 2
@@ -631,7 +604,7 @@ internal class JsonSchemaSerializationTest {
         }
 
         // Validate $defs
-        schemaDefinition.defs shouldNotBeNull {
+        decodedSchema.defs shouldNotBeNull {
             shouldHaveSize(2)
         }
     }

@@ -24,17 +24,14 @@ fun testSchemaWithProperty(
     propertyBuilder: PropertyBuilder.() -> PropertyDefinition,
 ): JsonSchema =
     jsonSchema {
-        name = "TestSchema"
-        schema {
-            property(propertyName, block = propertyBuilder)
-        }
+        property(propertyName, block = propertyBuilder)
     }
 
 /**
  * Helper function to extract and validate the first property from a schema.
  */
 inline fun <reified T : PropertyDefinition> JsonSchema.firstPropertyAs(): T {
-    val prop = schema.properties.shouldNotBeNull().values.first()
+    val prop = properties.shouldNotBeNull().values.first()
     return prop as T
 }
 

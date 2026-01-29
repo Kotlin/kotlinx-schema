@@ -15,35 +15,31 @@ class ContainerSchemaTest {
         schemaString shouldEqualJson
             $$"""
             {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
               "$id": "kotlinx.schema.integration.type.Container",
-              "$defs": {
-                "kotlin.Any": {
+              "description": "A generic container that wraps content with optional metadata.",
+              "type": "object",
+              "properties": {
+                "content": {
                   "type": "object",
+                  "description": "The wrapped content value",
                   "properties": {},
                   "required": [],
                   "additionalProperties": false
                 },
-                "kotlinx.schema.integration.type.Container": {
+                "metadata": {
                   "type": "object",
-                  "properties": {
-                    "content": {
-                      "$ref": "#/$defs/kotlin.Any",
-                      "description": "The wrapped content value"
-                    },
-                    "metadata": {
-                      "type": "object",
-                      "additionalProperties": {
-                        "$ref": "#/$defs/kotlin.Any"
-                      },
-                      "description": "Arbitrary metadata key-value pairs"
-                    }
-                  },
-                  "required": ["content"],
-                  "additionalProperties": false,
-                  "description": "A generic container that wraps content with optional metadata."
+                  "description": "Arbitrary metadata key-value pairs",
+                  "additionalProperties": {
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                    "additionalProperties": false
+                  }
                 }
               },
-              "$ref": "#/$defs/kotlinx.schema.integration.type.Container"
+              "required": ["content", "metadata"],
+              "additionalProperties": false
             }
             """.trimIndent()
     }

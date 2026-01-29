@@ -17,20 +17,17 @@ internal class PolymorphicDslTest {
     fun `oneOf DSL with simple options`() {
         val schema =
             jsonSchema {
-                name = "FlexibleValue"
-                schema {
-                    property("value") {
-                        required = true
-                        oneOf {
-                            description = "String or number"
-                            string { minLength = 1 }
-                            number { minimum = 0.0 }
-                        }
+                property("value") {
+                    required = true
+                    oneOf {
+                        description = "String or number"
+                        string { minLength = 1 }
+                        number { minimum = 0.0 }
                     }
                 }
             }
 
-        val properties = schema.schema.properties
+        val properties = schema.properties
         properties.size shouldBe 1
 
         val valueProp = properties["value"] as OneOfPropertyDefinition
@@ -42,22 +39,19 @@ internal class PolymorphicDslTest {
     fun `oneOf DSL with discriminator`() {
         val schema =
             jsonSchema {
-                name = "PetSchema"
-                schema {
-                    property("pet") {
-                        required = true
-                        oneOf {
-                            description = "A pet animal"
-                            discriminator("petType") {
-                                "dog" mappedTo "#/definitions/Dog"
-                                "cat" mappedTo "#/definitions/Cat"
-                            }
+                property("pet") {
+                    required = true
+                    oneOf {
+                        description = "A pet animal"
+                        discriminator("petType") {
+                            "dog" mappedTo "#/definitions/Dog"
+                            "cat" mappedTo "#/definitions/Cat"
                         }
                     }
                 }
             }
 
-        val petProp = schema.schema.properties["pet"] as OneOfPropertyDefinition
+        val petProp = schema.properties["pet"] as OneOfPropertyDefinition
         petProp.discriminator shouldNotBeNull {
             propertyName shouldBe "petType"
             mapping?.size shouldBe 2
@@ -69,13 +63,54 @@ internal class PolymorphicDslTest {
     fun `oneOf DSL with inline objects`() {
         val schema =
             jsonSchema {
-                name = "PaymentSchema"
-                schema {
-                    property("payment") {
-                        required = true
-                        oneOf {
-                            description = "Payment method"
-                            obj {
+                property("payment") {
+                    required = true
+                    oneOf {
+                        description = "Payment method"
+                        obj {
+                            property("type") {
+                                required = true
+                                string { constValue = "credit_card" }
+                            }
+                            property("cardNumber") {
+                                required = true
+                                string()
+                            }
+                        }
+                        obj {
+                            property("type") {
+                                required = true
+                                string { constValue = "paypal" }
+                            }
+                            property("email") {
+                                required = true
+                                string { format = "email" }
+                            }
+                        }
+                    }
+                }
+            }
+
+        val paymentProp = schema.properties["payment"] as OneOfPropertyDefinition
+        paymentProp.oneOf.size shouldBe 2
+        paymentProp.description shouldBe "Payment method"
+
+        val firstOption = paymentProp.oneOf[0] as ObjectPropertyDefinition
+        firstOption.properties?.size shouldBe 2
+        firstOption.required?.size shouldBe 2
+    }
+
+    @Test
+    fun `oneOf DSL with discriminator and inline objects using concise mappedTo`() {
+        val schema =
+            jsonSchema {
+                property("payment") {
+                    required = true
+                    oneOf {
+                        description = "Payment method"
+                        discriminator("type") {
+                            // Concise form - no obj keyword needed
+                            "credit_card" mappedTo {
                                 property("type") {
                                     required = true
                                     string { constValue = "credit_card" }
@@ -85,7 +120,7 @@ internal class PolymorphicDslTest {
                                     string()
                                 }
                             }
-                            obj {
+                            "paypal" mappedTo {
                                 property("type") {
                                     required = true
                                     string { constValue = "paypal" }
@@ -100,54 +135,7 @@ internal class PolymorphicDslTest {
                 }
             }
 
-        val paymentProp = schema.schema.properties["payment"] as OneOfPropertyDefinition
-        paymentProp.oneOf.size shouldBe 2
-        paymentProp.description shouldBe "Payment method"
-
-        val firstOption = paymentProp.oneOf[0] as ObjectPropertyDefinition
-        firstOption.properties?.size shouldBe 2
-        firstOption.required?.size shouldBe 2
-    }
-
-    @Test
-    fun `oneOf DSL with discriminator and inline objects using concise mappedTo`() {
-        val schema =
-            jsonSchema {
-                name = "PaymentSchema"
-                schema {
-                    property("payment") {
-                        required = true
-                        oneOf {
-                            description = "Payment method"
-                            discriminator("type") {
-                                // Concise form - no obj keyword needed
-                                "credit_card" mappedTo {
-                                    property("type") {
-                                        required = true
-                                        string { constValue = "credit_card" }
-                                    }
-                                    property("cardNumber") {
-                                        required = true
-                                        string()
-                                    }
-                                }
-                                "paypal" mappedTo {
-                                    property("type") {
-                                        required = true
-                                        string { constValue = "paypal" }
-                                    }
-                                    property("email") {
-                                        required = true
-                                        string { format = "email" }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-        val paymentProp = schema.schema.properties["payment"] as OneOfPropertyDefinition
+        val paymentProp = schema.properties["payment"] as OneOfPropertyDefinition
         paymentProp.oneOf.size shouldBe 2
         paymentProp.description shouldBe "Payment method"
 
@@ -171,23 +159,20 @@ internal class PolymorphicDslTest {
     fun `oneOf DSL with discriminator mixing references and inline schemas`() {
         val schema =
             jsonSchema {
-                name = "MixedSchema"
-                schema {
-                    property("value") {
-                        required = true
-                        oneOf {
-                            discriminator("kind") {
-                                // Mix references and inline schemas
-                                "external" mappedTo "#/definitions/ExternalType"
-                                "inline" mappedTo {
-                                    property("kind") {
-                                        required = true
-                                        string { constValue = "inline" }
-                                    }
-                                    property("data") {
-                                        required = true
-                                        string()
-                                    }
+                property("value") {
+                    required = true
+                    oneOf {
+                        discriminator("kind") {
+                            // Mix references and inline schemas
+                            "external" mappedTo "#/definitions/ExternalType"
+                            "inline" mappedTo {
+                                property("kind") {
+                                    required = true
+                                    string { constValue = "inline" }
+                                }
+                                property("data") {
+                                    required = true
+                                    string()
                                 }
                             }
                         }
@@ -195,7 +180,7 @@ internal class PolymorphicDslTest {
                 }
             }
 
-        val valueProp = schema.schema.properties["value"] as OneOfPropertyDefinition
+        val valueProp = schema.properties["value"] as OneOfPropertyDefinition
         valueProp.oneOf.size shouldBe 2
 
         valueProp.discriminator shouldNotBeNull {
@@ -218,20 +203,17 @@ internal class PolymorphicDslTest {
     fun `anyOf DSL with mixed types`() {
         val schema =
             jsonSchema {
-                name = "IdSchema"
-                schema {
-                    property("id") {
-                        required = true
-                        anyOf {
-                            description = "UUID or integer ID"
-                            string { format = "uuid" }
-                            integer { minimum = 1.0 }
-                        }
+                property("id") {
+                    required = true
+                    anyOf {
+                        description = "UUID or integer ID"
+                        string { format = "uuid" }
+                        integer { minimum = 1.0 }
                     }
                 }
             }
 
-        val idProp = schema.schema.properties["id"] as AnyOfPropertyDefinition
+        val idProp = schema.properties["id"] as AnyOfPropertyDefinition
         idProp.anyOf.size shouldBe 2
         idProp.description shouldBe "UUID or integer ID"
 
@@ -246,23 +228,20 @@ internal class PolymorphicDslTest {
     fun `allOf DSL with composition`() {
         val schema =
             jsonSchema {
-                name = "AdminUserSchema"
-                schema {
-                    property("user") {
-                        required = true
-                        allOf {
-                            description = "Admin user extends base user"
-                            reference("#/definitions/BaseUser")
-                            obj {
-                                property("role") {
-                                    required = true
-                                    string { enum = listOf("admin", "superadmin") }
-                                }
-                                property("permissions") {
-                                    required = true
-                                    array {
-                                        ofString()
-                                    }
+                property("user") {
+                    required = true
+                    allOf {
+                        description = "Admin user extends base user"
+                        reference("#/definitions/BaseUser")
+                        obj {
+                            property("role") {
+                                required = true
+                                string { enum = listOf("admin", "superadmin") }
+                            }
+                            property("permissions") {
+                                required = true
+                                array {
+                                    ofString()
                                 }
                             }
                         }
@@ -270,7 +249,7 @@ internal class PolymorphicDslTest {
                 }
             }
 
-        val userProp = schema.schema.properties["user"] as AllOfPropertyDefinition
+        val userProp = schema.properties["user"] as AllOfPropertyDefinition
         userProp.allOf.size shouldBe 2
         userProp.description shouldBe "Admin user extends base user"
 
@@ -285,21 +264,18 @@ internal class PolymorphicDslTest {
     fun `nested polymorphism DSL - oneOf inside allOf`() {
         val schema =
             jsonSchema {
-                name = "ComplexSchema"
-                schema {
-                    property("complex") {
-                        allOf {
-                            reference("#/definitions/Base")
-                            oneOf {
-                                string { description = "String variant" }
-                                integer { description = "Integer variant" }
-                            }
+                property("complex") {
+                    allOf {
+                        reference("#/definitions/Base")
+                        oneOf {
+                            string { description = "String variant" }
+                            integer { description = "Integer variant" }
                         }
                     }
                 }
             }
 
-        val complexProp = schema.schema.properties["complex"] as AllOfPropertyDefinition
+        val complexProp = schema.properties["complex"] as AllOfPropertyDefinition
         complexProp.allOf.size shouldBe 2
 
         val nestedOneOf = complexProp.allOf[1] as OneOfPropertyDefinition
@@ -310,13 +286,10 @@ internal class PolymorphicDslTest {
     fun `DSL round-trip serialization for oneOf`() {
         val schema =
             jsonSchema {
-                name = "TestSchema"
-                schema {
-                    property("value") {
-                        oneOf {
-                            string()
-                            integer()
-                        }
+                property("value") {
+                    oneOf {
+                        string()
+                        integer()
                     }
                 }
             }
@@ -325,9 +298,6 @@ internal class PolymorphicDslTest {
         val expectedJson =
             """
             {
-              "name": "TestSchema",
-              "strict": false,
-              "schema": {
                 "type": "object",
                 "properties": {
                   "value": {
@@ -341,7 +311,6 @@ internal class PolymorphicDslTest {
                     ]
                   }
                 }
-              }
             }
             """.trimIndent()
 
@@ -352,12 +321,9 @@ internal class PolymorphicDslTest {
     fun `oneOf validation - requires at least 2 options`() {
         shouldThrow<IllegalArgumentException> {
             jsonSchema {
-                name = "InvalidSchema"
-                schema {
-                    property("value") {
-                        oneOf {
-                            string()
-                        }
+                property("value") {
+                    oneOf {
+                        string()
                     }
                 }
             }
@@ -368,12 +334,9 @@ internal class PolymorphicDslTest {
     fun `anyOf validation - requires at least 2 options`() {
         shouldThrow<IllegalArgumentException> {
             jsonSchema {
-                name = "InvalidSchema"
-                schema {
-                    property("value") {
-                        anyOf {
-                            string()
-                        }
+                property("value") {
+                    anyOf {
+                        string()
                     }
                 }
             }
@@ -384,12 +347,9 @@ internal class PolymorphicDslTest {
     fun `allOf validation - requires at least 1 option`() {
         shouldThrow<IllegalArgumentException> {
             jsonSchema {
-                name = "InvalidSchema"
-                schema {
-                    property("value") {
-                        allOf {
-                            // No options
-                        }
+                property("value") {
+                    allOf {
+                        // No options
                     }
                 }
             }
@@ -400,14 +360,11 @@ internal class PolymorphicDslTest {
     fun `discriminator validation - requires non-empty propertyName`() {
         shouldThrow<IllegalArgumentException> {
             jsonSchema {
-                name = "InvalidSchema"
-                schema {
-                    property("value") {
-                        oneOf {
-                            discriminator("") // Empty propertyName should fail
-                            reference("#/definitions/A")
-                            reference("#/definitions/B")
-                        }
+                property("value") {
+                    oneOf {
+                        discriminator("") // Empty propertyName should fail
+                        reference("#/definitions/A")
+                        reference("#/definitions/B")
                     }
                 }
             }
@@ -418,17 +375,14 @@ internal class PolymorphicDslTest {
     fun `allOf with single option is valid`() {
         val schema =
             jsonSchema {
-                name = "SingleAllOfSchema"
-                schema {
-                    property("value") {
-                        allOf {
-                            reference("#/definitions/Base")
-                        }
+                property("value") {
+                    allOf {
+                        reference("#/definitions/Base")
                     }
                 }
             }
 
-        val valueProp = schema.schema.properties["value"] as AllOfPropertyDefinition
+        val valueProp = schema.properties["value"] as AllOfPropertyDefinition
         valueProp.allOf.size shouldBe 1
     }
 
@@ -436,19 +390,16 @@ internal class PolymorphicDslTest {
     fun `oneOf with three options`() {
         val schema =
             jsonSchema {
-                name = "ThreeOptionsSchema"
-                schema {
-                    property("value") {
-                        oneOf {
-                            string()
-                            integer()
-                            boolean()
-                        }
+                property("value") {
+                    oneOf {
+                        string()
+                        integer()
+                        boolean()
                     }
                 }
             }
 
-        val valueProp = schema.schema.properties["value"] as OneOfPropertyDefinition
+        val valueProp = schema.properties["value"] as OneOfPropertyDefinition
         valueProp.oneOf.size shouldBe 3
     }
 
@@ -456,19 +407,16 @@ internal class PolymorphicDslTest {
     fun `discriminator without mapping`() {
         val schema =
             jsonSchema {
-                name = "ImplicitMappingSchema"
-                schema {
-                    property("value") {
-                        oneOf {
-                            discriminator("type")
-                            reference("#/definitions/TypeA")
-                            reference("#/definitions/TypeB")
-                        }
+                property("value") {
+                    oneOf {
+                        discriminator("type")
+                        reference("#/definitions/TypeA")
+                        reference("#/definitions/TypeB")
                     }
                 }
             }
 
-        val valueProp = schema.schema.properties["value"] as OneOfPropertyDefinition
+        val valueProp = schema.properties["value"] as OneOfPropertyDefinition
         valueProp.discriminator?.propertyName shouldBe "type"
         valueProp.discriminator?.mapping shouldBe null
     }
@@ -477,28 +425,24 @@ internal class PolymorphicDslTest {
     fun `complex real-world example - order schema with polymorphic items`() {
         val schema =
             jsonSchema {
-                name = "OrderSchema"
-                strict = true
                 description = "Order with polymorphic line items"
-                schema {
-                    additionalProperties = false
-                    property("orderId") {
-                        required = true
-                        string { format = "uuid" }
-                    }
-                    property("items") {
-                        required = true
-                        array {
-                            description = "Order line items"
-                            ofObject {
-                                property("itemType") {
-                                    required = true
-                                    oneOf {
-                                        discriminator {
-                                            "product" mappedTo "#/definitions/ProductItem"
-                                            "service" mappedTo "#/definitions/ServiceItem"
-                                            "discount" mappedTo "#/definitions/DiscountItem"
-                                        }
+                additionalProperties = false
+                property("orderId") {
+                    required = true
+                    string { format = "uuid" }
+                }
+                property("items") {
+                    required = true
+                    array {
+                        description = "Order line items"
+                        ofObject {
+                            property("itemType") {
+                                required = true
+                                oneOf {
+                                    discriminator {
+                                        "product" mappedTo "#/definitions/ProductItem"
+                                        "service" mappedTo "#/definitions/ServiceItem"
+                                        "discount" mappedTo "#/definitions/DiscountItem"
                                     }
                                 }
                             }
@@ -507,11 +451,9 @@ internal class PolymorphicDslTest {
                 }
             }
 
-        schema.name shouldBe "OrderSchema"
-        schema.strict shouldBe true
-        schema.schema.required.size shouldBe 2
+        schema.required.size shouldBe 2
 
-        val itemsProp = schema.schema.properties["items"] as ArrayPropertyDefinition
+        val itemsProp = schema.properties["items"] as ArrayPropertyDefinition
         val itemsObj = itemsProp.items as ObjectPropertyDefinition
         val itemTypeProp = itemsObj.properties?.get("itemType") as OneOfPropertyDefinition
         itemTypeProp.discriminator?.propertyName shouldBe "type"
