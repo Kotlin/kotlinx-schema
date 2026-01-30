@@ -1,43 +1,40 @@
 package com.example.shapes
 
 import io.kotest.assertions.json.shouldEqualJson
+import io.kotest.assertions.json.shouldEqualSpecifiedJson
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlin.test.Test
-import kotlin.test.assertContains
 
+@Suppress("LongMethod")
 class ShapeSchemaTest {
     @Test
     fun `Circle demonstrates KDoc and Description annotation`() {
-        val schema = Circle::class.jsonSchemaString
-
-        // Class-level KDoc is extracted
-        assertContains(schema, "A circle defined by its radius")
-
-        // @Description annotation is extracted
-        assertContains(schema, "Radius in units (must be positive)")
-
         // Properties with defaults are optional
-        schema shouldEqualJson $$"""
+        Circle::class.jsonSchemaString shouldEqualSpecifiedJson $$"""
         {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
             "$id": "com.example.shapes.Circle",
-            "$defs": {
-                "com.example.shapes.Circle": {
-                    "type": "object",
-                    "properties": {
-                        "name": { "type": "string" },
-                        "radius": {
-                            "type": "number",
-                            "description": "Radius in units (must be positive)"
-                        },
-                        "color": { "type": "string" }
-                    },
-                    "required": ["name", "radius"],
-                    "additionalProperties": false,
-                    "description": "A circle defined by its radius."
+            "description": "A circle defined by its radius.",
+            "type": "object",
+            "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "radius": {
+                  "type": "number",
+                  "description": "Radius in units (must be positive)"
+                },
+                "color": {
+                  "type": "string"
                 }
             },
-            "$ref": "#/$defs/com.example.shapes.Circle"
+            "required": [
+                "name",
+                "radius",
+                "color"
+            ],
+            "additionalProperties": false
         }
         """
     }
@@ -46,31 +43,163 @@ class ShapeSchemaTest {
     fun `Shape sealed class generates oneOf schema`() {
         val schema = Shape::class.jsonSchemaString
 
-        assertContains(schema, "oneOf")
-        assertContains(schema, "com.example.shapes.Circle")
-        assertContains(schema, "com.example.shapes.Rectangle")
-    }
-
-    @Test
-    fun `Rectangle has class KDoc and property Description`() {
-        val schema = Rectangle::class.jsonSchemaString
-
-        // Class-level KDoc
-        assertContains(schema, "A rectangle with width and height")
-
-        // @Description annotation
-        assertContains(schema, "Height in units")
+        schema shouldEqualSpecifiedJson $$"""{
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "com.example.shapes.Shape",
+            "description": "A geometric shape. This sealed class demonstrates polymorphic schema generation.",
+            "type": "object",
+            "additionalProperties": false,
+            "oneOf": [
+                {
+                    "$ref": "#/$defs/com.example.shapes.Circle"
+                },
+                {
+                    "$ref": "#/$defs/com.example.shapes.Rectangle"
+                }
+            ],
+            "$defs": {
+                "com.example.shapes.Circle": {
+                    "type": "object",
+                    "description": "A circle defined by its radius.",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "radius": {
+                            "type": "number",
+                            "description": "Radius in units (must be positive)"
+                        },
+                        "color": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "name",
+                        "radius",
+                        "color"
+                    ],
+                    "additionalProperties": false
+                },
+                "com.example.shapes.Rectangle": {
+                    "type": "object",
+                    "description": "A rectangle with width and height.",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "width": {
+                            "type": "number"
+                        },
+                        "height": {
+                            "type": "number",
+                            "description": "Height in units"
+                        },
+                        "color": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "name",
+                        "width",
+                        "height",
+                        "color"
+                    ],
+                    "additionalProperties": false
+                }
+            }
+        }"""
     }
 
     @Test
     fun `Drawing contains nested Shape references`() {
-        val schema = Drawing::class.jsonSchemaString
+        val jsonSchemaString = Drawing::class.jsonSchemaString
 
-        // Contains reference to sealed Shape class
-        assertContains(schema, "com.example.shapes.Shape")
+        Json.encodeToString(Drawing::class.jsonSchema) shouldEqualJson jsonSchemaString
 
-        // Descriptions from @Description and KDoc
-        assertContains(schema, "Name of this drawing")
+        jsonSchemaString shouldEqualSpecifiedJson
+            $$"""
+           {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "com.example.shapes.Drawing",
+            "description": "Container for multiple shapes.",
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Name of this drawing"
+                },
+                "shapes": {
+                    "type": "array",
+                    "items": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/$defs/com.example.shapes.Circle"
+                            },
+                            {
+                                "$ref": "#/$defs/com.example.shapes.Rectangle"
+                            }
+                        ],
+                        "description": "A geometric shape. This sealed class demonstrates polymorphic schema generation."
+                    }
+                }
+            },
+            "required": [
+                "name",
+                "shapes"
+            ],
+            "additionalProperties": false,
+            "$defs": {
+                "com.example.shapes.Circle": {
+                    "type": "object",
+                    "description": "A circle defined by its radius.",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "radius": {
+                            "type": "number",
+                            "description": "Radius in units (must be positive)"
+                        },
+                        "color": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "name",
+                        "radius",
+                        "color"
+                    ],
+                    "additionalProperties": false
+                },
+                "com.example.shapes.Rectangle": {
+                    "type": "object",
+                    "description": "A rectangle with width and height.",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "width": {
+                            "type": "number"
+                        },
+                        "height": {
+                            "type": "number",
+                            "description": "Height in units"
+                        },
+                        "color": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "name",
+                        "width",
+                        "height",
+                        "color"
+                    ],
+                    "additionalProperties": false
+                }
+            }
+        }
+            """.trimMargin()
     }
 
     @Test
