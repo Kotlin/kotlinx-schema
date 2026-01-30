@@ -92,18 +92,6 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>> 
             klass: KClass<*>,
             parentPrefix: String?,
         ): ObjectNode {
-            // Check for @Serializable annotation - not supported
-            val hasSerializable =
-                klass.annotations.any {
-                    it.annotationClass.qualifiedName == "kotlinx.serialization.Serializable"
-                }
-            require(!hasSerializable) {
-                "ReflectionFunctionIntrospector does not support classes annotated with @Serializable " +
-                    "(${klass.qualifiedName}). The kotlinx.serialization compiler plugin modifies the " +
-                    "constructor structure, making reflection-based introspection unreliable. " +
-                    "Please remove the @Serializable annotation or use a different introspector."
-            }
-
             val properties = mutableListOf<Property>()
             val requiredProperties = mutableSetOf<String>()
 

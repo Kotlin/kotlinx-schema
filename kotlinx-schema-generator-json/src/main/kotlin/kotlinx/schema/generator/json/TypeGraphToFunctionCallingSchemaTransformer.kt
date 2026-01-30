@@ -40,6 +40,22 @@ import kotlinx.schema.generator.json.FunctionCallingSchemaConfig.Companion.Defau
  * This transformer converts the IR representation of a function's parameters
  * into a tool schema suitable for LLM function calling APIs.
  *
+ * ## Flat Schema Structure (Default)
+ *
+ * Function schemas use a **FLAT/INLINED structure** by default (`useDefsAndRefs = false`):
+ * - Complex types are inlined at their point of use
+ * - No `$defs` section or `$ref` references
+ * - All type information embedded directly in parameters
+ *
+ * This design optimizes for:
+ * - LLM parsing simplicity (no reference resolution)
+ * - Self-contained schemas (single parameter object)
+ * - API compatibility (OpenAI, Anthropic, etc.)
+ *
+ * Contrast with [TypeGraphToJsonSchemaTransformer] which can use `$defs`/`$ref` for type reuse.
+ *
+ * ## Nullable Types
+ *
  * Nullable/optional fields are represented using union types that include "null"
  * (e.g., ["string", "null"]) instead of using the "nullable" flag.
  */

@@ -1,5 +1,7 @@
 package kotlinx.schema.ksp.ir
 
+import com.google.devtools.ksp.getDeclaredProperties
+import com.google.devtools.ksp.isPublic
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSType
@@ -116,4 +118,209 @@ internal fun resolveBasicTypeOrNull(
     // Try primitive types first, then collections, using elvis operator chain
     return KspTypeMappers.primitiveFor(type)?.let { TypeRef.Inline(it, nullable) }
         ?: KspTypeMappers.collectionTypeRefOrNull(type, recursiveMapper)
+}
+
+/**
+ * Handles generic type parameters or unknown declarations by falling back to kotlin.Any.
+ *
+ * This handler is invoked when the type declaration is not a KSClassDeclaration or lacks
+ * a qualified name (e.g., generic type parameters like `T` in `fun <T> foo(param: T)`).
+ *
+ * @param type The KSType to check
+ * @param nodes The mutable map of TypeId to TypeNode
+ * @return TypeRef.Ref to kotlin.Any if fallback is needed, null otherwise
+ */
+internal fun handleAnyFallback(
+    type: KSType,
+    nodes: MutableMap<TypeId, TypeNode>,
+): TypeRef? {
+    val declAnyFallback = type.declaration !is KSClassDeclaration || type.declaration.qualifiedName == null
+    if (!declAnyFallback) return null
+
+    val anyId = TypeId("kotlin.Any")
+    if (!nodes.containsKey(anyId)) {
+        nodes[anyId] =
+            kotlinx.schema.generator.core.ir.ObjectNode(
+                name = "kotlin.Any",
+                properties = emptyList(),
+                required = emptySet(),
+                description = null,
+            )
+    }
+    return TypeRef.Ref(anyId, false)
+}
+
+/**
+ * Handles sealed class hierarchies by generating a PolymorphicNode.
+ *
+ * Creates a polymorphic schema with discriminator-based subtype resolution. Each sealed
+ * subclass is recursively processed and registered in the type graph. The discriminator
+ * maps simple class names to their fully qualified TypeIds.
+ *
+ * @param type The KSType to check
+ * @param nullable Whether the type reference should be nullable
+ * @param nodes The mutable map of TypeId to TypeNode
+ * @param visiting The set tracking currently visiting declarations (for cycle detection)
+ * @param toRef Recursive mapper for processing subclass types
+ * @return TypeRef.Ref to the polymorphic node if this is a sealed class, null otherwise
+ */
+internal fun handleSealedClass(
+    type: KSType,
+    nullable: Boolean,
+    nodes: MutableMap<TypeId, TypeNode>,
+    visiting: MutableSet<KSClassDeclaration>,
+    toRef: (KSType) -> TypeRef,
+): TypeRef? {
+    val decl = type.sealedClassDeclOrNull() ?: return null
+    val id = decl.typeId()
+
+    processWithCycleDetection(decl, id, nodes, visiting) {
+        // Find all sealed subclasses
+        val sealedSubclasses = decl.getSealedSubclasses().toList()
+
+        // Create SubtypeRef for each sealed subclass using their typeId()
+        val subtypes =
+            sealedSubclasses.map {
+                kotlinx.schema.generator.core.ir
+                    .SubtypeRef(it.typeId())
+            }
+
+        // Build discriminator mapping: discriminator value (simple name) -> TypeId (full qualified name)
+        val discriminatorMapping =
+            sealedSubclasses.associate { it.simpleName.asString() to it.typeId() }
+
+        // Process each sealed subclass
+        sealedSubclasses.forEach { toRef(it.asType(emptyList())) }
+
+        kotlinx.schema.generator.core.ir.PolymorphicNode(
+            baseName = decl.simpleName.asString(),
+            subtypes = subtypes,
+            discriminator =
+                kotlinx.schema.generator.core.ir.Discriminator(
+                    name = "type",
+                    required = true,
+                    mapping = discriminatorMapping,
+                ),
+            description = extractDescription(decl) { decl.descriptionFromKdoc() },
+        )
+    }
+
+    return TypeRef.Ref(id, nullable)
+}
+
+/**
+ * Handles enum classes by generating an EnumNode.
+ *
+ * Extracts all enum entries and creates a schema node that constrains values to the
+ * declared enum constants. Enum entries are identified by ClassKind.ENUM_ENTRY.
+ *
+ * @param type The KSType to check
+ * @param nullable Whether the type reference should be nullable
+ * @param nodes The mutable map of TypeId to TypeNode
+ * @param visiting The set tracking currently visiting declarations (for cycle detection)
+ * @return TypeRef.Ref to the enum node if this is an enum class, null otherwise
+ */
+internal fun handleEnum(
+    type: KSType,
+    nullable: Boolean,
+    nodes: MutableMap<TypeId, TypeNode>,
+    visiting: MutableSet<KSClassDeclaration>,
+): TypeRef? {
+    val decl = type.enumClassDeclOrNull() ?: return null
+    val id = decl.typeId()
+
+    processWithCycleDetection(decl, id, nodes, visiting) {
+        val entries =
+            decl.declarations
+                .filterIsInstance<KSClassDeclaration>()
+                .filter { it.classKind == com.google.devtools.ksp.symbol.ClassKind.ENUM_ENTRY }
+                .map { it.simpleName.asString() }
+                .toList()
+
+        kotlinx.schema.generator.core.ir.EnumNode(
+            name = decl.qualifiedName?.asString() ?: decl.simpleName.asString(),
+            entries = entries,
+            description = extractDescription(decl) { decl.descriptionFromKdoc() },
+        )
+    }
+
+    return TypeRef.Ref(id, nullable)
+}
+
+/**
+ * Handles regular objects and data classes by generating an ObjectNode.
+ *
+ * Prefers primary constructor parameters for data classes (extracting parameter names,
+ * types, and default value presence). Falls back to public properties for objects and
+ * classes without primary constructors. Properties without defaults are marked as required.
+ *
+ * Note: KSP does not provide access to default value expressions at compile-time
+ * (https://github.com/google/ksp/issues/1868), so only the presence of defaults is tracked.
+ *
+ * @param type The KSType to check
+ * @param nullable Whether the type reference should be nullable
+ * @param nodes The mutable map of TypeId to TypeNode
+ * @param visiting The set tracking currently visiting declarations (for cycle detection)
+ * @param toRef Recursive mapper for processing property types
+ * @return TypeRef.Ref to the object node if this is a class/object, null otherwise
+ */
+internal fun handleObjectOrClass(
+    type: KSType,
+    nullable: Boolean,
+    nodes: MutableMap<TypeId, TypeNode>,
+    visiting: MutableSet<KSClassDeclaration>,
+    toRef: (KSType) -> TypeRef,
+): TypeRef? {
+    val decl = type.declaration as? KSClassDeclaration ?: return null
+    val id = decl.typeId()
+
+    processWithCycleDetection(decl, id, nodes, visiting) {
+        val props = ArrayList<Property>()
+        val required = LinkedHashSet<String>()
+
+        /**
+         * Helper to add a property and track whether it's required.
+         *
+         * Properties without default values are automatically added to the required set.
+         */
+        fun addProperty(
+            name: String,
+            type: KSType,
+            description: String?,
+            hasDefaultValue: Boolean,
+        ) {
+            if (!hasDefaultValue) required += name
+            props += createProperty(name, toRef(type), description, hasDefaultValue)
+        }
+
+        // Prefer primary constructor parameters for data classes; fall back to public properties
+        val params = decl.primaryConstructor?.parameters.orEmpty()
+        if (params.isNotEmpty()) {
+            // Note: KSP does not provide access to default value expressions at compile-time.
+            // https://github.com/google/ksp/issues/1868
+            // Only runtime reflection can extract actual default values.
+            params.forEach { p ->
+                val name = p.name?.asString() ?: return@forEach
+                addProperty(name, p.type.resolve(), extractDescription(p) { null }, p.hasDefault)
+            }
+        } else {
+            decl.getDeclaredProperties().filter { it.isPublic() }.forEach { prop ->
+                addProperty(
+                    prop.simpleName.asString(),
+                    prop.type.resolve(),
+                    extractDescription(prop) { prop.descriptionFromKdoc() },
+                    false,
+                )
+            }
+        }
+
+        kotlinx.schema.generator.core.ir.ObjectNode(
+            name = decl.qualifiedName?.asString() ?: decl.simpleName.asString(),
+            properties = props,
+            required = required,
+            description = extractDescription(decl) { decl.descriptionFromKdoc() },
+        )
+    }
+
+    return TypeRef.Ref(id, nullable)
 }
