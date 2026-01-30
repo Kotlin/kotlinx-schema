@@ -1,7 +1,7 @@
 package kotlinx.schema.generator.json
 
 import kotlinx.schema.generator.core.AbstractSchemaGenerator
-import kotlinx.schema.generator.reflect.ReflectionIntrospector
+import kotlinx.schema.generator.reflect.ReflectionClassIntrospector
 import kotlinx.schema.json.JsonSchema
 import kotlinx.serialization.json.Json
 import kotlin.reflect.KClass
@@ -21,7 +21,7 @@ public class ReflectionClassJsonSchemaGenerator(
     private val json: Json,
     config: JsonSchemaConfig,
 ) : AbstractSchemaGenerator<KClass<out Any>, JsonSchema>(
-        introspector = ReflectionIntrospector,
+        introspector = ReflectionClassIntrospector,
         typeGraphTransformer =
             TypeGraphToJsonSchemaTransformer(
                 config = config,
@@ -33,8 +33,7 @@ public class ReflectionClassJsonSchemaGenerator(
         config = JsonSchemaConfig.Default,
     )
 
-    override fun getRootName(target: KClass<out Any>): String =
-        target.qualifiedName ?: target.simpleName ?: "Anonymous"
+    override fun getRootName(target: KClass<out Any>): String = target.qualifiedName ?: target.simpleName ?: "Anonymous"
 
     override fun targetType(): KClass<KClass<out Any>> = KClass::class
 

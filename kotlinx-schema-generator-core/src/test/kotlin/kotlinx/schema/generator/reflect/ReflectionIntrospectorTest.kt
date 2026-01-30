@@ -48,7 +48,7 @@ class ReflectionIntrospectorTest {
         ) : Shape()
     }
 
-    private val introspector = ReflectionIntrospector
+    private val introspector = ReflectionClassIntrospector
 
     @Test
     @Suppress("LongMethod")

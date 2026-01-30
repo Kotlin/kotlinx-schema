@@ -22,18 +22,18 @@ import kotlin.reflect.KProperty
  *
  *  ## Example
  *  ```kotlin
- *  val typeGraph = ReflectionIntrospector.introspect(MyClass::class)
+ *  val typeGraph = ReflectionClassIntrospector.introspect(MyClass::class)
  *  ```
  *
  * ## Limitations
  * - Requires classes to have a primary constructor
  * - Type parameters are not fully supported
  */
-public object ReflectionIntrospector : SchemaIntrospector<KClass<*>> {
+public object ReflectionClassIntrospector : SchemaIntrospector<KClass<*>> {
     override fun introspect(root: KClass<*>): TypeGraph {
         val context = IntrospectionContext()
         val rootRef = context.convertToTypeRef(root)
-        return TypeGraph(root = rootRef, nodes = context.discoveredNodes)
+        return TypeGraph(root = rootRef, nodes = context.nodes())
     }
 
     /**
@@ -41,7 +41,8 @@ public object ReflectionIntrospector : SchemaIntrospector<KClass<*>> {
      * visited classes, and type reference cache.
      */
     @Suppress("TooManyFunctions")
-    private class IntrospectionContext : BaseIntrospectionContext() {
+    private class IntrospectionContext : ReflectionIntrospectionContext() {
+        fun nodes() = discoveredNodes
         /**
          * Overrides base convertToTypeRef to add sealed class handling before object handling.
          */
@@ -64,10 +65,8 @@ public object ReflectionIntrospector : SchemaIntrospector<KClass<*>> {
         ): TypeRef {
             val id = createTypeId(klass)
 
-            if (shouldProcessClass(klass, id)) {
-                markAsVisiting(klass)
+            withCycleDetection(klass, id) {
                 val polymorphicNode = createPolymorphicNode(klass)
-                discoveredNodes[id] = polymorphicNode
 
                 // Process each sealed subclass with parent-qualified names
                 val parentName = klass.simpleName ?: "UnknownSealed"
@@ -75,7 +74,7 @@ public object ReflectionIntrospector : SchemaIntrospector<KClass<*>> {
                     handleObjectType(subclass, nullable = false, useSimpleName = false, parentPrefix = parentName)
                 }
 
-                unmarkAsVisiting(klass)
+                polymorphicNode
             }
 
             val ref = TypeRef.Ref(id, nullable)

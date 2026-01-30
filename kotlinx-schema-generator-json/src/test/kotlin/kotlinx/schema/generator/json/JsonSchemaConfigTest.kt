@@ -20,7 +20,7 @@ class JsonSchemaConfigTest {
             )
         val transformer = TypeGraphToJsonSchemaTransformer(config)
         val typeGraph =
-            kotlinx.schema.generator.reflect.ReflectionIntrospector
+            kotlinx.schema.generator.reflect.ReflectionClassIntrospector
                 .introspect(PersonWithOptionals::class)
         val schema = transformer.transform(typeGraph, "PersonWithOptionals")
 
@@ -42,7 +42,7 @@ class JsonSchemaConfigTest {
             )
         val transformer = TypeGraphToJsonSchemaTransformer(config)
         val typeGraph =
-            kotlinx.schema.generator.reflect.ReflectionIntrospector
+            kotlinx.schema.generator.reflect.ReflectionClassIntrospector
                 .introspect(PersonWithOptionals::class)
         val schema = transformer.transform(typeGraph, "PersonWithOptionals")
 
@@ -64,7 +64,7 @@ class JsonSchemaConfigTest {
             )
         val transformer = TypeGraphToJsonSchemaTransformer(config)
         val typeGraph =
-            kotlinx.schema.generator.reflect.ReflectionIntrospector
+            kotlinx.schema.generator.reflect.ReflectionClassIntrospector
                 .introspect(PersonWithOptionals::class)
         val schema = transformer.transform(typeGraph, "PersonWithOptionals")
 

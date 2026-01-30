@@ -30,7 +30,7 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>> 
 
         val context = IntrospectionContext()
         val rootRef = context.convertFunctionToTypeRef(root)
-        return TypeGraph(root = rootRef, nodes = context.discoveredNodes)
+        return TypeGraph(root = rootRef, nodes = context.nodes())
     }
 
     /**
@@ -38,7 +38,8 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>> 
      * visited classes, and type reference cache.
      */
     @Suppress("TooManyFunctions")
-    private class IntrospectionContext : BaseIntrospectionContext() {
+    private class IntrospectionContext : ReflectionIntrospectionContext() {
+        fun nodes() = discoveredNodes
         /**
          * Converts a KCallable (function) to a TypeRef representing its parameters as an object.
          */

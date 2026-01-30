@@ -1,42 +1,28 @@
 package kotlinx.schema.generator.reflect
 
+import kotlinx.schema.generator.core.ir.BaseIntrospectionContext
 import kotlinx.schema.generator.core.ir.ListNode
 import kotlinx.schema.generator.core.ir.MapNode
 import kotlinx.schema.generator.core.ir.ObjectNode
 import kotlinx.schema.generator.core.ir.PrimitiveKind
 import kotlinx.schema.generator.core.ir.PrimitiveNode
 import kotlinx.schema.generator.core.ir.TypeId
-import kotlinx.schema.generator.core.ir.TypeNode
 import kotlinx.schema.generator.core.ir.TypeRef
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
 /**
- * Base class for introspection contexts that maintain state during type graph construction.
+ * Base class for reflection-based introspection contexts.
  *
- * This class provides common functionality for both class and function introspection,
+ * Extends core [BaseIntrospectionContext] with reflection-specific type handling.
+ * Provides common functionality for both class and function introspection,
  * including type conversion, caching, and cycle detection.
  *
  * Subclasses must implement [createObjectNode] to define how to extract properties
  * from different source types (classes vs function parameters).
  */
 @Suppress("TooManyFunctions")
-internal abstract class BaseIntrospectionContext {
-    /**
-     * Map of discovered type nodes indexed by their type ID.
-     */
-    val discoveredNodes = linkedMapOf<TypeId, TypeNode>()
-
-    /**
-     * Set of classes currently being visited (for cycle detection).
-     */
-    private val visitingClasses = mutableSetOf<KClass<*>>()
-
-    /**
-     * Cache of type references to avoid redundant processing.
-     */
-    protected val typeRefCache = mutableMapOf<KClass<*>, TypeRef>()
-
+internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContext<KClass<*>, KType>() {
     /**
      * Converts a KType (with type arguments) to a TypeRef.
      * Used for property types where we have full type information.
@@ -153,11 +139,8 @@ internal abstract class BaseIntrospectionContext {
     ): TypeRef {
         val id = createTypeId(klass)
 
-        if (shouldProcessClass(klass, id)) {
-            markAsVisiting(klass)
-            val enumNode = createEnumNode(klass)
-            discoveredNodes[id] = enumNode
-            unmarkAsVisiting(klass)
+        withCycleDetection(klass, id) {
+            createEnumNode(klass)
         }
 
         val ref = TypeRef.Ref(id, nullable)
@@ -182,11 +165,8 @@ internal abstract class BaseIntrospectionContext {
                 else -> createTypeId(klass)
             }
 
-        if (shouldProcessClass(klass, id)) {
-            markAsVisiting(klass)
-            val objectNode = createObjectNode(klass, parentPrefix)
-            discoveredNodes[id] = objectNode
-            unmarkAsVisiting(klass)
+        withCycleDetection(klass, id) {
+            createObjectNode(klass, parentPrefix)
         }
 
         val ref = TypeRef.Ref(id, nullable)
@@ -205,28 +185,6 @@ internal abstract class BaseIntrospectionContext {
         klass: KClass<*>,
         parentPrefix: String? = null,
     ): ObjectNode
-
-    /**
-     * Checks if a class should be processed (not already discovered and not currently being visited).
-     */
-    protected fun shouldProcessClass(
-        klass: KClass<*>,
-        id: TypeId,
-    ): Boolean = id !in discoveredNodes.keys && klass !in visitingClasses
-
-    /**
-     * Marks a class as currently being visited (for cycle detection).
-     */
-    protected fun markAsVisiting(klass: KClass<*>) {
-        visitingClasses += klass
-    }
-
-    /**
-     * Removes a class from the visiting set.
-     */
-    protected fun unmarkAsVisiting(klass: KClass<*>) {
-        visitingClasses -= klass
-    }
 
     /**
      * Generates a qualified type name for a class, optionally prefixed with parent name.

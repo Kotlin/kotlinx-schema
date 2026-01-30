@@ -11,7 +11,7 @@ import kotlin.reflect.KProperty1
 /*
  * Utility functions for reflection-based introspection.
  *
- * These functions are shared between [ReflectionIntrospector] and [ReflectionFunctionIntrospector]
+ * These functions are shared between [ReflectionClassIntrospector] and [ReflectionFunctionIntrospector]
  * to avoid code duplication.
  */
 
