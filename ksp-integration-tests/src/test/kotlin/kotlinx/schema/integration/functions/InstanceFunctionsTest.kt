@@ -88,7 +88,7 @@ class InstanceFunctionsTest {
     }
 
     @Test
-    fun `ProductRepository saveProduct suspend function generates correct schema`() {
+    fun `function with complex type parameter`() {
         val schema = ProductRepository::class.saveProductJsonSchemaString()
 
         // language=json
@@ -102,24 +102,43 @@ class InstanceFunctionsTest {
               "parameters": {
                 "type": "object",
                 "properties": {
-                  "id": {
-                    "type": ["integer", "null"],
-                    "description": "Product ID (null for new products)"
-                  },
-                  "name": {
-                    "type": "string",
-                    "description": "Product name"
-                  },
-                  "price": {
-                    "type": "number",
-                    "description": "Product price"
-                  },
-                  "stock": {
-                    "type": "integer",
-                    "description": "Stock quantity"
+                  "product": {
+                    "type": "object",
+                    "description": "Product to save",
+                    "properties": {
+                      "id": {
+                        "type": "integer",
+                        "description": "Unique identifier for the product"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "Human-readable product name"
+                      },
+                      "description": {
+                        "type": ["string", "null"],
+                        "description": "Optional detailed description of the product"
+                      },
+                      "price": {
+                        "type": "number",
+                        "description": "Unit price expressed as a decimal number"
+                      },
+                      "inStock": {
+                        "type": "boolean",
+                        "description": "Whether the product is currently in stock"
+                      },
+                      "tags": {
+                        "type": "array",
+                        "description": "List of tags for categorization and search",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": ["id", "name", "description", "price", "inStock", "tags"],
+                    "additionalProperties": false
                   }
                 },
-                "required": ["id", "name", "price", "stock"],
+                "required": ["product"],
                 "additionalProperties": false
               }
             }

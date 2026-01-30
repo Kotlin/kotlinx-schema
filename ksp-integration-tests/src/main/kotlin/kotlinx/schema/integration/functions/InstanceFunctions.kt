@@ -5,6 +5,7 @@ package kotlinx.schema.integration.functions
 import kotlinx.coroutines.delay
 import kotlinx.schema.Description
 import kotlinx.schema.Schema
+import kotlinx.schema.integration.type.Product
 
 /**
  * Service class with instance functions (both normal and suspend) for testing.
@@ -136,14 +137,8 @@ class ProductRepository {
     @Schema
     @Description("Saves a product to the database asynchronously")
     suspend fun saveProduct(
-        @Description("Product ID (null for new products)")
-        id: Long?,
-        @Description("Product name")
-        name: String,
-        @Description("Product price")
-        price: Double,
-        @Description("Stock quantity")
-        stock: Int = 0,
+        @Description("Product to save")
+        product: Product,
     ): Long {
         delay(1)
         @Suppress("MagicNumber")
