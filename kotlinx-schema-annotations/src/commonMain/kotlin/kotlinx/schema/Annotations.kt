@@ -56,7 +56,7 @@ public annotation class Description(
  *
  * @property value The schema type. Defaults to "json" for JSON Schema.
  * @property withSchemaObject Indicates whether to generate a specific representation for the schema,
- * such as a `JsonObject` for JSON Schema. This may require additional dependencies.
+ * such as a `JsonSchema`/`JsonObject` for JSON Schema. This may require additional dependencies.
  */
 @Target(CLASS, FUNCTION)
 @Retention(SOURCE)
@@ -68,7 +68,7 @@ public annotation class Schema(
      */
     val value: String = "json",
     /**
-     * Generate specific representation, e.g. JsonObject for JSON Schema.
+     * Generate specific representation, e.g. JsonSchema for JSON Schema.
      *
      * It might require an additional compile-time dependency, e.g. Kotlin Serialization
      */

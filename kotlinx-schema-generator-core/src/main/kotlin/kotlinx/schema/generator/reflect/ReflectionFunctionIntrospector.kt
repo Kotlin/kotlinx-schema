@@ -1,4 +1,5 @@
 package kotlinx.schema.generator.reflect
+
 import kotlinx.schema.generator.core.ir.ObjectNode
 import kotlinx.schema.generator.core.ir.Property
 import kotlinx.schema.generator.core.ir.SchemaIntrospector
@@ -37,9 +38,9 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>> 
      * Maintains state during function introspection including discovered nodes,
      * visited classes, and type reference cache.
      */
-    @Suppress("TooManyFunctions")
     private class IntrospectionContext : ReflectionIntrospectionContext() {
         fun nodes() = discoveredNodes
+
         /**
          * Converts a KCallable (function) to a TypeRef representing its parameters as an object.
          */

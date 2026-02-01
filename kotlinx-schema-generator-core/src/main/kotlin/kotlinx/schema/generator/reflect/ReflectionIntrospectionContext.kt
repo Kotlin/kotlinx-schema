@@ -1,5 +1,6 @@
 package kotlinx.schema.generator.reflect
 
+import kotlinx.schema.generator.core.InternalSchemaGeneratorApi
 import kotlinx.schema.generator.core.ir.BaseIntrospectionContext
 import kotlinx.schema.generator.core.ir.ListNode
 import kotlinx.schema.generator.core.ir.MapNode
@@ -21,7 +22,7 @@ import kotlin.reflect.KType
  * Subclasses must implement [createObjectNode] to define how to extract properties
  * from different source types (classes vs function parameters).
  */
-@Suppress("TooManyFunctions")
+@OptIn(InternalSchemaGeneratorApi::class)
 internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContext<KClass<*>, KType>() {
     /**
      * Converts a KType (with type arguments) to a TypeRef.

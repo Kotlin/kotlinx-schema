@@ -3,6 +3,7 @@ package kotlinx.schema.ksp.ir
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.Nullability
+import kotlinx.schema.generator.core.InternalSchemaGeneratorApi
 import kotlinx.schema.generator.core.ir.BaseIntrospectionContext
 import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeNode
@@ -24,6 +25,7 @@ import kotlinx.schema.generator.core.ir.TypeRef
  * 4. Enum classes -> EnumNode via [handleEnum]
  * 5. Regular objects/classes -> ObjectNode via [handleObjectOrClass]
  */
+@OptIn(InternalSchemaGeneratorApi::class)
 internal class KspIntrospectionContext : BaseIntrospectionContext<KSClassDeclaration, KSType>() {
     /**
      * Exposes discovered nodes as a mutable map for handler functions.

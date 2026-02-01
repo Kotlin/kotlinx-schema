@@ -1,17 +1,17 @@
 package kotlinx.schema.generator.core.ir
 
+/** A graph of discovered types plus the root type reference used to emit schemas. */
+public data class TypeGraph(
+    val root: TypeRef,
+    val nodes: Map<TypeId, TypeNode>,
+)
+
 /** A stable identifier for a type definition used for deduplication and $ref linking. */
 public data class TypeId(
     val value: String,
 ) {
     override fun toString(): String = value
 }
-
-/** A graph of discovered types plus the root type reference used to emit schemas. */
-public data class TypeGraph(
-    val root: TypeRef,
-    val nodes: Map<TypeId, TypeNode>,
-)
 
 /** Reference to a type: either inline node or reference by [TypeId]. */
 public sealed interface TypeRef {

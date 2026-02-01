@@ -4,6 +4,14 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.ServiceLoader
 import kotlin.reflect.KClass
 
+/**
+ * Service object responsible for discovering and managing schema generators.
+ *
+ * This service uses a `ServiceLoader` mechanism to dynamically discover all implementations
+ * of the `SchemaGenerator` interface. It provides access to the list of available schema
+ * generators and allows querying for a specific generator based on its target and schema
+ * types.
+ */
 public object SchemaGeneratorService {
     private val logger = KotlinLogging.logger {}
 

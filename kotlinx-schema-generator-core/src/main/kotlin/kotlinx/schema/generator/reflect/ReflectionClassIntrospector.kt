@@ -1,5 +1,6 @@
 package kotlinx.schema.generator.reflect
 
+import kotlinx.schema.generator.core.InternalSchemaGeneratorApi
 import kotlinx.schema.generator.core.ir.Discriminator
 import kotlinx.schema.generator.core.ir.ObjectNode
 import kotlinx.schema.generator.core.ir.PolymorphicNode
@@ -40,9 +41,9 @@ public object ReflectionClassIntrospector : SchemaIntrospector<KClass<*>> {
      * Maintains state during class introspection including discovered nodes,
      * visited classes, and type reference cache.
      */
-    @Suppress("TooManyFunctions")
     private class IntrospectionContext : ReflectionIntrospectionContext() {
         fun nodes() = discoveredNodes
+
         /**
          * Overrides base convertToTypeRef to add sealed class handling before object handling.
          */

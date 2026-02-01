@@ -1,5 +1,7 @@
 package kotlinx.schema.generator.core.ir
 
+import kotlinx.schema.generator.core.InternalSchemaGeneratorApi
+
 /**
  * Base context for introspection that maintains state and provides common utilities.
  *
@@ -18,6 +20,7 @@ package kotlinx.schema.generator.core.ir
  *
  * @suppress Not part of public API - used internally by introspector implementations.
  */
+@InternalSchemaGeneratorApi
 public abstract class BaseIntrospectionContext<TDecl : Any, TType : Any> {
     /**
      * Map of discovered type nodes indexed by their type ID.
@@ -73,5 +76,4 @@ public abstract class BaseIntrospectionContext<TDecl : Any, TType : Any> {
             visitingDeclarations -= decl
         }
     }
-
 }
