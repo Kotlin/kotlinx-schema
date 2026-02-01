@@ -2,6 +2,7 @@
 
 package kotlinx.schema.json
 
+import kotlinx.schema.json.JsonSchemaConstants.Keys.ADDITIONAL_PROPERTIES
 import kotlinx.schema.json.JsonSchemaConstants.Keys.ANCHOR
 import kotlinx.schema.json.JsonSchemaConstants.Keys.COMMENT
 import kotlinx.schema.json.JsonSchemaConstants.Keys.CONST
@@ -43,6 +44,100 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 /**
+ * Represents the constraint for additional properties in a JSON Schema object.
+ *
+ * In JSON Schema, `additionalProperties` can be:
+ * - `true`: Allow any additional properties ([AllowAdditionalProperties])
+ * - `false`: Disallow additional properties ([DenyAdditionalProperties])
+ * - A schema: Additional properties must match this schema ([AdditionalPropertiesSchema])
+ */
+@Serializable(with = AdditionalPropertiesSerializer::class)
+public sealed interface AdditionalPropertiesConstraint
+
+/**
+ * Allows any additional properties beyond those explicitly defined.
+ * Corresponds to `"additionalProperties": true` in JSON Schema.
+ */
+@Serializable
+public data object AllowAdditionalProperties : AdditionalPropertiesConstraint
+
+/**
+ * Disallows any additional properties beyond those explicitly defined.
+ * Corresponds to `"additionalProperties": false` in JSON Schema.
+ */
+@Serializable
+public data object DenyAdditionalProperties : AdditionalPropertiesConstraint
+
+/**
+ * Additional properties must conform to the specified schema.
+ * Corresponds to `"additionalProperties": { <schema> }` in JSON Schema.
+ *
+ * @property schema The schema that additional properties must match
+ */
+@Serializable
+public data class AdditionalPropertiesSchema(
+    val schema: PropertyDefinition,
+) : AdditionalPropertiesConstraint
+
+/**
+ * Custom serializer for [AdditionalPropertiesConstraint].
+ *
+ * Handles the three forms of additionalProperties in JSON Schema:
+ * - Boolean `true` → [AllowAdditionalProperties]
+ * - Boolean `false` → [DenyAdditionalProperties]
+ * - Schema object → [AdditionalPropertiesSchema]
+ */
+internal object AdditionalPropertiesSerializer : KSerializer<AdditionalPropertiesConstraint> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("AdditionalPropertiesConstraint", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): AdditionalPropertiesConstraint {
+        require(decoder is JsonDecoder) { "AdditionalPropertiesSerializer can only be used with JSON" }
+
+        val element = decoder.decodeJsonElement()
+
+        // Handle boolean values
+        if (element is kotlinx.serialization.json.JsonPrimitive && element.isString.not()) {
+            return when (element.booleanOrNull) {
+                true -> AllowAdditionalProperties
+                false -> DenyAdditionalProperties
+                null -> error("Expected boolean or schema for additionalProperties, got: $element")
+            }
+        }
+
+        // Handle schema object
+        val schema = decoder.json.decodeFromJsonElement(PropertyDefinitionSerializer(), element)
+        return AdditionalPropertiesSchema(schema)
+    }
+
+    override fun serialize(
+        encoder: Encoder,
+        value: AdditionalPropertiesConstraint,
+    ) {
+        val jsonEncoder =
+            encoder as? kotlinx.serialization.json.JsonEncoder
+                ?: error("AdditionalPropertiesSerializer can only be used with JSON")
+
+        when (value) {
+            AllowAdditionalProperties -> {
+                jsonEncoder.encodeBoolean(true)
+            }
+
+            DenyAdditionalProperties -> {
+                jsonEncoder.encodeBoolean(false)
+            }
+
+            is AdditionalPropertiesSchema -> {
+                jsonEncoder.encodeSerializableValue(
+                    PropertyDefinitionSerializer(),
+                    value.schema,
+                )
+            }
+        }
+    }
+}
+
+/**
  * Encodes the given [JsonSchema] instance into a [JsonObject] representation.
  *
  * @param json The [Json] instance to use for serialization. Defaults to [Json] instance with default configuration.
@@ -73,9 +168,14 @@ public interface PropertiesContainer {
     public val required: List<String>?
 
     /**
-     * Whether to allow additional properties in the object.
+     * Constraint for additional properties in the object.
+     *
+     * - `null`: No constraint specified (typically treated as allowing additional properties)
+     * - [AllowAdditionalProperties]: Explicitly allow any additional properties
+     * - [DenyAdditionalProperties]: Explicitly disallow additional properties
+     * - [AdditionalPropertiesSchema]: Additional properties must match a specific schema
      */
-    public val additionalProperties: PropertyDefinition?
+    public val additionalProperties: AdditionalPropertiesConstraint?
 
     /**
      * Map of property definitions for properties matching a regular expression pattern.
@@ -348,7 +448,8 @@ public data class JsonSchema(
     public override val default: JsonElement? = null,
     public override val properties: Map<String, PropertyDefinition> = emptyMap(),
     public override val patternProperties: Map<String, PropertyDefinition>? = null,
-    @SerialName("additionalProperties") public override val additionalProperties: PropertyDefinition? = null,
+    @SerialName(ADDITIONAL_PROPERTIES)
+    public override val additionalProperties: AdditionalPropertiesConstraint? = null,
     public override val unevaluatedProperties: PropertyDefinition? = null,
     public override val propertyNames: PropertyDefinition? = null,
     @EncodeDefault(EncodeDefault.Mode.NEVER)
@@ -682,7 +783,7 @@ public data class ObjectPropertyDefinition(
     val dependencies: Map<String, JsonElement>? = null,
     @Serializable(with = NumberToNullableIntSerializer::class) override val minProperties: Int? = null,
     @Serializable(with = NumberToNullableIntSerializer::class) override val maxProperties: Int? = null,
-    @SerialName("additionalProperties") override val additionalProperties: PropertyDefinition? = null,
+    @SerialName("additionalProperties") override val additionalProperties: AdditionalPropertiesConstraint? = null,
 ) : ValuePropertyDefinition<JsonObject>,
     PropertiesContainer {
     /**
@@ -798,7 +899,7 @@ public data class GenericPropertyDefinition(
     @SerialName("else") override val elseSchema: PropertyDefinition? = null,
     override val properties: Map<String, PropertyDefinition>? = null,
     override val patternProperties: Map<String, PropertyDefinition>? = null,
-    @SerialName("additionalProperties") override val additionalProperties: PropertyDefinition? = null,
+    @SerialName("additionalProperties") override val additionalProperties: AdditionalPropertiesConstraint? = null,
     override val propertyNames: PropertyDefinition? = null,
     override val required: List<String>? = null,
     override val dependentRequired: Map<String, List<String>>? = null,
@@ -913,7 +1014,7 @@ public data class ReferencePropertyDefinition(
     override val multipleOf: Double? = null,
     override val properties: Map<String, PropertyDefinition>? = null,
     override val patternProperties: Map<String, PropertyDefinition>? = null,
-    @SerialName("additionalProperties") override val additionalProperties: PropertyDefinition? = null,
+    @SerialName("additionalProperties") override val additionalProperties: AdditionalPropertiesConstraint? = null,
     override val unevaluatedProperties: PropertyDefinition? = null,
     override val propertyNames: PropertyDefinition? = null,
     override val required: List<String>? = null,
@@ -1012,7 +1113,7 @@ public data class OneOfPropertyDefinition(
     val discriminator: Discriminator? = null,
     override val properties: Map<String, PropertyDefinition>? = null,
     override val patternProperties: Map<String, PropertyDefinition>? = null,
-    @SerialName("additionalProperties") override val additionalProperties: PropertyDefinition? = null,
+    @SerialName("additionalProperties") override val additionalProperties: AdditionalPropertiesConstraint? = null,
     override val unevaluatedProperties: PropertyDefinition? = null,
     override val propertyNames: PropertyDefinition? = null,
     override val required: List<String>? = null,
@@ -1090,7 +1191,7 @@ public data class AnyOfPropertyDefinition(
     override val multipleOf: Double? = null,
     override val properties: Map<String, PropertyDefinition>? = null,
     override val patternProperties: Map<String, PropertyDefinition>? = null,
-    @SerialName("additionalProperties") override val additionalProperties: PropertyDefinition? = null,
+    @SerialName("additionalProperties") override val additionalProperties: AdditionalPropertiesConstraint? = null,
     override val unevaluatedProperties: PropertyDefinition? = null,
     override val propertyNames: PropertyDefinition? = null,
     override val required: List<String>? = null,
@@ -1168,7 +1269,7 @@ public data class AllOfPropertyDefinition(
     override val multipleOf: Double? = null,
     override val properties: Map<String, PropertyDefinition>? = null,
     override val patternProperties: Map<String, PropertyDefinition>? = null,
-    @SerialName("additionalProperties") override val additionalProperties: PropertyDefinition? = null,
+    @SerialName("additionalProperties") override val additionalProperties: AdditionalPropertiesConstraint? = null,
     override val unevaluatedProperties: PropertyDefinition? = null,
     override val propertyNames: PropertyDefinition? = null,
     override val required: List<String>? = null,

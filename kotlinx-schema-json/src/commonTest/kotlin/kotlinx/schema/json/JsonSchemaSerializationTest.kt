@@ -228,7 +228,7 @@ internal class JsonSchemaSerializationTest {
 
         // Schema validation
         decodedSchema.type shouldBe listOf("object")
-        decodedSchema.additionalProperties shouldBe BooleanSchemaDefinition(false)
+        decodedSchema.additionalProperties shouldBe DenyAdditionalProperties
         decodedSchema.required shouldHaveSize 3
         decodedSchema.required shouldBe listOf("id", "email", "status")
 
@@ -251,7 +251,7 @@ internal class JsonSchemaSerializationTest {
             type shouldBe listOf("string")
             nullable shouldBe null
             format shouldBe "email"
-            pattern shouldBe $$"^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+            pattern shouldBe "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
             description shouldBe "Email address"
             minLength shouldBe 5
             maxLength shouldBe 100
@@ -335,7 +335,7 @@ internal class JsonSchemaSerializationTest {
                         this as StringPropertyDefinition
                         type shouldBe listOf("string")
                     }
-                    additionalProperties shouldBe BooleanSchemaDefinition(false)
+                    additionalProperties shouldBe DenyAdditionalProperties
                 }
             }
         }

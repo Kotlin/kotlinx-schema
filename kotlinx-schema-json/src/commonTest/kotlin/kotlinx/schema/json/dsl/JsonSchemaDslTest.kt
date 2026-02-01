@@ -2,7 +2,7 @@ package kotlinx.schema.json.dsl
 
 import io.kotest.matchers.shouldBe
 import kotlinx.schema.json.ArrayPropertyDefinition
-import kotlinx.schema.json.BooleanSchemaDefinition
+import kotlinx.schema.json.DenyAdditionalProperties
 import kotlinx.schema.json.NumericPropertyDefinition
 import kotlinx.schema.json.ObjectPropertyDefinition
 import kotlinx.schema.json.ReferencePropertyDefinition
@@ -494,7 +494,7 @@ internal class JsonSchemaDslTest {
                     array {
                         description = "Processing steps"
                         ofObject {
-                            additionalProperties = BooleanSchemaDefinition(false)
+                            additionalProperties = false
                             property("explanation") {
                                 required = true
                                 string {
@@ -546,7 +546,7 @@ internal class JsonSchemaDslTest {
         val stepsProp = deserialized.properties["steps"] as ArrayPropertyDefinition
         val itemsObj = stepsProp.items as ObjectPropertyDefinition
         itemsObj.required shouldBe listOf("explanation", "output")
-        itemsObj.additionalProperties shouldBe BooleanSchemaDefinition(false)
+        itemsObj.additionalProperties shouldBe DenyAdditionalProperties
     }
 
     @Test

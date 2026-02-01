@@ -158,14 +158,26 @@ public class JsonSchemaBuilder {
      */
     public var schema: String? = null
 
-    private var _additionalProperties: PropertyDefinition? = null
+    private var _additionalProperties: AdditionalPropertiesConstraint? = null
 
     /**
-     * Whether additional properties beyond those defined are allowed.
-     * - `true`: Additional properties allowed (BooleanSchemaDefinition)
-     * - `false`: Only defined properties allowed (BooleanSchemaDefinition)
-     * - `PropertyDefinition`: Schema for additional properties (e.g., for maps)
-     * - `null`: No constraint (default)
+     * Constraint for additional properties beyond those explicitly defined.
+     *
+     * - `true`: Allow any additional properties ([AllowAdditionalProperties])
+     * - `false`: Disallow additional properties ([DenyAdditionalProperties])
+     * - [PropertyDefinition]: Additional properties must match this schema ([AdditionalPropertiesSchema])
+     * - `null`: No constraint specified (default)
+     *
+     * ## Examples
+     * ```kotlin
+     * jsonSchema {
+     *     additionalProperties = false  // Strict: no additional properties allowed
+     * }
+     *
+     * jsonSchema {
+     *     additionalProperties = obj { /* schema */ }  // Additional properties must be objects
+     * }
+     * ```
      */
     public var additionalProperties: Any?
         get() = _additionalProperties
@@ -173,11 +185,15 @@ public class JsonSchemaBuilder {
             _additionalProperties =
                 when (value) {
                     is PropertyDefinition -> {
-                        value
+                        AdditionalPropertiesSchema(value)
                     }
 
-                    is Boolean -> {
-                        BooleanSchemaDefinition(value)
+                    true -> {
+                        AllowAdditionalProperties
+                    }
+
+                    false -> {
+                        DenyAdditionalProperties
                     }
 
                     null -> {
@@ -186,7 +202,7 @@ public class JsonSchemaBuilder {
 
                     else -> {
                         error(
-                            "additionalProperties  must be Boolean, PropertyDefinition, or null, " +
+                            "additionalProperties must be Boolean, PropertyDefinition, or null, " +
                                 "but got: ${value::class.simpleName}",
                         )
                     }
@@ -1947,14 +1963,23 @@ public class ObjectPropertyBuilder internal constructor() {
                 }
         }
 
-    private var _additionalProperties: PropertyDefinition? = null
+    private var _additionalProperties: AdditionalPropertiesConstraint? = null
 
     /**
-     * Whether additional properties beyond those defined are allowed.
-     * - `true`: Additional properties allowed (BooleanSchemaDefinition)
-     * - `false`: Only defined properties allowed (BooleanSchemaDefinition)
-     * - `PropertyDefinition`: Schema for additional properties (e.g., for maps)
-     * - `null`: No constraint (default)
+     * Constraint for additional properties beyond those explicitly defined.
+     *
+     * - `true`: Allow any additional properties ([AllowAdditionalProperties])
+     * - `false`: Disallow additional properties ([DenyAdditionalProperties])
+     * - [PropertyDefinition]: Additional properties must match this schema ([AdditionalPropertiesSchema])
+     * - `null`: No constraint specified (default)
+     *
+     * ## Examples
+     * ```kotlin
+     * obj {
+     *     property("name") { string() }
+     *     additionalProperties = false  // Only 'name' property allowed
+     * }
+     * ```
      */
     public var additionalProperties: Any?
         get() = _additionalProperties
@@ -1962,11 +1987,15 @@ public class ObjectPropertyBuilder internal constructor() {
             _additionalProperties =
                 when (value) {
                     is PropertyDefinition -> {
-                        value
+                        AdditionalPropertiesSchema(value)
                     }
 
-                    is Boolean -> {
-                        BooleanSchemaDefinition(value)
+                    true -> {
+                        AllowAdditionalProperties
+                    }
+
+                    false -> {
+                        DenyAdditionalProperties
                     }
 
                     null -> {
