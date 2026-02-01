@@ -487,7 +487,7 @@ internal class JsonSchemaDslTest {
                     array {
                         description = "Processing steps"
                         ofObject {
-                            additionalProperties = kotlinx.serialization.json.JsonPrimitive(false)
+                            additionalProperties = BooleanSchemaDefinition(false)
                             property("explanation") {
                                 required = true
                                 string {
@@ -539,7 +539,7 @@ internal class JsonSchemaDslTest {
         val stepsProp = deserialized.properties["steps"] as ArrayPropertyDefinition
         val itemsObj = stepsProp.items as ObjectPropertyDefinition
         itemsObj.required shouldBe listOf("explanation", "output")
-        itemsObj.additionalProperties shouldBe kotlinx.serialization.json.JsonPrimitive(false)
+        itemsObj.additionalProperties shouldBe BooleanSchemaDefinition(false)
     }
 
     @Test

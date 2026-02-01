@@ -228,7 +228,7 @@ internal class JsonSchemaSerializationTest {
 
         // Schema validation
         decodedSchema.type shouldBe listOf("object")
-        decodedSchema.additionalProperties shouldBe kotlinx.serialization.json.JsonPrimitive(false)
+        decodedSchema.additionalProperties shouldBe BooleanSchemaDefinition(false)
         decodedSchema.required shouldHaveSize 3
         decodedSchema.required shouldBe listOf("id", "email", "status")
 
@@ -335,7 +335,7 @@ internal class JsonSchemaSerializationTest {
                         this as StringPropertyDefinition
                         type shouldBe listOf("string")
                     }
-                    additionalProperties shouldBe kotlinx.serialization.json.JsonPrimitive(false)
+                    additionalProperties shouldBe BooleanSchemaDefinition(false)
                 }
             }
         }

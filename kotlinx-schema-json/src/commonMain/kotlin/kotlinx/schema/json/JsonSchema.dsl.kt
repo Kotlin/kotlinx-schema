@@ -158,13 +158,13 @@ public class JsonSchemaBuilder {
      */
     public var schema: String? = null
 
-    private var _additionalProperties: JsonElement? = null
+    private var _additionalProperties: PropertyDefinition? = null
 
     /**
      * Whether additional properties beyond those defined are allowed.
-     * - `JsonPrimitive(true)`: Additional properties allowed
-     * - `JsonPrimitive(false)`: Only defined properties allowed
-     * - `JsonObject`: Schema for additional properties (e.g., for maps)
+     * - `true`: Additional properties allowed (BooleanSchemaDefinition)
+     * - `false`: Only defined properties allowed (BooleanSchemaDefinition)
+     * - `PropertyDefinition`: Schema for additional properties (e.g., for maps)
      * - `null`: No constraint (default)
      */
     public var additionalProperties: Any?
@@ -172,12 +172,12 @@ public class JsonSchemaBuilder {
         set(value) {
             _additionalProperties =
                 when (value) {
-                    is JsonObject -> {
+                    is PropertyDefinition -> {
                         value
                     }
 
                     is Boolean -> {
-                        JsonPrimitive(value)
+                        BooleanSchemaDefinition(value)
                     }
 
                     null -> {
@@ -186,7 +186,7 @@ public class JsonSchemaBuilder {
 
                     else -> {
                         error(
-                            "additionalProperties  must be Boolean, JsonElement, or null, " +
+                            "additionalProperties  must be Boolean, PropertyDefinition, or null, " +
                                 "but got: ${value::class.simpleName}",
                         )
                     }
@@ -277,7 +277,7 @@ public class JsonSchemaBuilder {
  * }
  * ```
  *
- * @see JsonSchemaDefinitionBuilder.property
+ * @see JsonSchemaBuilder.property
  */
 @JsonSchemaDsl
 public class PropertyBuilder {
@@ -1278,7 +1278,7 @@ public class BooleanPropertyBuilder internal constructor() {
  * - Heterogeneous enums
  *
  * This class is part of the JSON Schema DSL and cannot be instantiated directly.
- * Use [JsonSchemaDefinitionBuilder.property] to create instances.
+ * Use [JsonSchemaBuilder.property] to create instances.
  *
  * ## Example
  * ```kotlin
@@ -1947,14 +1947,40 @@ public class ObjectPropertyBuilder internal constructor() {
                 }
         }
 
+    private var _additionalProperties: PropertyDefinition? = null
+
     /**
      * Whether additional properties beyond those defined are allowed.
-     * - `JsonPrimitive(true)`: Additional properties allowed
-     * - `JsonPrimitive(false)`: Only defined properties allowed
-     * - `JsonObject`: Schema for additional properties (e.g., for maps)
+     * - `true`: Additional properties allowed (BooleanSchemaDefinition)
+     * - `false`: Only defined properties allowed (BooleanSchemaDefinition)
+     * - `PropertyDefinition`: Schema for additional properties (e.g., for maps)
      * - `null`: No constraint (default)
      */
-    public var additionalProperties: JsonElement? = null
+    public var additionalProperties: Any?
+        get() = _additionalProperties
+        set(value) {
+            _additionalProperties =
+                when (value) {
+                    is PropertyDefinition -> {
+                        value
+                    }
+
+                    is Boolean -> {
+                        BooleanSchemaDefinition(value)
+                    }
+
+                    null -> {
+                        null
+                    }
+
+                    else -> {
+                        error(
+                            "additionalProperties must be Boolean, PropertyDefinition, or null, " +
+                                "but got: ${value::class.simpleName}",
+                        )
+                    }
+                }
+        }
 
     private val properties: MutableMap<String, PropertyDefinition> = mutableMapOf()
     private val requiredFields: MutableSet<String> = mutableSetOf()
@@ -2042,7 +2068,7 @@ public class ObjectPropertyBuilder internal constructor() {
     /**
      * Defines a property within this nested object.
      *
-     * Works the same as [JsonSchemaDefinitionBuilder.property], allowing you to
+     * Works the same as [JsonSchemaBuilder.property], allowing you to
      * define nested properties with their types and constraints.
      *
      * ## Example
@@ -2057,7 +2083,7 @@ public class ObjectPropertyBuilder internal constructor() {
      *
      * @param name The property name
      * @param block Configuration block for the property
-     * @see JsonSchemaDefinitionBuilder.property
+     * @see JsonSchemaBuilder.property
      */
     public fun property(
         name: String,
@@ -2078,7 +2104,7 @@ public class ObjectPropertyBuilder internal constructor() {
             enum = _enum,
             properties = properties.ifEmpty { null },
             required = if (requiredFields.isEmpty()) null else requiredFields.toList(),
-            additionalProperties = additionalProperties,
+            additionalProperties = _additionalProperties,
             default = _default,
         )
 }

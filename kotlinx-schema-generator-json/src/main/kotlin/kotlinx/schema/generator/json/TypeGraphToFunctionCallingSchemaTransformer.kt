@@ -12,6 +12,7 @@ import kotlinx.schema.generator.core.ir.TypeNode
 import kotlinx.schema.generator.core.ir.TypeRef
 import kotlinx.schema.json.ArrayPropertyDefinition
 import kotlinx.schema.json.BooleanPropertyDefinition
+import kotlinx.schema.json.BooleanSchemaDefinition
 import kotlinx.schema.json.FunctionCallingSchema
 import kotlinx.schema.json.JsonSchemaConstants.Types.ARRAY_OR_NULL_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.ARRAY_TYPE
@@ -135,7 +136,7 @@ public class TypeGraphToFunctionCallingSchemaTransformer
                     ObjectPropertyDefinition(
                         properties = properties,
                         required = requiredFields,
-                        additionalProperties = JsonPrimitive(false),
+                        additionalProperties = BooleanSchemaDefinition(false),
                     ),
             )
         }
@@ -292,7 +293,7 @@ public class TypeGraphToFunctionCallingSchemaTransformer
                 nullable = null,
                 properties = properties,
                 required = requiredFields,
-                additionalProperties = JsonPrimitive(false),
+                additionalProperties = BooleanSchemaDefinition(false),
             )
         }
 
@@ -327,13 +328,11 @@ public class TypeGraphToFunctionCallingSchemaTransformer
             graph: TypeGraph,
         ): PropertyDefinition {
             val valuePropertyDef = convertTypeRef(node.value, graph)
-            val additionalPropertiesSchema = json.encodeToJsonElement(valuePropertyDef)
-
             return ObjectPropertyDefinition(
                 type = if (nullable) OBJECT_OR_NULL_TYPE else OBJECT_TYPE,
                 description = node.description,
                 nullable = null,
-                additionalProperties = additionalPropertiesSchema,
+                additionalProperties = valuePropertyDef,
             )
         }
     }

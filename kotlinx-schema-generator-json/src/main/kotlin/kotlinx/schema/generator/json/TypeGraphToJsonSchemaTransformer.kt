@@ -14,6 +14,7 @@ import kotlinx.schema.generator.core.ir.TypeRef
 import kotlinx.schema.json.AnyOfPropertyDefinition
 import kotlinx.schema.json.ArrayPropertyDefinition
 import kotlinx.schema.json.BooleanPropertyDefinition
+import kotlinx.schema.json.BooleanSchemaDefinition
 import kotlinx.schema.json.Discriminator
 import kotlinx.schema.json.JsonSchema
 import kotlinx.schema.json.JsonSchemaConstants.JSON_SCHEMA_ID_DRAFT202012
@@ -139,7 +140,7 @@ public class TypeGraphToJsonSchemaTransformer
                 id = formatSchemaId(rootName),
                 properties = emptyMap(),
                 required = emptyList(),
-                additionalProperties = JsonPrimitive(false),
+                additionalProperties = BooleanSchemaDefinition(false),
                 description = rootDefinition.description,
                 oneOf = rootDefinition.oneOf,
                 discriminator = if (config.includeDiscriminator) rootDefinition.discriminator else null,
@@ -158,7 +159,7 @@ public class TypeGraphToJsonSchemaTransformer
                 schema = JSON_SCHEMA_ID_DRAFT202012,
                 id = formatSchemaId(rootName),
                 type = rootDefinition.type,
-                `enum` = rootDefinition.enum,
+                `enum` = rootDefinition.enum?.map { JsonPrimitive(it) },
                 description = rootDefinition.description,
                 properties = emptyMap(),
                 required = emptyList(),
@@ -236,7 +237,7 @@ public class TypeGraphToJsonSchemaTransformer
                 id = formatSchemaId(rootName),
                 properties = emptyMap(),
                 required = emptyList(),
-                additionalProperties = JsonPrimitive(false),
+                additionalProperties = BooleanSchemaDefinition(false),
                 defs = definitions.takeIf { it.isNotEmpty() },
             )
 
@@ -446,7 +447,7 @@ public class TypeGraphToJsonSchemaTransformer
                 nullable = getNullableFlag(nullable),
                 properties = properties,
                 required = required.toList(),
-                additionalProperties = JsonPrimitive(false),
+                additionalProperties = BooleanSchemaDefinition(false),
             )
         }
 
@@ -485,13 +486,12 @@ public class TypeGraphToJsonSchemaTransformer
             // Maps are represented as objects with additionalProperties
             // The value type determines what additionalProperties accepts
             val valuePropertyDef = convertTypeRef(node.value, graph, definitions)
-            val additionalPropertiesSchema = json.encodeToJsonElement(valuePropertyDef)
 
             return ObjectPropertyDefinition(
                 type = if (nullable && config.useUnionTypes) OBJECT_OR_NULL_TYPE else OBJECT_TYPE,
                 description = null,
                 nullable = getNullableFlag(nullable),
-                additionalProperties = additionalPropertiesSchema,
+                additionalProperties = valuePropertyDef,
             )
         }
 
