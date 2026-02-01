@@ -1,2 +1,3 @@
 kotlinx.schema.generator.json.ReflectionFunctionCallingSchemaGenerator
 kotlinx.schema.generator.json.ReflectionClassJsonSchemaGenerator
+kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGenerator
