@@ -9,61 +9,68 @@ keeping behavior consistent across JVM, JS, Native, and Wasm.
 
 **Architecture goals:**
 
-- **Unified IR**: Separate schema sources (KSP or reflection) from output targets (JSON Schema, LLM function calling).
+- **Unified IR**: Separate schema sources (KSP, reflection, or [KSerializer][kser]) from output targets
 - **Multiplatform (KSP)**: Support schema generation across all Kotlin targets.
-- **Extensibility**: Enable third-party annotations and custom transformations.
-- **Zero runtime overhead (KSP)**: Prefer compile-time generation for performance-sensitive paths.
-- **Third-party support**: Generate schemas for types you don't own, without editing their source.
+- **Extensibility**: Enable third-party annotations, custom introspectors and transformations.
+- **Zero runtime overhead on KSP**: Compile-time generation for performance-sensitive paths.
+- **Third-party support**: Generate schemas for types you don't own without editing their source.
 
 ## Overview
 
-The library follows a three-stage pipeline: **Sources** → **Introspectors** → **TypeGraph** → **Transformers** → **Schemas**
+The library implements the following pipeline: 
 
 ```mermaid
 graph LR
     subgraph Sources["📦 SOURCES"]
         Kotlin["Kotlin Classes<br/>@Schema annotated"]
+        KSerializer["KSerializer"]
         Java["Java Classes<br/>Third-party libs"]
-        Functions["Kotlin Functions<br/>LLM integration"]
+        Functions["Kotlin Functions"]
     end
 
-    subgraph Introspectors["🔍 INTROSPECTORS"]
+    subgraph Introspectors["🔍 Stage 1: INTROSPECTORS"]
         KSP["KspSchemaIntrospector<br/><i>compile-time</i>"]
         Reflect["ReflectionSchemaIntrospector<br/><i>runtime</i>"]
+        Serialization["SerializationClassSchemaIntrospector<br/><i>runtime</i>"]
     end
 
     subgraph IR["🧬 INTERNAL REPRESENTATION"]
-        TypeGraph["TypeGraph<br/>Unified intermediate format<br/>Properties • Types • Descriptions<br/>Nullable • Defaults • Generics"]
+        TypeGraph["TypeGraph<br/>Unified intermediate format<br/>Properties • Types • Descriptions<br/>Nullable • Defaults"]
     end
 
     subgraph Transformers["⚙️ TRANSFORMERS"]
         JsonTransform["JsonSchemaTransformer<br/>Draft 2020-12"]
-        FuncTransform["FunctionCallingTransformer<br/>OpenAI/Anthropic format"]
+        FuncTransform["FunctionCallingTransformer<br/>(OpenAI/Anthropic format)"]
     end
 
     subgraph Output["📄 SCHEMA OUTPUTS"]
-        KtGen["Generated .kt<br/>Extension properties<br/>MyClass::class.jsonSchema"]
+        KtClass["Generated .kt<br/>MyClass::class.jsonSchema<br/>MyClass::class.jsonSchemaString"]
+        KtFunc["Generated .kt<br/>myMethodJsonSchema()<br/>myMethodJsonSchemaString()"]
+        JsonSchema["JsonSchema<br/>(@Serializable)"]
         JsonObj["JsonObject<br/>kotlinx.serialization"]
         JsonStr["JSON String<br/>Serialized schema"]
+        FuncSchema["FunctionCallingSchema<br/>(@Serializable)"]
     end
 
     Kotlin --> KSP
-    Kotlin --> Reflect
+    KSerializer --> Serialization
     Java --> Reflect
     Functions --> KSP
     Functions --> Reflect
 
     KSP --> TypeGraph
     Reflect --> TypeGraph
+    Serialization --> TypeGraph
 
     TypeGraph --> JsonTransform
     TypeGraph --> FuncTransform
 
-    JsonTransform --> KtGen
-    JsonTransform --> JsonObj
-    JsonTransform --> JsonStr
-    FuncTransform --> JsonObj
-    FuncTransform --> JsonStr
+    JsonTransform --> JsonSchema
+    FuncTransform --> FuncSchema
+    JsonSchema --> JsonObj
+    FuncSchema --> KtFunc
+    JsonObj --> JsonStr
+    JsonObj --> KtClass
 
     classDef sourceStyle fill:#e3f2fd,stroke:#1565c0,stroke-width:3px,color:#000
     classDef introspectorStyle fill:#fff3e0,stroke:#ef6c00,stroke-width:3px,color:#000
@@ -71,20 +78,20 @@ graph LR
     classDef transformStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px,color:#000
     classDef outputStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#000
 
-    class Kotlin,Java,Functions sourceStyle
-    class KSP,Reflect introspectorStyle
+    class Kotlin,Java,Functions,KSerializer sourceStyle
+    class KSP,Reflect,Serialization introspectorStyle
     class TypeGraph irStyle
     class JsonTransform,FuncTransform transformStyle
-    class KtGen,JsonObj,JsonStr outputStyle
+    class KtClass,KtFunc,JsonSchema,FuncSchema,JsonObj,JsonStr outputStyle
 ```
 
 **The Transformation Story:**
 
-1. **Sources** (blue) — Kotlin classes, Java classes, or Kotlin functions serve as input
-2. **Introspectors** (orange) — Extract type information using KSP (compile-time) or Reflection (runtime)
-3. **TypeGraph** (pink) — Unified internal representation containing all type metadata
-4. **Transformers** (purple) — Convert TypeGraph to JSON Schema or Function Calling format
-5. **Outputs** (green) — Generated Kotlin code, JsonObject, or JSON strings
+1. **Sources** — Kotlin classes, Java classes, Kotlin functions, or [KSerializer][kser] serve as input
+2. **Introspectors** — Extract type information at compile-time (KSP) or runtime (Reflection, Serialization)
+3. **TypeGraph** — Unified internal representation containing all type metadata
+4. **Transformers** — Convert TypeGraph to JSON Schema or Function Calling format
+5. **Outputs** — Generated Kotlin code, JsonSchema, FunctionCallingSchema, and then to JsonObject, or JSON strings
 
 ## Module Dependencies
 
@@ -167,4 +174,6 @@ sequenceDiagram
 3. SchemaGenerator invokes SchemaIntrospector to convert an object into _TypeGraph_
 4. _TypeGraphTransformer_ converts a _TypeGraph_ to a target representation (e.g., JSON Schema)
    with respect to respecting _Config_ object and returns it to SchemaGenerator
+
+[kser]: https://kotlinlang.org/api/kotlinx.serialization/kotlinx-serialization-core/kotlinx.serialization/-k-serializer/
 
