@@ -2,26 +2,42 @@
 
 package kotlinx.schema.json
 
+import kotlinx.schema.json.JsonSchemaConstants.Keys.ANCHOR
 import kotlinx.schema.json.JsonSchemaConstants.Keys.COMMENT
 import kotlinx.schema.json.JsonSchemaConstants.Keys.CONST
 import kotlinx.schema.json.JsonSchemaConstants.Keys.DEFS
+import kotlinx.schema.json.JsonSchemaConstants.Keys.DYNAMIC_ANCHOR
+import kotlinx.schema.json.JsonSchemaConstants.Keys.DYNAMIC_REF
+import kotlinx.schema.json.JsonSchemaConstants.Keys.ELSE
 import kotlinx.schema.json.JsonSchemaConstants.Keys.ID
+import kotlinx.schema.json.JsonSchemaConstants.Keys.IF
 import kotlinx.schema.json.JsonSchemaConstants.Keys.REF
 import kotlinx.schema.json.JsonSchemaConstants.Keys.SCHEMA
+import kotlinx.schema.json.JsonSchemaConstants.Keys.THEN
 import kotlinx.schema.json.JsonSchemaConstants.Types.ARRAY_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.BOOLEAN_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.OBJECT_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.STRING_TYPE
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonIgnoreUnknownKeys
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 /**
  * Encodes the given [JsonSchema] instance into a [JsonObject] representation.
@@ -45,169 +61,308 @@ public fun JsonSchema.encodeToString(json: Json = Json): String = json.encodeToS
 public interface PropertiesContainer {
     /**
      * Represents a map of property definitions for an object.
-     *
-     * Each entry in the map consists of a key-value pair, where the key is the name of the property
-     * (as a [String]) and the value is an instance of [PropertyDefinition], which describes the details
-     * of the property based on the JSON Schema.
-     *
-     * This property may be null, indicating that no properties are defined for the object or the properties
-     * are unavailable.
      */
     public val properties: Map<String, PropertyDefinition>?
 
     /**
+     * List of required property names.
+     */
+    public val required: List<String>?
+
+    /**
+     * Whether to allow additional properties in the object.
+     */
+    public val additionalProperties: JsonElement?
+
+    /**
+     * Map of property definitions for properties matching a regular expression pattern.
+     */
+    public val patternProperties: Map<String, PropertyDefinition>?
+
+    /**
+     * The value of "unevaluatedProperties" MUST be a valid JSON Schema.
+     */
+    public val unevaluatedProperties: PropertyDefinition?
+
+    /**
+     * If "propertyNames" is present, its value MUST be a valid JSON Schema.
+     */
+    public val propertyNames: PropertyDefinition?
+
+    /**
+     * A map of property names to lists of other property names that are required if the given property is present.
+     */
+    public val dependentRequired: Map<String, List<String>>?
+
+    /**
+     * A map of property names to schemas that must be satisfied if the given property is present.
+     */
+    public val dependentSchemas: Map<String, PropertyDefinition>?
+
+    /**
+     * Minimum number of properties allowed in the object.
+     */
+    public val minProperties: Int?
+
+    /**
+     * Maximum number of properties allowed in the object.
+     */
+    public val maxProperties: Int?
+
+    /**
      * Retrieves the boolean property definition associated with the specified property name.
-     *
-     * @param name The name of the property to fetch from the object definition.
-     * @return The corresponding [BooleanPropertyDefinition] if the property exists and is a boolean,
-     * or `null` if no such property exists or the property is not boolean property.
      */
     public fun booleanProperty(name: String): BooleanPropertyDefinition? =
         properties?.get(name) as? BooleanPropertyDefinition
 
     /**
      * Retrieves the numeric property definition associated with the specified property name.
-     *
-     * @param name The name of the property to fetch from the object definition.
-     * @return The corresponding [NumericPropertyDefinition] if the property exists and is numeric,
-     * or `null` if no such property exists or the property is not numeric.
      */
     public fun numericProperty(name: String): NumericPropertyDefinition? =
         properties?.get(name) as? NumericPropertyDefinition
 
     /**
      * Retrieves the string property definition associated with the specified property name.
-     *
-     * @param name The name of the property to fetch from the object definition.
-     * @return The corresponding [StringPropertyDefinition] if the property exists and is a string,
-     * or `null` if no such property exists or the property is not a string property.
      */
     public fun stringProperty(name: String): StringPropertyDefinition? =
         properties?.get(name) as? StringPropertyDefinition
 
     /**
      * Retrieves the `object` property definition associated with the specified property name.
-     *
-     * @param name The name of the property to fetch from the object definition.
-     * @return The corresponding [ObjectPropertyDefinition] if the property exists and is an object,
-     * or `null` if no such property exists or the property is not object property.
      */
     public fun objectProperty(name: String): ObjectPropertyDefinition? =
         properties?.get(name) as? ObjectPropertyDefinition
 
     /**
      * Retrieves the array property definition associated with the specified property name.
-     *
-     * @param name The name of the property to fetch from the object definition.
-     * @return The corresponding [ArrayPropertyDefinition] if the property exists and is an array,
-     * or `null` if no such property exists or the property is not an array.
      */
     public fun arrayProperty(name: String): ArrayPropertyDefinition? = properties?.get(name) as? ArrayPropertyDefinition
 
     /**
      * Retrieves the reference property definition associated with the specified property name.
-     *
-     * @param name The name of the property to fetch from the object definition.
-     * @return The corresponding [ReferencePropertyDefinition] if the property exists and is a reference,
-     * or `null` if no such property exists or the property is not a reference.
      */
     public fun referenceProperty(name: String): ReferencePropertyDefinition? =
         properties?.get(name) as? ReferencePropertyDefinition
 
     /**
      * Retrieves the oneOf property definition associated with the specified property name.
-     *
-     * @param name The name of the property to fetch from the object definition.
-     * @return The corresponding [OneOfPropertyDefinition] if the property exists and is a oneOf,
-     * or `null` if no such property exists or the property is not a oneOf.
      */
     public fun oneOfProperty(name: String): OneOfPropertyDefinition? = properties?.get(name) as? OneOfPropertyDefinition
 
     /**
      * Retrieves the anyOf property definition associated with the specified property name.
-     *
-     * @param name The name of the property to fetch from the object definition.
-     * @return The corresponding [AnyOfPropertyDefinition] if the property exists and is an anyOf,
-     * or `null` if no such property exists or the property is not an anyOf.
      */
     public fun anyOfProperty(name: String): AnyOfPropertyDefinition? = properties?.get(name) as? AnyOfPropertyDefinition
 
     /**
      * Retrieves the allOf property definition associated with the specified property name.
-     *
-     * @param name The name of the property to fetch from the object definition.
-     * @return The corresponding [AllOfPropertyDefinition] if the property exists and is an allOf,
-     * or `null` if no such property exists or the property is not an allOf.
      */
     public fun allOfProperty(name: String): AllOfPropertyDefinition? = properties?.get(name) as? AllOfPropertyDefinition
 
     /**
      * Retrieves the boolean schema definition associated with the specified property name.
-     *
-     * Note: This is different from [booleanProperty] which returns [BooleanPropertyDefinition]
-     * (a schema for boolean values). This method returns [BooleanSchemaDefinition] which
-     * represents a boolean schema (true/false as the entire schema).
-     *
-     * @param name The name of the property to fetch from the object definition.
-     * @return The corresponding [BooleanSchemaDefinition] if the property exists and is a boolean schema,
-     * or `null` if no such property exists or the property is not a boolean schema.
      */
     public fun booleanSchemaProperty(name: String): BooleanSchemaDefinition? =
         properties?.get(name) as? BooleanSchemaDefinition
 }
 
 /**
+ * Interface representing a container for items in a JSON array schema.
+ */
+public interface ArrayContainer {
+    /**
+     * The value of "items" MUST be a valid JSON Schema.
+     */
+    public val items: PropertyDefinition?
+
+    /**
+     * The value of "prefixItems" MUST be a non-empty array of valid JSON Schemas.
+     */
+    public val prefixItems: List<PropertyDefinition>?
+
+    /**
+     * The value of "unevaluatedItems" MUST be a valid JSON Schema.
+     */
+    public val unevaluatedItems: PropertyDefinition?
+
+    /**
+     * The value of "contains" MUST be a valid JSON Schema.
+     */
+    public val contains: PropertyDefinition?
+
+    /**
+     * Minimum number of items that must match the "contains" schema.
+     */
+    public val minContains: Int?
+
+    /**
+     * Maximum number of items that can match the "contains" schema.
+     */
+    public val maxContains: Int?
+
+    /**
+     * Minimum number of items allowed in the array.
+     */
+    public val minItems: Int?
+
+    /**
+     * Maximum number of items allowed in the array.
+     */
+    public val maxItems: Int?
+
+    /**
+     * Whether all items in the array must be unique.
+     */
+    public val uniqueItems: Boolean?
+}
+
+/**
+ * Common keywords for all object-based JSON schemas.
+ */
+public interface CommonSchemaAttributes {
+    @SerialName(ID)
+    public val id: String?
+
+    @SerialName(ANCHOR)
+    public val anchor: String?
+
+    @SerialName(DYNAMIC_ANCHOR)
+    public val dynamicAnchor: String?
+
+    @SerialName(REF)
+    public val ref: String?
+
+    @SerialName(DYNAMIC_REF)
+    public val dynamicRef: String?
+
+    @SerialName(COMMENT)
+    public val comment: String?
+    public val title: String?
+    public val description: String?
+
+    @SerialName(DEFS)
+    public val defs: Map<String, PropertyDefinition>?
+    public val readOnly: Boolean?
+    public val writeOnly: Boolean?
+    public val deprecated: Boolean?
+    public val examples: List<JsonElement>?
+    public val default: JsonElement?
+
+    @SerialName(CONST)
+    public val constValue: JsonElement?
+
+    @Serializable(with = StringOrListSerializer::class)
+    public val type: List<String>?
+
+    public val nullable: Boolean?
+}
+
+/**
+ * Interface for schemas that can be composed of other schemas.
+ */
+public interface ApplicatorContainer {
+    public val oneOf: List<PropertyDefinition>?
+    public val anyOf: List<PropertyDefinition>?
+    public val allOf: List<PropertyDefinition>?
+    public val not: PropertyDefinition?
+    public val ifSchema: PropertyDefinition?
+    public val thenSchema: PropertyDefinition?
+    public val elseSchema: PropertyDefinition?
+}
+
+/**
  * Represents a JSON Schema model.
- *
- * @property id JSON Schema [$id](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-01#name-the-id-keyword)
- * @property schema JSON Schema [$schema](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-01#name-the-schema-keyword)
- * keyword, e.g. `https://json-schema.org/draft/2020-12/schema`
- * @property type The JSON schema type (e.g., "object", "array", "string", etc.).
- * @property properties A map of property definitions.
- * @property required List of required property names.
- * @property additionalProperties Whether to allow additional properties in the object.
- * @property description Optional description of the schema.
- * @property oneOf List of alternative schemas for polymorphic types.
- * @property discriminator Optional discriminator for polymorphic schemas.
- * @property defs Schema definitions for reusable types (JSON Schema $defs).
  *
  * @author Konstantin Pavlov
  */
 @Serializable
 @Suppress("LongParameterList")
+@JsonIgnoreUnknownKeys
 public data class JsonSchema(
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     @SerialName(SCHEMA)
     public val schema: String? = null,
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     @SerialName(ID)
-    public val id: String? = null,
+    public override val id: String? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName(ANCHOR)
+    public override val anchor: String? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName(DYNAMIC_ANCHOR)
+    public override val dynamicAnchor: String? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName(REF)
+    public override val ref: String? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName(DYNAMIC_REF)
+    public override val dynamicRef: String? = null,
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     @SerialName(COMMENT)
-    public val comment: String? = null,
-    public val description: String? = null,
+    public override val comment: String? = null,
+    public override val title: String? = null,
+    public override val description: String? = null,
     @Serializable(with = StringOrListSerializer::class)
     @EncodeDefault
-    public val type: List<String> = OBJECT_TYPE,
+    public override val type: List<String> = OBJECT_TYPE,
     @Serializable(with = StringEnumSerializer::class)
     public val enum: List<String>? = null,
+    @SerialName(CONST)
+    public override val constValue: JsonElement? = null,
+    public override val default: JsonElement? = null,
     public override val properties: Map<String, PropertyDefinition> = emptyMap(),
-    public val required: List<String> = emptyList(),
-    /**
-     * Defines whether additional properties are allowed and their schema.
-     * Can be:
-     * - `null`: not specified (defaults to true in JSON Schema)
-     * - `JsonPrimitive(true)`: allow any additional properties
-     * - `JsonPrimitive(false)`: disallow additional properties
-     * - `JsonObject`: a schema defining the type of additional properties (e.g., for Maps)
-     */
-    public val additionalProperties: JsonElement? = null,
-    public val items: PropertyDefinition? = null,
-    public val oneOf: List<PropertyDefinition>? = null,
-    public val discriminator: Discriminator? = null,
+    public override val patternProperties: Map<String, PropertyDefinition>? = null,
+    public override val additionalProperties: JsonElement? = null,
+    public override val unevaluatedProperties: PropertyDefinition? = null,
+    public override val propertyNames: PropertyDefinition? = null,
     @EncodeDefault(EncodeDefault.Mode.NEVER)
-    @SerialName(DEFS) public val defs: Map<String, PropertyDefinition>? = null,
-) : PropertiesContainer
+    public override val required: List<String> = emptyList(),
+    public override val dependentRequired: Map<String, List<String>>? = null,
+    public override val dependentSchemas: Map<String, PropertyDefinition>? = null,
+    public val dependencies: Map<String, JsonElement>? = null,
+    @Serializable(with = NumberToNullableIntSerializer::class) public override val minProperties: Int? = null,
+    @Serializable(with = NumberToNullableIntSerializer::class) public override val maxProperties: Int? = null,
+    public override val items: PropertyDefinition? = null,
+    public override val prefixItems: List<PropertyDefinition>? = null,
+    public override val unevaluatedItems: PropertyDefinition? = null,
+    public override val contains: PropertyDefinition? = null,
+    @Serializable(with = NumberToNullableIntSerializer::class) public override val minContains: Int? = null,
+    @Serializable(with = NumberToNullableIntSerializer::class) public override val maxContains: Int? = null,
+    @Serializable(with = NumberToNullableIntSerializer::class) public override val minItems: Int? = null,
+    @Serializable(with = NumberToNullableIntSerializer::class) public override val maxItems: Int? = null,
+    public override val uniqueItems: Boolean? = null,
+    @Serializable(with = NumberToNullableIntSerializer::class) public val minLength: Int? = null,
+    @Serializable(with = NumberToNullableIntSerializer::class) public val maxLength: Int? = null,
+    public val pattern: String? = null,
+    public val format: String? = null,
+    public val contentEncoding: String? = null,
+    public val contentMediaType: String? = null,
+    public val contentSchema: PropertyDefinition? = null,
+    public val minimum: Double? = null,
+    public val maximum: Double? = null,
+    public val exclusiveMinimum: Double? = null,
+    public val exclusiveMaximum: Double? = null,
+    public val multipleOf: Double? = null,
+    public override val oneOf: List<PropertyDefinition>? = null,
+    public override val anyOf: List<PropertyDefinition>? = null,
+    public override val allOf: List<PropertyDefinition>? = null,
+    @SerialName(IF) public override val ifSchema: PropertyDefinition? = null,
+    @SerialName("then") public override val thenSchema: PropertyDefinition? = null,
+    @SerialName("else") public override val elseSchema: PropertyDefinition? = null,
+    public override val not: PropertyDefinition? = null,
+    public val discriminator: Discriminator? = null,
+    public override val readOnly: Boolean? = null,
+    public override val writeOnly: Boolean? = null,
+    public override val deprecated: Boolean? = null,
+    public override val examples: List<JsonElement>? = null,
+    public override val nullable: Boolean? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    @SerialName(DEFS) public override val defs: Map<String, PropertyDefinition>? = null,
+) : PropertiesContainer,
+    ArrayContainer,
+    CommonSchemaAttributes,
+    ApplicatorContainer,
+    PropertyDefinition
 
 /**
  * Represents a property definition in a JSON Schema.
@@ -247,50 +402,98 @@ public data class BooleanSchemaDefinition(
  * for properties that define specific types, such as strings, numbers, arrays, objects, and booleans.
  * Each implementation of this interface allows defining additional type-specific constraints and attributes.
  */
-public sealed interface ValuePropertyDefinition : PropertyDefinition {
+public sealed interface ValuePropertyDefinition :
+    PropertyDefinition,
+    CommonSchemaAttributes,
+    ApplicatorContainer {
     /**
      * The data type of the property.
      */
-    public val type: List<String>
-
-    /**
-     * Optional description of the property.
-     */
-    public val description: String?
+    public override val type: List<String>?
 
     /**
      * Whether the property can be null.
      */
-    public val nullable: Boolean?
+    public override val nullable: Boolean?
+
+    public override val default: JsonElement?
+
+    @SerialName(CONST)
+    public override val constValue: JsonElement?
 }
 
 /**
  * Represents a string property.
  */
 @Serializable
+@JsonIgnoreUnknownKeys
 public data class StringPropertyDefinition(
     @Serializable(with = StringOrListSerializer::class) @EncodeDefault override val type: List<String> =
         STRING_TYPE,
+    @SerialName(ID) override val id: String? = null,
+    @SerialName(ANCHOR) override val anchor: String? = null,
+    @SerialName(DYNAMIC_ANCHOR) override val dynamicAnchor: String? = null,
+    @SerialName(REF) override val ref: String? = null,
+    @SerialName(DYNAMIC_REF) override val dynamicRef: String? = null,
+    @SerialName(COMMENT) override val comment: String? = null,
+    override val title: String? = null,
     override val description: String? = null,
     override val nullable: Boolean? = null,
+    override val default: JsonElement? = null,
+    @SerialName(CONST) override val constValue: JsonElement? = null,
+    @SerialName(DEFS) override val defs: Map<String, PropertyDefinition>? = null,
+    override val readOnly: Boolean? = null,
+    override val writeOnly: Boolean? = null,
+    override val deprecated: Boolean? = null,
+    override val examples: List<JsonElement>? = null,
+    override val oneOf: List<PropertyDefinition>? = null,
+    override val anyOf: List<PropertyDefinition>? = null,
+    override val allOf: List<PropertyDefinition>? = null,
+    override val not: PropertyDefinition? = null,
+    @SerialName(IF) override val ifSchema: PropertyDefinition? = null,
+    @SerialName("then") override val thenSchema: PropertyDefinition? = null,
+    @SerialName("else") override val elseSchema: PropertyDefinition? = null,
     val format: String? = null,
+    val contentEncoding: String? = null,
+    val contentMediaType: String? = null,
+    val contentSchema: PropertyDefinition? = null,
     @Serializable(with = StringEnumSerializer::class)
     val enum: List<String>? = null,
-    val minLength: Int? = null,
-    val maxLength: Int? = null,
+    @Serializable(with = NumberToNullableIntSerializer::class) val minLength: Int? = null,
+    @Serializable(with = NumberToNullableIntSerializer::class) val maxLength: Int? = null,
     val pattern: String? = null,
-    val default: JsonElement? = null,
-    @SerialName("const") val constValue: JsonElement? = null,
 ) : ValuePropertyDefinition
 
 /**
  * Represents a numeric property (integer or number).
  */
 @Serializable
+@JsonIgnoreUnknownKeys
 public data class NumericPropertyDefinition(
     @Serializable(with = StringOrListSerializer::class) override val type: List<String>,
+    @SerialName(ID) override val id: String? = null,
+    @SerialName(ANCHOR) override val anchor: String? = null,
+    @SerialName(DYNAMIC_ANCHOR) override val dynamicAnchor: String? = null,
+    @SerialName(REF) override val ref: String? = null,
+    @SerialName(DYNAMIC_REF) override val dynamicRef: String? = null,
+    @SerialName(COMMENT) override val comment: String? = null,
+    override val title: String? = null,
     override val description: String? = null,
     override val nullable: Boolean? = null,
+    override val default: JsonElement? = null,
+    @SerialName(CONST) override val constValue: JsonElement? = null,
+    @SerialName(DEFS) override val defs: Map<String, PropertyDefinition>? = null,
+    override val readOnly: Boolean? = null,
+    override val writeOnly: Boolean? = null,
+    override val deprecated: Boolean? = null,
+    override val examples: List<JsonElement>? = null,
+    override val oneOf: List<PropertyDefinition>? = null,
+    override val anyOf: List<PropertyDefinition>? = null,
+    override val allOf: List<PropertyDefinition>? = null,
+    override val not: PropertyDefinition? = null,
+    @SerialName(IF) override val ifSchema: PropertyDefinition? = null,
+    @SerialName(THEN) override val thenSchema: PropertyDefinition? = null,
+    @SerialName(ELSE) override val elseSchema: PropertyDefinition? = null,
     @Serializable(with = NumericEnumSerializer::class)
     val enum: List<Double>? = null,
     val multipleOf: Double? = null,
@@ -298,50 +501,96 @@ public data class NumericPropertyDefinition(
     val exclusiveMinimum: Double? = null,
     val maximum: Double? = null,
     val exclusiveMaximum: Double? = null,
-    val default: JsonElement? = null,
-    @SerialName("const") val constValue: JsonElement? = null,
 ) : ValuePropertyDefinition
 
 /**
  * Represents an array property
  */
 @Serializable
+@JsonIgnoreUnknownKeys
 public data class ArrayPropertyDefinition(
     @Serializable(with = StringOrListSerializer::class) @EncodeDefault override val type: List<String> =
         ARRAY_TYPE,
+    @SerialName(ID) override val id: String? = null,
+    @SerialName(ANCHOR) override val anchor: String? = null,
+    @SerialName(DYNAMIC_ANCHOR) override val dynamicAnchor: String? = null,
+    @SerialName(REF) override val ref: String? = null,
+    @SerialName(DYNAMIC_REF) override val dynamicRef: String? = null,
+    @SerialName(COMMENT) override val comment: String? = null,
+    override val title: String? = null,
     override val description: String? = null,
     override val nullable: Boolean? = null,
+    override val default: JsonElement? = null,
+    @SerialName(CONST) override val constValue: JsonElement? = null,
+    @SerialName(DEFS) override val defs: Map<String, PropertyDefinition>? = null,
+    override val readOnly: Boolean? = null,
+    override val writeOnly: Boolean? = null,
+    override val deprecated: Boolean? = null,
+    override val examples: List<JsonElement>? = null,
+    override val oneOf: List<PropertyDefinition>? = null,
+    override val anyOf: List<PropertyDefinition>? = null,
+    override val allOf: List<PropertyDefinition>? = null,
+    override val not: PropertyDefinition? = null,
+    @SerialName(IF) override val ifSchema: PropertyDefinition? = null,
+    @SerialName("then") override val thenSchema: PropertyDefinition? = null,
+    @SerialName("else") override val elseSchema: PropertyDefinition? = null,
     @Serializable(with = ArrayEnumSerializer::class)
     val enum: List<JsonArray>? = null,
     val items: PropertyDefinition? = null,
-    val minItems: UInt? = null,
-    val maxItems: UInt? = null,
-    val default: JsonElement? = null,
+    val prefixItems: List<PropertyDefinition>? = null,
+    val unevaluatedItems: PropertyDefinition? = null,
+    val contains: PropertyDefinition? = null,
+    @Serializable(with = NumberToNullableIntSerializer::class) val minContains: Int? = null,
+    @Serializable(with = NumberToNullableIntSerializer::class) val maxContains: Int? = null,
+    @Serializable(with = NumberToNullableIntSerializer::class) val minItems: Int? = null,
+    @Serializable(with = NumberToNullableIntSerializer::class) val maxItems: Int? = null,
+    val uniqueItems: Boolean? = null,
 ) : ValuePropertyDefinition
 
 /**
  * Represents an object property
  */
 @Serializable
+@JsonIgnoreUnknownKeys
 public data class ObjectPropertyDefinition(
     @Serializable(with = StringOrListSerializer::class) @EncodeDefault override val type: List<String> =
         OBJECT_TYPE,
+    @SerialName(ID) override val id: String? = null,
+    @SerialName(ANCHOR) override val anchor: String? = null,
+    @SerialName(DYNAMIC_ANCHOR) override val dynamicAnchor: String? = null,
+    @SerialName(REF) override val ref: String? = null,
+    @SerialName(DYNAMIC_REF) override val dynamicRef: String? = null,
+    @SerialName(COMMENT) override val comment: String? = null,
+    override val title: String? = null,
     override val description: String? = null,
     override val nullable: Boolean? = null,
+    override val default: JsonElement? = null,
+    @SerialName(CONST) override val constValue: JsonElement? = null,
+    @SerialName(DEFS) override val defs: Map<String, PropertyDefinition>? = null,
+    override val readOnly: Boolean? = null,
+    override val writeOnly: Boolean? = null,
+    override val deprecated: Boolean? = null,
+    override val examples: List<JsonElement>? = null,
+    override val oneOf: List<PropertyDefinition>? = null,
+    override val anyOf: List<PropertyDefinition>? = null,
+    override val allOf: List<PropertyDefinition>? = null,
+    override val not: PropertyDefinition? = null,
+    @SerialName(IF) override val ifSchema: PropertyDefinition? = null,
+    @SerialName("then") override val thenSchema: PropertyDefinition? = null,
+    @SerialName("else") override val elseSchema: PropertyDefinition? = null,
     @Serializable(with = ObjectEnumSerializer::class)
     val enum: List<JsonObject>? = null,
     override val properties: Map<String, PropertyDefinition>? = null,
-    val required: List<String>? = null,
-    /**
-     * Defines whether additional properties are allowed and their schema.
-     * Can be:
-     * - `null`: not specified (defaults to true in JSON Schema)
-     * - `JsonPrimitive(true)`: allow any additional properties
-     * - `JsonPrimitive(false)`: disallow additional properties
-     * - `JsonObject`: a schema defining the type of additional properties (e.g., for Maps)
-     */
-    @SerialName("additionalProperties") val additionalProperties: JsonElement? = null,
-    val default: JsonElement? = null,
+    override val patternProperties: Map<String, PropertyDefinition>? = null,
+    override val unevaluatedProperties: PropertyDefinition? = null,
+    override val propertyNames: PropertyDefinition? = null,
+    override val required: List<String>? = null,
+    override val dependentRequired: Map<String, List<String>>? = null,
+    override val dependentSchemas: Map<String, PropertyDefinition>? = null,
+    val dependencies: Map<String, JsonElement>? = null,
+    @Serializable(with = NumberToNullableIntSerializer::class) override val minProperties: Int? = null,
+    @Serializable(with = NumberToNullableIntSerializer::class) override val maxProperties: Int? = null,
+    @SerialName("additionalProperties") override val additionalProperties: JsonElement? = null,
 ) : ValuePropertyDefinition,
     PropertiesContainer
 
@@ -349,15 +598,35 @@ public data class ObjectPropertyDefinition(
  * Represents a boolean property
  */
 @Serializable
+@JsonIgnoreUnknownKeys
 public data class BooleanPropertyDefinition(
     @Serializable(with = StringOrListSerializer::class) @EncodeDefault override val type: List<String> =
         BOOLEAN_TYPE,
+    @SerialName(ID) override val id: String? = null,
+    @SerialName(ANCHOR) override val anchor: String? = null,
+    @SerialName(DYNAMIC_ANCHOR) override val dynamicAnchor: String? = null,
+    @SerialName(REF) override val ref: String? = null,
+    @SerialName(DYNAMIC_REF) override val dynamicRef: String? = null,
+    @SerialName(COMMENT) override val comment: String? = null,
+    override val title: String? = null,
     override val description: String? = null,
     override val nullable: Boolean? = null,
+    override val default: JsonElement? = null,
+    @SerialName(CONST) override val constValue: JsonElement? = null,
+    @SerialName(DEFS) override val defs: Map<String, PropertyDefinition>? = null,
+    override val readOnly: Boolean? = null,
+    override val writeOnly: Boolean? = null,
+    override val deprecated: Boolean? = null,
+    override val examples: List<JsonElement>? = null,
+    override val oneOf: List<PropertyDefinition>? = null,
+    override val anyOf: List<PropertyDefinition>? = null,
+    override val allOf: List<PropertyDefinition>? = null,
+    override val not: PropertyDefinition? = null,
+    @SerialName(IF) override val ifSchema: PropertyDefinition? = null,
+    @SerialName("then") override val thenSchema: PropertyDefinition? = null,
+    @SerialName("else") override val elseSchema: PropertyDefinition? = null,
     @Serializable(with = BooleanEnumSerializer::class)
     val enum: List<Boolean>? = null,
-    val default: JsonElement? = null,
-    @SerialName("const") val constValue: JsonElement? = null,
 ) : ValuePropertyDefinition
 
 /**
@@ -371,24 +640,145 @@ public data class BooleanPropertyDefinition(
  * This allows maximum flexibility while still supporting validation keywords like enum.
  */
 @Serializable
+@JsonIgnoreUnknownKeys
 public data class GenericPropertyDefinition(
     @Serializable(with = StringOrListSerializer::class)
-    val type: List<String>? = null,
-    val description: String? = null,
-    val nullable: Boolean? = null,
+    override val type: List<String>? = null,
+    @SerialName(ID) override val id: String? = null,
+    @SerialName(ANCHOR) override val anchor: String? = null,
+    @SerialName(DYNAMIC_ANCHOR) override val dynamicAnchor: String? = null,
+    @SerialName(REF) override val ref: String? = null,
+    @SerialName(DYNAMIC_REF) override val dynamicRef: String? = null,
+    @SerialName(COMMENT) override val comment: String? = null,
+    override val title: String? = null,
+    override val description: String? = null,
+    override val nullable: Boolean? = null,
     @Serializable(with = PolymorphicEnumSerializer::class)
     val enum: List<JsonElement>? = null,
-    val default: JsonElement? = null,
-    @SerialName(CONST) val constValue: JsonElement? = null,
-) : PropertyDefinition
+    override val default: JsonElement? = null,
+    @SerialName(CONST) override val constValue: JsonElement? = null,
+    @SerialName(DEFS) override val defs: Map<String, PropertyDefinition>? = null,
+    override val readOnly: Boolean? = null,
+    override val writeOnly: Boolean? = null,
+    override val deprecated: Boolean? = null,
+    override val examples: List<JsonElement>? = null,
+    override val oneOf: List<PropertyDefinition>? = null,
+    override val anyOf: List<PropertyDefinition>? = null,
+    override val allOf: List<PropertyDefinition>? = null,
+    override val not: PropertyDefinition? = null,
+    /**
+     * This keyword's value MUST be a valid JSON Schema.
+     *
+     * See [10.2.2.1. if](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-01#name-if)
+     */
+    @SerialName(IF) override val ifSchema: PropertyDefinition? = null,
+    /**
+     * This keyword's value MUST be a valid JSON Schema.
+     *
+     * See [10.2.2.2. then](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-01#name-then)
+     */
+    @SerialName("then") override val thenSchema: PropertyDefinition? = null,
+    /**
+     * This keyword's value MUST be a valid JSON Schema.
+     *
+     * See [10.2.2.3. else](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-01#name-else)
+     */
+    @SerialName("else") override val elseSchema: PropertyDefinition? = null,
+    override val properties: Map<String, PropertyDefinition>? = null,
+    override val patternProperties: Map<String, PropertyDefinition>? = null,
+    @SerialName("additionalProperties") override val additionalProperties: JsonElement? = null,
+    override val propertyNames: PropertyDefinition? = null,
+    override val required: List<String>? = null,
+    override val dependentRequired: Map<String, List<String>>? = null,
+    override val dependentSchemas: Map<String, PropertyDefinition>? = null,
+    val dependencies: Map<String, JsonElement>? = null,
+    override val unevaluatedItems: PropertyDefinition? = null,
+    override val unevaluatedProperties: PropertyDefinition? = null,
+    override val items: PropertyDefinition? = null,
+    override val prefixItems: List<PropertyDefinition>? = null,
+    override val contains: PropertyDefinition? = null,
+    @Serializable(with = NumberToNullableIntSerializer::class) override val minContains: Int? = null,
+    @Serializable(with = NumberToNullableIntSerializer::class) override val maxContains: Int? = null,
+    @Serializable(with = NumberToNullableIntSerializer::class) val minLength: Int? = null,
+    @Serializable(with = NumberToNullableIntSerializer::class) val maxLength: Int? = null,
+    val pattern: String? = null,
+    val format: String? = null,
+    /**
+     * If the instance value is a string, this property defines that the string SHOULD be interpreted
+     * as encoded binary data and decoded using the encoding named by this property.
+     *
+     * The value of this property MUST be a string.
+     *
+     * See [8.3. contentEncoding](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-01#name-contentencoding)
+     */
+    val contentEncoding: String? = null,
+    /**
+     * If the instance is a string, this property indicates the media type of the contents of the string.
+     * If [contentEncoding] is present, this property describes the decoded string.
+     *
+     * The value of this property MUST be a string, which MUST be a media type, as defined by RFC 2046
+     *
+     * See [8.4. contentMediaType](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-01#name-contentmediatype)
+     */
+    val contentMediaType: String? = null,
+    /**
+     * If the instance is a string, and if "contentMediaType" is present,
+     * this property contains a schema which describes the structure of the string.
+     *
+     * This keyword MAY be used with any media type that can be mapped into JSON Schema's data model.
+     *
+     * The value of this property MUST be a valid JSON schema.
+     * It SHOULD be ignored if "contentMediaType" is not present.
+     */
+    val contentSchema: PropertyDefinition? = null,
+    val minimum: Double? = null,
+    val maximum: Double? = null,
+    val exclusiveMinimum: Double? = null,
+    val exclusiveMaximum: Double? = null,
+    val multipleOf: Double? = null,
+    @Serializable(with = NumberToNullableIntSerializer::class) override val minItems: Int? = null,
+    @Serializable(with = NumberToNullableIntSerializer::class) override val maxItems: Int? = null,
+    override val uniqueItems: Boolean? = null,
+    @Serializable(with = NumberToNullableIntSerializer::class) override val minProperties: Int? = null,
+    @Serializable(with = NumberToNullableIntSerializer::class) override val maxProperties: Int? = null,
+) : ValuePropertyDefinition,
+    PropertiesContainer,
+    ArrayContainer
 
 /**
  * Represents a reference to another element
  */
 @Serializable
+@JsonIgnoreUnknownKeys
 public data class ReferencePropertyDefinition(
-    @SerialName(REF) val ref: String,
-) : PropertyDefinition
+    @SerialName(REF) override val ref: String? = null,
+    @SerialName(DYNAMIC_REF) override val dynamicRef: String? = null,
+    @SerialName(ID) override val id: String? = null,
+    @SerialName(ANCHOR) override val anchor: String? = null,
+    @SerialName(DYNAMIC_ANCHOR) override val dynamicAnchor: String? = null,
+    @SerialName(COMMENT) override val comment: String? = null,
+    override val title: String? = null,
+    override val description: String? = null,
+    override val nullable: Boolean? = null,
+    override val default: JsonElement? = null,
+    @SerialName(CONST) override val constValue: JsonElement? = null,
+    @Serializable(with = StringOrListSerializer::class)
+    override val type: List<String>? = null,
+    @SerialName(DEFS) override val defs: Map<String, PropertyDefinition>? = null,
+    override val readOnly: Boolean? = null,
+    override val writeOnly: Boolean? = null,
+    override val deprecated: Boolean? = null,
+    override val examples: List<JsonElement>? = null,
+    override val oneOf: List<PropertyDefinition>? = null,
+    override val anyOf: List<PropertyDefinition>? = null,
+    override val allOf: List<PropertyDefinition>? = null,
+    override val not: PropertyDefinition? = null,
+    @SerialName(IF) override val ifSchema: PropertyDefinition? = null,
+    @SerialName("then") override val thenSchema: PropertyDefinition? = null,
+    @SerialName("else") override val elseSchema: PropertyDefinition? = null,
+) : PropertyDefinition,
+    CommonSchemaAttributes,
+    ApplicatorContainer
 
 /**
  * Represents a discriminator for polymorphic schemas.
@@ -425,11 +815,58 @@ public data class Discriminator(
  *     JSON Schema oneOf</a>
  */
 @Serializable
+@JsonIgnoreUnknownKeys
 public data class OneOfPropertyDefinition(
-    val oneOf: List<PropertyDefinition>,
+    override val oneOf: List<PropertyDefinition>,
+    @SerialName(ID) override val id: String? = null,
+    @SerialName(ANCHOR) override val anchor: String? = null,
+    @SerialName(DYNAMIC_ANCHOR) override val dynamicAnchor: String? = null,
+    @SerialName(COMMENT) override val comment: String? = null,
+    override val title: String? = null,
+    override val description: String? = null,
+    override val nullable: Boolean? = null,
+    override val default: JsonElement? = null,
+    @SerialName(CONST) override val constValue: JsonElement? = null,
+    @Serializable(with = StringOrListSerializer::class)
+    override val type: List<String>? = null,
+    @SerialName(DEFS) override val defs: Map<String, PropertyDefinition>? = null,
+    override val readOnly: Boolean? = null,
+    override val writeOnly: Boolean? = null,
+    override val deprecated: Boolean? = null,
+    override val examples: List<JsonElement>? = null,
+    override val anyOf: List<PropertyDefinition>? = null,
+    override val allOf: List<PropertyDefinition>? = null,
+    override val not: PropertyDefinition? = null,
+    @SerialName(IF) override val ifSchema: PropertyDefinition? = null,
+    @SerialName("then") override val thenSchema: PropertyDefinition? = null,
+    @SerialName("else") override val elseSchema: PropertyDefinition? = null,
     val discriminator: Discriminator? = null,
-    val description: String? = null,
-) : PropertyDefinition
+    override val properties: Map<String, PropertyDefinition>? = null,
+    override val patternProperties: Map<String, PropertyDefinition>? = null,
+    override val additionalProperties: JsonElement? = null,
+    override val unevaluatedProperties: PropertyDefinition? = null,
+    override val propertyNames: PropertyDefinition? = null,
+    override val required: List<String>? = null,
+    override val dependentRequired: Map<String, List<String>>? = null,
+    override val dependentSchemas: Map<String, PropertyDefinition>? = null,
+    override val minProperties: Int? = null,
+    override val maxProperties: Int? = null,
+    override val items: PropertyDefinition? = null,
+    override val prefixItems: List<PropertyDefinition>? = null,
+    override val unevaluatedItems: PropertyDefinition? = null,
+    override val contains: PropertyDefinition? = null,
+    override val minContains: Int? = null,
+    override val maxContains: Int? = null,
+    override val minItems: Int? = null,
+    override val maxItems: Int? = null,
+    override val uniqueItems: Boolean? = null,
+    @SerialName(REF) override val ref: String? = null,
+    @SerialName(DYNAMIC_REF) override val dynamicRef: String? = null,
+) : PropertyDefinition,
+    CommonSchemaAttributes,
+    ApplicatorContainer,
+    PropertiesContainer,
+    ArrayContainer
 
 /**
  * Represents an anyOf schema composition.
@@ -445,10 +882,57 @@ public data class OneOfPropertyDefinition(
  *     JSON Schema anyOf</a>
  */
 @Serializable
+@JsonIgnoreUnknownKeys
 public data class AnyOfPropertyDefinition(
-    val anyOf: List<PropertyDefinition>,
-    val description: String? = null,
-) : PropertyDefinition
+    override val anyOf: List<PropertyDefinition>,
+    @SerialName(ID) override val id: String? = null,
+    @SerialName(ANCHOR) override val anchor: String? = null,
+    @SerialName(DYNAMIC_ANCHOR) override val dynamicAnchor: String? = null,
+    @SerialName(COMMENT) override val comment: String? = null,
+    override val title: String? = null,
+    override val description: String? = null,
+    override val nullable: Boolean? = null,
+    override val default: JsonElement? = null,
+    @SerialName(CONST) override val constValue: JsonElement? = null,
+    @Serializable(with = StringOrListSerializer::class)
+    override val type: List<String>? = null,
+    @SerialName(DEFS) override val defs: Map<String, PropertyDefinition>? = null,
+    override val readOnly: Boolean? = null,
+    override val writeOnly: Boolean? = null,
+    override val deprecated: Boolean? = null,
+    override val examples: List<JsonElement>? = null,
+    override val oneOf: List<PropertyDefinition>? = null,
+    override val allOf: List<PropertyDefinition>? = null,
+    override val not: PropertyDefinition? = null,
+    @SerialName(IF) override val ifSchema: PropertyDefinition? = null,
+    @SerialName("then") override val thenSchema: PropertyDefinition? = null,
+    @SerialName("else") override val elseSchema: PropertyDefinition? = null,
+    override val properties: Map<String, PropertyDefinition>? = null,
+    override val patternProperties: Map<String, PropertyDefinition>? = null,
+    override val additionalProperties: JsonElement? = null,
+    override val unevaluatedProperties: PropertyDefinition? = null,
+    override val propertyNames: PropertyDefinition? = null,
+    override val required: List<String>? = null,
+    override val dependentRequired: Map<String, List<String>>? = null,
+    override val dependentSchemas: Map<String, PropertyDefinition>? = null,
+    override val minProperties: Int? = null,
+    override val maxProperties: Int? = null,
+    override val items: PropertyDefinition? = null,
+    override val prefixItems: List<PropertyDefinition>? = null,
+    override val unevaluatedItems: PropertyDefinition? = null,
+    override val contains: PropertyDefinition? = null,
+    override val minContains: Int? = null,
+    override val maxContains: Int? = null,
+    override val minItems: Int? = null,
+    override val maxItems: Int? = null,
+    override val uniqueItems: Boolean? = null,
+    @SerialName(REF) override val ref: String? = null,
+    @SerialName(DYNAMIC_REF) override val dynamicRef: String? = null,
+) : PropertyDefinition,
+    CommonSchemaAttributes,
+    ApplicatorContainer,
+    PropertiesContainer,
+    ArrayContainer
 
 /**
  * Represents an allOf schema composition.
@@ -464,7 +948,76 @@ public data class AnyOfPropertyDefinition(
  *     JSON Schema allOf</a>
  */
 @Serializable
+@JsonIgnoreUnknownKeys
 public data class AllOfPropertyDefinition(
-    val allOf: List<PropertyDefinition>,
-    val description: String? = null,
-) : PropertyDefinition
+    override val allOf: List<PropertyDefinition>,
+    @SerialName(ID) override val id: String? = null,
+    @SerialName(ANCHOR) override val anchor: String? = null,
+    @SerialName(DYNAMIC_ANCHOR) override val dynamicAnchor: String? = null,
+    @SerialName(COMMENT) override val comment: String? = null,
+    override val title: String? = null,
+    override val description: String? = null,
+    override val nullable: Boolean? = null,
+    override val default: JsonElement? = null,
+    @SerialName(CONST) override val constValue: JsonElement? = null,
+    @Serializable(with = StringOrListSerializer::class)
+    override val type: List<String>? = null,
+    @SerialName(DEFS) override val defs: Map<String, PropertyDefinition>? = null,
+    override val readOnly: Boolean? = null,
+    override val writeOnly: Boolean? = null,
+    override val deprecated: Boolean? = null,
+    override val examples: List<JsonElement>? = null,
+    override val oneOf: List<PropertyDefinition>? = null,
+    override val anyOf: List<PropertyDefinition>? = null,
+    override val not: PropertyDefinition? = null,
+    @SerialName(IF) override val ifSchema: PropertyDefinition? = null,
+    @SerialName("then") override val thenSchema: PropertyDefinition? = null,
+    @SerialName("else") override val elseSchema: PropertyDefinition? = null,
+    override val properties: Map<String, PropertyDefinition>? = null,
+    override val patternProperties: Map<String, PropertyDefinition>? = null,
+    override val additionalProperties: JsonElement? = null,
+    override val unevaluatedProperties: PropertyDefinition? = null,
+    override val propertyNames: PropertyDefinition? = null,
+    override val required: List<String>? = null,
+    override val dependentRequired: Map<String, List<String>>? = null,
+    override val dependentSchemas: Map<String, PropertyDefinition>? = null,
+    override val minProperties: Int? = null,
+    override val maxProperties: Int? = null,
+    override val items: PropertyDefinition? = null,
+    override val prefixItems: List<PropertyDefinition>? = null,
+    override val unevaluatedItems: PropertyDefinition? = null,
+    override val contains: PropertyDefinition? = null,
+    override val minContains: Int? = null,
+    override val maxContains: Int? = null,
+    override val minItems: Int? = null,
+    override val maxItems: Int? = null,
+    override val uniqueItems: Boolean? = null,
+    @SerialName(REF) override val ref: String? = null,
+    @SerialName(DYNAMIC_REF) override val dynamicRef: String? = null,
+) : PropertyDefinition,
+    CommonSchemaAttributes,
+    ApplicatorContainer,
+    PropertiesContainer,
+    ArrayContainer
+
+internal object NumberToNullableIntSerializer : KSerializer<Int?> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("FlexibleInt", PrimitiveKind.INT)
+
+    override fun deserialize(decoder: Decoder): Int? {
+        val element = (decoder as? JsonDecoder)?.decodeJsonElement()
+        return if (element == null || element is JsonNull) {
+            null
+        } else {
+            element.jsonPrimitive.content
+                .toDouble()
+                .toInt()
+        }
+    }
+
+    override fun serialize(
+        encoder: Encoder,
+        value: Int?,
+    ) {
+        if (value == null) encoder.encodeNull() else encoder.encodeInt(value)
+    }
+}

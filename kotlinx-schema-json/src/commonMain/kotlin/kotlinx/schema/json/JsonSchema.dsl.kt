@@ -1782,8 +1782,8 @@ public class ArrayPropertyBuilder internal constructor() {
             nullable = nullable,
             enum = _enum,
             items = itemsDefinition,
-            minItems = minItems?.toUInt(),
-            maxItems = maxItems?.toUInt(),
+            minItems = minItems,
+            maxItems = maxItems,
             default = _default,
         )
 }

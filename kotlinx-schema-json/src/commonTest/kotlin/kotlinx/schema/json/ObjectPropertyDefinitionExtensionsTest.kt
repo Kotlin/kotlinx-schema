@@ -59,7 +59,7 @@ class ObjectPropertyDefinitionExtensionsTest {
             }
             objectProperty("nestedObj").shouldNotBeNull()
             arrayProperty("arr") shouldNotBeNull {
-                minItems shouldBe 1u
+                minItems shouldBe 1
             }
             referenceProperty("ref") shouldNotBeNull {
                 ref shouldBe "#/defs/Other"
@@ -115,7 +115,7 @@ class ObjectPropertyDefinitionExtensionsTest {
         schema.booleanProperty("bool").shouldNotBeNull()
         schema.objectProperty("obj").shouldNotBeNull()
         schema.arrayProperty("arr") shouldNotBeNull {
-            minItems shouldBe 1u
+            minItems shouldBe 1
         }
         schema.referenceProperty("ref") shouldNotBeNull {
             ref shouldBe "#/defs/Other"

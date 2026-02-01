@@ -152,8 +152,8 @@ internal class JsonSchemaDslTest {
 
         val deserialized = serializeAndDeserialize(schema, expectedJson, json)
         val tagsProperty = deserialized.properties["tags"] as ArrayPropertyDefinition
-        tagsProperty.minItems shouldBe 1u
-        tagsProperty.maxItems shouldBe 10u
+        tagsProperty.minItems shouldBe 1
+        tagsProperty.maxItems shouldBe 10
     }
 
     @Test

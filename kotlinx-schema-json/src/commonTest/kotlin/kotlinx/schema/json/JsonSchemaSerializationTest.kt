@@ -291,8 +291,8 @@ internal class JsonSchemaSerializationTest {
                 nullable shouldBe null
                 description shouldBe "List of tags"
                 (this as? StringPropertyDefinition)?.enum.shouldBeNull()
-                minItems shouldBe 1u
-                maxItems shouldBe 10u
+                minItems shouldBe 1
+                maxItems shouldBe 10
             }
         }
 
