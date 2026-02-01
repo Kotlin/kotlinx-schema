@@ -1,6 +1,13 @@
-package kotlinx.schema.json
+package kotlinx.schema.json.dsl
 
 import io.kotest.matchers.shouldBe
+import kotlinx.schema.json.ArrayPropertyDefinition
+import kotlinx.schema.json.BooleanSchemaDefinition
+import kotlinx.schema.json.NumericPropertyDefinition
+import kotlinx.schema.json.ObjectPropertyDefinition
+import kotlinx.schema.json.ReferencePropertyDefinition
+import kotlinx.schema.json.jsonSchema
+import kotlinx.schema.json.serializeAndDeserialize
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 
