@@ -5,11 +5,9 @@ import kotlinx.schema.Description
 import kotlinx.schema.generator.core.SchemaGeneratorService
 import kotlinx.schema.json.JsonSchema
 import kotlinx.schema.json.encodeToString
-import kotlinx.serialization.InternalSerializationApi
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.serializer
 import kotlin.test.Test
 
 class SerializationClassJsonSchemaGeneratorTest {
@@ -38,17 +36,16 @@ class SerializationClassJsonSchemaGeneratorTest {
         """
 
     val generator =
-        SchemaGeneratorService.getGenerator(KSerializer::class, JsonSchema::class)
+        SchemaGeneratorService.getGenerator(SerialDescriptor::class, JsonSchema::class)
             ?: error(
                 "SerializationClassJsonSchemaGenerator must be registered",
             )
 
-    @OptIn(InternalSerializationApi::class)
     @Test
-    fun generateJsonSchema() {
+    fun `Should generate JsonSchema from SerialDescriptor`() {
         val schema =
             generator.generateSchema(
-                Person::class.serializer(),
+                Person.serializer().descriptor,
             )
 
         val actualSchemaJson = schema.encodeToString(Json)

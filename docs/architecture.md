@@ -9,7 +9,7 @@ keeping behavior consistent across JVM, JS, Native, and Wasm.
 
 **Architecture goals:**
 
-- **Unified IR**: Separate schema sources (KSP, reflection, or [KSerializer][kser]) from output targets
+- **Unified IR**: Separate schema sources (KSP, reflection, or [SerialDescriptor][kser-descriptor]) from output targets
 - **Multiplatform (KSP)**: Support schema generation across all Kotlin targets.
 - **Extensibility**: Enable third-party annotations, custom introspectors and transformations.
 - **Zero runtime overhead on KSP**: Compile-time generation for performance-sensitive paths.
@@ -23,7 +23,7 @@ The library implements the following pipeline:
 graph LR
     subgraph Sources["📦 SOURCES"]
         Kotlin["Kotlin Classes<br/>@Schema annotated"]
-        KSerializer["KSerializer"]
+        KSerializer["SerialDescriptor"]
         Java["Java Classes<br/>Third-party libs"]
         Functions["Kotlin Functions"]
     end
@@ -87,7 +87,7 @@ graph LR
 
 **The Transformation Story:**
 
-1. **Sources** — Kotlin classes, Java classes, Kotlin functions, or [KSerializer][kser] serve as input
+1. **Sources** — Kotlin classes, Java classes, Kotlin functions, or [SerialDescriptor][kser-descriptor] serve as input
 2. **Introspectors** — Extract type information at compile-time (KSP) or runtime (Reflection, Serialization)
 3. **TypeGraph** — Unified internal representation containing all type metadata
 4. **Transformers** — Convert TypeGraph to JSON Schema or Function Calling format
@@ -131,7 +131,7 @@ Top-level modules you might interact with:
 - **kotlinx-schema-json** — type-safe models and DSL for building JSON Schema definitions programmatically
 - **kotlinx-schema-generator-core** — internal representation (IR) for schema descriptions, introspection utils,
   generator interfaces
-- **kotlinx-schema-generator-json** — JSON Schema transformer from the IR
+- **kotlinx-schema-generator-json** — JSON Schema transformer from the IR, kotlinx-serialization schema generator
 - **kotlinx-schema-ksp** — KSP processor that scans your code and generates the extension properties:
     - `KClass<T>.jsonSchema: JsonObject`
     - `KClass<T>.jsonSchemaString: String`
@@ -175,5 +175,5 @@ sequenceDiagram
 4. _TypeGraphTransformer_ converts a _TypeGraph_ to a target representation (e.g., JSON Schema)
    with respect to respecting _Config_ object and returns it to SchemaGenerator
 
-[kser]: https://kotlinlang.org/api/kotlinx.serialization/kotlinx-serialization-core/kotlinx.serialization/-k-serializer/
+[kser-descriptor]: https://kotlinlang.org/api/kotlinx.serialization/kotlinx-serialization-core/kotlinx.serialization.descriptors/-serial-descriptor/
 

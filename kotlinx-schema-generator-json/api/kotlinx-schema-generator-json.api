@@ -125,6 +125,6 @@ public final class kotlinx/schema/generator/json/serialization/SerializationClas
 	public fun <init> (Lkotlinx/serialization/json/Json;)V
 	public synthetic fun <init> (Lkotlinx/serialization/json/Json;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public synthetic fun introspect (Ljava/lang/Object;)Lkotlinx/schema/generator/core/ir/TypeGraph;
-	public fun introspect (Lkotlinx/serialization/KSerializer;)Lkotlinx/schema/generator/core/ir/TypeGraph;
+	public fun introspect (Lkotlinx/serialization/descriptors/SerialDescriptor;)Lkotlinx/schema/generator/core/ir/TypeGraph;
 }
 

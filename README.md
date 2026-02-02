@@ -30,6 +30,7 @@ Quick Links:
 **Dual Generation Modes:**
 - **Compile-time (KSP)**: Zero runtime overhead, multiplatform, for your annotated classes
 - **Runtime (Reflection)**: JVM-only, for any class including third-party libraries
+- **Runtime (SerialDescriptor)**: Kotlin serializable classes
 
 **LLM Integration:**
 - First-class support for OpenAI/Anthropic function calling format

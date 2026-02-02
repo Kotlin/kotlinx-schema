@@ -4,25 +4,25 @@ import kotlinx.schema.generator.core.AbstractSchemaGenerator
 import kotlinx.schema.generator.json.JsonSchemaConfig
 import kotlinx.schema.generator.json.TypeGraphToJsonSchemaTransformer
 import kotlinx.schema.json.JsonSchema
-import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.json.Json
 import kotlin.reflect.KClass
 
 /**
- * A generator for producing JSON Schema representations of Kotlin classes using reflection.
+ * A generator for producing JSON Schema representations from kotlinx.serialization descriptors.
  *
- * This class utilizes reflection-based introspection to analyze Kotlin `KClass` definitions
+ * This class utilizes kotlinx.serialization introspection to analyze [SerialDescriptor] instances
  * and generate JSON Schema objects. It is built on top of the `AbstractSchemaGenerator` and works
  * with a configurable `JsonSchemaConfig` to define schema generation behavior.
  *
- * @constructor Creates an instance of `ReflectionClassJsonSchemaGenerator`.
+ * @constructor Creates an instance of `SerializationClassJsonSchemaGenerator`.
  * @param config Configuration for generating JSON Schemas, such as formatting details
  * and handling of optional nullable properties. Defaults to [JsonSchemaConfig.Default].
  */
 public class SerializationClassJsonSchemaGenerator(
     private val json: Json,
     config: JsonSchemaConfig,
-) : AbstractSchemaGenerator<KSerializer<*>, JsonSchema>(
+) : AbstractSchemaGenerator<SerialDescriptor, JsonSchema>(
         introspector = SerializationClassSchemaIntrospector(json),
         typeGraphTransformer =
             TypeGraphToJsonSchemaTransformer(
@@ -39,9 +39,9 @@ public class SerializationClassJsonSchemaGenerator(
         config = JsonSchemaConfig.Default,
     )
 
-    override fun getRootName(target: KSerializer<*>): String = target.descriptor.serialName
+    override fun getRootName(target: SerialDescriptor): String = target.serialName
 
-    override fun targetType(): KClass<KSerializer<*>> = KSerializer::class
+    override fun targetType(): KClass<SerialDescriptor> = SerialDescriptor::class
 
     override fun schemaType(): KClass<JsonSchema> = JsonSchema::class
 
@@ -52,9 +52,9 @@ public class SerializationClassJsonSchemaGenerator(
          * A default instance of the [SerializationClassJsonSchemaGenerator] class, preconfigured
          * with the default settings defined in [JsonSchemaConfig.Default].
          *
-         * This instance can be used to generate JSON schema representations of Kotlin
-         * objects using reflection-based introspection. It simplifies the creation
-         * of schemas without requiring explicit configuration.
+         * This instance can be used to generate JSON schema representations from
+         * kotlinx.serialization descriptors. It simplifies the creation of schemas
+         * without requiring explicit configuration.
          */
         public val Default: SerializationClassJsonSchemaGenerator =
             SerializationClassJsonSchemaGenerator(

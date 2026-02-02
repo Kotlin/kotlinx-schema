@@ -63,8 +63,8 @@ class SerializationIntrospectorTest {
     @Test
     @Suppress("LongMethod")
     fun `introspects object with primitives list map nullability and defaults`() {
-        val kser = serializer<User>()
-        val graph = introspector.introspect(kser)
+        val descriptor = serializer<User>().descriptor
+        val graph = introspector.introspect(descriptor)
 
         // Root must be a ref to the User id (serial name)
         val rootRef = graph.root.shouldBeInstanceOf<TypeRef.Ref>()
@@ -145,7 +145,7 @@ class SerializationIntrospectorTest {
 
     @Test
     fun `introspects enum and adds node with entries and description`() {
-        val graph = introspector.introspect(WithEnum.serializer())
+        val graph = introspector.introspect(WithEnum.serializer().descriptor)
 
         val rootRef = graph.root.shouldBeInstanceOf<TypeRef.Ref>()
         val withEnumNode = graph.nodes[rootRef.id].shouldNotBeNull().shouldBeInstanceOf<ObjectNode>()
@@ -158,7 +158,7 @@ class SerializationIntrospectorTest {
 
     @Test
     fun `introspects sealed polymorphic adds polymorphic node and subtype objects`() {
-        val graph = introspector.introspect(Shape.serializer())
+        val graph = introspector.introspect(Shape.serializer().descriptor)
 
         val rootRef = graph.root.shouldBeInstanceOf<TypeRef.Ref>()
         val polyNode = graph.nodes[rootRef.id].shouldNotBeNull().shouldBeInstanceOf<PolymorphicNode>()
