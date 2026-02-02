@@ -52,7 +52,59 @@ import kotlinx.serialization.json.jsonPrimitive
  * - A schema: Additional properties must match this schema ([AdditionalPropertiesSchema])
  */
 @Serializable(with = AdditionalPropertiesSerializer::class)
-public sealed interface AdditionalPropertiesConstraint
+public sealed interface AdditionalPropertiesConstraint {
+    public companion object {
+        /**
+         * Creates a constraint that allows any additional properties.
+         *
+         * Equivalent to `"additionalProperties": true` in JSON Schema.
+         *
+         * ## Example
+         * ```kotlin
+         * val schema = JsonSchema(
+         *     properties = mapOf("name" to StringPropertyDefinition()),
+         *     additionalProperties = AdditionalPropertiesConstraint.allow()
+         * )
+         * ```
+         */
+        public fun allow(): AdditionalPropertiesConstraint = AllowAdditionalProperties
+
+        /**
+         * Creates a constraint that disallows any additional properties.
+         *
+         * Equivalent to `"additionalProperties": false` in JSON Schema.
+         *
+         * ## Example
+         * ```kotlin
+         * val schema = JsonSchema(
+         *     properties = mapOf("name" to StringPropertyDefinition()),
+         *     additionalProperties = AdditionalPropertiesConstraint.deny()
+         * )
+         * ```
+         */
+        public fun deny(): AdditionalPropertiesConstraint = DenyAdditionalProperties
+
+        /**
+         * Creates a constraint that requires additional properties to match the specified schema.
+         *
+         * Equivalent to `"additionalProperties": { <schema> }` in JSON Schema.
+         *
+         * ## Example
+         * ```kotlin
+         * val schema = JsonSchema(
+         *     properties = mapOf("name" to StringPropertyDefinition()),
+         *     additionalProperties = AdditionalPropertiesConstraint.schema(
+         *         NumericPropertyDefinition(minimum = 0.0)
+         *     )
+         * )
+         * ```
+         *
+         * @param schema The schema that additional properties must match
+         */
+        public fun schema(schema: PropertyDefinition): AdditionalPropertiesConstraint =
+            AdditionalPropertiesSchema(schema)
+    }
+}
 
 /**
  * Allows any additional properties beyond those explicitly defined.

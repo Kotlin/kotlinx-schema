@@ -84,7 +84,7 @@ class AdditionalPropertiesConstraintTest {
 
     @Test
     fun `round-trip serialization - allow`() {
-        val original: AdditionalPropertiesConstraint = AllowAdditionalProperties
+        val original = AdditionalPropertiesConstraint.allow()
 
         val encoded = json.encodeToJsonElement(AdditionalPropertiesSerializer, original)
         val decoded = json.decodeFromJsonElement(AdditionalPropertiesSerializer, encoded)
@@ -94,7 +94,7 @@ class AdditionalPropertiesConstraintTest {
 
     @Test
     fun `round-trip serialization - deny`() {
-        val original: AdditionalPropertiesConstraint = DenyAdditionalProperties
+        val original = AdditionalPropertiesConstraint.deny()
 
         val encoded = json.encodeToJsonElement(AdditionalPropertiesSerializer, original)
         val decoded = json.decodeFromJsonElement(AdditionalPropertiesSerializer, encoded)
@@ -104,8 +104,8 @@ class AdditionalPropertiesConstraintTest {
 
     @Test
     fun `round-trip serialization - schema`() {
-        val original: AdditionalPropertiesConstraint =
-            AdditionalPropertiesSchema(
+        val original =
+            AdditionalPropertiesConstraint.schema(
                 StringPropertyDefinition(
                     minLength = 1,
                     maxLength = 100,
@@ -159,7 +159,7 @@ class AdditionalPropertiesConstraintTest {
 
     @Test
     fun `ObjectPropertyDefinition with additionalProperties schema`() {
-        // Create a schema with additionalProperties set to an object schema
+        // Create a schema with additionalProperties set to an object schema using companion function
         val schemaWithAdditionalProps =
             JsonSchema(
                 properties =
@@ -167,7 +167,7 @@ class AdditionalPropertiesConstraintTest {
                         "name" to StringPropertyDefinition(),
                     ),
                 additionalProperties =
-                    AdditionalPropertiesSchema(
+                    AdditionalPropertiesConstraint.schema(
                         ObjectPropertyDefinition(
                             properties =
                                 mapOf(
