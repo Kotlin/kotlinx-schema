@@ -14,6 +14,10 @@ Type-safe Kotlin models and DSL for [JSON Schema Draft 2020-12](https://json-sch
 - ✅ **Kotlin Multiplatform** support (JVM, JS, Native, Wasm)
 - ✅ **kotlinx-serialization** integration for JSON serialization/deserialization
 
+## Limitations
+
+- Unknown elements might be present in the JSON Schema according to the [specification requirement](https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-01#section-4.3.1).
+  JsonSchema model does not capture such elements: they are ignored because of the `@JsonIgnoreUnknownKeys` annotation.
 
 ## Quick Start
 
