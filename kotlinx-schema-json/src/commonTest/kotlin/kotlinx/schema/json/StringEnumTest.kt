@@ -23,15 +23,18 @@ class StringEnumTest {
             """
             {
                 "type": "string",
-                "enum": ["active", "inactive", "pending"]
+                "enum": [
+                  "active",
+                  "inactive",
+                  "pending"
+                ]
             }
             """.trimIndent()
 
-        decodeAndValidate<StringPropertyDefinition>(json, jsonString) {
-            enum.shouldNotBeNull {
-                this shouldHaveSize 3
-                this[0] shouldBe "active"
-            }
+        val decoded = deserializeAndSerialize<StringPropertyDefinition>(jsonString, json)
+        decoded.enum.shouldNotBeNull {
+            this shouldHaveSize 3
+            this[0] shouldBe "active"
         }
     }
 
@@ -42,13 +45,16 @@ class StringEnumTest {
             """
             {
                 "type": "string",
-                "enum": [1, 2, 3]
+                "enum": [
+                  1,
+                  2,
+                  3
+                ]
             }
             """.trimIndent()
 
-        decodeAndValidate<StringPropertyDefinition>(json, jsonString) {
-            enum.shouldContainExactly("1", "2", "3")
-        }
+        val decoded = json.decodeFromString<StringPropertyDefinition>(jsonString)
+        decoded.enum.shouldContainExactly("1", "2", "3")
     }
 
     @Test
@@ -59,16 +65,18 @@ class StringEnumTest {
             {
                 "type": "string",
                 "enum": [
-                    {"$anchor": "my_anchor", "type": "null"}
+                  {
+                    "$anchor": "my_anchor",
+                    "type": "null"
+                  }
                 ]
             }
             """.trimIndent()
 
-        decodeAndValidate<StringPropertyDefinition>(json, jsonString) {
-            enum.shouldNotBeNull {
-                this shouldHaveSize 1
-                this[0] shouldBe $$"""{"$anchor":"my_anchor","type":"null"}"""
-            }
+        val decoded = json.decodeFromString<StringPropertyDefinition>(jsonString)
+        decoded.enum.shouldNotBeNull {
+            this shouldHaveSize 1
+            this[0] shouldBe $$"""{"$anchor":"my_anchor","type":"null"}"""
         }
     }
 

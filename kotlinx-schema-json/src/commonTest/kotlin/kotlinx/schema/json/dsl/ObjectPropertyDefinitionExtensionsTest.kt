@@ -1,7 +1,11 @@
-package kotlinx.schema.json
+package kotlinx.schema.json.dsl
 
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import kotlinx.schema.json.ObjectPropertyDefinition
+import kotlinx.schema.json.integer
+import kotlinx.schema.json.jsonSchema
+import kotlinx.schema.json.string
 import kotlin.test.Test
 import kotlin.test.assertNull
 

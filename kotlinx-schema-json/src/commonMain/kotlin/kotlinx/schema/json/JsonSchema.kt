@@ -19,22 +19,24 @@ import kotlinx.schema.json.JsonSchemaConstants.Types.ARRAY_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.BOOLEAN_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.OBJECT_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.STRING_TYPE
+import kotlinx.schema.json.serializers.AdditionalPropertiesSerializer
+import kotlinx.schema.json.serializers.ArrayEnumSerializer
+import kotlinx.schema.json.serializers.BooleanEnumSerializer
+import kotlinx.schema.json.serializers.NumberToNullableIntSerializer
+import kotlinx.schema.json.serializers.NumericEnumSerializer
+import kotlinx.schema.json.serializers.ObjectEnumSerializer
+import kotlinx.schema.json.serializers.PolymorphicEnumSerializer
+import kotlinx.schema.json.serializers.PropertyDefinitionSerializer
+import kotlinx.schema.json.serializers.StringEnumSerializer
+import kotlinx.schema.json.serializers.StringOrListSerializer
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonIgnoreUnknownKeys
-import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
@@ -130,64 +132,6 @@ public data object DenyAdditionalProperties : AdditionalPropertiesConstraint
 public data class AdditionalPropertiesSchema(
     val schema: PropertyDefinition,
 ) : AdditionalPropertiesConstraint
-
-/**
- * Custom serializer for [AdditionalPropertiesConstraint].
- *
- * Handles the three forms of additionalProperties in JSON Schema:
- * - Boolean `true` → [AllowAdditionalProperties]
- * - Boolean `false` → [DenyAdditionalProperties]
- * - Schema object → [AdditionalPropertiesSchema]
- */
-internal object AdditionalPropertiesSerializer : KSerializer<AdditionalPropertiesConstraint> {
-    override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("AdditionalPropertiesConstraint", PrimitiveKind.STRING)
-
-    override fun deserialize(decoder: Decoder): AdditionalPropertiesConstraint {
-        require(decoder is JsonDecoder) { "AdditionalPropertiesSerializer can only be used with JSON" }
-
-        val element = decoder.decodeJsonElement()
-
-        // Handle boolean values
-        if (element is kotlinx.serialization.json.JsonPrimitive && element.isString.not()) {
-            return when (element.booleanOrNull) {
-                true -> AllowAdditionalProperties
-                false -> DenyAdditionalProperties
-                null -> error("Expected boolean or schema for additionalProperties, got: $element")
-            }
-        }
-
-        // Handle schema object
-        val schema = decoder.json.decodeFromJsonElement(PropertyDefinitionSerializer(), element)
-        return AdditionalPropertiesSchema(schema)
-    }
-
-    override fun serialize(
-        encoder: Encoder,
-        value: AdditionalPropertiesConstraint,
-    ) {
-        val jsonEncoder =
-            encoder as? kotlinx.serialization.json.JsonEncoder
-                ?: error("AdditionalPropertiesSerializer can only be used with JSON")
-
-        when (value) {
-            AllowAdditionalProperties -> {
-                jsonEncoder.encodeBoolean(true)
-            }
-
-            DenyAdditionalProperties -> {
-                jsonEncoder.encodeBoolean(false)
-            }
-
-            is AdditionalPropertiesSchema -> {
-                jsonEncoder.encodeSerializableValue(
-                    PropertyDefinitionSerializer(),
-                    value.schema,
-                )
-            }
-        }
-    }
-}
 
 /**
  * Encodes this [JsonSchema] to a [JsonObject].
@@ -1344,25 +1288,3 @@ public data class AllOfPropertyDefinition(
     CommonSchemaAttributes,
     ApplicatorContainer,
     GeneralConstraints
-
-internal object NumberToNullableIntSerializer : KSerializer<Int?> {
-    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("FlexibleInt", PrimitiveKind.INT)
-
-    override fun deserialize(decoder: Decoder): Int? {
-        val element = (decoder as? JsonDecoder)?.decodeJsonElement()
-        return if (element == null || element is JsonNull) {
-            null
-        } else {
-            element.jsonPrimitive.content
-                .toDouble()
-                .toInt()
-        }
-    }
-
-    override fun serialize(
-        encoder: Encoder,
-        value: Int?,
-    ) {
-        if (value == null) encoder.encodeNull() else encoder.encodeInt(value)
-    }
-}

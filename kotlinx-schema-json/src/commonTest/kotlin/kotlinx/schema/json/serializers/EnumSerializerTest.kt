@@ -1,7 +1,12 @@
-package kotlinx.schema.json
+package kotlinx.schema.json.serializers
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
+import kotlinx.schema.json.ArrayPropertyDefinition
+import kotlinx.schema.json.BooleanPropertyDefinition
+import kotlinx.schema.json.NumericPropertyDefinition
+import kotlinx.schema.json.ObjectPropertyDefinition
+import kotlinx.schema.json.deserializeAndSerialize
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -26,14 +31,21 @@ class EnumSerializerTest {
             {
               "type": "array",
               "enum": [
-                [1, 2, 3],
-                ["a", "b"],
+                [
+                  1,
+                  2,
+                  3
+                ],
+                [
+                  "a",
+                  "b"
+                ],
                 []
               ]
             }
             """.trimIndent()
 
-        val decoded = json.decodeFromString<ArrayPropertyDefinition>(jsonString)
+        val decoded = deserializeAndSerialize<ArrayPropertyDefinition>(jsonString, json)
 
         decoded.enum shouldBe
             listOf(
@@ -101,11 +113,14 @@ class EnumSerializerTest {
             """
             {
               "type": "boolean",
-              "enum": [true, false]
+              "enum": [
+                true,
+                false
+              ]
             }
             """.trimIndent()
 
-        val decoded = json.decodeFromString<BooleanPropertyDefinition>(jsonString)
+        val decoded = deserializeAndSerialize<BooleanPropertyDefinition>(jsonString, json)
 
         decoded.enum shouldBe listOf(true, false)
     }
@@ -117,7 +132,10 @@ class EnumSerializerTest {
             """
             {
               "type": "boolean",
-              "enum": ["true", "false"]
+              "enum": [
+                "true",
+                "false"
+              ]
             }
             """.trimIndent()
 
@@ -133,7 +151,12 @@ class EnumSerializerTest {
             """
             {
               "type": "boolean",
-              "enum": [1, 0, 42, 0.0]
+              "enum": [
+                1,
+                0,
+                42,
+                0.0
+              ]
             }
             """.trimIndent()
 
@@ -210,11 +233,17 @@ class EnumSerializerTest {
             """
             {
               "type": "integer",
-              "enum": [1, 2, 3, 5, 8]
+              "enum": [
+                1,
+                2,
+                3,
+                5,
+                8
+              ]
             }
             """.trimIndent()
 
-        val decoded = json.decodeFromString<NumericPropertyDefinition>(jsonString)
+        val decoded = deserializeAndSerialize<NumericPropertyDefinition>(jsonString, json)
 
         decoded.enum shouldBe listOf(1.0, 2.0, 3.0, 5.0, 8.0)
     }
@@ -226,11 +255,16 @@ class EnumSerializerTest {
             """
             {
               "type": "number",
-              "enum": [1.5, 2.7, 3.14, -0.5]
+              "enum": [
+                1.5,
+                2.7,
+                3.14,
+                -0.5
+              ]
             }
             """.trimIndent()
 
-        val decoded = json.decodeFromString<NumericPropertyDefinition>(jsonString)
+        val decoded = deserializeAndSerialize<NumericPropertyDefinition>(jsonString, json)
 
         decoded.enum shouldBe listOf(1.5, 2.7, 3.14, -0.5)
     }
@@ -242,7 +276,10 @@ class EnumSerializerTest {
             """
             {
               "type": "number",
-              "enum": ["42", "3.14"]
+              "enum": [
+                "42",
+                "3.14"
+              ]
             }
             """.trimIndent()
 
@@ -320,13 +357,18 @@ class EnumSerializerTest {
             {
               "type": "object",
               "enum": [
-                {"mode": "read"},
-                {"mode": "write", "timeout": 30}
+                {
+                  "mode": "read"
+                },
+                {
+                  "mode": "write",
+                  "timeout": 30
+                }
               ]
             }
             """.trimIndent()
 
-        val decoded = json.decodeFromString<ObjectPropertyDefinition>(jsonString)
+        val decoded = deserializeAndSerialize<ObjectPropertyDefinition>(jsonString, json)
 
         decoded.enum shouldBe
             listOf(
@@ -349,12 +391,14 @@ class EnumSerializerTest {
               "type": "object",
               "enum": [
                 {},
-                {"key": "value"}
+                {
+                  "key": "value"
+                }
               ]
             }
             """.trimIndent()
 
-        val decoded = json.decodeFromString<ObjectPropertyDefinition>(jsonString)
+        val decoded = deserializeAndSerialize<ObjectPropertyDefinition>(jsonString, json)
 
         decoded.enum shouldBe
             listOf(
