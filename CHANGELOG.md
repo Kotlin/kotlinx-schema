@@ -1,3 +1,44 @@
+## 0.2.0
+> Published 2026-02-02
+
+### Breaking Changes
+- **JsonSchema: `additionalProperties` API**: Replaced `JsonPrimitive` with type-safe `AdditionalPropertiesConstraint` sealed interface
+  - Use `AllowAdditionalProperties`, `DenyAdditionalProperties`, or `AdditionalPropertiesSchema(schema)` instead of boolean primitives
+  - Enables compile-time type safety and better IDE support
+
+### Added
+- **kotlinx.serialization support**: New `SerializationClassJsonSchemaGenerator` for runtime introspection
+  - Generate schemas from `SerialDescriptor` without KSP or reflection
+  - Support for primitives, enums, objects, lists, maps, and polymorphic types
+  - _**NB! Type/field descriptions are not supported due to limitations of kotlinx.serialization model!**_
+- **Extended type-safe Schema DSL**
+- **Internal API markers**: `@InternalSchemaGeneratorApi` annotation for APIs subject to change
+- **Documentation**: Architecture pipeline overview with + diagrams
+
+### Changed
+- **Serializers refactoring**: Consolidated six enum serializers into generic `TypedEnumSerializer`
+  - Moved serializers to a dedicated package for better organization
+  - Simplified `StringOrListSerializer` and `AdditionalPropertiesSerializer`
+- **Introspection architecture**: Extracted shared state management into `BaseIntrospectionContext<TDecl, TType>`
+  - Eliminates code duplication across Reflection, KSP, and Serialization backends
+  - Unified cycle detection and type caching
+
+### Fixed
+- Complex object parameters in function calling schemas are now handled correctly
+  - Extracted shared type handlers (`handleAnyFallback`, `handleSealedClass`, `handleEnum`, `handleObjectOrClass`)
+  - Improved error messages for unhandled KSType cases
+
+### Dependencies
+- Bump `kotlinx.kover` from 0.9.4 to 0.9.5
+- Bump `gradle` from 9.3.0 to 9.3.1
+
+
+## 0.1.0
+> Published 2026-02-02
+
+**Note**: Duplicate entry - see version below for actual release notes.
+
+
 ## 0.1.0
 > Published 2026-01-30
 
