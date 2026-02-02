@@ -33,7 +33,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonIgnoreUnknownKeys
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.booleanOrNull
@@ -413,7 +412,6 @@ public interface ApplicatorContainer {
  */
 @Serializable
 @Suppress("LongParameterList")
-@JsonIgnoreUnknownKeys
 public data class JsonSchema(
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     @SerialName(SCHEMA)
@@ -495,6 +493,7 @@ public data class JsonSchema(
     public override val nullable: Boolean? = null,
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     @SerialName(DEFS) public override val defs: Map<String, PropertyDefinition>? = null,
+    public override val annotations: Map<String, JsonElement>? = null,
 ) : GeneralConstraints,
     CommonSchemaAttributes,
     ApplicatorContainer,
@@ -506,12 +505,39 @@ public data class JsonSchema(
  * This is a sealed interface that serves as the base for all property definition types.
  * Different property types (string, number, array, object, reference) have different implementations.
  *
+ * All property definitions can capture unknown keywords as annotations,
+ * per the JSON Schema specification which states:
+ * "Unknown keywords SHOULD be treated as annotations, where the value
+ * of the keyword is the value of the annotation."
+ *
+ * Common annotation patterns:
+ * - `x-*` vendor extensions (e.g., `x-custom-validation`)
+ * - Framework-specific metadata (e.g., OpenAPI extensions)
+ * - Custom application-level metadata
+ *
  * @see <a href="https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-00">
  *     JSON Schema Validation: A Vocabulary for Structural Validation of JSON
  *     </a>
  */
 @Serializable(with = PropertyDefinitionSerializer::class)
-public sealed interface PropertyDefinition
+public sealed interface PropertyDefinition {
+    /**
+     * Unknown keywords captured as annotations during deserialization.
+     *
+     * Per JSON Schema spec, unknown keywords are preserved as annotations
+     * and can be used by applications for custom metadata or extensions.
+     *
+     * Common uses:
+     * - Vendor extensions: `x-vendor-*` keywords
+     * - Framework metadata: OpenAPI, AsyncAPI extensions
+     * - Custom validation rules
+     * - Documentation metadata
+     *
+     * @return Map of keyword names to their JSON values, or null if no
+     *         unknown keywords were present
+     */
+    public val annotations: Map<String, JsonElement>?
+}
 
 /**
  * Represents a boolean schema in JSON Schema.
@@ -529,6 +555,7 @@ public sealed interface PropertyDefinition
 @Serializable
 public data class BooleanSchemaDefinition(
     val value: Boolean,
+    override val annotations: Map<String, JsonElement>? = null,
 ) : PropertyDefinition
 
 /**
@@ -586,7 +613,6 @@ public sealed interface ValuePropertyDefinition<out T> :
  * Represents a string property.
  */
 @Serializable
-@JsonIgnoreUnknownKeys
 public data class StringPropertyDefinition(
     @Serializable(with = StringOrListSerializer::class) @EncodeDefault override val type: List<String> =
         STRING_TYPE,
@@ -622,6 +648,7 @@ public data class StringPropertyDefinition(
     @Serializable(with = NumberToNullableIntSerializer::class) override val minLength: Int? = null,
     @Serializable(with = NumberToNullableIntSerializer::class) override val maxLength: Int? = null,
     override val pattern: String? = null,
+    override val annotations: Map<String, JsonElement>? = null,
 ) : ValuePropertyDefinition<String>,
     StringConstraints {
     /**
@@ -639,7 +666,6 @@ public data class StringPropertyDefinition(
  * Represents a numeric property (integer or number).
  */
 @Serializable
-@JsonIgnoreUnknownKeys
 public data class NumericPropertyDefinition(
     @Serializable(with = StringOrListSerializer::class) override val type: List<String>,
     @SerialName(ID) override val id: String? = null,
@@ -672,6 +698,7 @@ public data class NumericPropertyDefinition(
     override val exclusiveMinimum: Double? = null,
     override val maximum: Double? = null,
     override val exclusiveMaximum: Double? = null,
+    override val annotations: Map<String, JsonElement>? = null,
 ) : ValuePropertyDefinition<Double>,
     NumericConstraints {
     /**
@@ -689,7 +716,6 @@ public data class NumericPropertyDefinition(
  * Represents an array property
  */
 @Serializable
-@JsonIgnoreUnknownKeys
 public data class ArrayPropertyDefinition(
     @Serializable(with = StringOrListSerializer::class) @EncodeDefault override val type: List<String> =
         ARRAY_TYPE,
@@ -727,6 +753,7 @@ public data class ArrayPropertyDefinition(
     @Serializable(with = NumberToNullableIntSerializer::class) override val minItems: Int? = null,
     @Serializable(with = NumberToNullableIntSerializer::class) override val maxItems: Int? = null,
     override val uniqueItems: Boolean? = null,
+    override val annotations: Map<String, JsonElement>? = null,
 ) : ValuePropertyDefinition<JsonArray>,
     ArrayContainer {
     /**
@@ -744,7 +771,6 @@ public data class ArrayPropertyDefinition(
  * Represents an object property
  */
 @Serializable
-@JsonIgnoreUnknownKeys
 public data class ObjectPropertyDefinition(
     @Serializable(with = StringOrListSerializer::class) @EncodeDefault override val type: List<String> =
         OBJECT_TYPE,
@@ -784,6 +810,7 @@ public data class ObjectPropertyDefinition(
     @Serializable(with = NumberToNullableIntSerializer::class) override val minProperties: Int? = null,
     @Serializable(with = NumberToNullableIntSerializer::class) override val maxProperties: Int? = null,
     @SerialName("additionalProperties") override val additionalProperties: AdditionalPropertiesConstraint? = null,
+    override val annotations: Map<String, JsonElement>? = null,
 ) : ValuePropertyDefinition<JsonObject>,
     PropertiesContainer {
     /**
@@ -801,7 +828,6 @@ public data class ObjectPropertyDefinition(
  * Represents a boolean property
  */
 @Serializable
-@JsonIgnoreUnknownKeys
 public data class BooleanPropertyDefinition(
     @Serializable(with = StringOrListSerializer::class) @EncodeDefault override val type: List<String> =
         BOOLEAN_TYPE,
@@ -830,6 +856,7 @@ public data class BooleanPropertyDefinition(
     @SerialName("else") override val elseSchema: PropertyDefinition? = null,
     @Serializable(with = BooleanEnumSerializer::class)
     val enum: List<Boolean>? = null,
+    override val annotations: Map<String, JsonElement>? = null,
 ) : ValuePropertyDefinition<Boolean> {
     /**
      * Returns the default value as a Boolean, or null if not set or not a boolean.
@@ -853,7 +880,6 @@ public data class BooleanPropertyDefinition(
  * This allows maximum flexibility while still supporting validation keywords like enum.
  */
 @Serializable
-@JsonIgnoreUnknownKeys
 public data class GenericPropertyDefinition(
     @Serializable(with = StringOrListSerializer::class)
     override val type: List<String>? = null,
@@ -954,6 +980,7 @@ public data class GenericPropertyDefinition(
     override val uniqueItems: Boolean? = null,
     @Serializable(with = NumberToNullableIntSerializer::class) override val minProperties: Int? = null,
     @Serializable(with = NumberToNullableIntSerializer::class) override val maxProperties: Int? = null,
+    override val annotations: Map<String, JsonElement>? = null,
 ) : ValuePropertyDefinition<JsonElement>,
     GeneralConstraints {
     /**
@@ -971,7 +998,6 @@ public data class GenericPropertyDefinition(
  * Represents a reference to another element
  */
 @Serializable
-@JsonIgnoreUnknownKeys
 public data class ReferencePropertyDefinition(
     @SerialName(REF) override val ref: String? = null,
     @SerialName(DYNAMIC_REF) override val dynamicRef: String? = null,
@@ -1031,6 +1057,7 @@ public data class ReferencePropertyDefinition(
     @Serializable(with = NumberToNullableIntSerializer::class) override val minItems: Int? = null,
     @Serializable(with = NumberToNullableIntSerializer::class) override val maxItems: Int? = null,
     override val uniqueItems: Boolean? = null,
+    override val annotations: Map<String, JsonElement>? = null,
 ) : PropertyDefinition,
     CommonSchemaAttributes,
     ApplicatorContainer,
@@ -1071,7 +1098,6 @@ public data class Discriminator(
  *     JSON Schema oneOf</a>
  */
 @Serializable
-@JsonIgnoreUnknownKeys
 public data class OneOfPropertyDefinition(
     override val oneOf: List<PropertyDefinition>,
     @SerialName(ID) override val id: String? = null,
@@ -1132,6 +1158,7 @@ public data class OneOfPropertyDefinition(
     override val uniqueItems: Boolean? = null,
     @SerialName(REF) override val ref: String? = null,
     @SerialName(DYNAMIC_REF) override val dynamicRef: String? = null,
+    override val annotations: Map<String, JsonElement>? = null,
 ) : PropertyDefinition,
     CommonSchemaAttributes,
     ApplicatorContainer,
@@ -1151,7 +1178,6 @@ public data class OneOfPropertyDefinition(
  *     JSON Schema anyOf</a>
  */
 @Serializable
-@JsonIgnoreUnknownKeys
 public data class AnyOfPropertyDefinition(
     override val anyOf: List<PropertyDefinition>,
     @SerialName(ID) override val id: String? = null,
@@ -1210,6 +1236,7 @@ public data class AnyOfPropertyDefinition(
     override val uniqueItems: Boolean? = null,
     @SerialName(REF) override val ref: String? = null,
     @SerialName(DYNAMIC_REF) override val dynamicRef: String? = null,
+    override val annotations: Map<String, JsonElement>? = null,
 ) : PropertyDefinition,
     CommonSchemaAttributes,
     ApplicatorContainer,
@@ -1229,7 +1256,6 @@ public data class AnyOfPropertyDefinition(
  *     JSON Schema allOf</a>
  */
 @Serializable
-@JsonIgnoreUnknownKeys
 public data class AllOfPropertyDefinition(
     override val allOf: List<PropertyDefinition>,
     @SerialName(ID) override val id: String? = null,
@@ -1288,6 +1314,7 @@ public data class AllOfPropertyDefinition(
     override val uniqueItems: Boolean? = null,
     @SerialName(REF) override val ref: String? = null,
     @SerialName(DYNAMIC_REF) override val dynamicRef: String? = null,
+    override val annotations: Map<String, JsonElement>? = null,
 ) : PropertyDefinition,
     CommonSchemaAttributes,
     ApplicatorContainer,

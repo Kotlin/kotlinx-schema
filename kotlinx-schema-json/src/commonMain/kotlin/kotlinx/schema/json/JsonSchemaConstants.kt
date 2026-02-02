@@ -84,6 +84,39 @@ public object JsonSchemaConstants {
     }
 
     /**
+     * Set of all known JSON Schema 2020-12 keywords.
+     * Used to identify unknown keywords that should be treated as annotations.
+     */
+    public val KNOWN_KEYWORDS: Set<String> = setOf(
+        // Core
+        Keys.SCHEMA, Keys.ID, Keys.REF, Keys.DYNAMIC_REF, Keys.ANCHOR, Keys.DYNAMIC_ANCHOR, Keys.COMMENT, Keys.DEFS,
+        // Metadata
+        Keys.TITLE, Keys.DESCRIPTION, Keys.DEFAULT, Keys.EXAMPLES, Keys.DEPRECATED,
+        Keys.READ_ONLY, Keys.WRITE_ONLY,
+        // Type
+        Keys.TYPE, Keys.ENUM, Keys.CONST,
+        // Numeric
+        Keys.MULTIPLE_OF, Keys.MINIMUM, Keys.MAXIMUM, Keys.EXCLUSIVE_MINIMUM, Keys.EXCLUSIVE_MAXIMUM,
+        // String
+        Keys.MIN_LENGTH, Keys.MAX_LENGTH, Keys.PATTERN, Keys.FORMAT,
+        Keys.CONTENT_ENCODING, Keys.CONTENT_MEDIA_TYPE, Keys.CONTENT_SCHEMA,
+        // Array
+        Keys.ITEMS, Keys.PREFIX_ITEMS, Keys.UNEVALUATED_ITEMS, Keys.CONTAINS,
+        Keys.MIN_CONTAINS, Keys.MAX_CONTAINS, Keys.MIN_ITEMS, Keys.MAX_ITEMS, Keys.UNIQUE_ITEMS,
+        // Object
+        Keys.PROPERTIES, Keys.PATTERN_PROPERTIES, Keys.ADDITIONAL_PROPERTIES,
+        Keys.UNEVALUATED_PROPERTIES, Keys.PROPERTY_NAMES, Keys.REQUIRED,
+        Keys.MIN_PROPERTIES, Keys.MAX_PROPERTIES,
+        Keys.DEPENDENT_REQUIRED, Keys.DEPENDENT_SCHEMAS, Keys.DEPENDENCIES,
+        // Composition
+        Keys.ONE_OF, Keys.ANY_OF, Keys.ALL_OF, Keys.NOT,
+        // Conditional
+        Keys.IF, Keys.THEN, Keys.ELSE,
+        // OpenAPI
+        "discriminator", Keys.NULLABLE
+    )
+
+    /**
      * JSON Schema types.
      */
     public object Types {
