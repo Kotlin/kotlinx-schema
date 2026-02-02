@@ -13,30 +13,73 @@ public object JsonSchemaConstants {
         // Top level schema info keys
         public const val SCHEMA: String = $$"$schema"
         public const val ID: String = $$"$id"
+        public const val ANCHOR: String = $$"$anchor"
+        public const val DYNAMIC_ANCHOR: String = $$"$dynamicAnchor"
         public const val DEFS: String = $$"$defs"
         public const val COMMENT: String = $$"$comment"
 
         // Type definition keys
         public const val TYPE: String = "type"
-
-        public const val TITLE: String = "title"
-        public const val PROPERTIES: String = "properties"
-        public const val REQUIRED: String = "required"
         public const val NULLABLE: String = "nullable"
-        public const val DESCRIPTION: String = "description"
+
+        public const val PROPERTIES: String = "properties"
+        public const val PATTERN_PROPERTIES: String = "patternProperties"
+        public const val ADDITIONAL_PROPERTIES: String = "additionalProperties"
+        public const val PROPERTY_NAMES: String = "propertyNames"
+        public const val REQUIRED: String = "required"
+        public const val DEPENDENT_REQUIRED: String = "dependentRequired"
+        public const val DEPENDENT_SCHEMAS: String = "dependentSchemas"
+        public const val DEPENDENCIES: String = "dependencies"
+        public const val MIN_PROPERTIES: String = "minProperties"
+        public const val MAX_PROPERTIES: String = "maxProperties"
+        public const val UNEVALUATED_PROPERTIES: String = "unevaluatedProperties"
+
         public const val ITEMS: String = "items"
+        public const val PREFIX_ITEMS: String = "prefixItems"
+        public const val CONTAINS: String = "contains"
+        public const val MIN_CONTAINS: String = "minContains"
+        public const val MAX_CONTAINS: String = "maxContains"
+        public const val MIN_ITEMS: String = "minItems"
+        public const val MAX_ITEMS: String = "maxItems"
+        public const val UNIQUE_ITEMS: String = "uniqueItems"
+        public const val UNEVALUATED_ITEMS: String = "unevaluatedItems"
+
+        public const val MIN_LENGTH: String = "minLength"
+        public const val MAX_LENGTH: String = "maxLength"
+        public const val PATTERN: String = "pattern"
+        public const val FORMAT: String = "format"
+        public const val CONTENT_ENCODING: String = "contentEncoding"
+        public const val CONTENT_MEDIA_TYPE: String = "contentMediaType"
+        public const val CONTENT_SCHEMA: String = "contentSchema"
+
+        public const val MINIMUM: String = "minimum"
+        public const val MAXIMUM: String = "maximum"
+        public const val EXCLUSIVE_MINIMUM: String = "exclusiveMinimum"
+        public const val EXCLUSIVE_MAXIMUM: String = "exclusiveMaximum"
+        public const val MULTIPLE_OF: String = "multipleOf"
+
         public const val ENUM: String = "enum"
         public const val CONST: String = "const"
-        public const val ADDITIONAL_PROPERTIES: String = "additionalProperties"
+        public const val DEFAULT: String = "default"
+        public const val DEPRECATED: String = "deprecated"
+        public const val READ_ONLY: String = "readOnly"
+        public const val WRITE_ONLY: String = "writeOnly"
+        public const val EXAMPLES: String = "examples"
+        public const val TITLE: String = "title"
+        public const val DESCRIPTION: String = "description"
 
         // Special JSON Schema function keys
         public const val ONE_OF: String = "oneOf"
         public const val ANY_OF: String = "anyOf"
         public const val ALL_OF: String = "allOf"
-        public const val PATTERN: String = "pattern"
+        public const val IF: String = "if"
+        public const val THEN: String = "then"
+        public const val ELSE: String = "else"
+        public const val NOT: String = "not"
 
         // Definition references related keys
         public const val REF: String = $$"$ref"
+        public const val DYNAMIC_REF: String = $$"$dynamicRef"
         public const val REF_PREFIX: String = "#/$DEFS/"
     }
 

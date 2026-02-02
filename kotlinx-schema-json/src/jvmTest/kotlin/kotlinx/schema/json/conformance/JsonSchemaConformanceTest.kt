@@ -24,8 +24,7 @@ import java.util.concurrent.ConcurrentHashMap
 class JsonSchemaConformanceTest {
     private val json =
         Json {
-            ignoreUnknownKeys = true
-            prettyPrint = true
+            ignoreUnknownKeys = false
         }
 
     companion object {

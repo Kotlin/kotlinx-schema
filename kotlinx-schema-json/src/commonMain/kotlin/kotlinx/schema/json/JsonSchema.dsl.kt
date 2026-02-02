@@ -158,26 +158,42 @@ public class JsonSchemaBuilder {
      */
     public var schema: String? = null
 
-    private var _additionalProperties: JsonElement? = null
+    private var _additionalProperties: AdditionalPropertiesConstraint? = null
 
     /**
-     * Whether additional properties beyond those defined are allowed.
-     * - `JsonPrimitive(true)`: Additional properties allowed
-     * - `JsonPrimitive(false)`: Only defined properties allowed
-     * - `JsonObject`: Schema for additional properties (e.g., for maps)
-     * - `null`: No constraint (default)
+     * Constraint for additional properties beyond those explicitly defined.
+     *
+     * - `true`: Allow any additional properties ([AllowAdditionalProperties])
+     * - `false`: Disallow additional properties ([DenyAdditionalProperties])
+     * - [PropertyDefinition]: Additional properties must match this schema ([AdditionalPropertiesSchema])
+     * - `null`: No constraint specified (default)
+     *
+     * ## Examples
+     * ```kotlin
+     * jsonSchema {
+     *     additionalProperties = false  // Strict: no additional properties allowed
+     * }
+     *
+     * jsonSchema {
+     *     additionalProperties = obj { /* schema */ }  // Additional properties must be objects
+     * }
+     * ```
      */
     public var additionalProperties: Any?
         get() = _additionalProperties
         set(value) {
             _additionalProperties =
                 when (value) {
-                    is JsonObject -> {
-                        value
+                    is PropertyDefinition -> {
+                        AdditionalPropertiesSchema(value)
                     }
 
-                    is Boolean -> {
-                        JsonPrimitive(value)
+                    true -> {
+                        AllowAdditionalProperties
+                    }
+
+                    false -> {
+                        DenyAdditionalProperties
                     }
 
                     null -> {
@@ -186,7 +202,7 @@ public class JsonSchemaBuilder {
 
                     else -> {
                         error(
-                            "additionalProperties  must be Boolean, JsonElement, or null, " +
+                            "additionalProperties must be Boolean, PropertyDefinition, or null, " +
                                 "but got: ${value::class.simpleName}",
                         )
                     }
@@ -277,7 +293,7 @@ public class JsonSchemaBuilder {
  * }
  * ```
  *
- * @see JsonSchemaDefinitionBuilder.property
+ * @see JsonSchemaBuilder.property
  */
 @JsonSchemaDsl
 public class PropertyBuilder {
@@ -1278,7 +1294,7 @@ public class BooleanPropertyBuilder internal constructor() {
  * - Heterogeneous enums
  *
  * This class is part of the JSON Schema DSL and cannot be instantiated directly.
- * Use [JsonSchemaDefinitionBuilder.property] to create instances.
+ * Use [JsonSchemaBuilder.property] to create instances.
  *
  * ## Example
  * ```kotlin
@@ -1782,8 +1798,8 @@ public class ArrayPropertyBuilder internal constructor() {
             nullable = nullable,
             enum = _enum,
             items = itemsDefinition,
-            minItems = minItems?.toUInt(),
-            maxItems = maxItems?.toUInt(),
+            minItems = minItems,
+            maxItems = maxItems,
             default = _default,
         )
 }
@@ -1947,14 +1963,53 @@ public class ObjectPropertyBuilder internal constructor() {
                 }
         }
 
+    private var _additionalProperties: AdditionalPropertiesConstraint? = null
+
     /**
-     * Whether additional properties beyond those defined are allowed.
-     * - `JsonPrimitive(true)`: Additional properties allowed
-     * - `JsonPrimitive(false)`: Only defined properties allowed
-     * - `JsonObject`: Schema for additional properties (e.g., for maps)
-     * - `null`: No constraint (default)
+     * Constraint for additional properties beyond those explicitly defined.
+     *
+     * - `true`: Allow any additional properties ([AllowAdditionalProperties])
+     * - `false`: Disallow additional properties ([DenyAdditionalProperties])
+     * - [PropertyDefinition]: Additional properties must match this schema ([AdditionalPropertiesSchema])
+     * - `null`: No constraint specified (default)
+     *
+     * ## Examples
+     * ```kotlin
+     * obj {
+     *     property("name") { string() }
+     *     additionalProperties = false  // Only 'name' property allowed
+     * }
+     * ```
      */
-    public var additionalProperties: JsonElement? = null
+    public var additionalProperties: Any?
+        get() = _additionalProperties
+        set(value) {
+            _additionalProperties =
+                when (value) {
+                    is PropertyDefinition -> {
+                        AdditionalPropertiesSchema(value)
+                    }
+
+                    true -> {
+                        AllowAdditionalProperties
+                    }
+
+                    false -> {
+                        DenyAdditionalProperties
+                    }
+
+                    null -> {
+                        null
+                    }
+
+                    else -> {
+                        error(
+                            "additionalProperties must be Boolean, PropertyDefinition, or null, " +
+                                "but got: ${value::class.simpleName}",
+                        )
+                    }
+                }
+        }
 
     private val properties: MutableMap<String, PropertyDefinition> = mutableMapOf()
     private val requiredFields: MutableSet<String> = mutableSetOf()
@@ -2042,7 +2097,7 @@ public class ObjectPropertyBuilder internal constructor() {
     /**
      * Defines a property within this nested object.
      *
-     * Works the same as [JsonSchemaDefinitionBuilder.property], allowing you to
+     * Works the same as [JsonSchemaBuilder.property], allowing you to
      * define nested properties with their types and constraints.
      *
      * ## Example
@@ -2057,7 +2112,7 @@ public class ObjectPropertyBuilder internal constructor() {
      *
      * @param name The property name
      * @param block Configuration block for the property
-     * @see JsonSchemaDefinitionBuilder.property
+     * @see JsonSchemaBuilder.property
      */
     public fun property(
         name: String,
@@ -2078,7 +2133,7 @@ public class ObjectPropertyBuilder internal constructor() {
             enum = _enum,
             properties = properties.ifEmpty { null },
             required = if (requiredFields.isEmpty()) null else requiredFields.toList(),
-            additionalProperties = additionalProperties,
+            additionalProperties = _additionalProperties,
             default = _default,
         )
 }

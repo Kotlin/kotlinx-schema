@@ -17,7 +17,7 @@ import kotlinx.serialization.json.JsonPrimitive
  *
  * @author Konstantin Pavlov
  */
-public class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
+internal class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("PropertyDefinition")
 
     override fun deserialize(decoder: Decoder): PropertyDefinition {
@@ -68,7 +68,7 @@ public class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
                 )
             }
 
-            jsonElement.containsKey($$"$ref") -> {
+            jsonElement.containsKey($$"$ref") || jsonElement.containsKey($$"$dynamicRef") -> {
                 json.decodeFromJsonElement(
                     ReferencePropertyDefinition.serializer(),
                     jsonElement,
@@ -89,8 +89,8 @@ public class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
         val types = determineTypes(json, jsonElement)
 
         return when {
-            // If it has items, it's an array
-            jsonElement.containsKey("items") -> {
+            // If it has items or prefixItems, it's an array
+            jsonElement.containsKey("items") || jsonElement.containsKey("prefixItems") -> {
                 json.decodeFromJsonElement(
                     ArrayPropertyDefinition.serializer(),
                     jsonElement,
@@ -237,6 +237,8 @@ public class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
 
             // Reference property definition
             is ReferencePropertyDefinition -> encodeTyped(encoder, value)
+
+            is JsonSchema -> encodeTyped(encoder, value)
         }
     }
 

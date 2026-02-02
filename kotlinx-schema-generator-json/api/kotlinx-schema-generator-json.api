@@ -87,9 +87,8 @@ public final class kotlinx/schema/generator/json/ReflectionFunctionCallingSchema
 
 public final class kotlinx/schema/generator/json/TypeGraphToFunctionCallingSchemaTransformer : kotlinx/schema/generator/core/ir/AbstractTypeGraphTransformer {
 	public fun <init> ()V
-	public fun <init> (Lkotlinx/serialization/json/Json;)V
-	public fun <init> (Lkotlinx/serialization/json/Json;Lkotlinx/schema/generator/json/FunctionCallingSchemaConfig;)V
-	public synthetic fun <init> (Lkotlinx/serialization/json/Json;Lkotlinx/schema/generator/json/FunctionCallingSchemaConfig;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lkotlinx/schema/generator/json/FunctionCallingSchemaConfig;)V
+	public synthetic fun <init> (Lkotlinx/schema/generator/json/FunctionCallingSchemaConfig;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public synthetic fun getConfig ()Ljava/lang/Object;
 	public fun getConfig ()Lkotlinx/schema/generator/json/FunctionCallingSchemaConfig;
 	public synthetic fun transform (Lkotlinx/schema/generator/core/ir/TypeGraph;Ljava/lang/String;)Ljava/lang/Object;
@@ -104,5 +103,28 @@ public final class kotlinx/schema/generator/json/TypeGraphToJsonSchemaTransforme
 	public fun getConfig ()Lkotlinx/schema/generator/json/JsonSchemaConfig;
 	public synthetic fun transform (Lkotlinx/schema/generator/core/ir/TypeGraph;Ljava/lang/String;)Ljava/lang/Object;
 	public fun transform (Lkotlinx/schema/generator/core/ir/TypeGraph;Ljava/lang/String;)Lkotlinx/schema/json/JsonSchema;
+}
+
+public final class kotlinx/schema/generator/json/serialization/SerializationClassJsonSchemaGenerator : kotlinx/schema/generator/core/AbstractSchemaGenerator {
+	public static final field Companion Lkotlinx/schema/generator/json/serialization/SerializationClassJsonSchemaGenerator$Companion;
+	public fun <init> ()V
+	public fun <init> (Lkotlinx/serialization/json/Json;Lkotlinx/schema/generator/json/JsonSchemaConfig;)V
+	public synthetic fun encodeToString (Ljava/lang/Object;)Ljava/lang/String;
+	public fun encodeToString (Lkotlinx/schema/json/JsonSchema;)Ljava/lang/String;
+	public synthetic fun getRootName (Ljava/lang/Object;)Ljava/lang/String;
+	public fun schemaType ()Lkotlin/reflect/KClass;
+	public fun targetType ()Lkotlin/reflect/KClass;
+}
+
+public final class kotlinx/schema/generator/json/serialization/SerializationClassJsonSchemaGenerator$Companion {
+	public final fun getDefault ()Lkotlinx/schema/generator/json/serialization/SerializationClassJsonSchemaGenerator;
+}
+
+public final class kotlinx/schema/generator/json/serialization/SerializationClassSchemaIntrospector : kotlinx/schema/generator/core/ir/SchemaIntrospector {
+	public fun <init> ()V
+	public fun <init> (Lkotlinx/serialization/json/Json;)V
+	public synthetic fun <init> (Lkotlinx/serialization/json/Json;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun introspect (Ljava/lang/Object;)Lkotlinx/schema/generator/core/ir/TypeGraph;
+	public fun introspect (Lkotlinx/serialization/KSerializer;)Lkotlinx/schema/generator/core/ir/TypeGraph;
 }
 

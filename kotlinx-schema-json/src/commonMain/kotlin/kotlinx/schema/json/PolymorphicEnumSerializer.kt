@@ -26,7 +26,7 @@ import kotlin.jvm.JvmName
  * Used for property types that need to support mixed-type enums (e.g., NumericPropertyDefinition,
  * ArrayPropertyDefinition, ObjectPropertyDefinition).
  */
-public class PolymorphicEnumSerializer : KSerializer<List<JsonElement>?> {
+internal class PolymorphicEnumSerializer : KSerializer<List<JsonElement>?> {
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("PolymorphicEnum")
 
     override fun deserialize(decoder: Decoder): List<JsonElement>? {

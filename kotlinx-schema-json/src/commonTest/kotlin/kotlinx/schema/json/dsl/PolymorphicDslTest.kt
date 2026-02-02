@@ -1,8 +1,25 @@
-package kotlinx.schema.json
+package kotlinx.schema.json.dsl
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import kotlinx.schema.json.AllOfPropertyDefinition
+import kotlinx.schema.json.AnyOfPropertyDefinition
+import kotlinx.schema.json.ArrayPropertyDefinition
+import kotlinx.schema.json.NumericPropertyDefinition
+import kotlinx.schema.json.ObjectPropertyDefinition
+import kotlinx.schema.json.OneOfPropertyDefinition
+import kotlinx.schema.json.ReferencePropertyDefinition
+import kotlinx.schema.json.StringPropertyDefinition
+import kotlinx.schema.json.boolean
+import kotlinx.schema.json.integer
+import kotlinx.schema.json.jsonSchema
+import kotlinx.schema.json.number
+import kotlinx.schema.json.obj
+import kotlinx.schema.json.oneOf
+import kotlinx.schema.json.reference
+import kotlinx.schema.json.serializeAndDeserialize
+import kotlinx.schema.json.string
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 

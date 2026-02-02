@@ -11,16 +11,4 @@ import kotlinx.serialization.json.JsonElement
 data class TestSuite(
     val description: String,
     val schema: JsonElement,
-    val tests: List<TestCase> = emptyList()
-)
-
-/**
- * Represents a single test case within a test suite.
- * Contains data to validate and the expected result.
- */
-@Serializable
-data class TestCase(
-    val description: String,
-    val data: JsonElement,
-    val valid: Boolean
 )

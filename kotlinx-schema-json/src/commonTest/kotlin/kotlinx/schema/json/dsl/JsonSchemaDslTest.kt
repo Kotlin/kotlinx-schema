@@ -1,6 +1,13 @@
-package kotlinx.schema.json
+package kotlinx.schema.json.dsl
 
 import io.kotest.matchers.shouldBe
+import kotlinx.schema.json.ArrayPropertyDefinition
+import kotlinx.schema.json.DenyAdditionalProperties
+import kotlinx.schema.json.NumericPropertyDefinition
+import kotlinx.schema.json.ObjectPropertyDefinition
+import kotlinx.schema.json.ReferencePropertyDefinition
+import kotlinx.schema.json.jsonSchema
+import kotlinx.schema.json.serializeAndDeserialize
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 
@@ -152,8 +159,8 @@ internal class JsonSchemaDslTest {
 
         val deserialized = serializeAndDeserialize(schema, expectedJson, json)
         val tagsProperty = deserialized.properties["tags"] as ArrayPropertyDefinition
-        tagsProperty.minItems shouldBe 1u
-        tagsProperty.maxItems shouldBe 10u
+        tagsProperty.minItems shouldBe 1
+        tagsProperty.maxItems shouldBe 10
     }
 
     @Test
@@ -487,7 +494,7 @@ internal class JsonSchemaDslTest {
                     array {
                         description = "Processing steps"
                         ofObject {
-                            additionalProperties = kotlinx.serialization.json.JsonPrimitive(false)
+                            additionalProperties = false
                             property("explanation") {
                                 required = true
                                 string {
@@ -539,7 +546,7 @@ internal class JsonSchemaDslTest {
         val stepsProp = deserialized.properties["steps"] as ArrayPropertyDefinition
         val itemsObj = stepsProp.items as ObjectPropertyDefinition
         itemsObj.required shouldBe listOf("explanation", "output")
-        itemsObj.additionalProperties shouldBe kotlinx.serialization.json.JsonPrimitive(false)
+        itemsObj.additionalProperties shouldBe DenyAdditionalProperties
     }
 
     @Test

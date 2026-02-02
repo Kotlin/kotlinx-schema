@@ -11,7 +11,6 @@ object TestSuiteLoader {
     private val json =
         Json {
             ignoreUnknownKeys = true
-            prettyPrint = false
         }
 
     /**
@@ -79,35 +78,5 @@ object TestSuiteLoader {
         }
 
         return result
-    }
-
-    /**
-     * Lists all available test suite file names.
-     */
-    fun listTestSuiteFiles(includeOptional: Boolean = false): List<String> {
-        val files =
-            testSuiteBasePath
-                .listFiles { file ->
-                    file.isFile && file.extension == "json"
-                }?.map { it.name }
-                ?.sorted()
-                .orEmpty()
-
-        if (includeOptional) {
-            val optionalDir = File(testSuiteBasePath, "optional")
-            if (optionalDir.exists()) {
-                val optionalFiles =
-                    optionalDir
-                        .listFiles { file ->
-                            file.isFile && file.extension == "json"
-                        }?.map { "optional/${it.name}" }
-                        ?.sorted()
-                        .orEmpty()
-
-                return files + optionalFiles
-            }
-        }
-
-        return files
     }
 }

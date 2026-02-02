@@ -7,6 +7,9 @@ public abstract class kotlinx/schema/generator/core/AbstractSchemaGenerator : ko
 	protected final fun getTypeGraphTransformer ()Lkotlinx/schema/generator/core/ir/TypeGraphTransformer;
 }
 
+public abstract interface annotation class kotlinx/schema/generator/core/InternalSchemaGeneratorApi : java/lang/annotation/Annotation {
+}
+
 public abstract interface class kotlinx/schema/generator/core/SchemaGenerator {
 	public abstract fun encodeToString (Ljava/lang/Object;)Ljava/lang/String;
 	public abstract fun generateSchema (Ljava/lang/Object;)Ljava/lang/Object;
@@ -25,6 +28,14 @@ public final class kotlinx/schema/generator/core/SchemaGeneratorService {
 public abstract class kotlinx/schema/generator/core/ir/AbstractTypeGraphTransformer : kotlinx/schema/generator/core/ir/TypeGraphTransformer {
 	public fun <init> (Ljava/lang/Object;)V
 	public fun getConfig ()Ljava/lang/Object;
+}
+
+public abstract class kotlinx/schema/generator/core/ir/BaseIntrospectionContext {
+	public fun <init> ()V
+	protected final fun getDiscoveredNodes ()Ljava/util/Map;
+	protected final fun getTypeRefCache ()Ljava/util/Map;
+	protected final fun getVisitingDeclarations ()Ljava/util/Set;
+	protected final fun withCycleDetection (Ljava/lang/Object;Lkotlinx/schema/generator/core/ir/TypeId;Lkotlin/jvm/functions/Function0;)Z
 }
 
 public final class kotlinx/schema/generator/core/ir/Discriminator {
@@ -263,15 +274,15 @@ public final class kotlinx/schema/generator/core/ir/TypeRef$Ref : kotlinx/schema
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class kotlinx/schema/generator/reflect/ReflectionClassIntrospector : kotlinx/schema/generator/core/ir/SchemaIntrospector {
+	public static final field INSTANCE Lkotlinx/schema/generator/reflect/ReflectionClassIntrospector;
+	public synthetic fun introspect (Ljava/lang/Object;)Lkotlinx/schema/generator/core/ir/TypeGraph;
+	public fun introspect (Lkotlin/reflect/KClass;)Lkotlinx/schema/generator/core/ir/TypeGraph;
+}
+
 public final class kotlinx/schema/generator/reflect/ReflectionFunctionIntrospector : kotlinx/schema/generator/core/ir/SchemaIntrospector {
 	public static final field INSTANCE Lkotlinx/schema/generator/reflect/ReflectionFunctionIntrospector;
 	public synthetic fun introspect (Ljava/lang/Object;)Lkotlinx/schema/generator/core/ir/TypeGraph;
 	public fun introspect (Lkotlin/reflect/KCallable;)Lkotlinx/schema/generator/core/ir/TypeGraph;
-}
-
-public final class kotlinx/schema/generator/reflect/ReflectionIntrospector : kotlinx/schema/generator/core/ir/SchemaIntrospector {
-	public static final field INSTANCE Lkotlinx/schema/generator/reflect/ReflectionIntrospector;
-	public synthetic fun introspect (Ljava/lang/Object;)Lkotlinx/schema/generator/core/ir/TypeGraph;
-	public fun introspect (Lkotlin/reflect/KClass;)Lkotlinx/schema/generator/core/ir/TypeGraph;
 }
 

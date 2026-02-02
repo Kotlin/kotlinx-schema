@@ -25,7 +25,7 @@ public class ReflectionFunctionCallingSchemaGenerator(
     private val json: Json,
 ) : AbstractSchemaGenerator<KCallable<*>, FunctionCallingSchema>(
         introspector = ReflectionFunctionIntrospector,
-        typeGraphTransformer = TypeGraphToFunctionCallingSchemaTransformer(json),
+        typeGraphTransformer = TypeGraphToFunctionCallingSchemaTransformer(),
     ) {
     public constructor() : this(json = Json { encodeDefaults = false })
 

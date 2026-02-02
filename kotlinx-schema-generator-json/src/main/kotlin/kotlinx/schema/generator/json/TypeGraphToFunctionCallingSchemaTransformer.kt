@@ -10,8 +10,10 @@ import kotlinx.schema.generator.core.ir.PrimitiveNode
 import kotlinx.schema.generator.core.ir.TypeGraph
 import kotlinx.schema.generator.core.ir.TypeNode
 import kotlinx.schema.generator.core.ir.TypeRef
+import kotlinx.schema.json.AdditionalPropertiesSchema
 import kotlinx.schema.json.ArrayPropertyDefinition
 import kotlinx.schema.json.BooleanPropertyDefinition
+import kotlinx.schema.json.DenyAdditionalProperties
 import kotlinx.schema.json.FunctionCallingSchema
 import kotlinx.schema.json.JsonSchemaConstants.Types.ARRAY_OR_NULL_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.ARRAY_TYPE
@@ -29,9 +31,6 @@ import kotlinx.schema.json.NumericPropertyDefinition
 import kotlinx.schema.json.ObjectPropertyDefinition
 import kotlinx.schema.json.PropertyDefinition
 import kotlinx.schema.json.StringPropertyDefinition
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.schema.generator.json.FunctionCallingSchemaConfig.Companion.Default as DefaultConfig
 
 /**
@@ -63,7 +62,6 @@ import kotlinx.schema.generator.json.FunctionCallingSchemaConfig.Companion.Defau
 public class TypeGraphToFunctionCallingSchemaTransformer
     @JvmOverloads
     public constructor(
-        private val json: Json = Json { encodeDefaults = false },
         public override val config: FunctionCallingSchemaConfig = DefaultConfig,
     ) : AbstractTypeGraphTransformer<
             FunctionCallingSchema,
@@ -135,7 +133,7 @@ public class TypeGraphToFunctionCallingSchemaTransformer
                     ObjectPropertyDefinition(
                         properties = properties,
                         required = requiredFields,
-                        additionalProperties = JsonPrimitive(false),
+                        additionalProperties = DenyAdditionalProperties,
                     ),
             )
         }
@@ -292,7 +290,7 @@ public class TypeGraphToFunctionCallingSchemaTransformer
                 nullable = null,
                 properties = properties,
                 required = requiredFields,
-                additionalProperties = JsonPrimitive(false),
+                additionalProperties = DenyAdditionalProperties,
             )
         }
 
@@ -327,13 +325,11 @@ public class TypeGraphToFunctionCallingSchemaTransformer
             graph: TypeGraph,
         ): PropertyDefinition {
             val valuePropertyDef = convertTypeRef(node.value, graph)
-            val additionalPropertiesSchema = json.encodeToJsonElement(valuePropertyDef)
-
             return ObjectPropertyDefinition(
                 type = if (nullable) OBJECT_OR_NULL_TYPE else OBJECT_TYPE,
                 description = node.description,
                 nullable = null,
-                additionalProperties = additionalPropertiesSchema,
+                additionalProperties = AdditionalPropertiesSchema(valuePropertyDef),
             )
         }
     }
