@@ -6,7 +6,9 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.schema.json.GenericPropertyDefinition
+import kotlinx.schema.json.deserializeAndSerialize
 import kotlinx.schema.json.firstPropertyAs
+import kotlinx.schema.json.serializeAndDeserialize
 import kotlinx.schema.json.testSchemaWithProperty
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -240,11 +242,20 @@ class GenericPropertyDslTest {
                     ),
             )
 
-        val jsonString = json.encodeToString(GenericPropertyDefinition.serializer(), genericProp)
-        val decoded = json.decodeFromString(GenericPropertyDefinition.serializer(), jsonString)
-
-        decoded.enum shouldBe genericProp.enum
-        decoded.description shouldBe "Mixed types"
+        serializeAndDeserialize(
+            genericProp,
+            """
+            {
+              "description": "Mixed types",
+              "enum": [
+                1,
+                "text",
+                true
+              ]
+            }
+            """.trimIndent(),
+            json,
+        )
     }
 
     @Test
@@ -255,11 +266,16 @@ class GenericPropertyDslTest {
                 default = JsonPrimitive(42),
             )
 
-        val jsonString = json.encodeToString(GenericPropertyDefinition.serializer(), genericProp)
-        val decoded = json.decodeFromString(GenericPropertyDefinition.serializer(), jsonString)
-
-        decoded.default shouldBe JsonPrimitive(42)
-        decoded.description shouldBe "With default"
+        serializeAndDeserialize(
+            genericProp,
+            """
+            {
+              "description": "With default",
+              "default": 42
+            }
+            """.trimIndent(),
+            json,
+        )
     }
 
     @Test
@@ -270,11 +286,16 @@ class GenericPropertyDslTest {
                 constValue = JsonPrimitive("constant"),
             )
 
-        val jsonString = json.encodeToString(GenericPropertyDefinition.serializer(), genericProp)
-        val decoded = json.decodeFromString(GenericPropertyDefinition.serializer(), jsonString)
-
-        decoded.constValue shouldBe JsonPrimitive("constant")
-        decoded.description shouldBe "With const"
+        serializeAndDeserialize(
+            genericProp,
+            """
+            {
+              "description": "With const",
+              "const": "constant"
+            }
+            """.trimIndent(),
+            json,
+        )
     }
 
     // Deserialization Test
@@ -289,7 +310,7 @@ class GenericPropertyDslTest {
             }
             """.trimIndent()
 
-        val genericProp = json.decodeFromString(GenericPropertyDefinition.serializer(), jsonString)
+        val genericProp = deserializeAndSerialize<GenericPropertyDefinition>(jsonString, json)
 
         genericProp.enum.shouldNotBeNull {
             this shouldHaveSize 5

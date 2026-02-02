@@ -1,4 +1,4 @@
-package kotlinx.schema.json
+package kotlinx.schema.json.serializers
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe

@@ -1,71 +1,52 @@
 package kotlinx.schema.json
 
+import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.decodeFromJsonElement
-import kotlinx.serialization.json.encodeToJsonElement
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertIs
-import kotlin.test.assertNotNull
 
 class BooleanSchemaDefinitionTest {
     private val json = Json { prettyPrint = true }
 
     @Test
     fun `deserialize true boolean schema`() {
-        val jsonElement = JsonPrimitive(true)
-        val propertyDef = json.decodeFromJsonElement<PropertyDefinition>(jsonElement)
+        val propertyDef = deserializeAndSerialize<PropertyDefinition>("true", json)
 
-        assertIs<BooleanSchemaDefinition>(propertyDef)
-        assertEquals(true, propertyDef.value)
+        propertyDef.shouldBeInstanceOf<BooleanSchemaDefinition>()
+        propertyDef.value shouldBe true
     }
 
     @Test
     fun `deserialize false boolean schema`() {
-        val jsonElement = JsonPrimitive(false)
-        val propertyDef = json.decodeFromJsonElement<PropertyDefinition>(jsonElement)
+        val propertyDef = deserializeAndSerialize<PropertyDefinition>("false", json)
 
-        assertIs<BooleanSchemaDefinition>(propertyDef)
-        assertEquals(false, propertyDef.value)
+        propertyDef.shouldBeInstanceOf<BooleanSchemaDefinition>()
+        propertyDef.value shouldBe false
     }
 
     @Test
     fun `serialize true boolean schema`() {
         val booleanSchema = BooleanSchemaDefinition(value = true)
-        val jsonElement = json.encodeToJsonElement<PropertyDefinition>(booleanSchema)
-
-        assertIs<JsonPrimitive>(jsonElement)
-        assertEquals(true, jsonElement.content.toBoolean())
+        serializeAndDeserialize<PropertyDefinition>(booleanSchema, "true", json)
     }
 
     @Test
     fun `serialize false boolean schema`() {
         val booleanSchema = BooleanSchemaDefinition(value = false)
-        val jsonElement = json.encodeToJsonElement<PropertyDefinition>(booleanSchema)
-
-        assertIs<JsonPrimitive>(jsonElement)
-        assertEquals(false, jsonElement.content.toBoolean())
+        serializeAndDeserialize<PropertyDefinition>(booleanSchema, "false", json)
     }
 
     @Test
     fun `round-trip true boolean schema`() {
         val original = BooleanSchemaDefinition(value = true)
-        val jsonElement = json.encodeToJsonElement<PropertyDefinition>(original)
-        val decoded = json.decodeFromJsonElement<PropertyDefinition>(jsonElement)
-
-        assertIs<BooleanSchemaDefinition>(decoded)
-        assertEquals(original.value, decoded.value)
+        serializeAndDeserialize<PropertyDefinition>(original, "true", json)
     }
 
     @Test
     fun `round-trip false boolean schema`() {
         val original = BooleanSchemaDefinition(value = false)
-        val jsonElement = json.encodeToJsonElement<PropertyDefinition>(original)
-        val decoded = json.decodeFromJsonElement<PropertyDefinition>(jsonElement)
-
-        assertIs<BooleanSchemaDefinition>(decoded)
-        assertEquals(original.value, decoded.value)
+        serializeAndDeserialize<PropertyDefinition>(original, "false", json)
     }
 
     @Test
@@ -78,11 +59,11 @@ class BooleanSchemaDefinitionTest {
             }
             """.trimIndent()
 
-        val arrayDef = json.decodeFromString<ArrayPropertyDefinition>(jsonString)
+        val arrayDef = deserializeAndSerialize<ArrayPropertyDefinition>(jsonString, json)
 
-        assertNotNull(arrayDef.items)
-        assertIs<BooleanSchemaDefinition>(arrayDef.items)
-        assertEquals(false, arrayDef.items.value)
+        arrayDef.items.shouldNotBeNull()
+        arrayDef.items.shouldBeInstanceOf<BooleanSchemaDefinition>()
+        arrayDef.items.value shouldBe false
     }
 
     @Test
@@ -90,18 +71,24 @@ class BooleanSchemaDefinitionTest {
         val jsonString =
             """
             {
-                "oneOf": [true, false, {"type": "string"}]
+                "oneOf": [
+                  true,
+                  false,
+                  {
+                    "type": "string"
+                  }
+                ]
             }
             """.trimIndent()
 
-        val oneOfDef = json.decodeFromString<OneOfPropertyDefinition>(jsonString)
+        val oneOfDef = deserializeAndSerialize<OneOfPropertyDefinition>(jsonString, json)
 
-        assertEquals(3, oneOfDef.oneOf.size)
-        assertIs<BooleanSchemaDefinition>(oneOfDef.oneOf[0])
-        assertEquals(true, (oneOfDef.oneOf[0] as BooleanSchemaDefinition).value)
-        assertIs<BooleanSchemaDefinition>(oneOfDef.oneOf[1])
-        assertEquals(false, (oneOfDef.oneOf[1] as BooleanSchemaDefinition).value)
-        assertIs<StringPropertyDefinition>(oneOfDef.oneOf[2])
+        oneOfDef.oneOf.size shouldBe 3
+        oneOfDef.oneOf[0].shouldBeInstanceOf<BooleanSchemaDefinition>()
+        (oneOfDef.oneOf[0] as BooleanSchemaDefinition).value shouldBe true
+        oneOfDef.oneOf[1].shouldBeInstanceOf<BooleanSchemaDefinition>()
+        (oneOfDef.oneOf[1] as BooleanSchemaDefinition).value shouldBe false
+        oneOfDef.oneOf[2].shouldBeInstanceOf<StringPropertyDefinition>()
     }
 
     @Test
@@ -109,16 +96,21 @@ class BooleanSchemaDefinitionTest {
         val jsonString =
             """
             {
-                "anyOf": [true, {"type": "number"}]
+                "anyOf": [
+                  true,
+                  {
+                    "type": "number"
+                  }
+                ]
             }
             """.trimIndent()
 
-        val anyOfDef = json.decodeFromString<AnyOfPropertyDefinition>(jsonString)
+        val anyOfDef = deserializeAndSerialize<AnyOfPropertyDefinition>(jsonString, json)
 
-        assertEquals(2, anyOfDef.anyOf.size)
-        assertIs<BooleanSchemaDefinition>(anyOfDef.anyOf[0])
-        assertEquals(true, (anyOfDef.anyOf[0] as BooleanSchemaDefinition).value)
-        assertIs<NumericPropertyDefinition>(anyOfDef.anyOf[1])
+        anyOfDef.anyOf.size shouldBe 2
+        anyOfDef.anyOf[0].shouldBeInstanceOf<BooleanSchemaDefinition>()
+        (anyOfDef.anyOf[0] as BooleanSchemaDefinition).value shouldBe true
+        anyOfDef.anyOf[1].shouldBeInstanceOf<NumericPropertyDefinition>()
     }
 
     @Test
@@ -126,16 +118,22 @@ class BooleanSchemaDefinitionTest {
         val jsonString =
             """
             {
-                "allOf": [true, {"type": "string", "minLength": 1}]
+                "allOf": [
+                  true,
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                ]
             }
             """.trimIndent()
 
-        val allOfDef = json.decodeFromString<AllOfPropertyDefinition>(jsonString)
+        val allOfDef = deserializeAndSerialize<AllOfPropertyDefinition>(jsonString, json)
 
-        assertEquals(2, allOfDef.allOf.size)
-        assertIs<BooleanSchemaDefinition>(allOfDef.allOf[0])
-        assertEquals(true, (allOfDef.allOf[0] as BooleanSchemaDefinition).value)
-        assertIs<StringPropertyDefinition>(allOfDef.allOf[1])
+        allOfDef.allOf.size shouldBe 2
+        allOfDef.allOf[0].shouldBeInstanceOf<BooleanSchemaDefinition>()
+        (allOfDef.allOf[0] as BooleanSchemaDefinition).value shouldBe true
+        allOfDef.allOf[1].shouldBeInstanceOf<StringPropertyDefinition>()
     }
 
     @Test
@@ -151,18 +149,18 @@ class BooleanSchemaDefinitionTest {
             }
             """.trimIndent()
 
-        val objectDef = json.decodeFromString<ObjectPropertyDefinition>(jsonString)
+        val objectDef = deserializeAndSerialize<ObjectPropertyDefinition>(jsonString, json)
 
-        assertNotNull(objectDef.properties)
-        assertEquals(2, objectDef.properties.size)
+        objectDef.properties.shouldNotBeNull()
+        objectDef.properties.size shouldBe 2
 
         val anyValue = objectDef.properties["anyValue"]
-        assertIs<BooleanSchemaDefinition>(anyValue)
-        assertEquals(true, anyValue.value)
+        anyValue.shouldBeInstanceOf<BooleanSchemaDefinition>()
+        anyValue.value shouldBe true
 
         val neverValid = objectDef.properties["neverValid"]
-        assertIs<BooleanSchemaDefinition>(neverValid)
-        assertEquals(false, neverValid.value)
+        neverValid.shouldBeInstanceOf<BooleanSchemaDefinition>()
+        neverValid.value shouldBe false
     }
 
     @Test
@@ -177,14 +175,14 @@ class BooleanSchemaDefinitionTest {
             )
 
         val booleanSchema = objectDef.booleanSchemaProperty("alwaysValid")
-        assertNotNull(booleanSchema)
-        assertEquals(true, booleanSchema.value)
+        booleanSchema.shouldNotBeNull()
+        booleanSchema.value shouldBe true
 
         val notBoolean = objectDef.booleanSchemaProperty("regularString")
-        assertEquals(null, notBoolean)
+        notBoolean shouldBe null
 
         val notExists = objectDef.booleanSchemaProperty("doesNotExist")
-        assertEquals(null, notExists)
+        notExists shouldBe null
     }
 
     @Test
@@ -199,20 +197,36 @@ class BooleanSchemaDefinitionTest {
                     ),
             )
 
-        val jsonElement = json.encodeToJsonElement<ObjectPropertyDefinition>(objectDef)
-        val decoded = json.decodeFromJsonElement<ObjectPropertyDefinition>(jsonElement)
+        val decoded =
+            serializeAndDeserialize(
+                objectDef,
+                """
+                {
+                  "type": "object",
+                  "properties": {
+                    "acceptAll": true,
+                    "rejectAll": false,
+                    "normalString": {
+                      "type": "string"
+                    }
+                  }
+                }
+                """.trimIndent(),
+                json,
+            )
 
-        assertEquals(3, decoded.properties?.size)
+        decoded.properties.shouldNotBeNull()
+        decoded.properties.size shouldBe 3
 
-        val acceptAll = decoded.properties?.get("acceptAll")
-        assertIs<BooleanSchemaDefinition>(acceptAll)
-        assertEquals(true, acceptAll.value)
+        val acceptAll = decoded.properties["acceptAll"]
+        acceptAll.shouldBeInstanceOf<BooleanSchemaDefinition>()
+        acceptAll.value shouldBe true
 
-        val rejectAll = decoded.properties?.get("rejectAll")
-        assertIs<BooleanSchemaDefinition>(rejectAll)
-        assertEquals(false, rejectAll.value)
+        val rejectAll = decoded.properties["rejectAll"]
+        rejectAll.shouldBeInstanceOf<BooleanSchemaDefinition>()
+        rejectAll.value shouldBe false
 
-        val normalString = decoded.properties?.get("normalString")
-        assertIs<StringPropertyDefinition>(normalString)
+        val normalString = decoded.properties["normalString"]
+        normalString.shouldBeInstanceOf<StringPropertyDefinition>()
     }
 }

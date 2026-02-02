@@ -4,12 +4,6 @@ import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.decodeFromJsonElement
-import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.put
 import kotlin.test.Test
 
 /**
@@ -25,18 +19,12 @@ class AdditionalPropertiesConstraintTest {
 
     @Test
     fun `serialize AllowAdditionalProperties as true`() {
-        val constraint: AdditionalPropertiesConstraint = AllowAdditionalProperties
-        val encoded = json.encodeToJsonElement(AdditionalPropertiesSerializer, constraint)
-
-        encoded shouldBe JsonPrimitive(true)
+        serializeAndDeserialize<AdditionalPropertiesConstraint>(AllowAdditionalProperties, "true", json)
     }
 
     @Test
     fun `serialize DenyAdditionalProperties as false`() {
-        val constraint: AdditionalPropertiesConstraint = DenyAdditionalProperties
-        val encoded = json.encodeToJsonElement(AdditionalPropertiesSerializer, constraint)
-
-        encoded shouldBe JsonPrimitive(false)
+        serializeAndDeserialize<AdditionalPropertiesConstraint>(DenyAdditionalProperties, "false", json)
     }
 
     @Test
@@ -44,38 +32,39 @@ class AdditionalPropertiesConstraintTest {
         val schema = StringPropertyDefinition(description = "Must be a string")
         val constraint: AdditionalPropertiesConstraint = AdditionalPropertiesSchema(schema)
 
-        val encoded = json.encodeToJsonElement(AdditionalPropertiesSerializer, constraint)
-
-        encoded.shouldBeInstanceOf<JsonObject>()
-        encoded["type"]?.jsonPrimitive?.content shouldBe "string"
-        encoded["description"]?.jsonPrimitive?.content shouldBe "Must be a string"
+        serializeAndDeserialize<AdditionalPropertiesConstraint>(
+            constraint,
+            """
+            {
+              "type": "string",
+              "description": "Must be a string"
+            }
+            """.trimIndent(),
+            json,
+        )
     }
 
     @Test
     fun `deserialize true as AllowAdditionalProperties`() {
-        val element = JsonPrimitive(true)
-        val constraint = json.decodeFromJsonElement(AdditionalPropertiesSerializer, element)
-
-        constraint shouldBe AllowAdditionalProperties
+        deserializeAndSerialize<AdditionalPropertiesConstraint>("true", json) shouldBe AllowAdditionalProperties
     }
 
     @Test
     fun `deserialize false as DenyAdditionalProperties`() {
-        val element = JsonPrimitive(false)
-        val constraint = json.decodeFromJsonElement(AdditionalPropertiesSerializer, element)
-
-        constraint shouldBe DenyAdditionalProperties
+        deserializeAndSerialize<AdditionalPropertiesConstraint>("false", json) shouldBe DenyAdditionalProperties
     }
 
     @Test
     fun `deserialize schema object as AdditionalPropertiesSchema`() {
-        val element =
-            buildJsonObject {
-                put("type", "number")
-                put("minimum", 0)
+        val jsonString =
+            """
+            {
+              "type": "number",
+              "minimum": 0
             }
+            """.trimIndent()
 
-        val constraint = json.decodeFromJsonElement(AdditionalPropertiesSerializer, element)
+        val constraint = deserializeAndSerialize<AdditionalPropertiesConstraint>(jsonString, json)
 
         constraint.shouldBeInstanceOf<AdditionalPropertiesSchema>()
         val schema = constraint.schema.shouldBeInstanceOf<NumericPropertyDefinition>()
@@ -84,36 +73,26 @@ class AdditionalPropertiesConstraintTest {
 
     @Test
     fun `round-trip serialization - allow`() {
-        val original = AdditionalPropertiesConstraint.allow()
-
-        val encoded = json.encodeToJsonElement(AdditionalPropertiesSerializer, original)
-        val decoded = json.decodeFromJsonElement(AdditionalPropertiesSerializer, encoded)
-
-        decoded shouldBe original
+        deserializeAndSerialize<AdditionalPropertiesConstraint>("true", json) shouldBe AllowAdditionalProperties
     }
 
     @Test
     fun `round-trip serialization - deny`() {
-        val original = AdditionalPropertiesConstraint.deny()
-
-        val encoded = json.encodeToJsonElement(AdditionalPropertiesSerializer, original)
-        val decoded = json.decodeFromJsonElement(AdditionalPropertiesSerializer, encoded)
-
-        decoded shouldBe original
+        deserializeAndSerialize<AdditionalPropertiesConstraint>("false", json) shouldBe DenyAdditionalProperties
     }
 
     @Test
     fun `round-trip serialization - schema`() {
-        val original =
-            AdditionalPropertiesConstraint.schema(
-                StringPropertyDefinition(
-                    minLength = 1,
-                    maxLength = 100,
-                ),
-            )
+        val jsonString =
+            """
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+            """.trimIndent()
 
-        val encoded = json.encodeToJsonElement(AdditionalPropertiesSerializer, original)
-        val decoded = json.decodeFromJsonElement(AdditionalPropertiesSerializer, encoded)
+        val decoded = deserializeAndSerialize<AdditionalPropertiesConstraint>(jsonString, json)
 
         decoded.shouldBeInstanceOf<AdditionalPropertiesSchema>()
         val schema = decoded.schema.shouldBeInstanceOf<StringPropertyDefinition>()
@@ -132,11 +111,21 @@ class AdditionalPropertiesConstraintTest {
         schema.additionalProperties shouldBe DenyAdditionalProperties
 
         // Round-trip
-        val encoded = schema.encodeToJsonObject(json)
-        val decoded = json.decodeFromJsonElement<JsonSchema>(encoded)
-
-        decoded.additionalProperties shouldBe DenyAdditionalProperties
-        encoded["additionalProperties"] shouldBe JsonPrimitive(false)
+        serializeAndDeserialize(
+            schema,
+            """
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+            """.trimIndent(),
+            json,
+        )
     }
 
     @Test
@@ -150,11 +139,21 @@ class AdditionalPropertiesConstraintTest {
         schema.additionalProperties shouldBe AllowAdditionalProperties
 
         // Round-trip
-        val encoded = schema.encodeToJsonObject(json)
-        val decoded = json.decodeFromJsonElement<JsonSchema>(encoded)
-
-        decoded.additionalProperties shouldBe AllowAdditionalProperties
-        encoded["additionalProperties"] shouldBe JsonPrimitive(true)
+        serializeAndDeserialize(
+            schema,
+            """
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": true
+            }
+            """.trimIndent(),
+            json,
+        )
     }
 
     @Test
@@ -177,18 +176,30 @@ class AdditionalPropertiesConstraintTest {
                     ),
             )
 
-        schemaWithAdditionalProps.additionalProperties.shouldBeInstanceOf<AdditionalPropertiesSchema>()
-        val additionalSchema =
-            schemaWithAdditionalProps.additionalProperties
-                .schema
-                .shouldBeInstanceOf<ObjectPropertyDefinition>()
-        additionalSchema.properties
-            ?.get("dynamic")
-            .shouldBeInstanceOf<StringPropertyDefinition>()
-
         // Round-trip
-        val encoded = schemaWithAdditionalProps.encodeToJsonObject(json)
-        val decoded = json.decodeFromJsonElement<JsonSchema>(encoded)
+        val decoded =
+            serializeAndDeserialize(
+                schemaWithAdditionalProps,
+                """
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": {
+                    "type": "object",
+                    "properties": {
+                      "dynamic": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+                """.trimIndent(),
+                json,
+            )
 
         decoded.additionalProperties.shouldBeInstanceOf<AdditionalPropertiesSchema>()
         val roundTripSchema =
@@ -211,14 +222,24 @@ class AdditionalPropertiesConstraintTest {
         schema.additionalProperties.shouldBeNull()
 
         // Round-trip - null should not be serialized
-        val encoded = schema.encodeToJsonObject(json)
-        val decoded = json.decodeFromJsonElement<JsonSchema>(encoded)
-
-        decoded.additionalProperties.shouldBeNull()
-        encoded.containsKey("additionalProperties") shouldBe false
+        serializeAndDeserialize(
+            schema,
+            """
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+            """.trimIndent(),
+            json,
+        )
     }
 
     @Test
+    @Suppress("LongMethod")
     fun `nested object with different additionalProperties constraints`() {
         val schema =
             jsonSchema {
@@ -245,22 +266,49 @@ class AdditionalPropertiesConstraintTest {
                 }
             }
 
-        // Verify structure
-        val strictObj = schema.objectProperty("strict")!!
-        strictObj.additionalProperties shouldBe DenyAdditionalProperties
-
-        val flexibleObj = schema.objectProperty("flexible")!!
-        flexibleObj.additionalProperties shouldBe AllowAdditionalProperties
-
-        val typedObj = schema.objectProperty("typed")!!
-        typedObj.additionalProperties.shouldBeInstanceOf<AdditionalPropertiesSchema>()
-        val typedSchema = typedObj.additionalProperties.schema
-        typedSchema.shouldBeInstanceOf<StringPropertyDefinition>()
-        typedSchema.pattern shouldBe "^[a-z]+$"
-
         // Round-trip entire schema
-        val encoded = schema.encodeToJsonObject(json)
-        val decoded = json.decodeFromJsonElement<JsonSchema>(encoded)
+        val decoded =
+            serializeAndDeserialize(
+                schema,
+                """
+                {
+                  "type": "object",
+                  "properties": {
+                    "strict": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "flexible": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": true
+                    },
+                    "typed": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "string",
+                        "pattern": "^[a-z]+$"
+                      }
+                    }
+                  }
+                }
+                """.trimIndent(),
+                json,
+            )
 
         // Verify after round-trip
         val decodedStrict = decoded.objectProperty("strict")!!
@@ -286,7 +334,7 @@ class AdditionalPropertiesConstraintTest {
             }
             """.trimIndent()
 
-        val parsed = json.decodeFromString<JsonSchema>(jsonSchemaText)
+        val parsed = deserializeAndSerialize<JsonSchema>(jsonSchemaText, json)
 
         parsed.additionalProperties shouldBe DenyAdditionalProperties
     }
@@ -304,7 +352,7 @@ class AdditionalPropertiesConstraintTest {
             }
             """.trimIndent()
 
-        val parsed = json.decodeFromString<JsonSchema>(jsonSchemaText)
+        val parsed = deserializeAndSerialize<JsonSchema>(jsonSchemaText, json)
 
         parsed.additionalProperties shouldBe AllowAdditionalProperties
     }
@@ -325,7 +373,7 @@ class AdditionalPropertiesConstraintTest {
             }
             """.trimIndent()
 
-        val parsed = json.decodeFromString<JsonSchema>(jsonSchemaText)
+        val parsed = deserializeAndSerialize<JsonSchema>(jsonSchemaText, json)
 
         parsed.additionalProperties.shouldBeInstanceOf<AdditionalPropertiesSchema>()
         val schema = parsed.additionalProperties.schema

@@ -40,7 +40,7 @@ class FunctionCallingSchemaTest {
             }
             """.trimIndent()
 
-        val decoded = json.decodeFromString<FunctionCallingSchema>(jsonString)
+        val decoded = deserializeAndSerialize<FunctionCallingSchema>(jsonString, json)
 
         decoded.type shouldBe "function"
         decoded.name shouldBe "get_weather"
