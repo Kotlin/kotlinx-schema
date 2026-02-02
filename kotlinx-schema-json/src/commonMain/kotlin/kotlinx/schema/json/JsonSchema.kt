@@ -138,18 +138,12 @@ internal object AdditionalPropertiesSerializer : KSerializer<AdditionalPropertie
 }
 
 /**
- * Encodes the given [JsonSchema] instance into a [JsonObject] representation.
- *
- * @param json The [Json] instance to use for serialization. Defaults to [Json] instance with default configuration.
- * @return A [JsonObject] representing the serialized form of the [JsonSchema].
+ * Encodes this [JsonSchema] to a [JsonObject].
  */
 public fun JsonSchema.encodeToJsonObject(json: Json = Json): JsonObject = json.encodeToJsonElement(this).jsonObject
 
 /**
- * Encodes the [JsonSchema] instance into its JSON string representation.
- *
- * @param json The [Json] instance to use for serialization. Defaults to [Json] instance with default configuration.
- * @return The JSON string representation of the [JsonSchema] instance.
+ * Encodes this [JsonSchema] to a JSON string.
  */
 public fun JsonSchema.encodeToString(json: Json = Json): String = json.encodeToString(this)
 
@@ -158,7 +152,7 @@ public fun JsonSchema.encodeToString(json: Json = Json): String = json.encodeToS
  */
 public interface PropertiesContainer {
     /**
-     * Represents a map of property definitions for an object.
+     * Map of property definitions.
      */
     public val properties: Map<String, PropertyDefinition>?
 
@@ -183,12 +177,12 @@ public interface PropertiesContainer {
     public val patternProperties: Map<String, PropertyDefinition>?
 
     /**
-     * The value of "unevaluatedProperties" MUST be a valid JSON Schema.
+     * Schema for unevaluated properties.
      */
     public val unevaluatedProperties: PropertyDefinition?
 
     /**
-     * If "propertyNames" is present, its value MUST be a valid JSON Schema.
+     * Schema for property names.
      */
     public val propertyNames: PropertyDefinition?
 
@@ -213,57 +207,60 @@ public interface PropertiesContainer {
     public val maxProperties: Int?
 
     /**
-     * Retrieves the boolean property definition associated with the specified property name.
+     * Returns the boolean property definition for [name], or null if not found or not a boolean property.
      */
     public fun booleanProperty(name: String): BooleanPropertyDefinition? =
         properties?.get(name) as? BooleanPropertyDefinition
 
     /**
-     * Retrieves the numeric property definition associated with the specified property name.
+     * Returns the numeric property definition for [name], or null if not found or not a numeric property.
      */
     public fun numericProperty(name: String): NumericPropertyDefinition? =
         properties?.get(name) as? NumericPropertyDefinition
 
     /**
-     * Retrieves the string property definition associated with the specified property name.
+     * Returns the string property definition for [name], or null if not found or not a string property.
      */
     public fun stringProperty(name: String): StringPropertyDefinition? =
         properties?.get(name) as? StringPropertyDefinition
 
     /**
-     * Retrieves the `object` property definition associated with the specified property name.
+     * Returns the object property definition for [name], or null if not found or not an object property.
      */
     public fun objectProperty(name: String): ObjectPropertyDefinition? =
         properties?.get(name) as? ObjectPropertyDefinition
 
     /**
-     * Retrieves the array property definition associated with the specified property name.
+     * Returns the array property definition for [name], or null if not found or not an array property.
      */
     public fun arrayProperty(name: String): ArrayPropertyDefinition? = properties?.get(name) as? ArrayPropertyDefinition
 
     /**
-     * Retrieves the reference property definition associated with the specified property name.
+     * Returns the reference property definition for [name], or null if not found or not a reference.
      */
     public fun referenceProperty(name: String): ReferencePropertyDefinition? =
         properties?.get(name) as? ReferencePropertyDefinition
 
     /**
-     * Retrieves the oneOf property definition associated with the specified property name.
+     * Returns the oneOf property definition for [name], or null if not found or not a oneOf.
      */
     public fun oneOfProperty(name: String): OneOfPropertyDefinition? = properties?.get(name) as? OneOfPropertyDefinition
 
     /**
-     * Retrieves the anyOf property definition associated with the specified property name.
+     * Returns the anyOf property definition for [name], or null if not found or not an anyOf.
      */
     public fun anyOfProperty(name: String): AnyOfPropertyDefinition? = properties?.get(name) as? AnyOfPropertyDefinition
 
     /**
-     * Retrieves the allOf property definition associated with the specified property name.
+     * Returns the allOf property definition for [name], or null if not found or not an allOf.
      */
     public fun allOfProperty(name: String): AllOfPropertyDefinition? = properties?.get(name) as? AllOfPropertyDefinition
 
     /**
-     * Retrieves the boolean schema definition associated with the specified property name.
+     * Returns the boolean schema definition for [name], or null if not found or not a boolean schema.
+     *
+     * Note: This returns [BooleanSchemaDefinition] (true/false as the entire schema),
+     * not [BooleanPropertyDefinition] (a schema for boolean values).
      */
     public fun booleanSchemaProperty(name: String): BooleanSchemaDefinition? =
         properties?.get(name) as? BooleanSchemaDefinition
@@ -274,22 +271,22 @@ public interface PropertiesContainer {
  */
 public interface ArrayContainer {
     /**
-     * The value of "items" MUST be a valid JSON Schema.
+     * Schema for array items.
      */
     public val items: PropertyDefinition?
 
     /**
-     * The value of "prefixItems" MUST be a non-empty array of valid JSON Schemas.
+     * Array of schemas for positional items.
      */
     public val prefixItems: List<PropertyDefinition>?
 
     /**
-     * The value of "unevaluatedItems" MUST be a valid JSON Schema.
+     * Schema for unevaluated array items.
      */
     public val unevaluatedItems: PropertyDefinition?
 
     /**
-     * The value of "contains" MUST be a valid JSON Schema.
+     * Schema that at least one array item must match.
      */
     public val contains: PropertyDefinition?
 
@@ -407,7 +404,10 @@ public interface ApplicatorContainer {
 }
 
 /**
- * Represents a JSON Schema model.
+ * Represents a JSON Schema with validation constraints and metadata according to the JSON Schema specification.
+ *
+ * Supports object, array, string, number, and compositional schemas with validation rules,
+ * type constraints, conditional logic, and metadata.
  *
  * @author Konstantin Pavlov
  */
