@@ -2,6 +2,7 @@
 
 package kotlinx.schema.json
 
+import kotlinx.schema.json.AdditionalPropertiesConstraint.Companion.schema
 import kotlinx.schema.json.JsonSchemaConstants.Keys.ADDITIONAL_PROPERTIES
 import kotlinx.schema.json.JsonSchemaConstants.Keys.ANCHOR
 import kotlinx.schema.json.JsonSchemaConstants.Keys.COMMENT
@@ -33,7 +34,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonIgnoreUnknownKeys
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.booleanOrNull
@@ -459,9 +459,10 @@ public interface ApplicatorContainer {
 }
 
 /**
- * Represents a JSON Schema model.
+ * Defines a data model for representing a JSON Schema.
  *
- * @author Konstantin Pavlov
+ * This class adheres to the [JSON Schema specification](https://json-schema.org/draft/2020-12)
+ * and includes support for custom and complex schema constraints.
  */
 @Serializable
 @Suppress("LongParameterList")

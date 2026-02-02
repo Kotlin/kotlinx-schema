@@ -2,7 +2,6 @@ package kotlinx.schema.json.conformance
 
 import kotlinx.schema.json.JsonSchema
 import kotlinx.schema.json.JsonSchemaConstants
-import kotlinx.schema.json.PropertyDefinition
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -101,28 +100,31 @@ class JsonSchemaConformanceTest {
         require(schema is JsonObject) { "Only JsonObject schemas are supported at top level" }
 
         // Extract unknown keywords as annotations
-        val unknownKeywords = schema.keys.filterNot { key ->
-            key in JsonSchemaConstants.KNOWN_KEYWORDS || key == "annotations"
-        }
+        val unknownKeywords =
+            schema.keys.filterNot { key ->
+                key in JsonSchemaConstants.KNOWN_KEYWORDS || key == "annotations"
+            }
 
-        val annotations = if (unknownKeywords.isEmpty()) {
-            null
-        } else {
-            unknownKeywords.associateWith { schema[it]!! }
-        }
+        val annotations =
+            if (unknownKeywords.isEmpty()) {
+                null
+            } else {
+                unknownKeywords.associateWith { schema[it]!! }
+            }
 
         // Create a cleaned JSON object with only known keywords
-        val cleanedJson = if (annotations != null) {
-            buildJsonObject {
-                schema.forEach { (key, value) ->
-                    if (key !in unknownKeywords) {
-                        put(key, value)
+        val cleanedJson =
+            if (annotations != null) {
+                buildJsonObject {
+                    schema.forEach { (key, value) ->
+                        if (key !in unknownKeywords) {
+                            put(key, value)
+                        }
                     }
                 }
+            } else {
+                schema
             }
-        } else {
-            schema
-        }
 
         // Deserialize from the cleaned JSON
         val jsonSchema = json.decodeFromJsonElement<JsonSchema>(cleanedJson)

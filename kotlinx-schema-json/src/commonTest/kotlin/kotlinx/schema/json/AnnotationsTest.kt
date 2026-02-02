@@ -18,7 +18,7 @@ class AnnotationsTest {
     private val json =
         Json {
             prettyPrint = false
-            ignoreUnknownKeys = true // Required for annotations to work - unknown keys are extracted separately
+            ignoreUnknownKeys = false
         }
 
     @Test

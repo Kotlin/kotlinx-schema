@@ -16,10 +16,30 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.encodeToJsonElement
 
 /**
- * Serializer for [PropertyDefinition] that handles polymorphic serialization.
+ * Serializer implementation for the [PropertyDefinition] interface.
  *
- * @author Konstantin Pavlov
+ * This serializer handles both serialization and deserialization of various
+ * property definition types derived from the [PropertyDefinition] interface.
+ * It supports polymorphic and type-safe encoding/decoding mechanisms in
+ * accordance with the JSON Schema standard.
+ *
+ * Main responsibilities:
+ * - Deserialize JSON objects into their respective [PropertyDefinition] types.
+ * - Encode [PropertyDefinition] types into JSON following type-specific rules.
+ * - Handle annotations (unknown keywords) as specified by the JSON Schema standard.
+ *
+ * Structure:
+ * - Deserialization: Determines the correct [PropertyDefinition] type based on the JSON structure and content.
+ * - Serialization: Properly encodes each [PropertyDefinition] type while applying type-safe serialization mechanisms.
+ * - Annotation Handling: Extracts unknown keywords during deserialization and re-inserts them during serialization.
+ *
+ * The implementation adheres to JSON Schema 2020-12 specifications and supports
+ * handling of true/false schemas, typed schemas, and annotation-based metadata.
+ *
+ * @property descriptor The associated SerialDescriptor for the [PropertyDefinition] type.
+ *                       Utilized for schema generation and serialization metadata.
  */
+@Suppress("TooManyFunctions")
 internal class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("PropertyDefinition")
 
@@ -45,21 +65,23 @@ internal class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
 
         // Create a cleaned JSON object with only known keywords
         // This ensures deserialization works even with ignoreUnknownKeys = false
-        val cleanedJson = if (annotations != null) {
-            buildJsonObject {
-                jsonElement.forEach { (key, value) ->
-                    if (key !in annotations) {
-                        put(key, value)
+        val cleanedJson =
+            if (annotations != null) {
+                buildJsonObject {
+                    jsonElement.forEach { (key, value) ->
+                        if (key !in annotations) {
+                            put(key, value)
+                        }
                     }
                 }
+            } else {
+                jsonElement
             }
-        } else {
-            jsonElement
-        }
 
         // Deserialize the property definition from the cleaned JSON
-        val propertyDef = decodePolymorphicOrNull(decoder, cleanedJson)
-            ?: decodeTypedProperty(decoder, cleanedJson)
+        val propertyDef =
+            decodePolymorphicOrNull(decoder, cleanedJson)
+                ?: decodeTypedProperty(decoder, cleanedJson)
 
         // If there are annotations, inject them using the copy method
         return if (annotations != null) {
@@ -80,14 +102,15 @@ internal class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
      * @return Map of unknown keywords to their values, or null if no unknown keywords present
      */
     private fun extractAnnotations(jsonObject: JsonObject): Map<String, JsonElement>? {
-        val unknownKeywords = jsonObject.keys.filterNot { key ->
-            key in JsonSchemaConstants.KNOWN_KEYWORDS || key == "annotations"
-        }
+        val unknownKeywords =
+            jsonObject.keys.filterNot { key ->
+                key in JsonSchemaConstants.KNOWN_KEYWORDS || key == "annotations"
+            }
 
         return if (unknownKeywords.isEmpty()) {
             null
         } else {
-            unknownKeywords.associateWith { jsonObject[it]!! }
+            unknownKeywords.associateWith { jsonObject.getValue(it) }
         }
     }
 
@@ -104,8 +127,8 @@ internal class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
     private fun injectAnnotations(
         propertyDef: PropertyDefinition,
         annotations: Map<String, JsonElement>,
-    ): PropertyDefinition {
-        return when (propertyDef) {
+    ): PropertyDefinition =
+        when (propertyDef) {
             is BooleanSchemaDefinition -> propertyDef.copy(annotations = annotations)
             is StringPropertyDefinition -> propertyDef.copy(annotations = annotations)
             is NumericPropertyDefinition -> propertyDef.copy(annotations = annotations)
@@ -119,7 +142,6 @@ internal class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
             is ReferencePropertyDefinition -> propertyDef.copy(annotations = annotations)
             is JsonSchema -> propertyDef.copy(annotations = annotations)
         }
-    }
 
     private fun decodePolymorphicOrNull(
         decoder: JsonDecoder,
@@ -342,12 +364,13 @@ internal class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
         if (annotations != null) {
             // Boolean schemas with annotations need to be represented as objects
             // We'll use a special encoding: { "const": <boolean>, ...annotations }
-            val obj = buildJsonObject {
-                put("const", JsonPrimitive(value.value))
-                annotations.forEach { (key, jsonValue) ->
-                    put(key, jsonValue)
+            val obj =
+                buildJsonObject {
+                    put("const", JsonPrimitive(value.value))
+                    annotations.forEach { (key, jsonValue) ->
+                        put(key, jsonValue)
+                    }
                 }
-            }
             encoder.encodeJsonElement(obj)
         } else {
             encoder.encodeJsonElement(JsonPrimitive(value.value))
@@ -376,18 +399,19 @@ internal class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
         // If there are annotations, merge them into the root level
         val annotations = value.annotations
         if (annotations != null && baseElement is JsonObject) {
-            val merged = buildJsonObject {
-                // Add all fields except "annotations"
-                baseElement.forEach { (key, jsonValue) ->
-                    if (key != "annotations") {
+            val merged =
+                buildJsonObject {
+                    // Add all fields except "annotations"
+                    baseElement.forEach { (key, jsonValue) ->
+                        if (key != "annotations") {
+                            put(key, jsonValue)
+                        }
+                    }
+                    // Add annotation keywords at root level
+                    annotations.forEach { (key, jsonValue) ->
                         put(key, jsonValue)
                     }
                 }
-                // Add annotation keywords at root level
-                annotations.forEach { (key, jsonValue) ->
-                    put(key, jsonValue)
-                }
-            }
             encoder.encodeJsonElement(merged)
         } else {
             encoder.encodeJsonElement(baseElement)
