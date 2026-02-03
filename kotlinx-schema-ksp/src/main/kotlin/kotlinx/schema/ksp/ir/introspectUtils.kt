@@ -5,6 +5,7 @@ import com.google.devtools.ksp.isPublic
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSType
+import com.google.devtools.ksp.symbol.KSValueParameter
 import com.google.devtools.ksp.symbol.Nullability
 import kotlinx.schema.generator.core.ir.Property
 import kotlinx.schema.generator.core.ir.TypeId
@@ -54,6 +55,60 @@ internal fun extractDescription(
 ): String? =
     annotated.annotations.firstNotNullOfOrNull { it.descriptionOrNull() }
         ?: kdocFallback()
+
+/**
+ * Extracts description for a property or parameter with multiple fallback sources.
+ *
+ * This function supports the following description resolution chain:
+ * 1. Annotations on the property/parameter (e.g., @Description)
+ * 2. Property's own KDoc (via elementKdocFallback)
+ * 3. Parent's KDoc tag (@param or @property) for the property/parameter name
+ *
+ * @param annotated The annotated property/parameter element
+ * @param propertyName The name of the property/parameter (used for parent KDoc lookup)
+ * @param parentKdoc The parent's KDoc string (class KDoc for @property or function KDoc for @param)
+ * @param kdocTagName The tag name to search in parent KDoc ("param" or "property")
+ * @param elementKdocFallback Lazy KDoc description provider for the element itself
+ * @return Description string or null if not found in any source
+ */
+internal fun extractPropertyDescription(
+    annotated: KSAnnotated,
+    propertyName: String,
+    parentKdoc: String?,
+    kdocTagName: String,
+    elementKdocFallback: () -> String?,
+): String? =
+    // 1. Try annotations first
+    annotated.annotations.firstNotNullOfOrNull { it.descriptionOrNull() }
+        // 2. Fall back to property's own KDoc
+        ?: elementKdocFallback()
+        // 3. Finally, try parent KDoc tag
+        ?: extractTagDescriptionFromKdoc(parentKdoc, kdocTagName, propertyName)
+
+/**
+ * Extracts description for a constructor parameter with class KDoc fallback.
+ *
+ * Constructor parameters can be documented using either @param or @property tags
+ * in the class KDoc. This function tries both with @param taking precedence.
+ *
+ * Resolution chain:
+ * 1. Annotations on the parameter (e.g., @Description)
+ * 2. Class KDoc @param tag
+ * 3. Class KDoc @property tag
+ *
+ * @param param The constructor parameter
+ * @param paramName The parameter name
+ * @param classKdoc The class KDoc string
+ * @return Description string or null if not found in any source
+ */
+private fun extractConstructorParamDescription(
+    param: KSValueParameter,
+    paramName: String,
+    classKdoc: String?,
+): String? =
+    param.annotations.firstNotNullOfOrNull { it.descriptionOrNull() }
+        ?: extractTagDescriptionFromKdoc(classKdoc, "param", paramName)
+        ?: extractTagDescriptionFromKdoc(classKdoc, "property", paramName)
 
 /**
  * Processes a class declaration with cycle detection, ensuring each type is visited only once.
@@ -301,14 +356,25 @@ internal fun handleObjectOrClass(
             // Only runtime reflection can extract actual default values.
             params.forEach { p ->
                 val name = p.name?.asString() ?: return@forEach
-                addProperty(name, p.type.resolve(), extractDescription(p) { null }, p.hasDefault)
+                val description = extractConstructorParamDescription(p, name, decl.docString)
+                addProperty(name, p.type.resolve(), description, p.hasDefault)
             }
         } else {
             decl.getDeclaredProperties().filter { it.isPublic() }.forEach { prop ->
+                val name = prop.simpleName.asString()
+                // Extract description from: annotations -> property KDoc -> class KDoc @property tag
+                val description =
+                    extractPropertyDescription(
+                        annotated = prop,
+                        propertyName = name,
+                        parentKdoc = decl.docString,
+                        kdocTagName = "property",
+                        elementKdocFallback = { prop.descriptionFromKdoc() },
+                    )
                 addProperty(
-                    prop.simpleName.asString(),
+                    name,
                     prop.type.resolve(),
-                    extractDescription(prop) { prop.descriptionFromKdoc() },
+                    description,
                     false,
                 )
             }

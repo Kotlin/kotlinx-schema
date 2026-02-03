@@ -42,8 +42,15 @@ internal class KspFunctionIntrospector : SchemaIntrospector<KSFunctionDeclaratio
 
             val typeRef = context.toRef(paramType)
 
-            // Extract description from annotations or KDoc
-            val description = extractDescription(param) { null }
+            // Extract description from annotations, then fall back to function KDoc @param tag
+            val description =
+                extractPropertyDescription(
+                    annotated = param,
+                    propertyName = paramName,
+                    parentKdoc = root.docString,
+                    kdocTagName = "param",
+                    elementKdocFallback = { null },
+                )
 
             // KSP limitation: hasDefault doesn't reliably detect default values in the same compilation unit
             // For function calling schemas, all parameters are marked as required by default (including nullable)
