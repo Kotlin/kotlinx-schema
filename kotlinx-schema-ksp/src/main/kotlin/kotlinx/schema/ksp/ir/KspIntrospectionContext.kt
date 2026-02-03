@@ -28,13 +28,6 @@ import kotlinx.schema.generator.core.ir.TypeRef
 @OptIn(InternalSchemaGeneratorApi::class)
 internal class KspIntrospectionContext : BaseIntrospectionContext<KSClassDeclaration, KSType>() {
     /**
-     * Exposes discovered nodes as a mutable map for handler functions.
-     * KSP handlers are top-level functions that need direct mutable access.
-     */
-    internal val nodes: MutableMap<TypeId, TypeNode>
-        get() = discoveredNodes
-
-    /**
      * Exposes visiting declarations as a mutable set for handler functions.
      * KSP handlers are top-level functions that need direct mutable access.
      */

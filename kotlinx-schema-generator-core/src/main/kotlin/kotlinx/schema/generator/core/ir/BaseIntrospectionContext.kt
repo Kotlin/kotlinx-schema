@@ -29,6 +29,13 @@ public abstract class BaseIntrospectionContext<TDecl : Any, TType : Any> {
     protected val discoveredNodes: MutableMap<TypeId, TypeNode> = linkedMapOf()
 
     /**
+     * Exposes discovered nodes for building TypeGraph.
+     * Provides a consistent API across all introspector implementations (Reflection, KSP, Serialization).
+     */
+    public val nodes: MutableMap<TypeId, TypeNode>
+        get() = discoveredNodes
+
+    /**
      * Set of declarations currently being visited (for cycle detection).
      * When a type references itself (directly or indirectly), we detect the cycle
      * and avoid infinite recursion by checking this set.
