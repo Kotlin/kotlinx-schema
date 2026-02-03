@@ -1,6 +1,5 @@
 package kotlinx.schema.generator.json
 
-import TypeGraphToJsonObjectSchemaTransformer
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
