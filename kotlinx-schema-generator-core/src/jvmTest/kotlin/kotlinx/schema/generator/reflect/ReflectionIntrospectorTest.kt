@@ -35,6 +35,7 @@ class ReflectionIntrospectorTest {
         val color: Color,
     )
 
+    @Suppress("unused")
     sealed class Shape {
         @Description("Circle shape")
         data class Circle(

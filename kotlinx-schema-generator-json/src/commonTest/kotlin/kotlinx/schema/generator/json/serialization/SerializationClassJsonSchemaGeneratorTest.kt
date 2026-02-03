@@ -1,20 +1,14 @@
 package kotlinx.schema.generator.json.serialization
 
 import io.kotest.assertions.json.shouldEqualJson
-import kotlinx.schema.Description
-import kotlinx.schema.generator.core.SchemaGeneratorService
-import kotlinx.schema.json.JsonSchema
 import kotlinx.schema.json.encodeToString
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 
 class SerializationClassJsonSchemaGeneratorTest {
     @Serializable
-    @Description("Personal information")
     data class Person(
-        @property:Description("Person's first name")
         val firstName: String,
     )
 
@@ -35,11 +29,7 @@ class SerializationClassJsonSchemaGeneratorTest {
         }
         """
 
-    val generator =
-        SchemaGeneratorService.getGenerator(SerialDescriptor::class, JsonSchema::class)
-            ?: error(
-                "SerializationClassJsonSchemaGenerator must be registered",
-            )
+    val generator = SerializationClassJsonSchemaGenerator()
 
     @Test
     fun `Should generate JsonSchema from SerialDescriptor`() {

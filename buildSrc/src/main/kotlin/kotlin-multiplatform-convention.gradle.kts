@@ -4,6 +4,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsSubTargetDsl
 
 plugins {
@@ -12,19 +13,14 @@ plugins {
 
 kotlin {
 
-    @OptIn(org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation::class)
+    @OptIn(ExperimentalAbiValidation::class)
     abiValidation {
-        // Use the set() function to ensure compatibility with older Gradle versions
-        enabled.set(true)
+        enabled = true
     }
 
     compilerOptions {
-//        apiVersion.set(LanguageVersion.KOTLIN_1_8)
-//        languageVersion.set(KotlinVersion(2,1)) = LanguageVersion.KOTLIN_2_1
-//        languageVersion = LanguageVersion.KOTLIN_2_1
         allWarningsAsErrors = true
         extraWarnings = true
-//        jvmDefault = JvmDefaultMode.ENABLE
         freeCompilerArgs =
             listOf(
                 "-Wextra",

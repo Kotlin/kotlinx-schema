@@ -5,7 +5,6 @@ import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
-import kotlinx.schema.Description
 import kotlinx.schema.generator.core.ir.EnumNode
 import kotlinx.schema.generator.core.ir.ListNode
 import kotlinx.schema.generator.core.ir.MapNode
@@ -22,9 +21,7 @@ import kotlinx.schema.generator.json.serialization.SerializationClassSchemaIntro
 
 class SerializationIntrospectorTest {
     @Serializable
-    @Description("A user model")
     data class User(
-        @property:Description("The name of the user")
         val name: String,
         val age: Int?,
         val email: String = "n/a",
@@ -33,7 +30,6 @@ class SerializationIntrospectorTest {
     )
 
     @Serializable
-    @Description("Available colors")
     @Suppress("unused")
     enum class Color { RED, GREEN, BLUE }
 
@@ -45,13 +41,11 @@ class SerializationIntrospectorTest {
     @Serializable
     sealed class Shape {
         @Serializable
-        @Description("Circle shape")
         data class Circle(
             val radius: Double,
         ) : Shape()
 
         @Serializable
-        @Description("Rectangle shape")
         data class Rectangle(
             val width: Double,
             val height: Double,

@@ -1,5 +1,3 @@
-import org.gradle.kotlin.dsl.invoke
-
 plugins {
     `dokka-convention`
     `kotlin-multiplatform-convention`
@@ -23,12 +21,11 @@ kotlin {
 
         commonTest {
             dependencies {
-                implementation(project(":kotlinx-schema-annotations"))
-                implementation(libs.kotlin.test)
                 implementation(libs.kotest.assertions.core)
                 implementation(libs.kotest.assertions.json)
-
+                implementation(libs.kotlin.test)
                 implementation(libs.kotlinx.serialization.json)
+                implementation(project(":kotlinx-schema-annotations"))
             }
         }
 
@@ -41,7 +38,6 @@ kotlin {
 
         jvmTest {
             dependencies {
-                implementation(libs.mockk)
                 implementation(libs.junit.jupiter.params)
                 implementation(libs.mockk)
             }
