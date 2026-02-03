@@ -1,7 +1,7 @@
 .SHELLFLAGS := -e -o pipefail -c
 
 .PHONY: all
-all:clean build integration-test
+all:clean build integration-test examples
 
 .PHONY: build
 build:clean

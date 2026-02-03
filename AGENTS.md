@@ -11,19 +11,19 @@ changes safe, comprehensible, and easy to maintain.
 2. Keep tests simple and explicit.
     - Arrange/Act/Assert structure; avoid hidden magic and overuse of helpers.
     - Prefer concrete inputs/outputs; avoid randomness and time dependence.
-3. Uphold SOLID principles in production code.
+3. Uphold SOLID principles in production code:
     - Single Responsibility: each class/function should do one thing well.
     - Open/Closed: extend via new code, avoid risky edits to stable code paths.
     - Liskov Substitution: honor contracts; keep types substitutable.
     - Interface Segregation: keep abstractions small and focused.
-    - Dependency Inversion: depend on abstractions, not concretions.
+    - Dependency Inversion: should depend on abstractions, not concretions.
 4. Make the minimal change that satisfies the tests and the issue.
 5. Keep the build green. Do not merge changes that break existing tests.
 6. Prefer clarity over micro-optimizations and cleverness.
 7. Ask when uncertain. If requirements are ambiguous, request clarification with a concise question.
 8. Write code with the quality of a Kotlin Champion.
-9. Prefer using MCP servers like `jetbrains` and `intellij-index` to work with code and running tests.
-   Don't use MCP to run terminal commands.
+9. Prefer using MCP servers like `jetbrains` and `intellij-index` to work with code
+10. Don't use MCP to run terminal commands.
 
 ## Code Style
 
