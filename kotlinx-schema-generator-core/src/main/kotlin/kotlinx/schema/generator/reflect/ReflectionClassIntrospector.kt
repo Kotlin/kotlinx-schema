@@ -1,6 +1,5 @@
 package kotlinx.schema.generator.reflect
 
-import kotlinx.schema.generator.core.InternalSchemaGeneratorApi
 import kotlinx.schema.generator.core.ir.Discriminator
 import kotlinx.schema.generator.core.ir.ObjectNode
 import kotlinx.schema.generator.core.ir.PolymorphicNode
@@ -34,7 +33,7 @@ public object ReflectionClassIntrospector : SchemaIntrospector<KClass<*>> {
     override fun introspect(root: KClass<*>): TypeGraph {
         val context = IntrospectionContext()
         val rootRef = context.convertToTypeRef(root)
-        return TypeGraph(root = rootRef, nodes = context.nodes())
+        return TypeGraph(root = rootRef, nodes = context.nodes)
     }
 
     /**
@@ -42,8 +41,6 @@ public object ReflectionClassIntrospector : SchemaIntrospector<KClass<*>> {
      * visited classes, and type reference cache.
      */
     private class IntrospectionContext : ReflectionIntrospectionContext() {
-        fun nodes() = discoveredNodes
-
         /**
          * Overrides base convertToTypeRef to add sealed class handling before object handling.
          */
@@ -156,40 +153,28 @@ public object ReflectionClassIntrospector : SchemaIntrospector<KClass<*>> {
             // Try to extract default values by creating an instance
             val defaultValues = DefaultValueExtractor.extractDefaultValues(klass)
 
-            // Extract properties from primary constructor
-            val processedProperties = mutableSetOf<String>()
-            klass.constructors.firstOrNull()?.parameters?.forEach { param ->
-                val propertyName = param.name ?: return@forEach
-                processedProperties.add(propertyName)
-                val hasDefault = param.isOptional
+            // Extract properties from primary constructor using shared method
+            val (constructorProperties, constructorRequired) = extractConstructorProperties(klass, defaultValues)
 
-                // Find the corresponding property to get annotations
-                val property = findPropertyByName(klass, propertyName)
+            // Track which properties were processed from constructor
+            val processedProperties = constructorProperties.map { it.name }.toSet()
 
-                val propertyType = param.type
-                val typeRef = convertKTypeToTypeRef(propertyType)
-
-                // Get description from property or inherit from parent
-                val description =
-                    property?.let { extractDescription(it.annotations) }
-                        ?: parentPropertyDescriptions[propertyName]
-
-                // Get the actual default value if available
-                val defaultValue = if (hasDefault) defaultValues[propertyName] else null
-
-                properties +=
-                    Property(
-                        name = propertyName,
-                        type = typeRef,
-                        description = description,
-                        hasDefaultValue = hasDefault,
-                        defaultValue = defaultValue,
-                    )
-
-                if (!hasDefault) {
-                    requiredProperties += propertyName
+            // If there are sealed parents, update descriptions to inherit from parent if needed
+            if (sealedParents.isNotEmpty()) {
+                constructorProperties.forEach { prop ->
+                    val updatedProp =
+                        if (prop.description == null && parentPropertyDescriptions.containsKey(prop.name)) {
+                            prop.copy(description = parentPropertyDescriptions[prop.name])
+                        } else {
+                            prop
+                        }
+                    properties += updatedProp
                 }
+            } else {
+                properties += constructorProperties
             }
+
+            requiredProperties += constructorRequired
 
             // Add inherited properties from sealed parents that weren't in the constructor
             val inheritedPropertyNames = parentProperties - processedProperties

@@ -7,6 +7,7 @@ import kotlinx.schema.generator.core.ir.MapNode
 import kotlinx.schema.generator.core.ir.ObjectNode
 import kotlinx.schema.generator.core.ir.PrimitiveKind
 import kotlinx.schema.generator.core.ir.PrimitiveNode
+import kotlinx.schema.generator.core.ir.Property
 import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeRef
 import kotlin.reflect.KClass
@@ -186,6 +187,53 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
         klass: KClass<*>,
         parentPrefix: String? = null,
     ): ObjectNode
+
+    /**
+     * Extracts properties from the primary constructor of a class.
+     *
+     * This method processes constructor parameters to create Property objects,
+     * handling type conversion, default values, descriptions, and nullability.
+     *
+     * @param klass The class whose constructor to analyze
+     * @param defaultValues Map of property names to their default values (from DefaultValueExtractor)
+     * @return Pair of (list of properties, set of required property names)
+     */
+    protected fun extractConstructorProperties(
+        klass: KClass<*>,
+        defaultValues: Map<String, Any?>,
+    ): Pair<List<Property>, Set<String>> {
+        val properties = mutableListOf<Property>()
+        val requiredProperties = mutableSetOf<String>()
+
+        klass.constructors.firstOrNull()?.parameters?.forEach { param ->
+            val propertyName = param.name ?: return@forEach
+            val hasDefault = param.isOptional
+
+            // Find the corresponding property to get annotations
+            val property = findPropertyByName(klass, propertyName)
+
+            val propertyType = param.type
+            val typeRef = convertKTypeToTypeRef(propertyType)
+
+            // Get the actual default value if available
+            val defaultValue = if (hasDefault) defaultValues[propertyName] else null
+
+            properties +=
+                Property(
+                    name = propertyName,
+                    type = typeRef,
+                    description = property?.let { extractDescription(it.annotations) },
+                    hasDefaultValue = hasDefault,
+                    defaultValue = defaultValue,
+                )
+
+            if (!hasDefault) {
+                requiredProperties += propertyName
+            }
+        }
+
+        return properties to requiredProperties
+    }
 
     /**
      * Generates a qualified type name for a class, optionally prefixed with parent name.

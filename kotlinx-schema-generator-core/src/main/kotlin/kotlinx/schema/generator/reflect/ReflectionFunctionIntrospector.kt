@@ -31,7 +31,7 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>> 
 
         val context = IntrospectionContext()
         val rootRef = context.convertFunctionToTypeRef(root)
-        return TypeGraph(root = rootRef, nodes = context.nodes())
+        return TypeGraph(root = rootRef, nodes = context.nodes)
     }
 
     /**
@@ -39,8 +39,6 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>> 
      * visited classes, and type reference cache.
      */
     private class IntrospectionContext : ReflectionIntrospectionContext() {
-        fun nodes() = discoveredNodes
-
         /**
          * Converts a KCallable (function) to a TypeRef representing its parameters as an object.
          */
@@ -94,39 +92,11 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>> 
             klass: KClass<*>,
             parentPrefix: String?,
         ): ObjectNode {
-            val properties = mutableListOf<Property>()
-            val requiredProperties = mutableSetOf<String>()
-
             // Try to extract default values by creating an instance
             val defaultValues = DefaultValueExtractor.extractDefaultValues(klass)
 
-            // Extract properties from primary constructor
-            klass.constructors.firstOrNull()?.parameters?.forEach { param ->
-                val propertyName = param.name ?: return@forEach
-                val hasDefault = param.isOptional
-
-                // Find the corresponding property to get annotations
-                val property = findPropertyByName(klass, propertyName)
-
-                val propertyType = param.type
-                val typeRef = convertKTypeToTypeRef(propertyType)
-
-                // Get the actual default value if available
-                val defaultValue = if (hasDefault) defaultValues[propertyName] else null
-
-                properties +=
-                    Property(
-                        name = propertyName,
-                        type = typeRef,
-                        description = property?.let { extractDescription(it.annotations) },
-                        hasDefaultValue = hasDefault,
-                        defaultValue = defaultValue,
-                    )
-
-                if (!hasDefault) {
-                    requiredProperties += propertyName
-                }
-            }
+            // Extract properties from primary constructor using shared method
+            val (properties, requiredProperties) = extractConstructorProperties(klass, defaultValues)
 
             return ObjectNode(
                 name = klass.simpleName ?: "UnknownClass",
