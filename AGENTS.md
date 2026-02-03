@@ -24,6 +24,7 @@ changes safe, comprehensible, and easy to maintain.
 8. Write code with the quality of a Kotlin Champion.
 9. Prefer using MCP servers like `jetbrains` and `intellij-index` to work with code
 10. Don't use MCP to run terminal commands.
+11. Suggest updating AGENTS.md/CLAUDE.md with best practices and guidelines.
 
 ## Code Style
 
@@ -148,6 +149,59 @@ changes safe, comprehensible, and easy to maintain.
 - Add brief code examples to KDoc
 - Add links to specifications, if known. Double-check that the link actual and pointing exactly to the specification.
   Never add broken or not accurate links.
+
+#### Module.md Files for Dokka
+
+Each module must have a `Module.md` file at the module root for Dokka-generated API documentation.
+
+**Format Requirements** (per [Dokka specification](https://kotlinlang.org/docs/dokka-module-and-package-docs.html)):
+- Must start with `# Module module-name` (level 1 header)
+- Package documentation uses `# Package package.name` (level 1 header)
+- All other content uses level 2+ headers (`##`, `###`, etc.)
+
+**Content Guidelines**:
+- **Purpose**: Provide module-level overview in generated API docs, not tutorials
+- **Detail level**: API documentation style (concise, focused on classes/interfaces)
+- **Module section**:
+    - Brief module description (1-2 sentences)
+    - Platform support (format: "Multiplatform • Kotlin 2.2+" or "JVM only • Kotlin 2.2+")
+    - Key classes/components (use Dokka references like `[ClassName]`)
+    - Example (minimal, demonstrating primary usage)
+- **Package sections**: Use `# Package package.name` headers with brief description
+- **Optional module sections**: Features, Limitations, Related Specifications
+- **Style**:
+    - Use bullet points over prose
+    - Keep examples short (5-15 lines)
+    - Reference related modules using Dokka links
+    - Avoid duplicating README content
+
+**Example structure (markdown)**:
+
+    # Module module-name
+    
+    Brief description.
+    
+    **Platform Support:** Multiplatform • Kotlin 2.2+
+    
+    ## Key Classes
+    
+    - [MainClass] - what it does
+      - [HelperClass] - what it does
+    
+    ## Example
+    
+    ```kotlin
+    val example = MainClass()
+    ```
+    
+    # Package package.name
+    
+    Package description.
+    
+    # Package another.package
+    
+    Another package description.
+
 
 ## Build and run commands
 
