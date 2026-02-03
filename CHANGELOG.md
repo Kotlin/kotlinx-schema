@@ -17,8 +17,6 @@
 
 ### Fixed
 - **Package structure**: Moved `TypeGraphToJsonObjectSchemaTransformer` to `kotlinx.schema.json`
-- Corrected schema examples in documentation to match actual test output
-
 
 ## 0.2.0
 > Published 2026-02-02
