@@ -1,7 +1,7 @@
+package kotlinx.schema.generator.json
+
 import kotlinx.schema.generator.core.ir.AbstractTypeGraphTransformer
 import kotlinx.schema.generator.core.ir.TypeGraph
-import kotlinx.schema.generator.json.JsonSchemaConfig
-import kotlinx.schema.generator.json.TypeGraphToJsonSchemaTransformer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.encodeToJsonElement
