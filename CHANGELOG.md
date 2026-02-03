@@ -1,3 +1,25 @@
+## 0.3.0
+> Published 2026-02-03
+
+### Breaking Changes
+- **Multiplatform migration**: `kotlinx-schema-generator-core` and `kotlinx-schema-generator-json` are now Kotlin Multiplatform
+  - Affects internal introspection APIs and test structure
+  - Reflection-based generators remain JVM-only; serialization-based generators now multiplatform
+
+### Added
+- **KDoc support**: Parameter, field, and property descriptions extracted from KDoc comments (#109, #148)
+  - Works with KSP processor for compile-time generation
+  - Complements `@Description` annotations
+
+### Changed
+- **Documentation**: Updated documentation and `Module.md` files
+- **Test migration**: Moved tests to `commonTest` for multiplatform compatibility
+
+### Fixed
+- **Package structure**: Moved `TypeGraphToJsonObjectSchemaTransformer` to `kotlinx.schema.json`
+- Corrected schema examples in documentation to match actual test output
+
+
 ## 0.2.0
 > Published 2026-02-02
 

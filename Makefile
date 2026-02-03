@@ -63,6 +63,6 @@ integration-test:clean publish
 .PHONY: examples
 examples:
 	@echo "Running examples..."
-	@(cd examples/maven-ksp && mvn clean package)
 	@(cd examples/gradle-google-ksp && ./gradlew clean build --no-daemon --rerun-tasks)
+	@(cd examples/maven-ksp && mvn clean package)
 	@echo "✅ Examples complete!"
