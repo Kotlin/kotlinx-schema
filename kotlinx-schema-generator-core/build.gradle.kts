@@ -1,6 +1,8 @@
+import org.gradle.kotlin.dsl.invoke
+
 plugins {
     `dokka-convention`
-    `kotlin-jvm-convention`
+    `kotlin-multiplatform-convention`
     `publishing-convention`
 }
 
@@ -10,18 +12,39 @@ dokka {
 }
 
 kotlin {
-    dependencies {
-        implementation(libs.kotlin.logging)
-        implementation(kotlin("reflect"))
-        runtimeOnly(libs.slf4j.simple)
+    sourceSets {
+        commonMain {
+            dependencies {
+                api(libs.kotlinx.serialization.json)
+                api(project(":kotlinx-schema-annotations"))
+                implementation(libs.kotlin.logging)
+            }
+        }
 
-        // test dependencies
-        testImplementation(project(":kotlinx-schema-annotations"))
-        testImplementation(libs.kotlin.test)
-        testImplementation(libs.kotest.assertions.core)
-        testImplementation(libs.junit.jupiter.params)
-        testImplementation(libs.kotest.assertions.json)
-        testImplementation(libs.mockk)
-        testImplementation(libs.kotlinx.serialization.json)
+        commonTest {
+            dependencies {
+                implementation(project(":kotlinx-schema-annotations"))
+                implementation(libs.kotlin.test)
+                implementation(libs.kotest.assertions.core)
+                implementation(libs.kotest.assertions.json)
+
+                implementation(libs.kotlinx.serialization.json)
+            }
+        }
+
+        jvmMain {
+            dependencies {
+                implementation(kotlin("reflect"))
+                runtimeOnly(libs.slf4j.simple)
+            }
+        }
+
+        jvmTest {
+            dependencies {
+                implementation(libs.mockk)
+                implementation(libs.junit.jupiter.params)
+                implementation(libs.mockk)
+            }
+        }
     }
 }

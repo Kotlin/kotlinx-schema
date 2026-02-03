@@ -1,7 +1,7 @@
 plugins {
-    kotlin("plugin.serialization") apply true
+    kotlin("plugin.serialization")
     `dokka-convention`
-    `kotlin-jvm-convention`
+    `kotlin-multiplatform-convention`
     `publishing-convention`
 }
 
@@ -11,19 +11,30 @@ dokka {
 }
 
 kotlin {
-    dependencies {
-        // production dependencies
-        api(libs.kotlinx.serialization.json)
-        api(project(":kotlinx-schema-annotations"))
-        api(project(":kotlinx-schema-generator-core"))
-        api(project(":kotlinx-schema-json"))
 
-        // test dependencies
-        testImplementation(libs.junit.pioneer)
-        testImplementation(libs.kotest.assertions.core)
-        testImplementation(libs.kotest.assertions.json)
-        testImplementation(libs.kotlin.test)
-        testImplementation(libs.mockk)
+    sourceSets {
+        commonMain {
+            dependencies {
+                api(libs.kotlinx.serialization.json)
+                api(project(":kotlinx-schema-annotations"))
+                api(project(":kotlinx-schema-generator-core"))
+                api(project(":kotlinx-schema-json"))
+            }
+        }
+
+        commonTest {
+            dependencies {
+                implementation(libs.kotest.assertions.core)
+                implementation(libs.kotest.assertions.json)
+                implementation(libs.kotlin.test)
+            }
+        }
+        jvmTest {
+            dependencies {
+                implementation(libs.junit.pioneer)
+                implementation(libs.mockk)
+            }
+        }
     }
 
     compilerOptions {

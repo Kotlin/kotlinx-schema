@@ -29,6 +29,7 @@ kotlin {
             listOf(
                 "-Wextra",
                 "-Xmulti-dollar-interpolation",
+                "-Xexpect-actual-classes",
             )
     }
 
