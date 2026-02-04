@@ -196,6 +196,7 @@ public object ReflectionClassIntrospector : SchemaIntrospector<KClass<*>> {
                             description = description,
                             hasDefaultValue = fixedValue != null,
                             defaultValue = fixedValue,
+                            annotations = extractValidationAnnotations(property.annotations),
                         )
 
                     // Inherited properties with fixed values are required

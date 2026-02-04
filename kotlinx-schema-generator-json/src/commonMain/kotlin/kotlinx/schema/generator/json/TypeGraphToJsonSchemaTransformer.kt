@@ -404,12 +404,20 @@ public class TypeGraphToJsonSchemaTransformer
                     }
                 }.toSet()
 
+            // Add properties marked with @NotNull to required set
+            val requiredFromAnnotations = node.properties
+                .filter { it.annotations["not-null"] == "true" }
+                .map { it.name }
+
+            val finalRequired = (required + requiredFromAnnotations).toSet()
+
             // Convert all properties
             val properties =
                 node.properties.associate { property ->
-                    val isRequired = property.name in required
+                    val isRequired = property.name in finalRequired
 
-                    val propertyDef = convertTypeRef(property.type, graph, definitions)
+                    val initialPropertyDef = convertTypeRef(property.type, graph, definitions)
+                    val propertyDef = applyConstraintAnnotations(initialPropertyDef, property.annotations)
 
                     // Remove nullable flag if property is required (in required array)
                     // Convention: nullable flag is only used for optional properties
@@ -446,7 +454,7 @@ public class TypeGraphToJsonSchemaTransformer
                 description = node.description,
                 nullable = getNullableFlag(nullable),
                 properties = properties,
-                required = required.toList(),
+                required = finalRequired.toList(),
                 additionalProperties = DenyAdditionalProperties,
             )
         }
@@ -568,5 +576,58 @@ public class TypeGraphToJsonSchemaTransformer
             } else {
                 oneOfDef
             }
+        private fun applyConstraintAnnotations(
+            def: PropertyDefinition,
+            annotations: Map<String, String?>,
+        ): PropertyDefinition {
+            if (annotations.isEmpty()) return def
+
+            var result = def
+
+            // String constraints
+            if (result is StringPropertyDefinition) {
+                val sizeMin = annotations["size-min"]?.toIntOrNull()
+                val sizeMax = annotations["size-max"]?.toIntOrNull()
+                val pattern = annotations["pattern"]
+
+                if (sizeMin != null || sizeMax != null || pattern != null) {
+                    result =
+                        result.copy(
+                            minLength = sizeMin ?: result.minLength,
+                            maxLength = sizeMax ?: result.maxLength,
+                            pattern = pattern ?: result.pattern,
+                        )
+                }
+            }
+
+            // Array constraints
+            if (result is ArrayPropertyDefinition) {
+                val sizeMin = annotations["size-min"]?.toIntOrNull()
+                val sizeMax = annotations["size-max"]?.toIntOrNull()
+
+                if (sizeMin != null || sizeMax != null) {
+                    result =
+                        result.copy(
+                            minItems = sizeMin ?: result.minItems,
+                            maxItems = sizeMax ?: result.maxItems,
+                        )
+                }
+            }
+
+            // Numeric constraints
+            if (result is NumericPropertyDefinition) {
+                val min = annotations["min"]?.toDoubleOrNull()
+                val max = annotations["max"]?.toDoubleOrNull()
+
+                if (min != null || max != null) {
+                    result =
+                        result.copy(
+                            minimum = min ?: result.minimum,
+                            maximum = max ?: result.maximum,
+                        )
+                }
+            }
+
+            return result
         }
     }
