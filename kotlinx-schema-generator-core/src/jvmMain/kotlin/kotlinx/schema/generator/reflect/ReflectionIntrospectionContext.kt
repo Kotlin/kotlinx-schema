@@ -298,20 +298,23 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
     }
 
     private fun processValidationAnnotation(ann: Annotation, map: MutableMap<String, String?>) {
-        val name = ann.annotationClass.qualifiedName ?: return
-        if (!name.startsWith("jakarta.validation.constraints.")) return
+        val qualifiedName = ann.annotationClass.qualifiedName ?: return
+        if (!qualifiedName.startsWith("jakarta.validation.constraints.") &&
+            !qualifiedName.startsWith("javax.validation.constraints.")) return
+
+        val simpleName = ann.annotationClass.simpleName ?: return
 
         try {
-            when (name) {
-                "jakarta.validation.constraints.Min" -> {
+            when (simpleName) {
+                "Min" -> {
                     val value = ann.annotationClass.members.firstOrNull { it.name == "value" }?.call(ann)
                     value?.let { map["min"] = it.toString() }
                 }
-                "jakarta.validation.constraints.Max" -> {
+                "Max" -> {
                     val value = ann.annotationClass.members.firstOrNull { it.name == "value" }?.call(ann)
                     value?.let { map["max"] = it.toString() }
                 }
-                "jakarta.validation.constraints.Size" -> {
+                "Size" -> {
                     val min = ann.annotationClass.members.firstOrNull { it.name == "min" }?.call(ann)
                     val max = ann.annotationClass.members.firstOrNull { it.name == "max" }?.call(ann)
 
@@ -322,11 +325,11 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
                         map["size-max"] = max.toString()
                     }
                 }
-                "jakarta.validation.constraints.Pattern" -> {
+                "Pattern" -> {
                     val regexp = ann.annotationClass.members.firstOrNull { it.name == "regexp" }?.call(ann)
                     regexp?.let { map["pattern"] = it.toString() }
                 }
-                "jakarta.validation.constraints.NotNull" -> {
+                "NotNull" -> {
                     map["not-null"] = "true"
                 }
             }
