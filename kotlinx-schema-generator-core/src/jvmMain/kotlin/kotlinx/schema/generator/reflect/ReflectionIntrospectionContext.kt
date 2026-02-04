@@ -27,6 +27,13 @@ import kotlin.reflect.jvm.javaField
  */
 @OptIn(InternalSchemaGeneratorApi::class)
 internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContext<KClass<*>, KType>() {
+    private companion object {
+        const val ANNOTATION_MIN = "Min"
+        const val ANNOTATION_MAX = "Max"
+        const val ANNOTATION_SIZE = "Size"
+        const val ANNOTATION_PATTERN = "Pattern"
+        const val ANNOTATION_NOT_NULL = "NotNull"
+    }
     /**
      * Converts a KType (with type arguments) to a TypeRef.
      * Used for property types where we have full type information.
@@ -312,15 +319,15 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
 
     private fun extractConstraintValue(ann: Annotation, simpleName: String, map: MutableMap<String, String?>) {
         when (simpleName) {
-            "Min" -> {
+            ANNOTATION_MIN -> {
                 val value = ann.annotationClass.members.firstOrNull { it.name == "value" }?.call(ann)
                 value?.let { map["min"] = it.toString() }
             }
-            "Max" -> {
+            ANNOTATION_MAX -> {
                 val value = ann.annotationClass.members.firstOrNull { it.name == "value" }?.call(ann)
                 value?.let { map["max"] = it.toString() }
             }
-            "Size" -> {
+            ANNOTATION_SIZE -> {
                 val min = ann.annotationClass.members.firstOrNull { it.name == "min" }?.call(ann)
                 val max = ann.annotationClass.members.firstOrNull { it.name == "max" }?.call(ann)
 
@@ -331,11 +338,11 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
                     map["size-max"] = max.toString()
                 }
             }
-            "Pattern" -> {
+            ANNOTATION_PATTERN -> {
                 val regexp = ann.annotationClass.members.firstOrNull { it.name == "regexp" }?.call(ann)
                 regexp?.let { map["pattern"] = it.toString() }
             }
-            "NotNull" -> {
+            ANNOTATION_NOT_NULL -> {
                 map["not-null"] = "true"
             }
         }
