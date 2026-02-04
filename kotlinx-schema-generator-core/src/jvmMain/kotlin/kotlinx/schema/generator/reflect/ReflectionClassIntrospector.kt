@@ -115,13 +115,11 @@ public object ReflectionClassIntrospector : SchemaIntrospector<KClass<*>> {
             val properties = mutableListOf<Property>()
             val requiredProperties = mutableSetOf<String>()
 
-            // Find sealed parent classes to inherit property descriptions
             val sealedParents =
                 klass.supertypes
                     .mapNotNull { it.classifier as? KClass<*> }
                     .filter { it.isSealed }
 
-            // Build a map of parent property descriptions and properties
             val parentPropertyDescriptions = mutableMapOf<String, String>()
             val parentProperties = mutableSetOf<String>()
             sealedParents.forEach { parent ->
@@ -136,7 +134,6 @@ public object ReflectionClassIntrospector : SchemaIntrospector<KClass<*>> {
                     }
             }
 
-            // If this is a subtype of a sealed class, add the discriminator property
             if (sealedParents.isNotEmpty()) {
                 val typeName = generateQualifiedName(klass, parentPrefix)
                 properties +=
@@ -144,49 +141,40 @@ public object ReflectionClassIntrospector : SchemaIntrospector<KClass<*>> {
                         name = "type",
                         type = TypeRef.Inline(PrimitiveNode(PrimitiveKind.STRING), false),
                         description = null,
-                        hasDefaultValue = false, // Not a default value, it's a const discriminator
-                        defaultValue = typeName, // Store the fixed value for const generation
+                        hasDefaultValue = false,
+                        defaultValue = typeName,
                     )
                 requiredProperties += "type"
             }
 
-            // Try to extract default values by creating an instance
             val defaultValues = DefaultValueExtractor.extractDefaultValues(klass)
 
-            // Extract properties from primary constructor using shared method
             val (constructorProperties, constructorRequired) = extractConstructorProperties(klass, defaultValues)
 
-            // Track which properties were processed from constructor
             val processedProperties = constructorProperties.map { it.name }.toSet()
 
-            // If there are sealed parents, update descriptions to inherit from parent if needed
-            if (sealedParents.isNotEmpty()) {
-                constructorProperties.forEach { prop ->
-                    val updatedProp =
-                        if (prop.description == null && parentPropertyDescriptions.containsKey(prop.name)) {
-                            prop.copy(description = parentPropertyDescriptions[prop.name])
-                        } else {
-                            prop
-                        }
-                    properties += updatedProp
-                }
-            } else {
-                properties += constructorProperties
+            constructorProperties.forEach { prop ->
+                val property = findPropertyByName(klass, prop.name)
+                val validationAnnotations = property?.let { extractValidationAnnotationsFromProperty(it) } ?: emptyMap()
+                val updatedDescription =
+                    if (sealedParents.isNotEmpty() && prop.description == null && parentPropertyDescriptions.containsKey(prop.name)) {
+                        parentPropertyDescriptions[prop.name]
+                    } else {
+                        prop.description
+                    }
+                properties += prop.copy(description = updatedDescription, annotations = validationAnnotations)
             }
 
             requiredProperties += constructorRequired
 
-            // Add inherited properties from sealed parents that weren't in the constructor
             val inheritedPropertyNames = parentProperties - processedProperties
             inheritedPropertyNames.forEach { propertyName ->
-                // Find the property in the current class (inherited)
                 val property = findPropertyByName(klass, propertyName)
 
                 if (property != null) {
                     val typeRef = convertKTypeToTypeRef(property.returnType)
                     val description = parentPropertyDescriptions[propertyName]
 
-                    // For inherited properties, try to get the fixed value from the instance
                     val fixedValue = defaultValues[propertyName]
 
                     properties +=
@@ -199,7 +187,6 @@ public object ReflectionClassIntrospector : SchemaIntrospector<KClass<*>> {
                             annotations = extractValidationAnnotationsFromProperty(property),
                         )
 
-                    // Inherited properties with fixed values are required
                     requiredProperties += propertyName
                 }
             }
