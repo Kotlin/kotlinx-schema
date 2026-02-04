@@ -305,35 +305,39 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
         val simpleName = ann.annotationClass.simpleName ?: return
 
         try {
-            when (simpleName) {
-                "Min" -> {
-                    val value = ann.annotationClass.members.firstOrNull { it.name == "value" }?.call(ann)
-                    value?.let { map["min"] = it.toString() }
-                }
-                "Max" -> {
-                    val value = ann.annotationClass.members.firstOrNull { it.name == "value" }?.call(ann)
-                    value?.let { map["max"] = it.toString() }
-                }
-                "Size" -> {
-                    val min = ann.annotationClass.members.firstOrNull { it.name == "min" }?.call(ann)
-                    val max = ann.annotationClass.members.firstOrNull { it.name == "max" }?.call(ann)
+            extractConstraintValue(ann, simpleName, map)
+        } catch (e: Exception) {
+        }
+    }
 
-                    if (min != null && min.toString() != "0") {
-                        map["size-min"] = min.toString()
-                    }
-                    if (max != null && max.toString() != "2147483647") {
-                        map["size-max"] = max.toString()
-                    }
+    private fun extractConstraintValue(ann: Annotation, simpleName: String, map: MutableMap<String, String?>) {
+        when (simpleName) {
+            "Min" -> {
+                val value = ann.annotationClass.members.firstOrNull { it.name == "value" }?.call(ann)
+                value?.let { map["min"] = it.toString() }
+            }
+            "Max" -> {
+                val value = ann.annotationClass.members.firstOrNull { it.name == "value" }?.call(ann)
+                value?.let { map["max"] = it.toString() }
+            }
+            "Size" -> {
+                val min = ann.annotationClass.members.firstOrNull { it.name == "min" }?.call(ann)
+                val max = ann.annotationClass.members.firstOrNull { it.name == "max" }?.call(ann)
+
+                if (min != null && min.toString() != "0") {
+                    map["size-min"] = min.toString()
                 }
-                "Pattern" -> {
-                    val regexp = ann.annotationClass.members.firstOrNull { it.name == "regexp" }?.call(ann)
-                    regexp?.let { map["pattern"] = it.toString() }
-                }
-                "NotNull" -> {
-                    map["not-null"] = "true"
+                if (max != null && max.toString() != "2147483647") {
+                    map["size-max"] = max.toString()
                 }
             }
-        } catch (e: Exception) {
+            "Pattern" -> {
+                val regexp = ann.annotationClass.members.firstOrNull { it.name == "regexp" }?.call(ann)
+                regexp?.let { map["pattern"] = it.toString() }
+            }
+            "NotNull" -> {
+                map["not-null"] = "true"
+            }
         }
     }
 }
