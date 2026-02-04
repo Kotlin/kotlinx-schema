@@ -32,8 +32,8 @@ class JakartaValidationIntrospectionTest {
         val ageProperty = objectNode.properties.firstOrNull { it.name == "age" }
         assertNotNull(ageProperty)
 
-        val min = ageProperty.annotations["min"]
+        val min = ageProperty.constraints.min
         assertNotNull(min)
-        assertEquals("5", min)
+        assertEquals(5L, min)
     }
 }

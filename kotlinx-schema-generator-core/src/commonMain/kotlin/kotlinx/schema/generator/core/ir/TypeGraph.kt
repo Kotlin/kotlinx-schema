@@ -88,8 +88,31 @@ public data class Property(
     val deprecated: Boolean = false,
     val hasDefaultValue: Boolean = false,
     val defaultValue: Any? = null,
-    val annotations: Map<String, String?> = emptyMap(),
-)
+    val constraints: ValidationConstraints = ValidationConstraints(),
+) {
+    val annotations: Map<String, String?>
+        get() = constraints.toMap()
+}
+
+public data class ValidationConstraints(
+    val min: Long? = null,
+    val max: Long? = null,
+    val sizeMin: Int? = null,
+    val sizeMax: Int? = null,
+    val pattern: String? = null,
+    val notNull: Boolean = false,
+) {
+    public fun toMap(): Map<String, String?> {
+        val map = mutableMapOf<String, String?>()
+        min?.let { map["min"] = it.toString() }
+        max?.let { map["max"] = it.toString() }
+        sizeMin?.let { map["size-min"] = it.toString() }
+        sizeMax?.let { map["size-max"] = it.toString() }
+        pattern?.let { map["pattern"] = it }
+        if (notNull) map["not-null"] = "true"
+        return map
+    }
+}
 
 /** Reference to a subtype in a polymorphic hierarchy. */
 public data class SubtypeRef(

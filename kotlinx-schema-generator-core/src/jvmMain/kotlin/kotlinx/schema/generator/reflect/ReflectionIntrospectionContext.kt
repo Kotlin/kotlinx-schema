@@ -10,6 +10,7 @@ import kotlinx.schema.generator.core.ir.PrimitiveNode
 import kotlinx.schema.generator.core.ir.Property
 import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeRef
+import kotlinx.schema.generator.core.ir.ValidationConstraints
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
@@ -234,7 +235,6 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
                     description = property?.let { extractDescription(it.annotations) },
                     hasDefaultValue = hasDefault,
                     defaultValue = defaultValue,
-                    annotations = property?.let { extractValidationAnnotationsFromProperty(it) } ?: emptyMap(),
                 )
 
             if (!hasDefault) {
@@ -281,70 +281,60 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
             .filterIsInstance<kotlin.reflect.KProperty<*>>()
             .firstOrNull { it.name == propertyName }
 
-    /**
-     * Extracts Jakarta Validation annotations (Min, Max, Size, Pattern, NotNull) from a list of annotations.
-     * returns a map of constraint names to their values.
-     */
-    protected fun extractValidationAnnotations(annotations: List<Annotation>): Map<String, String?> {
-        val map = mutableMapOf<String, String?>()
-        for (ann in annotations) {
-            processValidationAnnotation(ann, map)
-        }
-        return map
-    }
 
-    protected fun extractValidationAnnotationsFromProperty(property: kotlin.reflect.KProperty<*>): Map<String, String?> {
-        val map = mutableMapOf<String, String?>()
-        for (ann in property.annotations) {
-            processValidationAnnotation(ann, map)
-        }
-        (property as? KProperty1<*, *>)?.javaField?.annotations?.forEach { ann ->
-            processValidationAnnotation(ann, map)
-        }
-        return map
-    }
+    protected fun extractValidationAnnotationsFromProperty(property: kotlin.reflect.KProperty<*>): ValidationConstraints {
+        var min: Long? = null
+        var max: Long? = null
+        var sizeMin: Int? = null
+        var sizeMax: Int? = null
+        var pattern: String? = null
+        var notNull = false
 
-    private fun processValidationAnnotation(ann: Annotation, map: MutableMap<String, String?>) {
-        val qualifiedName = ann.annotationClass.qualifiedName ?: return
-        if (!qualifiedName.startsWith("jakarta.validation.constraints.") &&
-            !qualifiedName.startsWith("javax.validation.constraints.")) return
-
-        val simpleName = ann.annotationClass.simpleName ?: return
-
-        try {
-            extractConstraintValue(ann, simpleName, map)
-        } catch (e: Exception) {
-        }
-    }
-
-    private fun extractConstraintValue(ann: Annotation, simpleName: String, map: MutableMap<String, String?>) {
-        when (simpleName) {
-            ANNOTATION_MIN -> {
-                val value = ann.annotationClass.members.firstOrNull { it.name == "value" }?.call(ann)
-                value?.let { map["min"] = it.toString() }
-            }
-            ANNOTATION_MAX -> {
-                val value = ann.annotationClass.members.firstOrNull { it.name == "value" }?.call(ann)
-                value?.let { map["max"] = it.toString() }
-            }
-            ANNOTATION_SIZE -> {
-                val min = ann.annotationClass.members.firstOrNull { it.name == "min" }?.call(ann)
-                val max = ann.annotationClass.members.firstOrNull { it.name == "max" }?.call(ann)
-
-                if (min != null && min.toString() != "0") {
-                    map["size-min"] = min.toString()
-                }
-                if (max != null && max.toString() != "2147483647") {
-                    map["size-max"] = max.toString()
+        val processAnnotation = { ann: Annotation ->
+            val qualifiedName = ann.annotationClass.qualifiedName
+            if (qualifiedName != null &&
+                (qualifiedName.startsWith("jakarta.validation.constraints.") ||
+                    qualifiedName.startsWith("javax.validation.constraints."))) {
+                val simpleName = ann.annotationClass.simpleName
+                try {
+                    when (simpleName) {
+                        ANNOTATION_MIN -> {
+                            val value = ann.annotationClass.members.firstOrNull { it.name == "value" }?.call(ann)
+                            value?.let { min = it.toString().toLongOrNull() }
+                        }
+                        ANNOTATION_MAX -> {
+                            val value = ann.annotationClass.members.firstOrNull { it.name == "value" }?.call(ann)
+                            value?.let { max = it.toString().toLongOrNull() }
+                        }
+                        ANNOTATION_SIZE -> {
+                            val minVal = ann.annotationClass.members.firstOrNull { it.name == "min" }?.call(ann)
+                            val maxVal = ann.annotationClass.members.firstOrNull { it.name == "max" }?.call(ann)
+                            minVal?.toString()?.toIntOrNull()?.let { if (it != 0) sizeMin = it }
+                            maxVal?.toString()?.toIntOrNull()?.let { if (it != Int.MAX_VALUE) sizeMax = it }
+                        }
+                        ANNOTATION_PATTERN -> {
+                            val regexp = ann.annotationClass.members.firstOrNull { it.name == "regexp" }?.call(ann)
+                            regexp?.let { pattern = it.toString() }
+                        }
+                        ANNOTATION_NOT_NULL -> {
+                            notNull = true
+                        }
+                    }
+                } catch (e: Exception) {
                 }
             }
-            ANNOTATION_PATTERN -> {
-                val regexp = ann.annotationClass.members.firstOrNull { it.name == "regexp" }?.call(ann)
-                regexp?.let { map["pattern"] = it.toString() }
-            }
-            ANNOTATION_NOT_NULL -> {
-                map["not-null"] = "true"
-            }
         }
+
+        property.annotations.forEach(processAnnotation)
+        (property as? KProperty1<*, *>)?.javaField?.annotations?.forEach(processAnnotation)
+
+        return ValidationConstraints(
+            min = min,
+            max = max,
+            sizeMin = sizeMin,
+            sizeMax = sizeMax,
+            pattern = pattern,
+            notNull = notNull,
+        )
     }
 }

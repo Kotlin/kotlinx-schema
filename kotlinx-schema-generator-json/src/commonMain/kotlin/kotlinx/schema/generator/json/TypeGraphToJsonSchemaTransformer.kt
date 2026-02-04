@@ -11,6 +11,7 @@ import kotlinx.schema.generator.core.ir.PrimitiveNode
 import kotlinx.schema.generator.core.ir.TypeGraph
 import kotlinx.schema.generator.core.ir.TypeNode
 import kotlinx.schema.generator.core.ir.TypeRef
+import kotlinx.schema.generator.core.ir.ValidationConstraints
 import kotlinx.schema.json.AdditionalPropertiesSchema
 import kotlinx.schema.json.AnyOfPropertyDefinition
 import kotlinx.schema.json.ArrayPropertyDefinition
@@ -406,7 +407,7 @@ public class TypeGraphToJsonSchemaTransformer
 
             // Add properties marked with @NotNull to required set
             val requiredFromAnnotations = node.properties
-                .filter { it.annotations["not-null"] == "true" }
+                .filter { it.constraints.notNull }
                 .map { it.name }
 
             val finalRequired = (required + requiredFromAnnotations).toSet()
@@ -417,7 +418,7 @@ public class TypeGraphToJsonSchemaTransformer
                     val isRequired = property.name in finalRequired
 
                     val initialPropertyDef = convertTypeRef(property.type, graph, definitions)
-                    val propertyDef = applyConstraintAnnotations(initialPropertyDef, property.annotations)
+                    val propertyDef = applyConstraints(initialPropertyDef, property.constraints)
 
                     // Remove nullable flag if property is required (in required array)
                     // Convention: nullable flag is only used for optional properties
@@ -576,54 +577,44 @@ public class TypeGraphToJsonSchemaTransformer
             } else {
                 oneOfDef
             }
-        private fun applyConstraintAnnotations(
-            def: PropertyDefinition,
-            annotations: Map<String, String?>,
-        ): PropertyDefinition {
-            if (annotations.isEmpty()) return def
+        }
 
+        private fun applyConstraints(
+            def: PropertyDefinition,
+            constraints: ValidationConstraints,
+        ): PropertyDefinition {
             var result = def
 
             // String constraints
             if (result is StringPropertyDefinition) {
-                val sizeMin = annotations["size-min"]?.toIntOrNull()
-                val sizeMax = annotations["size-max"]?.toIntOrNull()
-                val pattern = annotations["pattern"]
-
-                if (sizeMin != null || sizeMax != null || pattern != null) {
+                if (constraints.sizeMin != null || constraints.sizeMax != null || constraints.pattern != null) {
                     result =
                         result.copy(
-                            minLength = sizeMin ?: result.minLength,
-                            maxLength = sizeMax ?: result.maxLength,
-                            pattern = pattern ?: result.pattern,
+                            minLength = constraints.sizeMin ?: result.minLength,
+                            maxLength = constraints.sizeMax ?: result.maxLength,
+                            pattern = constraints.pattern ?: result.pattern,
                         )
                 }
             }
 
             // Array constraints
             if (result is ArrayPropertyDefinition) {
-                val sizeMin = annotations["size-min"]?.toIntOrNull()
-                val sizeMax = annotations["size-max"]?.toIntOrNull()
-
-                if (sizeMin != null || sizeMax != null) {
+                if (constraints.sizeMin != null || constraints.sizeMax != null) {
                     result =
                         result.copy(
-                            minItems = sizeMin ?: result.minItems,
-                            maxItems = sizeMax ?: result.maxItems,
+                            minItems = constraints.sizeMin ?: result.minItems,
+                            maxItems = constraints.sizeMax ?: result.maxItems,
                         )
                 }
             }
 
             // Numeric constraints
             if (result is NumericPropertyDefinition) {
-                val min = annotations["min"]?.toDoubleOrNull()
-                val max = annotations["max"]?.toDoubleOrNull()
-
-                if (min != null || max != null) {
+                if (constraints.min != null || constraints.max != null) {
                     result =
                         result.copy(
-                            minimum = min ?: result.minimum,
-                            maximum = max ?: result.maximum,
+                            minimum = constraints.min?.toDouble() ?: result.minimum,
+                            maximum = constraints.max?.toDouble() ?: result.maximum,
                         )
                 }
             }
