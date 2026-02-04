@@ -33,7 +33,6 @@ kotlin {
             dependencies {
                 implementation(kotlin("reflect"))
                 runtimeOnly(libs.slf4j.simple)
-                compileOnly("jakarta.validation:jakarta.validation-api:3.0.2")
             }
         }
 
