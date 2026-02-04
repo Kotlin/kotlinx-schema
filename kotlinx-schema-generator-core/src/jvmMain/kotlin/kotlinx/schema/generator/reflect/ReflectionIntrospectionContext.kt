@@ -11,7 +11,9 @@ import kotlinx.schema.generator.core.ir.Property
 import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeRef
 import kotlin.reflect.KClass
+import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
+import kotlin.reflect.jvm.javaField
 
 /**
  * Base class for reflection-based introspection contexts.
@@ -225,7 +227,7 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
                     description = property?.let { extractDescription(it.annotations) },
                     hasDefaultValue = hasDefault,
                     defaultValue = defaultValue,
-                    annotations = property?.let { extractValidationAnnotations(it.annotations) } ?: emptyMap(),
+                    annotations = property?.let { extractValidationAnnotationsFromProperty(it) } ?: emptyMap(),
                 )
 
             if (!hasDefault) {
@@ -279,42 +281,56 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
     protected fun extractValidationAnnotations(annotations: List<Annotation>): Map<String, String?> {
         val map = mutableMapOf<String, String?>()
         for (ann in annotations) {
-            val name = ann.annotationClass.qualifiedName ?: continue
-            if (!name.startsWith("jakarta.validation.constraints.")) continue
-
-            try {
-                when (name) {
-                    "jakarta.validation.constraints.Min" -> {
-                        val value = ann.annotationClass.members.firstOrNull { it.name == "value" }?.call(ann)
-                        value?.let { map["min"] = it.toString() }
-                    }
-                    "jakarta.validation.constraints.Max" -> {
-                        val value = ann.annotationClass.members.firstOrNull { it.name == "value" }?.call(ann)
-                        value?.let { map["max"] = it.toString() }
-                    }
-                    "jakarta.validation.constraints.Size" -> {
-                        val min = ann.annotationClass.members.firstOrNull { it.name == "min" }?.call(ann) // Default 0
-                        val max = ann.annotationClass.members.firstOrNull { it.name == "max" }?.call(ann) // Default 2147483647
-
-                        if (min != null && min.toString() != "0") {
-                            map["size-min"] = min.toString()
-                        }
-                        if (max != null && max.toString() != "2147483647") {
-                            map["size-max"] = max.toString()
-                        }
-                    }
-                    "jakarta.validation.constraints.Pattern" -> {
-                        val regexp = ann.annotationClass.members.firstOrNull { it.name == "regexp" }?.call(ann)
-                        regexp?.let { map["pattern"] = it.toString() }
-                    }
-                    "jakarta.validation.constraints.NotNull" -> {
-                        map["not-null"] = "true"
-                    }
-                }
-            } catch (e: Exception) {
-                // Ignore reflection errors for safety
-            }
+            processValidationAnnotation(ann, map)
         }
         return map
+    }
+
+    protected fun extractValidationAnnotationsFromProperty(property: kotlin.reflect.KProperty<*>): Map<String, String?> {
+        val map = mutableMapOf<String, String?>()
+        for (ann in property.annotations) {
+            processValidationAnnotation(ann, map)
+        }
+        (property as? KProperty1<*, *>)?.javaField?.annotations?.forEach { ann ->
+            processValidationAnnotation(ann, map)
+        }
+        return map
+    }
+
+    private fun processValidationAnnotation(ann: Annotation, map: MutableMap<String, String?>) {
+        val name = ann.annotationClass.qualifiedName ?: return
+        if (!name.startsWith("jakarta.validation.constraints.")) return
+
+        try {
+            when (name) {
+                "jakarta.validation.constraints.Min" -> {
+                    val value = ann.annotationClass.members.firstOrNull { it.name == "value" }?.call(ann)
+                    value?.let { map["min"] = it.toString() }
+                }
+                "jakarta.validation.constraints.Max" -> {
+                    val value = ann.annotationClass.members.firstOrNull { it.name == "value" }?.call(ann)
+                    value?.let { map["max"] = it.toString() }
+                }
+                "jakarta.validation.constraints.Size" -> {
+                    val min = ann.annotationClass.members.firstOrNull { it.name == "min" }?.call(ann)
+                    val max = ann.annotationClass.members.firstOrNull { it.name == "max" }?.call(ann)
+
+                    if (min != null && min.toString() != "0") {
+                        map["size-min"] = min.toString()
+                    }
+                    if (max != null && max.toString() != "2147483647") {
+                        map["size-max"] = max.toString()
+                    }
+                }
+                "jakarta.validation.constraints.Pattern" -> {
+                    val regexp = ann.annotationClass.members.firstOrNull { it.name == "regexp" }?.call(ann)
+                    regexp?.let { map["pattern"] = it.toString() }
+                }
+                "jakarta.validation.constraints.NotNull" -> {
+                    map["not-null"] = "true"
+                }
+            }
+        } catch (e: Exception) {
+        }
     }
 }

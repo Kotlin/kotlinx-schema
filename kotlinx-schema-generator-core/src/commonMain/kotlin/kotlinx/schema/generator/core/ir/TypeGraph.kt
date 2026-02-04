@@ -106,3 +106,14 @@ public data class Discriminator(
     val required: Boolean,
     val mapping: Map<String, TypeId>? = null,
 )
+
+public fun TypeGraph.rootObject(): ObjectNode? {
+    val inline = root as? TypeRef.Inline ?: return null
+    return inline.node as? ObjectNode
+}
+
+public fun TypeGraph.rootProperty(name: String): Property? {
+    return rootObject()
+        ?.properties
+        ?.firstOrNull { it.name == name }
+}
