@@ -80,7 +80,10 @@ public data class PolymorphicNode(
     override val description: String? = null,
 ) : TypeNode
 
-/** Property of an object. */
+public sealed class ValidationConstraint {
+    public data class Min(val value: Long) : ValidationConstraint()
+}
+
 public data class Property(
     val name: String,
     val type: TypeRef,
@@ -88,30 +91,14 @@ public data class Property(
     val deprecated: Boolean = false,
     val hasDefaultValue: Boolean = false,
     val defaultValue: Any? = null,
-    val constraints: ValidationConstraints = ValidationConstraints(),
+    val constraints: List<ValidationConstraint> = emptyList(),
 ) {
     val annotations: Map<String, String?>
-        get() = constraints.toMap()
-}
-
-public data class ValidationConstraints(
-    val min: Long? = null,
-    val max: Long? = null,
-    val sizeMin: Int? = null,
-    val sizeMax: Int? = null,
-    val pattern: String? = null,
-    val notNull: Boolean = false,
-) {
-    public fun toMap(): Map<String, String?> {
-        val map = mutableMapOf<String, String?>()
-        min?.let { map["min"] = it.toString() }
-        max?.let { map["max"] = it.toString() }
-        sizeMin?.let { map["size-min"] = it.toString() }
-        sizeMax?.let { map["size-max"] = it.toString() }
-        pattern?.let { map["pattern"] = it }
-        if (notNull) map["not-null"] = "true"
-        return map
-    }
+        get() = constraints.associate {
+            when (it) {
+                is ValidationConstraint.Min -> "min" to it.value.toString()
+            }
+        }
 }
 
 /** Reference to a subtype in a polymorphic hierarchy. */

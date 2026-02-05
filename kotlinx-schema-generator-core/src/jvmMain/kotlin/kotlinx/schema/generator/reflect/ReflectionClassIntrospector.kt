@@ -11,7 +11,7 @@ import kotlinx.schema.generator.core.ir.SubtypeRef
 import kotlinx.schema.generator.core.ir.TypeGraph
 import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeRef
-import kotlinx.schema.generator.core.ir.ValidationConstraints
+import kotlinx.schema.generator.core.ir.ValidationConstraint
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
@@ -156,7 +156,7 @@ public object ReflectionClassIntrospector : SchemaIntrospector<KClass<*>> {
 
             constructorProperties.forEach { prop ->
                 val property = findPropertyByName(klass, prop.name)
-                val validationConstraints = property?.let { extractValidationAnnotationsFromProperty(it) } ?: ValidationConstraints()
+                val validationConstraints = property?.let { extractValidationAnnotationsFromProperty(it) } ?: emptyList()
                 val updatedDescription =
                     if (sealedParents.isNotEmpty() && prop.description == null && parentPropertyDescriptions.containsKey(prop.name)) {
                         parentPropertyDescriptions[prop.name]

@@ -10,35 +10,17 @@ import kotlinx.schema.generator.core.ir.PrimitiveNode
 import kotlinx.schema.generator.core.ir.Property
 import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeRef
-import kotlinx.schema.generator.core.ir.ValidationConstraints
+import kotlinx.schema.generator.core.ir.ValidationConstraint
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
 import kotlin.reflect.jvm.javaField
 
-/**
- * Base class for reflection-based introspection contexts.
- *
- * Extends core [BaseIntrospectionContext] with reflection-specific type handling.
- * Provides common functionality for both class and function introspection,
- * including type conversion, caching, and cycle detection.
- *
- * Subclasses must implement [createObjectNode] to define how to extract properties
- * from different source types (classes vs function parameters).
- */
 @OptIn(InternalSchemaGeneratorApi::class)
 internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContext<KClass<*>, KType>() {
     private companion object {
         const val ANNOTATION_MIN = "Min"
-        const val ANNOTATION_MAX = "Max"
-        const val ANNOTATION_SIZE = "Size"
-        const val ANNOTATION_PATTERN = "Pattern"
-        const val ANNOTATION_NOT_NULL = "NotNull"
     }
-    /**
-     * Converts a KType (with type arguments) to a TypeRef.
-     * Used for property types where we have full type information.
-     */
     protected fun convertKTypeToTypeRef(type: KType): TypeRef {
         val classifier =
             requireNotNull(type.classifier as? KClass<*>) {
@@ -75,20 +57,12 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
         }
     }
 
-    /**
-     * Converts a KClass to a TypeRef, handling caching and nullability.
-     * Can be overridden by subclasses to add custom type handling (e.g., sealed classes).
-     *
-     * Default implementation handles primitives, collections, enums, and objects.
-     * Subclasses can override to add sealed class handling or other specialized behavior.
-     */
     @Suppress("ReturnCount")
     internal open fun convertToTypeRef(
         klass: KClass<*>,
         nullable: Boolean = false,
         useSimpleName: Boolean = false,
     ): TypeRef {
-        // Check cache first
         typeRefCache[klass]?.let { cachedRef ->
             return if (nullable && !cachedRef.nullable) {
                 cachedRef.withNullable(true)
@@ -97,14 +71,12 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
             }
         }
 
-        // Try to convert to primitive type
         primitiveKindFor(klass)?.let { primitiveKind ->
             val ref = TypeRef.Inline(PrimitiveNode(primitiveKind), nullable)
             if (!nullable) typeRefCache[klass] = ref
             return ref
         }
 
-        // Handle different type categories
         return when {
             isListLike(klass) -> handleListType(klass, nullable)
             Map::class.java.isAssignableFrom(klass.java) -> handleMapType(klass, nullable)
@@ -113,10 +85,6 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
         }
     }
 
-    /**
-     * Handles list-like types (List, Collection, Iterable).
-     * Creates a fallback ListNode with String elements when type arguments are unavailable.
-     */
     protected fun handleListType(
         klass: KClass<*>,
         nullable: Boolean,
@@ -127,10 +95,6 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
         return ref
     }
 
-    /**
-     * Handles Map types.
-     * Creates a fallback MapNode with String keys and values when type arguments are unavailable.
-     */
     protected fun handleMapType(
         klass: KClass<*>,
         nullable: Boolean,
@@ -142,9 +106,6 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
         return ref
     }
 
-    /**
-     * Handles enum types by creating an EnumNode and adding it to discovered nodes.
-     */
     protected fun handleEnumType(
         klass: KClass<*>,
         nullable: Boolean,
@@ -160,10 +121,6 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
         return ref
     }
 
-    /**
-     * Handles object/class types by creating an ObjectNode.
-     * Delegates actual node creation to [createObjectNode] which is implemented by subclasses.
-     */
     protected fun handleObjectType(
         klass: KClass<*>,
         nullable: Boolean,
@@ -186,28 +143,11 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
         return ref
     }
 
-    /**
-     * Creates an ObjectNode from a KClass.
-     * This is the main extension point for subclasses to customize how properties are extracted.
-     *
-     * @param klass The class to create an ObjectNode for
-     * @param parentPrefix Optional parent prefix for qualified naming (used for sealed subclasses)
-     */
     protected abstract fun createObjectNode(
         klass: KClass<*>,
         parentPrefix: String? = null,
     ): ObjectNode
 
-    /**
-     * Extracts properties from the primary constructor of a class.
-     *
-     * This method processes constructor parameters to create Property objects,
-     * handling type conversion, default values, descriptions, and nullability.
-     *
-     * @param klass The class whose constructor to analyze
-     * @param defaultValues Map of property names to their default values (from DefaultValueExtractor)
-     * @return Pair of (list of properties, set of required property names)
-     */
     protected fun extractConstructorProperties(
         klass: KClass<*>,
         defaultValues: Map<String, Any?>,
@@ -219,13 +159,11 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
             val propertyName = param.name ?: return@forEach
             val hasDefault = param.isOptional
 
-            // Find the corresponding property to get annotations
             val property = findPropertyByName(klass, propertyName)
 
             val propertyType = param.type
             val typeRef = convertKTypeToTypeRef(propertyType)
 
-            // Get the actual default value if available
             val defaultValue = if (hasDefault) defaultValues[propertyName] else null
 
             properties +=
@@ -245,14 +183,6 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
         return properties to requiredProperties
     }
 
-    /**
-     * Generates a qualified type name for a class, optionally prefixed with parent name.
-     * Used for sealed class subclasses to avoid name collisions (e.g., "Parent.Child").
-     *
-     * @param klass The class to generate a name for
-     * @param parentPrefix Optional parent prefix (typically the sealed parent's simple name)
-     * @return Qualified name like "Parent.Child" if parentPrefix provided, otherwise simple name
-     */
     protected fun generateQualifiedName(
         klass: KClass<*>,
         parentPrefix: String?,
@@ -265,14 +195,6 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
         }
     }
 
-    /**
-     * Finds a property in a class by name.
-     * Used when extracting metadata from constructor parameters to find corresponding property annotations.
-     *
-     * @param klass The class to search in
-     * @param propertyName The name of the property to find
-     * @return The property if found, null otherwise
-     */
     protected fun findPropertyByName(
         klass: KClass<*>,
         propertyName: String,
@@ -282,13 +204,8 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
             .firstOrNull { it.name == propertyName }
 
 
-    protected fun extractValidationAnnotationsFromProperty(property: kotlin.reflect.KProperty<*>): ValidationConstraints {
-        var min: Long? = null
-        var max: Long? = null
-        var sizeMin: Int? = null
-        var sizeMax: Int? = null
-        var pattern: String? = null
-        var notNull = false
+    protected fun extractValidationAnnotationsFromProperty(property: kotlin.reflect.KProperty<*>): List<ValidationConstraint> {
+        val constraints = mutableListOf<ValidationConstraint>()
 
         val processAnnotation = { ann: Annotation ->
             val qualifiedName = ann.annotationClass.qualifiedName
@@ -297,30 +214,11 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
                     qualifiedName.startsWith("javax.validation.constraints."))) {
                 val simpleName = ann.annotationClass.simpleName
                 try {
-                    when (simpleName) {
-                        ANNOTATION_MIN -> {
-                            val value = ann.annotationClass.members.firstOrNull { it.name == "value" }?.call(ann)
-                            value?.let { min = it.toString().toLongOrNull() }
-                        }
-                        ANNOTATION_MAX -> {
-                            val value = ann.annotationClass.members.firstOrNull { it.name == "value" }?.call(ann)
-                            value?.let { max = it.toString().toLongOrNull() }
-                        }
-                        ANNOTATION_SIZE -> {
-                            val minVal = ann.annotationClass.members.firstOrNull { it.name == "min" }?.call(ann)
-                            val maxVal = ann.annotationClass.members.firstOrNull { it.name == "max" }?.call(ann)
-                            minVal?.toString()?.toIntOrNull()?.let { if (it != 0) sizeMin = it }
-                            maxVal?.toString()?.toIntOrNull()?.let { if (it != Int.MAX_VALUE) sizeMax = it }
-                        }
-                        ANNOTATION_PATTERN -> {
-                            val regexp = ann.annotationClass.members.firstOrNull { it.name == "regexp" }?.call(ann)
-                            regexp?.let { pattern = it.toString() }
-                        }
-                        ANNOTATION_NOT_NULL -> {
-                            notNull = true
-                        }
+                    if (simpleName == ANNOTATION_MIN) {
+                        val value = ann.annotationClass.members.firstOrNull { it.name == "value" }?.call(ann)
+                        value?.toString()?.toLongOrNull()?.let { constraints += ValidationConstraint.Min(it) }
                     }
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                 }
             }
         }
@@ -328,13 +226,6 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
         property.annotations.forEach(processAnnotation)
         (property as? KProperty1<*, *>)?.javaField?.annotations?.forEach(processAnnotation)
 
-        return ValidationConstraints(
-            min = min,
-            max = max,
-            sizeMin = sizeMin,
-            sizeMax = sizeMax,
-            pattern = pattern,
-            notNull = notNull,
-        )
+        return constraints
     }
 }

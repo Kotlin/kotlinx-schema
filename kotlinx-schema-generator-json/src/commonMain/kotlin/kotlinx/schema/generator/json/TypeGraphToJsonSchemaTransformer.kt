@@ -11,7 +11,7 @@ import kotlinx.schema.generator.core.ir.PrimitiveNode
 import kotlinx.schema.generator.core.ir.TypeGraph
 import kotlinx.schema.generator.core.ir.TypeNode
 import kotlinx.schema.generator.core.ir.TypeRef
-import kotlinx.schema.generator.core.ir.ValidationConstraints
+import kotlinx.schema.generator.core.ir.ValidationConstraint
 import kotlinx.schema.json.AdditionalPropertiesSchema
 import kotlinx.schema.json.AnyOfPropertyDefinition
 import kotlinx.schema.json.ArrayPropertyDefinition
@@ -405,17 +405,10 @@ public class TypeGraphToJsonSchemaTransformer
                     }
                 }.toSet()
 
-            // Add properties marked with @NotNull to required set
-            val requiredFromAnnotations = node.properties
-                .filter { it.constraints.notNull }
-                .map { it.name }
-
-            val finalRequired = (required + requiredFromAnnotations).toSet()
-
             // Convert all properties
             val properties =
                 node.properties.associate { property ->
-                    val isRequired = property.name in finalRequired
+                    val isRequired = property.name in required
 
                     val initialPropertyDef = convertTypeRef(property.type, graph, definitions)
                     val propertyDef = applyConstraints(initialPropertyDef, property.constraints)
@@ -455,7 +448,7 @@ public class TypeGraphToJsonSchemaTransformer
                 description = node.description,
                 nullable = getNullableFlag(nullable),
                 properties = properties,
-                required = finalRequired.toList(),
+                required = required.toList(),
                 additionalProperties = DenyAdditionalProperties,
             )
         }
@@ -581,41 +574,17 @@ public class TypeGraphToJsonSchemaTransformer
 
         private fun applyConstraints(
             def: PropertyDefinition,
-            constraints: ValidationConstraints,
+            constraints: List<ValidationConstraint>,
         ): PropertyDefinition {
             var result = def
 
-            // String constraints
-            if (result is StringPropertyDefinition) {
-                if (constraints.sizeMin != null || constraints.sizeMax != null || constraints.pattern != null) {
-                    result =
-                        result.copy(
-                            minLength = constraints.sizeMin ?: result.minLength,
-                            maxLength = constraints.sizeMax ?: result.maxLength,
-                            pattern = constraints.pattern ?: result.pattern,
-                        )
-                }
-            }
-
-            // Array constraints
-            if (result is ArrayPropertyDefinition) {
-                if (constraints.sizeMin != null || constraints.sizeMax != null) {
-                    result =
-                        result.copy(
-                            minItems = constraints.sizeMin ?: result.minItems,
-                            maxItems = constraints.sizeMax ?: result.maxItems,
-                        )
-                }
-            }
-
-            // Numeric constraints
-            if (result is NumericPropertyDefinition) {
-                if (constraints.min != null || constraints.max != null) {
-                    result =
-                        result.copy(
-                            minimum = constraints.min?.toDouble() ?: result.minimum,
-                            maximum = constraints.max?.toDouble() ?: result.maximum,
-                        )
+            for (constraint in constraints) {
+                when (constraint) {
+                    is ValidationConstraint.Min -> {
+                        if (result is NumericPropertyDefinition) {
+                            result = result.copy(minimum = constraint.value.toDouble())
+                        }
+                    }
                 }
             }
 

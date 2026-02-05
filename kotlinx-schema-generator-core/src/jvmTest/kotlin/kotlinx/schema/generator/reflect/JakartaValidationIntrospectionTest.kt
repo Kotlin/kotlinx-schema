@@ -3,6 +3,7 @@ package kotlinx.schema.generator.reflect
 import jakarta.validation.constraints.Min
 import kotlinx.schema.generator.core.ir.ObjectNode
 import kotlinx.schema.generator.core.ir.TypeRef
+import kotlinx.schema.generator.core.ir.ValidationConstraint
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertEquals
@@ -32,8 +33,8 @@ class JakartaValidationIntrospectionTest {
         val ageProperty = objectNode.properties.firstOrNull { it.name == "age" }
         assertNotNull(ageProperty)
 
-        val min = ageProperty.constraints.min
-        assertNotNull(min)
-        assertEquals(5L, min)
+        val minConstraint = ageProperty.constraints.filterIsInstance<ValidationConstraint.Min>().firstOrNull()
+        assertNotNull(minConstraint)
+        assertEquals(5L, minConstraint.value)
     }
 }
