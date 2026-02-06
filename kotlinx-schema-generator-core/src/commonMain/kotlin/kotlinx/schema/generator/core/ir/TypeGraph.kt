@@ -81,7 +81,15 @@ public data class PolymorphicNode(
 ) : TypeNode
 
 public sealed class Annotation {
-    public data class Min(val value: Number) : Annotation()
+    public data class Generic(val key: String, val value: String?) : Annotation()
+
+    public sealed class Constraint : Annotation() {
+        public abstract val name: String
+
+        public data class Min(val value: Number) : Constraint() {
+            override val name: String get() = "min"
+        }
+    }
 }
 
 public data class Property(
@@ -96,7 +104,8 @@ public data class Property(
     val annotations: Map<String, String?>
         get() = constraints.associate {
             when (it) {
-                is Annotation.Min -> "min" to it.value.toString()
+                is Annotation.Generic -> it.key to it.value
+                is Annotation.Constraint.Min -> it.name to it.value.toString()
             }
         }
 }

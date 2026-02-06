@@ -580,7 +580,7 @@ public class TypeGraphToJsonSchemaTransformer
 
             for (constraint in constraints) {
                 when (constraint) {
-                    is IrAnnotation.Min -> {
+                    is IrAnnotation.Constraint.Min -> {
                         if (result is NumericPropertyDefinition) {
                             result = result.copy(minimum = constraint.value.toDouble())
                         }

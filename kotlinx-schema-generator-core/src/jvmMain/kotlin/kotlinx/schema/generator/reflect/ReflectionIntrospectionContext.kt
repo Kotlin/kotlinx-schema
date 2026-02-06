@@ -212,7 +212,7 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
             try {
                 if (simpleName == ANNOTATION_MIN) {
                     val value = ann.annotationClass.members.firstOrNull { it.name == "value" }?.call(ann)
-                    value?.toString()?.toLongOrNull()?.let { constraints += IrAnnotation.Min(it) }
+                    value?.toString()?.toLongOrNull()?.let { constraints += IrAnnotation.Constraint.Min(it) }
                 }
             } catch (_: Exception) {
             }
