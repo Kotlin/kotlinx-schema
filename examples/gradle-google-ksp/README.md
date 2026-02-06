@@ -1,164 +1,146 @@
-# KSP Example: Geometric Shapes
+# Gradle + KSP Example
 
-Shows how **kotlinx-schema-ksp** automatically generates JSON schemas from Kotlin classes.
+Demonstrates JSON Schema generation from Kotlin classes using KSP on a multiplatform project.
 
-## What This Demonstrates
+## Features
 
-- **Sealed classes** → `oneOf` schemas (polymorphism)
-- **Default values** → optional fields
-- **Class KDoc** → schema descriptions
-- **@Description** → property descriptions (recommended)
+**Schema Generation**
+- Sealed classes → `oneOf` polymorphic schemas
+- Data classes → object schemas with property types
+- Functions → function call schemas (for LLM tools)
+- Default values → optional fields
+- KDoc and `@Description` → schema descriptions
 
-Use cases: LLM function calling, API docs, form generation, validation.
+**MCP Server Integration**
 
-## Quick Start
+Ktor-based MCP server with auto-generated tool schemas using
+[Model Context Protocol Kotlin SDK](https://github.com/modelcontextprotocol/kotlin-sdk)
+
+## Class schema
+
+Annotate your classes:
+```kotlin
+@Schema
+sealed class Shape {
+    @Schema
+    data class Circle(
+        @Description("Radius in units")
+        val radius: Double
+    ) : Shape()
+}
+```
+
+Access generated schemas:
+```kotlin
+val schema: String = Shape::class.jsonSchemaString
+val json: JsonObject = Shape::class.jsonSchema
+```
+
+## Function call schema (MCP server)
+
+The following example demonstrates how to use generated schema in MCP server:
+```kotlin
+/**
+ * Response to a greeting request.
+ *
+ * @property message Generated greeting message.
+ * @property timestamp The timestamp at which the greeting was generated, in milliseconds since the epoch.
+ */
+@Schema
+@Serializable
+internal data class GreetingResponse(
+    val message: String,
+    val timestamp: Long,
+)
+
+/**
+ * Generates a greeting response with a personalized message.
+ *
+ * @param firstName The first name of the individual to be greeted.
+ * @param lastName The optional last name of the individual to be greeted.
+ * @return A `GreetingResponse` containing the request ID, greeting message, and generation timestamp.
+ */
+@Schema
+internal fun greet(
+    firstName: String,
+    lastName: String? = null,
+): GreetingResponse = TODO("business logic")
+
+val functionSchema = greetJsonSchema()
+val toolName = requireNotNull(functionSchema["name"]?.jsonPrimitive?.content)
+val toolDescription = requireNotNull(functionSchema["description"]?.jsonPrimitive?.content)
+val paramsSchema = requireNotNull(functionSchema.jsonObject["parameters"]?.jsonObject)
+val responseSchema = GreetingResponse::class.jsonSchema
+
+// MCP Server
+val mcpServer = Server(
+        Implementation("Greeting MCP Server","1.0"),
+        ServerOptions(
+            capabilities =
+                ServerCapabilities(
+                    tools = ServerCapabilities.Tools(),
+                ),
+        ),
+    )
+
+mcpServer.addTool(
+    name = toolName,
+    description = toolDescription,
+    inputSchema =
+        ToolSchema(
+            properties = paramsSchema["properties"]?.jsonObject,
+            required = paramsSchema["required"]?.jsonArray?.map { it.jsonPrimitive.content },
+        ),
+    outputSchema =
+        ToolSchema(
+            properties = responseSchema["properties"]?.jsonObject,
+            required = responseSchema["required"]?.jsonArray?.map { it.jsonPrimitive.content },
+        ),
+) { request -> TODO("handle request") }
+
+// create and run Ktor server
+embeddedServer(CIO, host = "127.0.0.1", port = 3001) {
+    mcp {
+        return@mcp mcpServer
+    }
+}.start(wait = true)
+```
+A complete example is available here: [GreetingMcpServer.kt](src/commonMain/kotlin/com/example/mcp/GreetingMcpServer.kt)
+
+When you start the server, you may inspect the tool metadata 
+with [MCP inspector](https://modelcontextprotocol.io/docs/tools/inspector):
+![mcp-light.png](screenshots/mcp-light.png)
+
+## Build & Run
 
 ```bash
-./gradlew clean build  # KSP generates schemas
-./gradlew test         # See schemas in action
+# Generate schemas and build
+./gradlew build
+
+# Run MCP server example
+./gradlew :examples:gradle-google-ksp:jvmRun
+
+# Run tests
+./gradlew :examples:gradle-google-ksp:test
 ```
 
-## How It Works
+## Key Files
 
-### 1. Annotate Your Classes
+- `Shapes.kt` — Sealed classes and function schemas
+- `GreetingMcpServer.kt` — MCP server with auto-generated tool schemas
+- `build.gradle.kts` — KSP configuration and multiplatform setup
+
+## KSP Configuration
 
 ```kotlin
-import kotlinx.schema.Schema
-import kotlinx.schema.Description
-
-/**
- * A circle defined by its radius.
- */
-@Schema
-data class Circle(
-    val name: String,
-
-    @Description("Radius in units (must be positive)")
-    val radius: Double,
-
-    val color: String = "#FF5733"  // Defaults = optional
-)
-```
-
-**KDoc vs @Description:**
-- **Class-level KDoc** is automatically extracted
-- **@Description** is the recommended way to document properties
-- @Description takes precedence when both exist
-
-### 2. KSP Generates Extensions
-
-```kotlin
-val schemaString = Circle::class.jsonSchemaString  // String
-val schemaObject = Circle::class.jsonSchema        // JsonObject
-```
-
-### 3. Use With LLMs
-
-```kotlin
-// OpenAI
-FunctionTool(
-    name = "create_circle",
-    parameters = Parameters.fromJsonString(Circle::class.jsonSchemaString)
-)
-
-// Anthropic
-tool {
-    name = "create_circle"
-    inputSchema = Circle::class.jsonSchema
-}
-```
-
-## Generated Schema Example
-
-Input:
-```kotlin
-/**
- * A circle defined by its radius.
- */
-@Schema
-data class Circle(
-    val name: String,
-
-    @Description("Radius in units (must be positive)")
-    val radius: Double,
-
-    val color: String = "#FF5733"
-)
-```
-
-Output:
-```json
-{
-  "$id": "com.example.shapes.Circle",
-  "type": "object",
-  "properties": {
-    "name": { "type": "string" },
-    "radius": {
-      "type": "number",
-      "description": "Radius in units (must be positive)"
-    },
-    "color": { "type": "string" }
-  },
-  "required": ["name", "radius"],
-  "description": "A circle defined by its radius."
-}
-```
-
-Note: `color` is optional (has default), class KDoc becomes schema description, @Description adds property description.
-
-## Setting Up KSP
-
-### 1. Add Plugins
-
-```kotlin
-// build.gradle.kts
-plugins {
-    kotlin("multiplatform") version "2.2.21"
-    kotlin("plugin.serialization") version "2.2.21"
-    id("com.google.devtools.ksp") version "2.3.4"
-}
-```
-
-### 2. Configure Source Sets & Dependencies
-
-```kotlin
-kotlin {
-    jvm()
-    js(IR) { nodejs() }
-
-    sourceSets {
-        commonMain {
-            kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
-            dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-schema-annotations:0.0.2")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
-            }
-        }
-    }
+ksp {
+    arg("kotlinx.schema.withSchemaObject", "true")  // Generate JsonObject accessor
+    arg("kotlinx.schema.visibility", "internal")     // Control generated code visibility
 }
 
 dependencies {
-    add("kspCommonMainMetadata", "org.jetbrains.kotlinx:kotlinx-schema-ksp:0.0.2")
+    add("kspCommonMainMetadata", "org.jetbrains.kotlinx:kotlinx-schema-ksp:$version")
 }
 ```
 
-### 3. Configure Tasks & KSP
-
-```kotlin
-tasks.named("compileKotlinJvm") { dependsOn("kspCommonMainKotlinMetadata") }
-tasks.named("compileKotlinJs") { dependsOn("kspCommonMainKotlinMetadata") }
-
-ksp {
-    arg("kotlinx.schema.withSchemaObject", "true")  // Generate JsonObject accessor
-    arg("kotlinx.schema.rootPackage", "com.example.shapes")  // Schema $id prefix
-}
-```
-
-## Learn More
-
-- [kotlinx-schema Repository](../../README.md)
-- [KSP Documentation](https://kotlinlang.org/docs/ksp-overview.html)
-
-## License
-
-Apache 2.0
+See [main documentation](../../README.md) for setup details.

@@ -4,6 +4,8 @@ package com.example.shapes
 
 import kotlinx.schema.Description
 import kotlinx.schema.Schema
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
 
 /**
  * A geometric shape. This sealed class demonstrates polymorphic schema generation.
@@ -46,3 +48,14 @@ sealed class Shape {
 internal fun sayHello(
     @Description("Name to greet") name: String?,
 ): String = "Hello, ${name ?: "friend"}!"
+
+fun main() {
+    val json = Json { prettyPrint = true }
+    println(Shape::class.jsonSchemaString)
+
+    println("${Shape::class.jsonSchema::class}: ${json.encodeToString(Shape::class.jsonSchema)}")
+
+    val functionCallSchemaString: String = sayHelloJsonSchemaString()
+    val functionCallSchema: JsonObject = sayHelloJsonSchema()
+    println("$functionCallSchemaString\n\n${functionCallSchema::class}: ${json.encodeToString(functionCallSchema)}")
+}

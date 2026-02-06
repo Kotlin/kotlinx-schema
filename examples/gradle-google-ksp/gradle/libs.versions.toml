@@ -1,15 +1,25 @@
 [versions]
 koog = "0.6.1"
 kotest = "6.1.3"
+kotlin = "2.3.0"
 kotlinxSerialization = "1.10.0"
 ksp = "2.3.5"
-kotlin = "2.3.0"
+ktor = "3.2.3"
+mcp = "0.8.3"
+slf4j = "2.0.17"
 
 [libraries]
 koog-agents-tools = { module = "ai.koog:agents-tools", version.ref = "koog" }
 kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 kotest-assertions-json = { module = "io.kotest:kotest-assertions-json", version.ref = "kotest" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+ktor-bom = { group = "io.ktor", name = "ktor-bom", version.ref = "ktor" }
+ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio" }
+ktor-server-cio = { group = "io.ktor", name = "ktor-server-cio" }
+ktor-server-cors = { group = "io.ktor", name = "ktor-server-cors" }
+mcp-kotlin-client = { group = "io.modelcontextprotocol", name = "kotlin-sdk-client", version.ref = "mcp" }
+mcp-kotlin-server = { group = "io.modelcontextprotocol", name = "kotlin-sdk-server", version.ref = "mcp" }
+slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
 
 [plugins]
 google-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
