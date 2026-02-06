@@ -11,7 +11,7 @@ import kotlinx.schema.generator.core.ir.PrimitiveNode
 import kotlinx.schema.generator.core.ir.TypeGraph
 import kotlinx.schema.generator.core.ir.TypeNode
 import kotlinx.schema.generator.core.ir.TypeRef
-import kotlinx.schema.generator.core.ir.ValidationConstraint
+import kotlinx.schema.generator.core.ir.Annotation as IrAnnotation
 import kotlinx.schema.json.AdditionalPropertiesSchema
 import kotlinx.schema.json.AnyOfPropertyDefinition
 import kotlinx.schema.json.ArrayPropertyDefinition
@@ -574,13 +574,13 @@ public class TypeGraphToJsonSchemaTransformer
 
         private fun applyConstraints(
             def: PropertyDefinition,
-            constraints: List<ValidationConstraint>,
+            constraints: List<IrAnnotation>,
         ): PropertyDefinition {
             var result = def
 
             for (constraint in constraints) {
                 when (constraint) {
-                    is ValidationConstraint.Min -> {
+                    is IrAnnotation.Min -> {
                         if (result is NumericPropertyDefinition) {
                             result = result.copy(minimum = constraint.value.toDouble())
                         }

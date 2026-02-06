@@ -11,7 +11,7 @@ import kotlinx.schema.generator.core.ir.SubtypeRef
 import kotlinx.schema.generator.core.ir.TypeGraph
 import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeRef
-import kotlinx.schema.generator.core.ir.ValidationConstraint
+import kotlinx.schema.generator.core.ir.Annotation as IrAnnotation
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 

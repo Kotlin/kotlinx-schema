@@ -10,7 +10,7 @@ import kotlinx.schema.generator.core.ir.PrimitiveNode
 import kotlinx.schema.generator.core.ir.Property
 import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeRef
-import kotlinx.schema.generator.core.ir.ValidationConstraint
+import kotlinx.schema.generator.core.ir.Annotation as IrAnnotation
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
@@ -204,8 +204,8 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
             .firstOrNull { it.name == propertyName }
 
 
-    protected fun extractValidationAnnotationsFromProperty(property: kotlin.reflect.KProperty<*>): List<ValidationConstraint> {
-        val constraints = mutableListOf<ValidationConstraint>()
+    protected fun extractValidationAnnotationsFromProperty(property: kotlin.reflect.KProperty<*>): List<IrAnnotation> {
+        val constraints = mutableListOf<IrAnnotation>()
 
         val processAnnotation = { ann: Annotation ->
             val qualifiedName = ann.annotationClass.qualifiedName
@@ -216,7 +216,7 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
                 try {
                     if (simpleName == ANNOTATION_MIN) {
                         val value = ann.annotationClass.members.firstOrNull { it.name == "value" }?.call(ann)
-                        value?.toString()?.toLongOrNull()?.let { constraints += ValidationConstraint.Min(it) }
+                        value?.toString()?.toLongOrNull()?.let { constraints += IrAnnotation.Min(it) }
                     }
                 } catch (_: Exception) {
                 }

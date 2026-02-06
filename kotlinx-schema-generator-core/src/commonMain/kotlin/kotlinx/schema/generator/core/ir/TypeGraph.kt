@@ -80,8 +80,8 @@ public data class PolymorphicNode(
     override val description: String? = null,
 ) : TypeNode
 
-public sealed class ValidationConstraint {
-    public data class Min(val value: Number) : ValidationConstraint()
+public sealed class Annotation {
+    public data class Min(val value: Number) : Annotation()
 }
 
 public data class Property(
@@ -91,12 +91,12 @@ public data class Property(
     val deprecated: Boolean = false,
     val hasDefaultValue: Boolean = false,
     val defaultValue: Any? = null,
-    val constraints: List<ValidationConstraint> = emptyList(),
+    val constraints: List<Annotation> = emptyList(),
 ) {
     val annotations: Map<String, String?>
         get() = constraints.associate {
             when (it) {
-                is ValidationConstraint.Min -> "min" to it.value.toString()
+                is Annotation.Min -> "min" to it.value.toString()
             }
         }
 }
