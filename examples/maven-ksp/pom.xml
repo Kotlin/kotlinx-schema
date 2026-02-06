@@ -13,7 +13,7 @@
     </description>
 
     <properties>
-        <kotlin.version>2.3.0</kotlin.version>
+        <kotlin.version>2.3.10</kotlin.version>
         <maven.compiler.release>25</maven.compiler.release>
         <ksp.plugin.version>0.3.0</ksp.plugin.version>
         <kotlinx-schema.version>0.3.0</kotlinx-schema.version>
