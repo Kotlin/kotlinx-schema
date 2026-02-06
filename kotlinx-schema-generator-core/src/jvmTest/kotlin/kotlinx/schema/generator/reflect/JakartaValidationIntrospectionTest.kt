@@ -1,12 +1,12 @@
 package kotlinx.schema.generator.reflect
 
+import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.shouldBe
 import jakarta.validation.constraints.Min
 import kotlinx.schema.generator.core.ir.ObjectNode
 import kotlinx.schema.generator.core.ir.TypeRef
 import kotlinx.schema.generator.core.ir.Annotation as IrAnnotation
 import kotlin.test.Test
-import kotlin.test.assertNotNull
-import kotlin.test.assertEquals
 
 class JakartaValidationIntrospectionTest {
 
@@ -22,19 +22,19 @@ class JakartaValidationIntrospectionTest {
         val graph = introspector.introspect(Sample::class)
 
         val root = graph.root
-        assertNotNull(root)
+        root.shouldNotBeNull()
 
         val inline = root as? TypeRef.Ref
-        assertNotNull(inline)
+        inline.shouldNotBeNull()
 
         val objectNode = graph.nodes[inline.id] as? ObjectNode
-        assertNotNull(objectNode)
+        objectNode.shouldNotBeNull()
 
         val ageProperty = objectNode.properties.firstOrNull { it.name == "age" }
-        assertNotNull(ageProperty)
+        ageProperty.shouldNotBeNull()
 
         val minConstraint = ageProperty.constraints.filterIsInstance<IrAnnotation.Min>().firstOrNull()
-        assertNotNull(minConstraint)
-        assertEquals(5L, minConstraint.value)
+        minConstraint.shouldNotBeNull()
+        minConstraint.value shouldBe 5L
     }
 }
