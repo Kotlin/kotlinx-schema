@@ -208,18 +208,13 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
         val constraints = mutableListOf<IrAnnotation>()
 
         val processAnnotation = { ann: Annotation ->
-            val qualifiedName = ann.annotationClass.qualifiedName
-            if (qualifiedName != null &&
-                (qualifiedName.startsWith("jakarta.validation.constraints.") ||
-                    qualifiedName.startsWith("javax.validation.constraints."))) {
-                val simpleName = ann.annotationClass.simpleName
-                try {
-                    if (simpleName == ANNOTATION_MIN) {
-                        val value = ann.annotationClass.members.firstOrNull { it.name == "value" }?.call(ann)
-                        value?.toString()?.toLongOrNull()?.let { constraints += IrAnnotation.Min(it) }
-                    }
-                } catch (_: Exception) {
+            val simpleName = ann.annotationClass.simpleName
+            try {
+                if (simpleName == ANNOTATION_MIN) {
+                    val value = ann.annotationClass.members.firstOrNull { it.name == "value" }?.call(ann)
+                    value?.toString()?.toLongOrNull()?.let { constraints += IrAnnotation.Min(it) }
                 }
+            } catch (_: Exception) {
             }
         }
 
