@@ -32,7 +32,6 @@ kotlin {
         jvmMain {
             dependencies {
                 implementation(kotlin("reflect"))
-                runtimeOnly(libs.slf4j.simple)
             }
         }
 
@@ -40,7 +39,7 @@ kotlin {
             dependencies {
                 implementation(libs.junit.jupiter.params)
                 implementation(libs.mockk)
-                implementation("jakarta.validation:jakarta.validation-api:3.0.2")
+                runtimeOnly(libs.slf4j.simple)
             }
         }
     }
