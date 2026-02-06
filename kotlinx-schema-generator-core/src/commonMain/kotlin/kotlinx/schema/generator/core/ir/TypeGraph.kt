@@ -81,7 +81,7 @@ public data class PolymorphicNode(
 ) : TypeNode
 
 public sealed class ValidationConstraint {
-    public data class Min(val value: Long) : ValidationConstraint()
+    public data class Min(val value: Number) : ValidationConstraint()
 }
 
 public data class Property(
