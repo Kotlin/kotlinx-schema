@@ -21,9 +21,15 @@ kotlin {
         commonMain {
             kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
             dependencies {
+                implementation(dependencies.platform(libs.ktor.bom))
                 implementation(libs.koog.agents.tools)
                 implementation(libs.kotlinx.serialization.json)
                 implementation("org.jetbrains.kotlinx:kotlinx-schema-annotations:$kotlinxSchemaVersion")
+
+                implementation(libs.mcp.kotlin.server)
+                implementation(libs.ktor.server.cio)
+                implementation(libs.ktor.server.cors)
+                implementation(libs.slf4j.simple)
             }
         }
 
@@ -32,6 +38,12 @@ kotlin {
                 implementation(kotlin("test"))
                 implementation(libs.kotest.assertions.core)
                 implementation(libs.kotest.assertions.json)
+            }
+        }
+
+        jvmMain {
+            dependencies {
+                runtimeOnly(libs.slf4j.simple)
             }
         }
     }
@@ -48,7 +60,6 @@ tasks.named("compileKotlinJs") {
 // Configure KSP arguments
 ksp {
     arg("kotlinx.schema.withSchemaObject", "true")
-    arg("kotlinx.schema.rootPackage", "com.example.shapes")
     arg("kotlinx.schema.visibility", "internal")
 }
 
