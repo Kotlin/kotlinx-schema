@@ -411,7 +411,7 @@ public class TypeGraphToJsonSchemaTransformer
                     val isRequired = property.name in required
 
                     val initialPropertyDef = convertTypeRef(property.type, graph, definitions)
-                    val propertyDef = applyConstraints(initialPropertyDef, property.constraints)
+                    val propertyDef = applyConstraints(initialPropertyDef, property.annotations)
 
                     // Remove nullable flag if property is required (in required array)
                     // Convention: nullable flag is only used for optional properties
@@ -585,6 +585,8 @@ public class TypeGraphToJsonSchemaTransformer
                             result = result.copy(minimum = constraint.value.toDouble())
                         }
                     }
+
+                    else -> {}
                 }
             }
 

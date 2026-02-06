@@ -163,7 +163,7 @@ public object ReflectionClassIntrospector : SchemaIntrospector<KClass<*>> {
                     } else {
                         prop.description
                     }
-                properties += prop.copy(description = updatedDescription, constraints = validationConstraints)
+                properties += prop.copy(description = updatedDescription, annotations = validationConstraints)
             }
 
             requiredProperties += constructorRequired
@@ -185,7 +185,7 @@ public object ReflectionClassIntrospector : SchemaIntrospector<KClass<*>> {
                             description = description,
                             hasDefaultValue = fixedValue != null,
                             defaultValue = fixedValue,
-                            constraints = extractValidationAnnotationsFromProperty(property),
+                            annotations = extractValidationAnnotationsFromProperty(property),
                         )
 
                     requiredProperties += propertyName

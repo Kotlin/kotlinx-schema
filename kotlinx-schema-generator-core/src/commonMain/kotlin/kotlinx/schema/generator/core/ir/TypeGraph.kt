@@ -99,16 +99,9 @@ public data class Property(
     val deprecated: Boolean = false,
     val hasDefaultValue: Boolean = false,
     val defaultValue: Any? = null,
-    val constraints: List<Annotation> = emptyList(),
-) {
-    val annotations: Map<String, String?>
-        get() = constraints.associate {
-            when (it) {
-                is Annotation.Generic -> it.key to it.value
-                is Annotation.Constraint.Min -> it.name to it.value.toString()
-            }
-        }
-}
+
+    val annotations: List<Annotation> = emptyList(),
+)
 
 /** Reference to a subtype in a polymorphic hierarchy. */
 public data class SubtypeRef(

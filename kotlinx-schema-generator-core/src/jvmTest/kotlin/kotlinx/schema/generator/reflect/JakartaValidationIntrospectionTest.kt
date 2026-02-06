@@ -33,7 +33,7 @@ class JakartaValidationIntrospectionTest {
         val ageProperty = objectNode.properties.firstOrNull { it.name == "age" }
         ageProperty.shouldNotBeNull()
 
-        val minConstraint = ageProperty.constraints.filterIsInstance<IrAnnotation.Constraint.Min>().firstOrNull()
+        val minConstraint = ageProperty.annotations.filterIsInstance<IrAnnotation.Constraint.Min>().firstOrNull()
         minConstraint.shouldNotBeNull()
         minConstraint.value shouldBe 5L
     }
