@@ -11,6 +11,7 @@ import kotlinx.schema.generator.core.ir.PrimitiveNode
 import kotlinx.schema.generator.core.ir.TypeGraph
 import kotlinx.schema.generator.core.ir.TypeNode
 import kotlinx.schema.generator.core.ir.TypeRef
+import kotlinx.schema.generator.core.ir.Annotation as IrAnnotation
 import kotlinx.schema.json.AdditionalPropertiesSchema
 import kotlinx.schema.json.AnyOfPropertyDefinition
 import kotlinx.schema.json.ArrayPropertyDefinition
@@ -409,7 +410,8 @@ public class TypeGraphToJsonSchemaTransformer
                 node.properties.associate { property ->
                     val isRequired = property.name in required
 
-                    val propertyDef = convertTypeRef(property.type, graph, definitions)
+                    val initialPropertyDef = convertTypeRef(property.type, graph, definitions)
+                    val propertyDef = applyConstraints(initialPropertyDef, property.annotations)
 
                     // Remove nullable flag if property is required (in required array)
                     // Convention: nullable flag is only used for optional properties
@@ -568,5 +570,26 @@ public class TypeGraphToJsonSchemaTransformer
             } else {
                 oneOfDef
             }
+        }
+
+        private fun applyConstraints(
+            def: PropertyDefinition,
+            constraints: List<IrAnnotation>,
+        ): PropertyDefinition {
+            var result = def
+
+            for (constraint in constraints) {
+                when (constraint) {
+                    is IrAnnotation.Constraint.Min -> {
+                        if (result is NumericPropertyDefinition) {
+                            result = result.copy(minimum = constraint.value.toDouble())
+                        }
+                    }
+
+                    else -> {}
+                }
+            }
+
+            return result
         }
     }
