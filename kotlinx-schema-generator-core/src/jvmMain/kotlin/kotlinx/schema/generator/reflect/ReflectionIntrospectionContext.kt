@@ -15,7 +15,12 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
 import kotlin.reflect.jvm.javaField
-
+/**
+ * Reflection-based introspection context.
+ *
+ * Provides shared functionality for extracting schema information
+ * from Kotlin types using reflection.
+ */
 @OptIn(InternalSchemaGeneratorApi::class)
 internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContext<KClass<*>, KType>() {
     private companion object {
