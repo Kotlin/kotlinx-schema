@@ -4,7 +4,7 @@ kotest = "6.1.3"
 kotlin = "2.3.0"
 kotlinxSerialization = "1.10.0"
 ksp = "2.3.5"
-ktor = "3.2.3"
+ktor = "3.4.0"
 mcp = "0.8.3"
 slf4j = "2.0.17"
 
