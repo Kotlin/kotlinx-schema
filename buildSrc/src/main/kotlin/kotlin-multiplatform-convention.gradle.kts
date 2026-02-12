@@ -78,6 +78,7 @@ kotlin {
     }
 
     wasmJs {
+        browser()
         binaries.library()
         nodejs()
     }
@@ -95,21 +96,19 @@ kotlin {
     watchosSimulatorArm64()
     watchosArm32()
     watchosArm64()
+    watchosX64()
     tvosSimulatorArm64()
     tvosArm64()
 
     // Tier 3
     mingwX64()
-    /*
-    androidNativeArm32()
-    androidNativeArm64()
-    androidNativeX86()
-    androidNativeX64()
-    watchosDeviceArm64()
+    // androidNativeArm32()
+    // androidNativeArm64()
+    // androidNativeX86()
+    // androidNativeX64()
     macosX64()
     iosX64()
     tvosX64()
-     */
 }
 
 tasks.named("detekt").configure {
