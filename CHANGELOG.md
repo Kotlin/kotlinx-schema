@@ -1,3 +1,12 @@
+## 0.3.1
+> Published 2026-02-12
+
+### Added
+- Support WasmJS/Browser and watchOS X64 targets
+
+### Fixed
+- Move slf4j.simple dependency to test scope
+
 ## 0.3.0
 > Published 2026-02-03
 
