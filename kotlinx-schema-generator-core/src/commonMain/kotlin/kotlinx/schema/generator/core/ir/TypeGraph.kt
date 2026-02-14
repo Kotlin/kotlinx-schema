@@ -80,7 +80,18 @@ public data class PolymorphicNode(
     override val description: String? = null,
 ) : TypeNode
 
-/** Property of an object. */
+public sealed class Annotation {
+    public data class Generic(val key: String, val value: String?) : Annotation()
+
+    public sealed class Constraint : Annotation() {
+        public abstract val name: String
+
+        public data class Min(val value: Number) : Constraint() {
+            override val name: String get() = "min"
+        }
+    }
+}
+
 public data class Property(
     val name: String,
     val type: TypeRef,
@@ -88,7 +99,8 @@ public data class Property(
     val deprecated: Boolean = false,
     val hasDefaultValue: Boolean = false,
     val defaultValue: Any? = null,
-    val annotations: Map<String, String?> = emptyMap(),
+
+    val annotations: List<Annotation> = emptyList(),
 )
 
 /** Reference to a subtype in a polymorphic hierarchy. */
@@ -106,3 +118,14 @@ public data class Discriminator(
     val required: Boolean,
     val mapping: Map<String, TypeId>? = null,
 )
+
+public fun TypeGraph.rootObject(): ObjectNode? {
+    val inline = root as? TypeRef.Inline ?: return null
+    return inline.node as? ObjectNode
+}
+
+public fun TypeGraph.rootProperty(name: String): Property? {
+    return rootObject()
+        ?.properties
+        ?.firstOrNull { it.name == name }
+}
