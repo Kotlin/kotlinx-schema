@@ -1,5 +1,24 @@
 # KSP Processor Configuration
 
+**Table of contents**
+<!--- TOC -->
+
+* [Setup](#setup)
+  * [Google KSP gradle plugin](#google-ksp-gradle-plugin)
+    * [Multiplatform projects](#multiplatform-projects)
+    * [JVM-only projects](#jvm-only-projects)
+  * [Kotlinx-Schema gradle plugin](#kotlinx-schema-gradle-plugin)
+    * [Multiplatform projects](#multiplatform-projects)
+    * [JVM-only projects](#jvm-only-projects)
+  * [Maven Plugin](#maven-plugin)
+* [Configuration options](#configuration-options)
+  * [Options reference](#options-reference)
+  * [Option priority](#option-priority)
+* [Generated Code](#generated-code)
+* [See Also](#see-also)
+
+<!--- END -->
+
 Generate JSON schemas at compile time with zero runtime overhead using the `kotlinx-schema` KSP processor.
 
 ## Setup
@@ -197,22 +216,40 @@ Options can be set globally in your build configuration or overridden per-class 
 
 For each `@Schema`-annotated class, the processor generates extension properties:
 
+<!--- CLEAR -->
+<!--- MODULE docs -->
+<!--- INCLUDE
+import kotlinx.schema.Schema
+-->
 ```kotlin
 @Schema(withSchemaObject = true)
 data class User(val name: String)
+```
+<!--- KNIT example-knit-ksp-01.kt --> 
 
-// Access generated extensions
+Access generated extensions
+```kotlin
 val jsonString: String = User::class.jsonSchemaString
 val jsonObject: JsonObject = User::class.jsonSchema
 ```
 
 For each `@Schema`-annotated function, the processor generates additional top-level or extension function:
 
+
+<!--- CLEAR -->
+<!--- MODULE docs -->
+<!--- INCLUDE
+import kotlinx.schema.Schema
+data class Shape(val name: String)
+-->
 ```kotlin
 @Schema(withSchemaObject = true)
 internal fun calculateArea(shape: Shape): Double = TODO("only signature matters")
+```
+<!--- KNIT example-knit-ksp-02.kt --> 
 
-// Access generated functions
+Access generated functions:
+```kotlin
 val functionCallSchemaString: String = calculateAreaJsonSchemaString() // <function name> + "jsonSchemaString()" 
 val functionCallSchema: JsonObject = calculateAreaJsonSchema() // <function name> + "jsonSchema()" 
 ```

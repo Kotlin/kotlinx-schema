@@ -1,4 +1,4 @@
-.SHELLFLAGS := -e -o pipefail -c
+.SHELLFLAGS := -e -c
 
 .PHONY: all
 all:clean build integration-test examples
@@ -29,6 +29,12 @@ apidocs:
 	@rm -rf docs/public/apidocs && \
 	./gradlew clean :docs:dokkaGenerate
 	@echo "✅ API docs generated!"
+
+.PHONY: knit
+knit:
+	@echo "🪡🧶 Running Knit check ..."
+	./gradlew :docs:clean knit knitCheck :docs:testClasses --no-configuration-cache
+	@echo "✅ Knit check completed!"
 
 .PHONY: clean
 clean:

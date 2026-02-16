@@ -229,6 +229,29 @@ jobs:
           include_empty_in_summary: false
           include_time_in_summary: true
 
+  knit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v5
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5.0.0
+        with:
+          add-job-summary-as-pr-comment: on-failure
+          cache-cleanup: always
+
+      - name: "Build Knit: ${{ matrix.example }}"
+        run: make knit
+
   dependency-submission:
     runs-on: ubuntu-latest
     permissions:

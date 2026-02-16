@@ -8,6 +8,7 @@ junit-pioneer = "2.3.0"
 koog = "0.6.2"
 kotest = "6.1.3"
 kotlin = "2.2.21"
+knit = "0.5.1"
 kotlinxSerialization = "1.8.1"
 kover = "0.9.7"
 ksp = "2.3.5"
@@ -35,12 +36,13 @@ ksp-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.re
 langchain4j-core = { module = "dev.langchain4j:langchain4j-core", version.ref = "langchain4j" }
 slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
 
-ksp-symbol-processing-api = {module ="com.google.devtools.ksp:symbol-processing-api", version.ref="ksp"}
-ksp-symbol-processing-aa-embeddable = {module ="com.google.devtools.ksp:symbol-processing-aa-embeddable", version.ref="ksp"}
-ksp-symbol-processing-common-deps = {module ="com.google.devtools.ksp:symbol-processing-common-deps", version.ref="ksp"}
+ksp-symbol-processing-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
+ksp-symbol-processing-aa-embeddable = { module = "com.google.devtools.ksp:symbol-processing-aa-embeddable", version.ref = "ksp" }
+ksp-symbol-processing-common-deps = { module = "com.google.devtools.ksp:symbol-processing-common-deps", version.ref = "ksp" }
 
 [plugins]
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
 detekt = { id = "dev.detekt", version.ref = "detekt" }
 google-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
+knit = { id = "org.jetbrains.kotlinx.knit", version.ref = "knit" }

@@ -13,6 +13,65 @@
 [![JVM](https://img.shields.io/badge/JVM-17+-red.svg?logo=jvm)](http://java.com)
 [![License](https://img.shields.io/badge/License-Apache_2.0-yellow.svg)](LICENSE)
 
+**Table of contents:**
+<!--- TOC -->
+
+* [Key Features](#key-features)
+* [Why kotlinx-schema?](#why-kotlinx-schema?)
+  * [When to Use](#when-to-use)
+* [Quick Start](#quick-start)
+  * [Annotate Your Models](#annotate-your-models)
+  * [Configuration](#configuration)
+    * [Quick Setup](#quick-setup)
+* [Runtime schema generation](#runtime-schema-generation)
+  * [Why Runtime Generation?](#why-runtime-generation?)
+  * [Usage](#usage)
+  * [Choosing Your Approach](#choosing-your-approach)
+* [What Gets Generated](#what-gets-generated)
+* [Examples](#examples)
+  * [Basic data classes](#basic-data-classes)
+  * [Enums with descriptions](#enums-with-descriptions)
+  * [Nested objects](#nested-objects)
+  * [Generic types](#generic-types)
+  * [Sealed class polymorphism](#sealed-class-polymorphism)
+* [Using @Schema and @Description annotations](#using-@schema-and-@description-annotations)
+  * [@Schema annotation](#@schema-annotation)
+  * [@Description annotation](#@description-annotation)
+* [Function calling schema generation for LLMs](#function-calling-schema-generation-for-llms)
+  * [Why This Format?](#why-this-format?)
+  * [Basic Usage](#basic-usage)
+  * [Generated Schema](#generated-schema)
+  * [Key Features](#key-features)
+  * [Working with Multiple Functions](#working-with-multiple-functions)
+  * [Nullable Parameters](#nullable-parameters)
+  * [Compile-time Function Schema Generation (KSP)](#compile-time-function-schema-generation-ksp)
+    * [Top-Level Functions](#top-level-functions)
+    * [Instance/Member Functions](#instancemember-functions)
+    * [Companion Object Functions](#companion-object-functions)
+    * [Singleton Object Functions](#singleton-object-functions)
+    * [What Gets Generated](#what-gets-generated)
+    * [Schema Format](#schema-format)
+    * [KSP vs Runtime Reflection](#ksp-vs-runtime-reflection)
+    * [Suspend Functions](#suspend-functions)
+* [Multi-Framework Annotation Support](#multi-framework-annotation-support)
+  * [Supported Annotations](#supported-annotations)
+  * [How It Works](#how-it-works)
+  * [Customizing Annotation Detection](#customizing-annotation-detection)
+    * [Default Configuration](#default-configuration)
+    * [Adding Custom Annotations](#adding-custom-annotations)
+    * [Example: Adding Support for a Custom Framework](#example-adding-support-for-a-custom-framework)
+  * [Example: Reusing Jackson Annotations](#example-reusing-jackson-annotations)
+  * [Example: LangChain4j Integration](#example-langchain4j-integration)
+  * [Example: Koog AI Agents](#example-koog-ai-agents)
+  * [Precedence Rules](#precedence-rules)
+* [JSON Schema DSL](#json-schema-dsl)
+* [Building and Contributing](#building-and-contributing)
+* [Requirements](#requirements)
+* [Code of Conduct](#code-of-conduct)
+* [License](#license)
+
+<!--- END -->
+
 # kotlinx-schema
 
 **Generate JSON schemas and LLM function calling schemas from Kotlin code — including classes you don't own.**
@@ -83,6 +142,11 @@ Refer to the example projects [here](./examples).
 
 ### Annotate Your Models
 
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.schema.Schema
+import kotlinx.schema.Description
+-->
 ```kotlin
 /**
  * A postal address for deliveries and billing.
@@ -95,6 +159,7 @@ data class Address(
     @Description("Two-letter ISO country code; defaults to US") val country: String = "US",
 )
 ```
+<!--- KNIT example-knit-readme-01.kt --> 
 
 > **Note:** KDoc comments on classes can also be used as descriptions.
 
@@ -167,14 +232,20 @@ Runtime generation solves this by using reflection to analyze any class at runti
 
 ### Usage
 
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.schema.Schema
+import kotlinx.schema.json.JsonSchema
+-->
 ```kotlin
 // Works with ANY class, even from third-party libraries
 import com.thirdparty.library.User  // Not your code!
 
 val generator = kotlinx.schema.generator.json.ReflectionClassJsonSchemaGenerator.Default
-val schema: JsonObject = generator.generateSchema(User::class)
+val schema: JsonSchema = generator.generateSchema(User::class)
 val schemaString: String = generator.generateSchemaString(User::class)
 ```
+<!--- KNIT example-knit-readme-02.kt -->
 
 **Add dependency**: `org.jetbrains.kotlinx:kotlinx-schema-generator-json:<version>`
 
@@ -228,7 +299,7 @@ Schemas follow JSON Schema Draft 2020-12 format. Example (pretty-printed):
 }
 ```
 
-- Enums are `type: string` with `enum: [...]` and carry `@Description` as `description`.
+- Enums are `type: string` with `enum: []` and carry `@Description` as `description`.
 - Object properties include their inferred type schema and, when present, property-level `@Description` as `description`.
 - **Default values** are automatically extracted and included in the schema when using **runtime reflection** (e.g., `val country: String = "US"` → `"default": "US"`). Note: KSP (compile-time) tracks which properties have defaults but cannot extract the actual values.
 - Nullable properties are emitted as a union including `null`.
@@ -242,6 +313,11 @@ Schemas follow JSON Schema Draft 2020-12 format. Example (pretty-printed):
 
 Here's a practical example of a product model with various property types:
 
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.schema.Schema
+import kotlinx.schema.Description
+-->
 ```kotlin
 @Description("A purchasable product with pricing and inventory info.")
 @Schema
@@ -260,6 +336,7 @@ data class Product(
     val tags: List<String> = emptyList(),
 )
 ```
+<!--- KNIT example-knit-readme-03.kt --> 
 
 Use the generated extensions:
 
@@ -327,6 +404,11 @@ val schemaObject = Product::class.jsonSchema
 
 Enums are supported with descriptions on both the enum class and individual values:
 
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.schema.Schema
+import kotlinx.schema.Description
+-->
 ```kotlin
 @Description("Current lifecycle status of an entity.")
 @Schema
@@ -341,6 +423,7 @@ enum class Status {
     PENDING,
 }
 ```
+<!--- KNIT example-knit-readme-04.kt -->
 
 <details>
 <summary>Generated JSON schema</summary>
@@ -365,6 +448,20 @@ enum class Status {
 
 You can compose schemas by nesting annotated classes:
 
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.schema.Schema
+import kotlinx.schema.Description
+
+@Schema
+data class Address(val street: String, val city: String, val zipCode: String, val country: String = "US")
+
+@Schema
+data class Product(val id: Long, val name: String, val description: String?, val price: Double, val inStock: Boolean = true, val tags: List<String> = emptyList())
+
+@Schema
+enum class Status { ACTIVE, INACTIVE, PENDING }
+-->
 ```kotlin
 @Description("A person with a first and last name and age.")
 @Schema
@@ -392,6 +489,7 @@ data class Order(
     val status: Status,
 )
 ```
+<!--- KNIT example-knit-readme-05.kt -->
 
 The generated schema for `Order` will automatically include definitions for all nested types (`Person`, `Address`,
 `Product`, `Status`) in the `$defs` section, with appropriate `$ref` pointers to link them together. This makes it easy
@@ -401,6 +499,11 @@ to build complex, composable data models.
 
 Generic classes are supported, with type parameters resolved at usage sites:
 
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.schema.Schema
+import kotlinx.schema.Description
+-->
 ```kotlin
 @Description("A generic container that wraps content with optional metadata.")
 @Schema
@@ -411,6 +514,7 @@ data class Container<T>(
     val metadata: Map<String, Any> = emptyMap(),
 )
 ```
+<!--- KNIT example-knit-readme-06.kt -->
 
 Generic type parameters are resolved at the usage site. When generating a schema for a generic class, unbound type
 parameters (like `T`) are treated as `kotlin.Any` with a minimal definition in the `$defs` section. For more specific
@@ -420,6 +524,14 @@ typing, instantiate the generic class with concrete types when you need them.
 
 The library automatically generates JSON schemas for Kotlin sealed class hierarchies using `oneOf`:
 
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.schema.Schema
+import kotlinx.schema.Description
+import kotlinx.schema.generator.json.ReflectionClassJsonSchemaGenerator
+import kotlinx.schema.json.encodeToString
+import kotlinx.serialization.json.Json
+-->
 ```kotlin
 @Description("Multicellular eukaryotic organism of the kingdom Metazoa")
 @Schema
@@ -442,11 +554,21 @@ sealed class Animal {
         override val name: String,
     ) : Animal()
 }
+```
 
+<!--- INCLUDE 
+fun main() {
+-->
+```kotlin
 val generator = ReflectionClassJsonSchemaGenerator.Default
 val schema = generator.generateSchema(Animal::class)
+
 println(schema.encodeToString(Json { prettyPrint = true }))
 ```
+<!--- SUFFIX
+}
+-->
+<!--- KNIT example-knit-readme-07.kt -->
 
 <details>
 <summary>Generated JSON schema</summary>
@@ -570,6 +692,15 @@ This library automatically generates schemas that comply with the [OpenAI functi
 
 ### Basic Usage
 
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.schema.Description
+import kotlinx.schema.generator.json.ReflectionFunctionCallingSchemaGenerator
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class WeatherInfo(val temp: Double, val unit: String)
+-->
 ```kotlin
 @Description("Get current weather for a location")
 fun getWeather(
@@ -579,12 +710,13 @@ fun getWeather(
     @Description("Temperature unit")
     unit: String = "celsius"
 ): WeatherInfo {
-    // Implementation...
+    return WeatherInfo(20.0, unit)
 }
 
 val generator = ReflectionFunctionCallingSchemaGenerator.Default
 val schema = generator.generateSchema(::getWeather)
 ```
+<!--- KNIT example-knit-readme-08.kt -->
 
 ### Generated Schema
 
@@ -627,6 +759,13 @@ The generated schema follows the LLM function calling format:
 
 ### Working with Multiple Functions
 
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.schema.Description
+import kotlinx.schema.generator.json.ReflectionFunctionCallingSchemaGenerator
+import kotlinx.serialization.json.Json
+import kotlinx.schema.json.encodeToJsonObject
+-->
 ```kotlin
 // Define your functions
 @Description("Search the knowledge base")
@@ -652,6 +791,7 @@ val jsonSchemas = schemas.map { Json.encodeToString(it) }
 // Or get as JsonObject
 val schemaObjects = schemas.map { it.encodeToJsonObject() }
 ```
+<!--- KNIT example-knit-readme-09.kt -->
 
 The generated schemas can be sent to any LLM API that supports function calling (OpenAI, Anthropic, etc.). 
 Integration with specific LLM providers requires their respective client libraries.
@@ -660,14 +800,20 @@ Integration with specific LLM providers requires their respective client librari
 
 Nullable parameters are represented as union types:
 
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.schema.Description
+import kotlinx.serialization.Serializable
+-->
 ```kotlin
 @Description("Update user profile")
 fun updateProfile(
     @Description("User ID") userId: String,
     @Description("New name, if changing") name: String? = null,
     @Description("New email, if changing") email: String? = null
-): User = TODO("does not matter")// ...
+): Boolean = TODO("does not matter")// ...
 ```
+<!--- KNIT example-knit-readme-10.kt -->
 
 Generates:
 
@@ -713,6 +859,13 @@ Generate function schemas at compile time with zero runtime overhead. KSP genera
 
 Annotate package-level functions to generate top-level schema accessors:
 
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.schema.Schema
+import kotlinx.schema.Description
+
+fun greetPersonJsonSchemaString(): String = ""
+-->
 ```kotlin
 @Schema
 @Description("Sends a greeting message to a person")
@@ -726,11 +879,20 @@ fun greetPerson(
 // Generated: top-level functions
 val schema = greetPersonJsonSchemaString()
 ```
+<!--- KNIT example-knit-readme-11.kt -->
 
 #### Instance/Member Functions
 
 Annotate class methods to generate `KClass` extensions on the containing class:
 
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.schema.Schema
+import kotlinx.schema.Description
+import kotlin.reflect.KClass
+
+fun KClass<UserService>.registerUserJsonSchemaString(): String = ""
+-->
 ```kotlin
 class UserService {
     @Schema
@@ -746,11 +908,20 @@ class UserService {
 // Generated: KClass extension on UserService
 val schema = UserService::class.registerUserJsonSchemaString()
 ```
+<!--- KNIT example-knit-readme-12.kt -->
 
 #### Companion Object Functions
 
 Annotate companion methods to generate `KClass` extensions on the companion object itself:
 
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.schema.Schema
+import kotlinx.schema.Description
+import kotlin.reflect.KClass
+
+fun KClass<DatabaseConnection.Companion>.createJsonSchemaString(): String = ""
+-->
 ```kotlin
 class DatabaseConnection {
     companion object {
@@ -768,6 +939,7 @@ class DatabaseConnection {
 // Generated: KClass extension on companion object
 val schema = DatabaseConnection.Companion::class.createJsonSchemaString()
 ```
+<!--- KNIT example-knit-readme-13.kt -->
 
 This API correctly reflects that companion functions belong to the companion object, not the parent class.
 
@@ -775,6 +947,14 @@ This API correctly reflects that companion functions belong to the companion obj
 
 Annotate object methods to generate `KClass` extensions on the object type:
 
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.schema.Schema
+import kotlinx.schema.Description
+import kotlin.reflect.KClass
+
+fun KClass<ConfigurationManager>.loadConfigJsonSchemaString(): String = ""
+-->
 ```kotlin
 object ConfigurationManager {
     @Schema
@@ -790,6 +970,7 @@ object ConfigurationManager {
 // Generated: KClass extension on object
 val schema = ConfigurationManager::class.loadConfigJsonSchemaString()
 ```
+<!--- KNIT example-knit-readme-14.kt -->
 
 #### What Gets Generated
 
@@ -843,6 +1024,17 @@ Generated schemas follow the [OpenAI function calling format](https://platform.o
 
 Suspend functions work identically to regular functions. The generated schemas don't expose the suspend modifier—they describe parameter types only:
 
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.schema.Schema
+import kotlinx.schema.Description
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class UserData(val id: Long)
+
+fun fetchUserDataJsonSchemaString(): String = ""
+-->
 ```kotlin
 @Schema
 @Description("Fetches user data asynchronously")
@@ -853,6 +1045,7 @@ suspend fun fetchUserData(
 // Generated API works the same way
 val schema = fetchUserDataJsonSchemaString()
 ```
+<!--- KNIT example-knit-readme-15.kt -->
 
 ## Multi-Framework Annotation Support
 
@@ -933,6 +1126,13 @@ Now the schema generator will recognize `@ApiDoc` and extract descriptions from 
 
 If your project already uses Jackson for JSON serialization, you can generate schemas from existing Jackson-annotated classes without any modifications. This is particularly useful for REST APIs and Spring Boot applications where Jackson annotations are already present.
 
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.schema.generator.json.ReflectionClassJsonSchemaGenerator
+
+annotation class JsonClassDescription(val value: String)
+annotation class JsonPropertyDescription(val value: String)
+-->
 ```kotlin
 // Existing code with Jackson annotations - NO CHANGES NEEDED!
 @JsonClassDescription("Customer profile data")
@@ -948,16 +1148,23 @@ data class Customer(
 )
 
 // Generate JSON schema without modifying the code
-val generator = ReflectionJsonSchemaGenerator.Default
+val generator = kotlinx.schema.generator.json.ReflectionClassJsonSchemaGenerator.Default
 val schema = generator.generateSchema(Customer::class)
 
 // Schema includes all Jackson descriptions!
 ```
+<!--- KNIT example-knit-readme-16.kt -->
 
 ### Example: LangChain4j Integration
 
 LangChain4j uses the `@P` annotation for parameter descriptions in AI function calling. The library recognizes these annotations automatically, enabling seamless integration with existing LangChain4j codebases.
 
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.schema.generator.json.ReflectionFunctionCallingSchemaGenerator
+
+annotation class P(val value: String)
+-->
 ```kotlin
 // Code using LangChain4j annotations
 data class SearchQuery(
@@ -969,14 +1176,21 @@ data class SearchQuery(
 )
 
 // Generate schema for LLM function calling
-val schema = ReflectionFunctionCallingSchemaGenerator.Default
-    .generateSchema(SearchQuery::class)
+val generator = ReflectionFunctionCallingSchemaGenerator.Default
+val schema = generator.generateSchema(SearchQuery::class.constructors.first())
 ```
+<!--- KNIT example-knit-readme-17.kt -->
 
 ### Example: Koog AI Agents
 
 Koog AI framework uses `@LLMDescription` for documenting agent tools and parameters. The library supports both the verbose `description =` syntax and the shorthand form, making migration from Koog straightforward.
 
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.schema.Schema
+
+annotation class LLMDescription(val value: String = "", val description: String = "")
+-->
 ```kotlin
 @LLMDescription(description = "Product with pricing information")
 @Schema
@@ -991,6 +1205,7 @@ data class Product(
     val price: Double,
 )
 ```
+<!--- KNIT example-knit-readme-18.kt -->
 
 ### Precedence Rules
 
@@ -1014,39 +1229,41 @@ dependencies {
 
 **Quick Example:**
 
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.schema.json.jsonSchema
+-->
 ```kotlin
 val schema = jsonSchema {
-    name = "User"
-    schema {
-        property("id") {
-            required = true
-            string { format = "uuid" }
+    property("id") {
+        required = true
+        string { format = "uuid" }
+    }
+    property("email") {
+        required = true
+        string { format = "email" }
+    }
+    property("age") {
+        integer {
+            minimum = 0.0
+            maximum = 150.0
         }
-        property("email") {
-            required = true
-            string { format = "email" }
-        }
-        property("age") {
-            integer {
-                minimum = 0
-                maximum = 150
-            }
-        }
-        // Polymorphic types with discriminators
-        property("role") {
-            oneOf {
-                discriminator(propertyName = "type") {
-                    "admin" mappedTo "#/definitions/AdminRole"
-                    "user" mappedTo {
-                        property("type") { string { constValue = "user" } }
-                        property("permissions") { array { ofString() } }
-                    }
+    }
+    // Polymorphic types with discriminators
+    property("role") {
+        oneOf {
+            discriminator(propertyName = "type") {
+                "admin" mappedTo "#/definitions/AdminRole"
+                "user" mappedTo {
+                    property("type") { string { constValue = "user" } }
+                    property("permissions") { array { ofString() } }
                 }
             }
         }
     }
 }
 ```
+<!--- KNIT example-knit-readme-19.kt -->
 
 **Features:**
 - ✅ Type-safe property definitions (string, number, integer, boolean, array, object, reference)

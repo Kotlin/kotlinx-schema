@@ -1,5 +1,20 @@
 # kotlinx-schema-json
 
+**Table of contents:**
+<!--- TOC -->
+
+* [Features](#features)
+* [Limitations](#limitations)
+* [Quick Start](#quick-start)
+* [Installation](#installation)
+* [Comprehensive Example](#comprehensive-example)
+* [Function Calling Schema for LLM APIs](#function-calling-schema-for-llm-apis)
+  * [OpenAI Structured Outputs Requirements](#openai-structured-outputs-requirements)
+  * [Runtime Generation from Functions](#runtime-generation-from-functions)
+* [Conformance Testing](#conformance-testing)
+
+<!--- END -->
+
 Type-safe Kotlin models and DSL for [JSON Schema Draft 2020-12](https://json-schema.org/draft/2020-12/schema) with kotlinx-serialization support.
 
 ## Features
@@ -37,25 +52,28 @@ dependencies {
 For Multiplatform projects use [kotlinx-schema-json](https://central.sonatype.com/artifact/org.jetbrains.kotlinx/kotlinx-schema-json).
 
 Define schemas with Kotlin DSL:
-```kotlin
-import kotlinx.schema.json.*
 
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.schema.json.*
+import kotlinx.serialization.json.Json
+
+fun main() {
+-->
+```kotlin
 val schema = jsonSchema {
-    name = "User"
-    schema {
-        property("email") {
-            required = true
-            string {
-                description = "User's email address"
-                format = "email"
-            }
+    property("email") {
+        required = true
+        string {
+            description = "User's email address"
+            format = "email"
         }
-        property("age") {
-            integer {
-                description = "User's age"
-                minimum = 0.0
-                maximum = 150.0
-            }
+    }
+    property("age") {
+        integer {
+            description = "User's age"
+            minimum = 0.0
+            maximum = 150.0
         }
     }
 }
@@ -64,159 +82,169 @@ val schema = jsonSchema {
 val json = Json { prettyPrint = true }
 val jsonString = json.encodeToString(schema)
 ```
+<!--- SUFFIX
+}
+-->
+<!--- KNIT example-knit-json-readme-01.kt -->
 
 ## Comprehensive Example
 
 This example demonstrates all major DSL features:
 
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.schema.json.*
+import kotlinx.serialization.json.Json
+
+fun main() {
+-->
 ```kotlin
 val schema =
     jsonSchema {
-        name = "UserProfile"
-        strict = true
-        description = "Complete user profile with all features"
+        // Schema metadata
+        id = "https://example.com/schemas/user-profile"
+        schema = "https://json-schema.org/draft/2020-12/schema"
+        additionalProperties = false
 
-        schema {
-            // Schema metadata
-            id = "https://example.com/schemas/user-profile"
-            schema = "https://json-schema.org/draft/2020-12/schema"
-            additionalProperties = false
-
-            // String with format and constraints
-            property("email") {
-                required = true
-                string {
-                    description = "Email address"
-                    format = "email"
-                    minLength = 5
-                    maxLength = 100
-                }
+        // String with format and constraints
+        property("email") {
+            required = true
+            string {
+                description = "Email address"
+                format = "email"
+                minLength = 5
+                maxLength = 100
             }
+        }
 
-            // Numeric constraints
-            property("age") {
-                integer {
-                    description = "User age"
-                    minimum = 18.0
-                    maximum = 120.0
-                }
+        // Numeric constraints
+        property("age") {
+            integer {
+                description = "User age"
+                minimum = 18.0
+                maximum = 120.0
             }
+        }
 
-            // Type-safe string enum
-            property("status") {
-                string {
-                    description = "Account status"
-                    enum = listOf("active", "inactive", "pending")
-                }
+        // Type-safe string enum
+        property("status") {
+            string {
+                description = "Account status"
+                enum = listOf("active", "inactive", "pending")
             }
+        }
 
-            // Nullable property with default
-            property("verified") {
-                boolean {
-                    description = "Email verified"
-                    nullable = true
-                    default = false
-                }
+        // Nullable property with default
+        property("verified") {
+            boolean {
+                description = "Email verified"
+                nullable = true
+                default = false
             }
+        }
 
-            // Constant value
-            property("apiVersion") {
-                string {
-                    description = "API version"
-                    constValue = "v2.0"
-                }
+        // Constant value
+        property("apiVersion") {
+            string {
+                description = "API version"
+                constValue = "v2.0"
             }
+        }
 
-            // Array with constraints
-            property("tags") {
-                array {
-                    description = "User tags"
-                    minItems = 1
-                    maxItems = 10
-                    ofString()
-                }
+        // Array with constraints
+        property("tags") {
+            array {
+                description = "User tags"
+                minItems = 1
+                maxItems = 10
+                ofString()
             }
+        }
 
-            // Nested object
-            property("metadata") {
-                obj {
-                    description = "User metadata"
-                    property("createdAt") {
-                        required = true
-                        string { format = "date-time" }
-                    }
-                    property("lastLogin") {
-                        string { format = "date-time" }
-                    }
+        // Nested object
+        property("metadata") {
+            obj {
+                description = "User metadata"
+                property("createdAt") {
+                    required = true
+                    string { format = "date-time" }
                 }
-            }
-
-            // Array of objects
-            property("activities") {
-                array {
-                    description = "Activity log"
-                    ofObject {
-                        property("action") {
-                            required = true
-                            string()
-                        }
-                        property("timestamp") {
-                            required = true
-                            string { format = "date-time" }
-                        }
-                    }
-                }
-            }
-
-            // Polymorphic with discriminator (inline schemas)
-            property("paymentMethod") {
-                oneOf {
-                    discriminator(propertyName = "type") {
-                        "card" mappedTo {
-                            property("type") {
-                                required = true
-                                string { constValue = "card" }
-                            }
-                            property("cardNumber") {
-                                required = true
-                                string()
-                            }
-                        }
-                        "paypal" mappedTo {
-                            property("type") {
-                                required = true
-                                string { constValue = "paypal" }
-                            }
-                            property("email") {
-                                required = true
-                                string { format = "email" }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Generic property with heterogeneous enum
-            property("config") {
-                generic {
-                    description = "Configuration value"
-                    enum =
-                        listOf(
-                            "default", // String
-                            42, // Number
-                            true, // Boolean
-                            null, // Null
-                            listOf(1, 2, 3), // Array (auto-converted)
-                            mapOf("key" to "value"), // Object (auto-converted)
-                        )
+                property("lastLogin") {
+                    string { format = "date-time" }
                 }
             }
         }
-    }
+
+        // Array of objects
+        property("activities") {
+            array {
+                description = "Activity log"
+                ofObject {
+                    property("action") {
+                        required = true
+                        string()
+                    }
+                    property("timestamp") {
+                        required = true
+                        string { format = "date-time" }
+                    }
+                }
+            }
+        }
+
+        // Polymorphic with discriminator (inline schemas)
+        property("paymentMethod") {
+            oneOf {
+                discriminator(propertyName = "type") {
+                    "card" mappedTo {
+                        property("type") {
+                            required = true
+                            string { constValue = "card" }
+                        }
+                        property("cardNumber") {
+                            required = true
+                            string()
+                        }
+                    }
+                    "paypal" mappedTo {
+                        property("type") {
+                            required = true
+                            string { constValue = "paypal" }
+                        }
+                        property("email") {
+                            required = true
+                            string { format = "email" }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Generic property with heterogeneous enum
+        property("config") {
+            generic {
+                description = "Configuration value"
+                enum =
+                    listOf(
+                        "default", // String
+                        42, // Number
+                        true, // Boolean
+                        null, // Null
+                        listOf(1, 2, 3), // Array (auto-converted)
+                        mapOf("key" to "value"), // Object (auto-converted)
+                    )
+            }
+        }
+    
+}
 
 val json = Json { prettyPrint = true }
 println(json.encodeToString(schema))
 ```
+<!--- SUFFIX
+}
+-->
+<!--- KNIT example-knit-json-readme-02.kt -->
 
 Serialization result:
 
@@ -225,156 +253,151 @@ Serialization result:
 
 ```json
 {
-    "name": "UserProfile",
-    "strict": true,
-    "description": "Complete user profile with all features",
-    "schema": {
-        "$id": "https://example.com/schemas/user-profile",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "type": "object",
-        "properties": {
-            "email": {
-                "type": "string",
-                "description": "Email address",
-                "format": "email",
-                "minLength": 5,
-                "maxLength": 100
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://example.com/schemas/user-profile",
+    "type": "object",
+    "properties": {
+        "email": {
+            "type": "string",
+            "description": "Email address",
+            "format": "email",
+            "minLength": 5,
+            "maxLength": 100
+        },
+        "age": {
+            "type": "integer",
+            "description": "User age",
+            "minimum": 18.0,
+            "maximum": 120.0
+        },
+        "status": {
+            "type": "string",
+            "description": "Account status",
+            "enum": [
+                "active",
+                "inactive",
+                "pending"
+            ]
+        },
+        "verified": {
+            "type": "boolean",
+            "description": "Email verified",
+            "nullable": true,
+            "default": false
+        },
+        "apiVersion": {
+            "type": "string",
+            "description": "API version",
+            "const": "v2.0"
+        },
+        "tags": {
+            "type": "array",
+            "description": "User tags",
+            "items": {
+                "type": "string"
             },
-            "age": {
-                "type": "integer",
-                "description": "User age",
-                "minimum": 18.0,
-                "maximum": 120.0
-            },
-            "status": {
-                "type": "string",
-                "description": "Account status",
-                "enum": [
-                    "active",
-                    "inactive",
-                    "pending"
-                ]
-            },
-            "verified": {
-                "type": "boolean",
-                "description": "Email verified",
-                "nullable": true,
-                "default": false
-            },
-            "apiVersion": {
-                "type": "string",
-                "description": "API version",
-                "const": "v2.0"
-            },
-            "tags": {
-                "type": "array",
-                "description": "User tags",
-                "items": {
-                    "type": "string"
+            "minItems": 1,
+            "maxItems": 10
+        },
+        "metadata": {
+            "type": "object",
+            "description": "User metadata",
+            "properties": {
+                "createdAt": {
+                    "type": "string",
+                    "format": "date-time"
                 },
-                "minItems": 1,
-                "maxItems": 10
+                "lastLogin": {
+                    "type": "string",
+                    "format": "date-time"
+                }
             },
-            "metadata": {
+            "required": [
+                "createdAt"
+            ]
+        },
+        "activities": {
+            "type": "array",
+            "description": "Activity log",
+            "items": {
                 "type": "object",
-                "description": "User metadata",
                 "properties": {
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
+                    "action": {
+                        "type": "string"
                     },
-                    "lastLogin": {
+                    "timestamp": {
                         "type": "string",
                         "format": "date-time"
                     }
                 },
                 "required": [
-                    "createdAt"
-                ]
-            },
-            "activities": {
-                "type": "array",
-                "description": "Activity log",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "action": {
-                            "type": "string"
-                        },
-                        "timestamp": {
-                            "type": "string",
-                            "format": "date-time"
-                        }
-                    },
-                    "required": [
-                        "action",
-                        "timestamp"
-                    ]
-                }
-            },
-            "paymentMethod": {
-                "oneOf": [
-                    {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "type": "string",
-                                "const": "card"
-                            },
-                            "cardNumber": {
-                                "type": "string"
-                            }
-                        },
-                        "required": [
-                            "type",
-                            "cardNumber"
-                        ]
-                    },
-                    {
-                        "type": "object",
-                        "properties": {
-                            "type": {
-                                "type": "string",
-                                "const": "paypal"
-                            },
-                            "email": {
-                                "type": "string",
-                                "format": "email"
-                            }
-                        },
-                        "required": [
-                            "type",
-                            "email"
-                        ]
-                    }
-                ],
-                "discriminator": {
-                    "propertyName": "type"
-                }
-            },
-            "config": {
-                "description": "Configuration value",
-                "enum": [
-                    "default",
-                    42,
-                    true,
-                    null,
-                    [
-                        1,
-                        2,
-                        3
-                    ],
-                    {
-                        "key": "value"
-                    }
+                    "action",
+                    "timestamp"
                 ]
             }
         },
-        "required": [
-            "email"
-        ],
-        "additionalProperties": false
-    }
+        "paymentMethod": {
+            "oneOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "const": "card"
+                        },
+                        "cardNumber": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "cardNumber"
+                    ]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "const": "paypal"
+                        },
+                        "email": {
+                            "type": "string",
+                            "format": "email"
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "email"
+                    ]
+                }
+            ],
+            "discriminator": {
+                "propertyName": "type"
+            }
+        },
+        "config": {
+            "description": "Configuration value",
+            "enum": [
+                "default",
+                42,
+                true,
+                null,
+                [
+                    1,
+                    2,
+                    3
+                ],
+                {
+                    "key": "value"
+                }
+            ]
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "email"
+    ]
 }
 ```
 
@@ -386,29 +409,47 @@ Check [kotlinx-schema-json API Reference](https://kotlin.github.io/kotlinx-schem
 
 For LLM function calling (OpenAI, Anthropic), use `FunctionCallingSchema`:
 
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.schema.json.*
+import kotlinx.serialization.json.Json
+
+fun main() {
+-->
 ```kotlin
-val schema = FunctionCallingSchema(
+val functionSchema =
+FunctionCallingSchema(
     name = "searchDatabase",
     description = "Search for items in the database",
     strict = true,
-    parameters = ParametersDefinition(
-        properties = mapOf(
-            "query" to StringPropertyDefinition(
-                description = "Search query"
-            ),
-            "limit" to NumericPropertyDefinition(
-                type = listOf("integer"),
-                description = "Max results"
-            )
+    parameters =
+        ObjectPropertyDefinition(
+            properties =
+                mapOf(
+                    "query" to
+                        StringPropertyDefinition(
+                            description = "Search query",
+                        ),
+                    "limit" to
+                        NumericPropertyDefinition(
+                            type = listOf("integer"),
+                            description = "Max results",
+                        ),
+                ),
+            required = listOf("query", "limit"),
+            additionalProperties = AdditionalPropertiesConstraint.deny(),
         ),
-        required = listOf("query", "limit"),
-        additionalProperties = false
-    )
 )
+
+val json = Json { prettyPrint = true }
+println(json.encodeToString(functionSchema))
 ```
+<!--- SUFFIX
+}
+-->
+<!--- KNIT example-knit-json-readme-03.kt -->
 
-Produces OpenAI-compatible JSON:
-
+Produces function schema serializable as JSON:
 ```json
 {
     "type": "function",
@@ -446,18 +487,63 @@ Produces OpenAI-compatible JSON:
 
 For runtime schema generation from Kotlin functions, use `ReflectionFunctionCallingSchemaGenerator` from the `kotlinx-schema-generator-json` module:
 
-```kotlin
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.serialization.json.Json
 import kotlinx.schema.Description
 import kotlinx.schema.generator.json.ReflectionFunctionCallingSchemaGenerator
 
+data class User(val name: String)
+-->
+```kotlin
 @Description("Search for users by name")
 fun searchUsers(
     @Description("Name to search for") query: String,
     @Description("Maximum results") limit: Int = 10
 ): List<User> = TODO()
-
+```
+<!--- INCLUDE
+fun main() {
+-->
+```kotlin
 val generator = ReflectionFunctionCallingSchemaGenerator.Default
-val schema = generator.generateSchema(::searchUsers)
+val functionSchema = generator.generateSchema(::searchUsers)
+
+val json = Json { prettyPrint = true }
+println(json.encodeToString(functionSchema))
+```
+<!--- SUFFIX
+}
+-->
+<!--- KNIT example-knit-json-readme-04.kt -->
+
+Produces function schema serializable as JSON:
+```json
+{
+    "type": "function",
+    "name": "searchUsers",
+    "description": "Search for users by name",
+    "strict": true,
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": "Name to search for"
+            },
+            "limit": {
+                "type": "integer",
+                "description": "Maximum results"
+            }
+        },
+        "required": [
+            "query",
+            "limit"
+        ],
+        "additionalProperties": false
+    }
+}
+
 ```
 
 ## Conformance Testing

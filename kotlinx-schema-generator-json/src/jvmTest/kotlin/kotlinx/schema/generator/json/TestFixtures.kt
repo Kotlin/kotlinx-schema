@@ -1,8 +1,10 @@
+@file:Suppress("unused")
+
 package kotlinx.schema.generator.json
 
 import kotlinx.schema.Description
 
-/**
+/*
  * Shared test data classes and fixtures used across multiple test files.
  * Consolidates common test models to avoid duplication.
  */

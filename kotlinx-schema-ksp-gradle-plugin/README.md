@@ -1,5 +1,21 @@
 # Kotlinx Schema Gradle Plugin
 
+<!--- TOC -->
+
+* [Overview](#overview)
+* [Features](#features)
+  * [Multiplatform Project Behavior](#multiplatform-project-behavior)
+  * [JVM Project Behavior](#jvm-project-behavior)
+* [Usage](#usage)
+  * [Kotlin JVM project setup](#kotlin-jvm-project-setup)
+  * [Kotlin Multiplatform project setup](#kotlin-multiplatform-project-setup)
+  * [Annotate Your Data Classes](#annotate-your-data-classes)
+  * [Use Generated Extensions](#use-generated-extensions)
+* [Configuration](#configuration)
+* [Troubleshooting multiplatform metadata compilations](#troubleshooting-multiplatform-metadata-compilations)
+
+<!--- END -->
+
 A Gradle plugin for generating JSON schemas using KSP (Kotlin Symbol Processing).
 
 ## Overview
@@ -112,7 +128,7 @@ kotlinxSchema {
 ```
 
 ### Annotate Your Data Classes
-
+<!--- CLEAR -->
 ```kotlin
 import kotlinx.schema.Schema
 import kotlinx.schema.Description
@@ -128,6 +144,7 @@ data class Person(
     val age: Int
 )
 ```
+<!--- KNIT example-knit-ksp-readme-01.kt -->
 
 ### Use Generated Extensions
 
