@@ -23,7 +23,7 @@ import kotlin.reflect.KClass
  */
 public class ReflectionFunctionCallingSchemaGenerator(
     private val json: Json,
-) : AbstractSchemaGenerator<KCallable<*>, FunctionCallingSchema>(
+) : AbstractSchemaGenerator<KCallable<*>, FunctionCallingSchema, Unit>(
         introspector = ReflectionFunctionIntrospector,
         typeGraphTransformer = TypeGraphToFunctionCallingSchemaTransformer(),
     ) {

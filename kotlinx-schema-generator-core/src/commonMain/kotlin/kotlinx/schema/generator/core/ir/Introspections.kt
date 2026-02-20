@@ -114,3 +114,18 @@ public object Introspections {
             null
         }
 }
+
+/**
+ * Functional interface describing a strategy for extracting a property/type description from a list of annotations
+ * associated with it.
+ * It's used to allow custom description annotations.
+ */
+public fun interface DescriptionExtractor {
+    /**
+     * Extracts a description from a list of annotations.
+     *
+     * @param annotations List of annotations to inspect for a description
+     * @return The description text if found, or null if no description is present
+     */
+    public fun extract(annotations: List<Annotation>): String?
+}

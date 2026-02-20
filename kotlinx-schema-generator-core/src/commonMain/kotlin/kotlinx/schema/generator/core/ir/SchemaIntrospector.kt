@@ -12,6 +12,11 @@ package kotlinx.schema.generator.core.ir
  * 5. Introspectors instantiate context and call `toRef()` / `convertToTypeRef()`
  * 6. Return TypeGraph(root, context.nodes)
  */
-public interface SchemaIntrospector<T> {
+public interface SchemaIntrospector<T, C> {
+    /**
+     * Configuration object for the introspector
+     */
+    public val config: C
+
     public fun introspect(root: T): TypeGraph
 }

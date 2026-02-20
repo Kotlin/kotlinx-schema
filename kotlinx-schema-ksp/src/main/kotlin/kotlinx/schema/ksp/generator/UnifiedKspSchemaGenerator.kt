@@ -48,7 +48,7 @@ import kotlin.reflect.KClass
  */
 internal class UnifiedKspSchemaGenerator<T : Any, R : Any>(
     private val config: KspSchemaGeneratorConfig<T, R>,
-) : AbstractSchemaGenerator<T, R>(
+) : AbstractSchemaGenerator<T, R, Unit>(
         introspector = config.introspector,
         typeGraphTransformer = config.transformer,
     ) {

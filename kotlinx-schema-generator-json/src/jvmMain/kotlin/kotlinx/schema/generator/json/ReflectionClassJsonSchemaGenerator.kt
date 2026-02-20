@@ -20,7 +20,7 @@ import kotlin.reflect.KClass
 public class ReflectionClassJsonSchemaGenerator(
     private val json: Json,
     config: JsonSchemaConfig,
-) : AbstractSchemaGenerator<KClass<out Any>, JsonSchema>(
+) : AbstractSchemaGenerator<KClass<out Any>, JsonSchema, Unit>(
         introspector = ReflectionClassIntrospector,
         typeGraphTransformer =
             TypeGraphToJsonSchemaTransformer(

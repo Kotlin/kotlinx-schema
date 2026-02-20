@@ -19,7 +19,7 @@ import kotlinx.serialization.KSerializer
  * @property jsonEncodeDefaults Whether to encode default values in the JSON output
  */
 internal data class KspSchemaGeneratorConfig<T : Any, R : Any>(
-    val introspector: SchemaIntrospector<T>,
+    val introspector: SchemaIntrospector<T, Unit>,
     val transformer: TypeGraphTransformer<R, *>,
     val serializer: KSerializer<R>,
     val jsonPrettyPrint: Boolean,

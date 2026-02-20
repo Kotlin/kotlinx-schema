@@ -36,6 +36,7 @@ import kotlinx.serialization.descriptors.PrimitiveKind as SerialPrimitiveKind
 @OptIn(InternalSchemaGeneratorApi::class)
 internal class SerializationIntrospectionContext(
     private val json: Json,
+    private val config: SerializationClassSchemaIntrospector.Config,
 ) : BaseIntrospectionContext<SerialDescriptor, SerialDescriptor>() {
     /**
      * Returns the discovered type nodes.
@@ -356,26 +357,18 @@ internal class SerializationIntrospectionContext(
     private fun descriptorId(descriptor: SerialDescriptor): TypeId = TypeId(descriptor.serialName)
 
     /**
-     * Extracts the @Description annotation value from a descriptor's annotations.
+     * Extracts description from a list of type annotations.
      */
     private fun extractDescription(descriptor: SerialDescriptor): String? =
-        descriptor.annotations
-            .filterIsInstance<Description>()
-            .firstOrNull()
-            ?.value
+        config.descriptionExtractor.extract(descriptor.annotations)
 
     /**
-     * Extracts the @Description annotation value from a descriptor element's annotations.
+     * Extracts description from a list of element annotations.
      */
     private fun extractElementDescription(
         descriptor: SerialDescriptor,
         index: Int,
-    ): String? =
-        descriptor
-            .getElementAnnotations(index)
-            .filterIsInstance<Description>()
-            .firstOrNull()
-            ?.value
+    ): String? = config.descriptionExtractor.extract(descriptor.getElementAnnotations(index))
 
     /**
      * Returns a new [TypeRef] with the specified nullable flag.

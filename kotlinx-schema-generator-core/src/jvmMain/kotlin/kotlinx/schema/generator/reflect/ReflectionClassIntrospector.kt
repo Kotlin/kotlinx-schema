@@ -29,7 +29,9 @@ import kotlin.reflect.KProperty
  * - Requires classes to have a primary constructor
  * - Type parameters are not fully supported
  */
-public object ReflectionClassIntrospector : SchemaIntrospector<KClass<*>> {
+public object ReflectionClassIntrospector : SchemaIntrospector<KClass<*>, Unit> {
+    override val config: Unit = Unit
+
     override fun introspect(root: KClass<*>): TypeGraph {
         val context = IntrospectionContext()
         val rootRef = context.convertToTypeRef(root)

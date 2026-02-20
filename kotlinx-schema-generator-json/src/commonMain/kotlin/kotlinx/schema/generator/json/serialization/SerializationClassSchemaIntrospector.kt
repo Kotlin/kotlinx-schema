@@ -1,5 +1,6 @@
 package kotlinx.schema.generator.json.serialization
 
+import kotlinx.schema.generator.core.ir.DescriptionExtractor
 import kotlinx.schema.generator.core.ir.SchemaIntrospector
 import kotlinx.schema.generator.core.ir.TypeGraph
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -15,12 +16,18 @@ import kotlinx.serialization.json.Json
  *                Defaults to a Json instance with encodeDefaults = false.
  */
 public class SerializationClassSchemaIntrospector(
-    private val json: Json = Json {
-        encodeDefaults = false
-        classDiscriminator = "type"
-        classDiscriminatorMode = kotlinx.serialization.json.ClassDiscriminatorMode.ALL_JSON_OBJECTS
-    },
-) : SchemaIntrospector<SerialDescriptor> {
+    override val config: Config = Config(),
+    private val json: Json =
+        Json {
+            encodeDefaults = false
+            classDiscriminator = "type"
+            classDiscriminatorMode = kotlinx.serialization.json.ClassDiscriminatorMode.ALL_JSON_OBJECTS
+        },
+) : SchemaIntrospector<SerialDescriptor, SerializationClassSchemaIntrospector.Config> {
+    public data class Config(
+        val descriptionExtractor: DescriptionExtractor = DescriptionExtractor { null },
+    )
+
     /**
      * Introspects a serial descriptor into a [TypeGraph].
      *
@@ -28,7 +35,7 @@ public class SerializationClassSchemaIntrospector(
      * @return A TypeGraph containing the root type reference and all discovered type nodes
      */
     public override fun introspect(root: SerialDescriptor): TypeGraph {
-        val context = SerializationIntrospectionContext(json)
+        val context = SerializationIntrospectionContext(json, config)
         val rootRef = context.toRef(root)
         return TypeGraph(root = rootRef, nodes = context.nodes())
     }

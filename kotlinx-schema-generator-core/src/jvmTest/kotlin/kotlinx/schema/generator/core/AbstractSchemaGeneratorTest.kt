@@ -15,7 +15,7 @@ import kotlin.reflect.KClass
 @ExtendWith(MockKExtension::class)
 class AbstractSchemaGeneratorTest {
     @MockK
-    private lateinit var introspector: SchemaIntrospector<KClass<*>>
+    private lateinit var introspector: SchemaIntrospector<KClass<*>, Unit>
 
     @MockK
     private lateinit var emitter: TypeGraphTransformer<Map<String, String>, *>
@@ -23,14 +23,14 @@ class AbstractSchemaGeneratorTest {
     @MockK
     private lateinit var typeGraph: TypeGraph
 
-    private lateinit var generator: AbstractSchemaGenerator<KClass<*>, Map<String, String>>
+    private lateinit var generator: AbstractSchemaGenerator<KClass<*>, Map<String, String>, Unit>
 
     private val rootName = AbstractSchemaGeneratorTest::class.qualifiedName!!
 
     @BeforeEach
     fun setUp() {
         generator =
-            object : AbstractSchemaGenerator<KClass<*>, Map<String, String>>(introspector, emitter) {
+            object : AbstractSchemaGenerator<KClass<*>, Map<String, String>, Unit>(introspector, emitter) {
                 override fun getRootName(target: KClass<*>): String = requireNotNull(target.qualifiedName)
 
                 override fun targetType(): KClass<KClass<*>> = KClass::class

@@ -22,7 +22,9 @@ import kotlin.reflect.KParameter
  * val typeGraph = ReflectionFunctionIntrospector.introspect(::myFunction)
  * ```
  */
-public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>> {
+public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>, Unit> {
+    override val config: Unit = Unit
+
     override fun introspect(root: KCallable<*>): TypeGraph {
         require(!root.isSuspend) { "Suspend functions are not supported" }
         require(root.parameters.none { it.kind == KParameter.Kind.EXTENSION_RECEIVER }) {

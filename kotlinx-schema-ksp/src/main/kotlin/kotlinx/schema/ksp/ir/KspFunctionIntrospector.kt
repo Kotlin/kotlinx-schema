@@ -24,7 +24,9 @@ import kotlinx.schema.generator.core.ir.TypeRef
  * Does NOT support:
  * - Lambda parameters with complex signatures
  */
-internal class KspFunctionIntrospector : SchemaIntrospector<KSFunctionDeclaration> {
+internal class KspFunctionIntrospector : SchemaIntrospector<KSFunctionDeclaration, Unit> {
+    override val config = Unit
+
     override fun introspect(root: KSFunctionDeclaration): TypeGraph {
         val context = KspIntrospectionContext()
 
