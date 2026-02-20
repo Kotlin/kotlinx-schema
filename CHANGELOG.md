@@ -1,3 +1,18 @@
+## 0.3.2
+> Published 2026-02-20
+
+### Added
+- **Custom description extraction**: `SerializationClassJsonSchemaGenerator` now accepts `SerializationClassSchemaIntrospector.Config`
+  with a pluggable `DescriptionExtractor` — map any annotation to the schema `description` field without modifying your models (#196)
+
+### Documentation
+- New guide: [Serialization-Based Schema Generation](docs/serializable.md) covering setup, configuration, and polymorphic types (#197)
+- Knit integration: README and guide code examples are now compiled and verified (#187)
+
+### Dependencies
+- Bump `ksp` from 2.3.5 to 2.3.6
+- Bump `io.github.oshai:kotlin-logging` from 7.0.14 to 8.0.01
+
 ## 0.3.1
 > Published 2026-02-12
 
