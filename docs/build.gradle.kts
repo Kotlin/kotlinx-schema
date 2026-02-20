@@ -1,8 +1,10 @@
-import dev.detekt.gradle.extensions.FailOnSeverity
+import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
+import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     kotlin("plugin.serialization")
-    kotlin("jvm")
+    kotlin("jvm") apply true
     alias(libs.plugins.kover) apply false
     `dokka-convention`
     alias(libs.plugins.knit)
@@ -12,6 +14,7 @@ dependencies {
     implementation(project(":kotlinx-schema-annotations"))
     implementation(project(":kotlinx-schema-generator-json"))
     implementation(libs.kotlinx.serialization.json)
+
     dokka(project(":kotlinx-schema-annotations"))
     dokka(project(":kotlinx-schema-generator-core"))
     dokka(project(":kotlinx-schema-generator-json"))
@@ -71,9 +74,13 @@ afterEvaluate {
 }
 
 kotlin {
-    explicitApiWarning()
+    jvmToolchain(17)
+    explicitApi = ExplicitApiMode.Disabled
     compilerOptions {
         allWarningsAsErrors = false
+        jvmTarget = JvmTarget.JVM_17
+        javaParameters = true
+        jvmDefault = JvmDefaultMode.ENABLE
     }
 
     sourceSets {

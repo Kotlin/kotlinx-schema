@@ -256,7 +256,8 @@ val functionCallSchema: JsonObject = calculateAreaJsonSchema() // <function name
 
 ## See Also
 
+- [Serialization-Based Generator](serializable.md) — Runtime generation for any `@Serializable` class (no KSP required)
 - [Annotation Reference](../README.md#using-schema-and-description-annotations) — `@Schema` and `@Description` usage
-- [Runtime Schema Generation](../README.md#runtime-schema-generation) — Alternative using Reflection
+- [Runtime Schema Generation](../README.md#runtime-schema-generation) — Alternative using Reflection (JVM only)
 - [Function Calling Schemas](../README.md#function-calling-schema-generation-for-llms) — Generate LLM function schemas
 - [JSON Schema DSL](../kotlinx-schema-json/README.md) — Manual schema construction
