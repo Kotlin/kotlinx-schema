@@ -208,6 +208,7 @@ Each module must have a `Module.md` file at the module root for Dokka-generated 
 - Build all modules: `./gradlew build`
 - Run all tests: `./gradlew test`
 - KSP integration tests: `make integration-test`
+- Verify knit examples compile: `make knit`
 
 ## When to ask for help
 

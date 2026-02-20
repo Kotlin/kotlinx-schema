@@ -27,13 +27,14 @@ scan:
 apidocs:
 	@echo "📚 Generating API documentation..."
 	@rm -rf docs/public/apidocs && \
-	./gradlew clean :docs:dokkaGenerate
+	@./gradlew clean :docs:dokkaGenerate
 	@echo "✅ API docs generated!"
 
 .PHONY: knit
 knit:
 	@echo "🪡🧶 Running Knit check ..."
-	./gradlew :docs:clean knit knitCheck :docs:testClasses --no-configuration-cache
+	@./gradlew :docs:clean knit knitCheck :docs:test --no-configuration-cache
+	@./gradlew :docs:test
 	@echo "✅ Knit check completed!"
 
 .PHONY: clean
