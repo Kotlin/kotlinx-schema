@@ -114,3 +114,8 @@ kotlin {
 tasks.named("detekt").configure {
     dependsOn("detektMainJvm", "detektTestJvm")
 }
+
+tasks.withType<JavaCompile> {
+    // Preserve constructor parameter names in Java
+    options.compilerArgs.add("-parameters")
+}
