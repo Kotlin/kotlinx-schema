@@ -209,8 +209,8 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
             val propertyName = param.name ?: return@forEach
             val hasDefault = param.isOptional
 
-            // Find the corresponding property to get annotations
-            val property = findPropertyByName(klass, propertyName)
+            // Get annotations both on the constructor parameter and property associated with it
+            val annotations = param.annotations + findPropertyByName(klass, propertyName)?.annotations.orEmpty()
 
             val propertyType = param.type
             val typeRef = convertKTypeToTypeRef(propertyType)
@@ -222,7 +222,7 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
                 Property(
                     name = propertyName,
                     type = typeRef,
-                    description = property?.let { extractDescription(it.annotations) },
+                    description = extractDescription(annotations),
                     hasDefaultValue = hasDefault,
                     defaultValue = defaultValue,
                 )

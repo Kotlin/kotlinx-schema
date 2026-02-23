@@ -30,3 +30,8 @@ kotlin {
 tasks.test {
     useJUnitPlatform()
 }
+
+tasks.withType<JavaCompile> {
+    // Preserve constructor parameter names in Java
+    options.compilerArgs.add("-parameters")
+}
