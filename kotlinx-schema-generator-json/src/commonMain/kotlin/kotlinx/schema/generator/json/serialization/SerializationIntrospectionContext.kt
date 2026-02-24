@@ -1,6 +1,5 @@
 package kotlinx.schema.generator.json.serialization
 
-import kotlinx.schema.Description
 import kotlinx.schema.generator.core.InternalSchemaGeneratorApi
 import kotlinx.schema.generator.core.ir.BaseIntrospectionContext
 import kotlinx.schema.generator.core.ir.Discriminator
@@ -42,7 +41,7 @@ internal class SerializationIntrospectionContext(
      * Returns the discovered type nodes.
      * This is the main output of the introspection process.
      */
-    fun nodes(): Map<TypeId, TypeNode> = discoveredNodes
+    fun nodes(): Map<TypeId, TypeNode> = _nodes
 
     /**
      * Converts a [SerialDescriptor] to a [TypeRef].

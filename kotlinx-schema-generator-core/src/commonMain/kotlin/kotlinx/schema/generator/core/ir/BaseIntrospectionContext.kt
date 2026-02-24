@@ -27,14 +27,15 @@ public abstract class BaseIntrospectionContext<TDecl : Any, TType : Any> {
      * Map of discovered type nodes indexed by their type ID.
      * LinkedHashMap preserves discovery order for deterministic output.
      */
-    protected val discoveredNodes: MutableMap<TypeId, TypeNode> = linkedMapOf()
+    @Suppress("VariableNaming", "ktlint:standard:backing-property-naming", "PropertyName")
+    protected val _nodes: MutableMap<TypeId, TypeNode> = linkedMapOf()
 
     /**
-     * Exposes discovered nodes for building TypeGraph.
+     * Exposes discovered nodes as read-only copy for building TypeGraph.
      * Provides a consistent API across all introspector implementations (Reflection, KSP, Serialization).
      */
-    public val nodes: MutableMap<TypeId, TypeNode>
-        get() = discoveredNodes
+    public val nodes: Map<TypeId, TypeNode>
+        get() = _nodes.toMap()
 
     /**
      * Set of declarations currently being visited (for cycle detection).
@@ -71,14 +72,14 @@ public abstract class BaseIntrospectionContext<TDecl : Any, TType : Any> {
         id: TypeId,
         nodeBuilder: () -> TypeNode,
     ): Boolean {
-        if (id in discoveredNodes || decl in visitingDeclarations) {
+        if (id in _nodes || decl in visitingDeclarations) {
             return false
         }
 
         visitingDeclarations += decl
         try {
             val node = nodeBuilder()
-            discoveredNodes[id] = node
+            _nodes[id] = node
             return true
         } finally {
             visitingDeclarations -= decl

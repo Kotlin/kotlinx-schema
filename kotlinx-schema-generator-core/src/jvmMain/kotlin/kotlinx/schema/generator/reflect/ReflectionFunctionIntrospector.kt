@@ -87,7 +87,7 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>, 
                     description = extractDescription(callable.annotations),
                 )
 
-            discoveredNodes[id] = objectNode
+            _nodes[id] = objectNode
             return TypeRef.Ref(id, nullable = false)
         }
 

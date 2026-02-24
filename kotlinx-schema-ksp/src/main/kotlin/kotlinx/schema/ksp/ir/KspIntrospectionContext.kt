@@ -5,8 +5,6 @@ import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.Nullability
 import kotlinx.schema.generator.core.InternalSchemaGeneratorApi
 import kotlinx.schema.generator.core.ir.BaseIntrospectionContext
-import kotlinx.schema.generator.core.ir.TypeId
-import kotlinx.schema.generator.core.ir.TypeNode
 import kotlinx.schema.generator.core.ir.TypeRef
 
 /**
@@ -54,10 +52,10 @@ internal class KspIntrospectionContext : BaseIntrospectionContext<KSClassDeclara
         // Try each handler in order, using elvis operator chain for single return
         return requireNotNull(
             resolveBasicTypeOrNull(type, ::toRef)
-                ?: handleAnyFallback(type, nodes)
-                ?: handleSealedClass(type, nullable, nodes, visiting, ::toRef)
-                ?: handleEnum(type, nullable, nodes, visiting)
-                ?: handleObjectOrClass(type, nullable, nodes, visiting, ::toRef),
+                ?: handleAnyFallback(type, _nodes)
+                ?: handleSealedClass(type, nullable, _nodes, visiting, ::toRef)
+                ?: handleEnum(type, nullable, _nodes, visiting)
+                ?: handleObjectOrClass(type, nullable, _nodes, visiting, ::toRef),
         ) {
             "Unexpected type that couldn't be handled: ${type.declaration.qualifiedName}"
         }
