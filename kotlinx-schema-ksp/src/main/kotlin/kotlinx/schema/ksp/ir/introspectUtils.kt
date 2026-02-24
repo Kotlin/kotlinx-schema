@@ -252,6 +252,7 @@ internal fun handleSealedClass(
             subtypes = subtypes,
             discriminator =
                 kotlinx.schema.generator.core.ir.Discriminator(
+                    // TODO allow to configure discriminator property name
                     name = "type",
                     required = true,
                     mapping = discriminatorMapping,

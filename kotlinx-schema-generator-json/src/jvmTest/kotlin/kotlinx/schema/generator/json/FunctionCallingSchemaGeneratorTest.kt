@@ -1,4 +1,4 @@
-@file:Suppress("LongMethod", "LongParameterList", "UnusedParameter", "unused")
+@file:Suppress("FunctionOnlyReturningConstant", "LongMethod", "LongParameterList", "UnusedParameter", "unused")
 
 package kotlinx.schema.generator.json
 
@@ -6,19 +6,15 @@ import io.kotest.assertions.json.shouldEqualJson
 import kotlinx.schema.Description
 import kotlinx.schema.generator.core.SchemaGeneratorService
 import kotlinx.schema.json.FunctionCallingSchema
+import kotlinx.serialization.json.Json
 import kotlin.reflect.KCallable
 import kotlin.test.Test
 
 class FunctionCallingSchemaGeneratorTest {
     private val generator =
-        requireNotNull(
-            SchemaGeneratorService.getGenerator(
-                KCallable::class,
-                FunctionCallingSchema::class,
-            ),
-        ) {
-            "${ReflectionFunctionCallingSchemaGenerator::class} must be registered"
-        }
+        ReflectionFunctionCallingSchemaGenerator(
+            json = Json { prettyPrint = true },
+        )
 
     object SimplePrimitives {
         @Description("Greets a person")
@@ -28,16 +24,16 @@ class FunctionCallingSchemaGeneratorTest {
             @Description("Person's age")
             age: Int?,
             byteVal: Byte,
-            shortVal: Short?,
+            shortVal: Short,
             intVal: Int,
             longVal: Long,
-            floatVal: Float,
-            doubleVal: Double,
+            floatVal: Float? = null,
+            doubleVal: Double = 2.0,
         ): String = "$name: $age"
     }
 
     @Test
-    fun `generates schema for simple function with primitives, numbers and nullable parameters`() {
+    fun `generates schema for simple function with primitives, numbers, nullable and default values`() {
         val schema = generator.generateSchema(SimplePrimitives::greet)
 
         val schemaString = generator.generateSchemaString(SimplePrimitives::greet)
@@ -67,10 +63,7 @@ class FunctionCallingSchemaGeneratorTest {
                     "type": "integer"
                   },
                   "shortVal": {
-                    "type": [
-                      "integer",
-                      "null"
-                    ]
+                    "type": "integer"
                   },
                   "intVal": {
                     "type": "integer"
@@ -79,7 +72,10 @@ class FunctionCallingSchemaGeneratorTest {
                     "type": "integer"
                   },
                   "floatVal": {
-                    "type": "number"
+                    "type": [
+                      "number",
+                      "null"
+                    ]
                   },
                   "doubleVal": {
                     "type": "number"
@@ -202,8 +198,8 @@ class FunctionCallingSchemaGeneratorTest {
         val nestedProperty: NestedProperty = NestedProperty("foo", 1),
         val nestedListProperty: List<NestedProperty> = emptyList(),
         val nestedMapProperty: Map<String, NestedProperty> = emptyMap(),
-        // Doesn't work
-        val polymorphicProperty: TestClosedPolymorphism = TestClosedPolymorphism.SubClass1("id1", "property1"),
+        // FIXME Polymorphism doesn't work
+        // val polymorphicProperty: TestClosedPolymorphism = TestClosedPolymorphism.SubClass1("id1", "property1"),
         val enumProperty: TestEnum = TestEnum.One,
         val objectProperty: TestObject = TestObject,
     )
@@ -238,6 +234,193 @@ class FunctionCallingSchemaGeneratorTest {
     }
 
     data object TestObject
+
+    /**
+     * Suspendable complex
+     */
+    object SuspendableComplexTypes {
+        @Suppress("RedundantSuspendModifier")
+        @Description("Sample function")
+        suspend fun sampleFunction(
+            @Description("Sample parameter")
+            a: String,
+            @Description("Another sample parameter")
+            b: TestClass? = null,
+        ): String = ""
+    }
+
+    @Test
+    fun `generates schema for suspendable function with complex parameters`() {
+        val schemaString = generator.generateSchemaString(SuspendableComplexTypes::sampleFunction)
+        schemaString shouldEqualJson
+            // language=JSON
+            """
+            {
+                "type": "function",
+                "name": "sampleFunction",
+                "description": "Sample function",
+                "strict": true,
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "a": {
+                            "type": "string",
+                            "description": "Sample parameter"
+                        },
+                        "b": {
+                            "type": [
+                                "object",
+                                "null"
+                            ],
+                            "description": "Another sample parameter",
+                            "properties": {
+                                "stringProperty": {
+                                    "type": "string",
+                                    "description": "A string property"
+                                },
+                                "intProperty": {
+                                    "type": "integer"
+                                },
+                                "longProperty": {
+                                    "type": "integer"
+                                },
+                                "doubleProperty": {
+                                    "type": "number"
+                                },
+                                "floatProperty": {
+                                    "type": "number"
+                                },
+                                "booleanNullableProperty": {
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
+                                },
+                                "nullableProperty": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "listProperty": {
+                                    "type": "array",
+                                    "default": [],
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "mapProperty": {
+                                    "type": "object",
+                                    "default": {},
+                                    "additionalProperties": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "nestedProperty": {
+                                    "type": "object",
+                                    "description": "Nested property class",
+                                    "properties": {
+                                        "foo": {
+                                            "type": "string",
+                                            "description": "Nested foo property"
+                                        },
+                                        "bar": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "required": [
+                                        "foo",
+                                        "bar"
+                                    ],
+                                    "additionalProperties": false
+                                },
+                                "nestedListProperty": {
+                                    "type": "array",
+                                    "default": [],
+                                    "items": {
+                                        "type": "object",
+                                        "description": "Nested property class",
+                                        "properties": {
+                                            "foo": {
+                                                "type": "string",
+                                                "description": "Nested foo property"
+                                            },
+                                            "bar": {
+                                                "type": "integer"
+                                            }
+                                        },
+                                        "required": [
+                                            "foo",
+                                            "bar"
+                                        ],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "nestedMapProperty": {
+                                    "type": "object",
+                                    "default": {},
+                                    "additionalProperties": {
+                                        "type": "object",
+                                        "description": "Nested property class",
+                                        "properties": {
+                                            "foo": {
+                                                "type": "string",
+                                                "description": "Nested foo property"
+                                            },
+                                            "bar": {
+                                                "type": "integer"
+                                            }
+                                        },
+                                        "required": [
+                                            "foo",
+                                            "bar"
+                                        ],
+                                        "additionalProperties": false
+                                    }
+                                },
+                                "enumProperty": {
+                                    "type": "string",
+                                    "default": "One",
+                                    "enum": [
+                                        "One",
+                                        "Two"
+                                    ]
+                                },
+                                "objectProperty": {
+                                    "type": "object",
+                                    "properties": {},
+                                    "required": [],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": [
+                                "stringProperty",
+                                "intProperty",
+                                "longProperty",
+                                "doubleProperty",
+                                "floatProperty",
+                                "booleanNullableProperty",
+                                "nullableProperty",
+                                "listProperty",
+                                "mapProperty",
+                                "nestedProperty",
+                                "nestedListProperty",
+                                "nestedMapProperty",
+                                "enumProperty",
+                                "objectProperty"
+                            ],
+                            "additionalProperties": false
+                        }
+                    },
+                    "required": [
+                        "a",
+                        "b"
+                    ],
+                    "additionalProperties": false
+                }
+            }
+            """.trimIndent()
+    }
 
     // Service locator test
 

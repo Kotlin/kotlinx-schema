@@ -508,6 +508,7 @@ public class TypeGraphToJsonSchemaTransformer
          * @param definitions Map to collect type definitions for $defs
          * @return OneOfPropertyDefinition, or AnyOfPropertyDefinition if nullable
          */
+        @Suppress("LongMethod")
         private fun convertPolymorphic(
             node: PolymorphicNode,
             nullable: Boolean,
@@ -518,7 +519,33 @@ public class TypeGraphToJsonSchemaTransformer
             val subtypeRefs =
                 node.subtypes.map { subtypeRef ->
                     val typeName = subtypeRef.id.value
-                    val subtypeDefinition = convertTypeRef(subtypeRef.ref, graph, definitions)
+
+                    val subtypeDefinition =
+                        convertTypeRef(subtypeRef.ref, graph, definitions)
+                            .let { definition ->
+                                definition as? ObjectPropertyDefinition
+                                    ?: throw IllegalStateException(
+                                        "All subtypes of a polymorphic type must be objects. " +
+                                            "Found subtype '$typeName' with type '${definition::class.simpleName}'.",
+                                    )
+                            }.let { definition ->
+                                // Append discriminator property to the definition if required
+                                if (node.discriminator.required) {
+                                    val discriminatorProperty =
+                                        StringPropertyDefinition(
+                                            constValue = JsonPrimitive(typeName),
+                                        )
+
+                                    definition.copy(
+                                        properties =
+                                            mapOf(node.discriminator.name to discriminatorProperty) +
+                                                definition.properties.orEmpty(),
+                                        required = listOf(node.discriminator.name) + definition.required.orEmpty(),
+                                    )
+                                } else {
+                                    definition
+                                }
+                            }
 
                     // Add to definitions map for $defs section
                     definitions[typeName] = subtypeDefinition
@@ -530,7 +557,7 @@ public class TypeGraphToJsonSchemaTransformer
             // Convert discriminator with proper $ref paths if includeDiscriminator is enabled
             val discriminator =
                 if (config.includeDiscriminator) {
-                    node.discriminator?.let { disc ->
+                    node.discriminator.let { disc ->
                         val mapping =
                             disc.mapping?.mapValues { (_, typeId) ->
                                 $$"#/$defs/$${typeId.value}"

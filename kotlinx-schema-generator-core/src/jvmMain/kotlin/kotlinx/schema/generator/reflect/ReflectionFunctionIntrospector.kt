@@ -26,7 +26,6 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>, 
     override val config: Unit = Unit
 
     override fun introspect(root: KCallable<*>): TypeGraph {
-        require(!root.isSuspend) { "Suspend functions are not supported" }
         require(root.parameters.none { it.kind == KParameter.Kind.EXTENSION_RECEIVER }) {
             "Extension functions are not supported"
         }
@@ -41,6 +40,8 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>, 
      * visited classes, and type reference cache.
      */
     private class IntrospectionContext : ReflectionIntrospectionContext() {
+        private val defaultValueExtractor = DefaultValueExtractor()
+
         /**
          * Converts a KCallable (function) to a TypeRef representing its parameters as an object.
          */
@@ -95,7 +96,7 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>, 
             parentPrefix: String?,
         ): ObjectNode {
             // Try to extract default values by creating an instance
-            val defaultValues = DefaultValueExtractor.extractDefaultValues(klass)
+            val defaultValues = defaultValueExtractor.extractDefaultValues(klass)
 
             // Extract properties from primary constructor using shared method
             val (properties, requiredProperties) = extractConstructorProperties(klass, defaultValues)
