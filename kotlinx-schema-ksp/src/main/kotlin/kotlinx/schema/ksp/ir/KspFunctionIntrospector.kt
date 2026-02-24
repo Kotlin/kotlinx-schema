@@ -79,7 +79,9 @@ internal class KspFunctionIntrospector : SchemaIntrospector<KSFunctionDeclaratio
                 description = functionDescription,
             )
 
-        context.nodes[id] = objectNode
-        return TypeGraph(root = TypeRef.Ref(id, nullable = false), nodes = context.nodes)
+        // Add an object generated from a function to the nodes
+        val nodes = context.nodes + (id to objectNode)
+
+        return TypeGraph(root = TypeRef.Ref(id, nullable = false), nodes = nodes)
     }
 }
