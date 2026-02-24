@@ -42,7 +42,7 @@ public object ReflectionClassIntrospector : SchemaIntrospector<KClass<*>, Unit> 
      * Maintains state during class introspection including discovered nodes,
      * visited classes, and type reference cache.
      */
-    private class IntrospectionContext : ReflectionIntrospectionContext() {
+    internal class IntrospectionContext : ReflectionIntrospectionContext() {
         private val defaultValueExtractor = DefaultValueExtractor()
 
         /**

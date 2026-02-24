@@ -29,7 +29,7 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
      * Converts a KType (with type arguments) to a TypeRef.
      * Used for property types where we have full type information.
      */
-    protected fun convertKTypeToTypeRef(type: KType): TypeRef {
+    internal fun convertKTypeToTypeRef(type: KType): TypeRef {
         val classifier =
             requireNotNull(type.classifier as? KClass<*>) {
                 "Unsupported classifier: ${type.classifier}. " +
