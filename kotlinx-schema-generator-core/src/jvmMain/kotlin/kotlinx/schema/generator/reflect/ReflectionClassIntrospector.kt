@@ -43,6 +43,8 @@ public object ReflectionClassIntrospector : SchemaIntrospector<KClass<*>, Unit> 
      * visited classes, and type reference cache.
      */
     private class IntrospectionContext : ReflectionIntrospectionContext() {
+        private val defaultValueExtractor = DefaultValueExtractor()
+
         /**
          * Overrides base convertToTypeRef to add sealed class handling before object handling.
          */
@@ -102,6 +104,8 @@ public object ReflectionClassIntrospector : SchemaIntrospector<KClass<*>, Unit> 
                 subtypes = subtypes,
                 discriminator =
                     Discriminator(
+                        // TODO allow to configure discriminator property name
+                        name = "type",
                         required = true,
                         mapping = discriminatorMapping,
                     ),
@@ -138,22 +142,8 @@ public object ReflectionClassIntrospector : SchemaIntrospector<KClass<*>, Unit> 
                     }
             }
 
-            // If this is a subtype of a sealed class, add the discriminator property
-            if (sealedParents.isNotEmpty()) {
-                val typeName = generateQualifiedName(klass, parentPrefix)
-                properties +=
-                    Property(
-                        name = "type",
-                        type = TypeRef.Inline(PrimitiveNode(PrimitiveKind.STRING), false),
-                        description = null,
-                        hasDefaultValue = false, // Not a default value, it's a const discriminator
-                        defaultValue = typeName, // Store the fixed value for const generation
-                    )
-                requiredProperties += "type"
-            }
-
             // Try to extract default values by creating an instance
-            val defaultValues = DefaultValueExtractor.extractDefaultValues(klass)
+            val defaultValues = defaultValueExtractor.extractDefaultValues(klass)
 
             // Extract properties from primary constructor using shared method
             val (constructorProperties, constructorRequired) = extractConstructorProperties(klass, defaultValues)
