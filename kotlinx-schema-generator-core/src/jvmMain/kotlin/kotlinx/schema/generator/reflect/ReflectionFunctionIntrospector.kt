@@ -30,9 +30,54 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>, 
             "Extension functions are not supported"
         }
 
-        val context = IntrospectionContext()
-        val rootRef = context.convertFunctionToTypeRef(root)
-        return TypeGraph(root = rootRef, nodes = context.nodes)
+        val context = ReflectionClassIntrospector.IntrospectionContext()
+
+        // Extract function information
+        val functionName = root.name
+        val id = TypeId(functionName)
+
+        // Create an ObjectNode representing the function parameters
+        val properties = mutableListOf<Property>()
+        val requiredProperties = mutableSetOf<String>()
+
+        root.parameters.forEach { param ->
+            // Skip instance parameter for member functions
+            if (param.kind == KParameter.Kind.INSTANCE) return@forEach
+
+            val paramName = param.name ?: return@forEach
+            val paramType = param.type
+            val hasDefault = param.isOptional
+
+            val typeRef = context.convertKTypeToTypeRef(paramType)
+
+            // Extract description from annotations
+            val description = extractDescription(param.annotations)
+
+            properties +=
+                Property(
+                    name = paramName,
+                    type = typeRef,
+                    description = description,
+                    hasDefaultValue = hasDefault,
+                )
+
+            if (!hasDefault) {
+                requiredProperties += paramName
+            }
+        }
+
+        val objectNode =
+            ObjectNode(
+                name = functionName,
+                properties = properties,
+                required = requiredProperties,
+                description = extractDescription(root.annotations),
+            )
+
+        // Add an object generated from a function to the nodes
+        val nodes = context.nodes + (id to objectNode)
+
+        return TypeGraph(root = TypeRef.Ref(id, nullable = false), nodes = nodes)
     }
 
     /**

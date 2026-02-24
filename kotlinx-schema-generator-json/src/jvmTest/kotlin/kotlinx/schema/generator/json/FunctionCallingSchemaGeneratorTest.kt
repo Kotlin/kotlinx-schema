@@ -199,7 +199,7 @@ class FunctionCallingSchemaGeneratorTest {
         val nestedListProperty: List<NestedProperty> = emptyList(),
         val nestedMapProperty: Map<String, NestedProperty> = emptyMap(),
         // FIXME Polymorphism doesn't work
-        // val polymorphicProperty: TestClosedPolymorphism = TestClosedPolymorphism.SubClass1("id1", "property1"),
+        val polymorphicProperty: TestClosedPolymorphism = TestClosedPolymorphism.SubClass1("id1", "property1"),
         val enumProperty: TestEnum = TestEnum.One,
         val objectProperty: TestObject = TestObject,
     )
@@ -256,169 +256,216 @@ class FunctionCallingSchemaGeneratorTest {
             // language=JSON
             """
             {
-                "type": "function",
-                "name": "sampleFunction",
-                "description": "Sample function",
-                "strict": true,
-                "parameters": {
-                    "type": "object",
+              "type": "function",
+              "name": "sampleFunction",
+              "description": "Sample function",
+              "strict": true,
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "a": {
+                    "type": "string",
+                    "description": "Sample parameter"
+                  },
+                  "b": {
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "description": "Another sample parameter",
                     "properties": {
-                        "a": {
+                      "stringProperty": {
+                        "type": "string",
+                        "description": "A string property"
+                      },
+                      "intProperty": {
+                        "type": "integer"
+                      },
+                      "longProperty": {
+                        "type": "integer"
+                      },
+                      "doubleProperty": {
+                        "type": "number"
+                      },
+                      "floatProperty": {
+                        "type": "number"
+                      },
+                      "booleanNullableProperty": {
+                        "type": [
+                          "boolean",
+                          "null"
+                        ]
+                      },
+                      "nullableProperty": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "listProperty": {
+                        "type": "array",
+                        "default": [],
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "mapProperty": {
+                        "type": "object",
+                        "default": {},
+                        "additionalProperties": {
+                          "type": "integer"
+                        }
+                      },
+                      "nestedProperty": {
+                        "type": "object",
+                        "description": "Nested property class",
+                        "properties": {
+                          "foo": {
                             "type": "string",
-                            "description": "Sample parameter"
+                            "description": "Nested foo property"
+                          },
+                          "bar": {
+                            "type": "integer"
+                          }
                         },
-                        "b": {
-                            "type": [
-                                "object",
-                                "null"
-                            ],
-                            "description": "Another sample parameter",
+                        "required": [
+                          "foo",
+                          "bar"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "nestedListProperty": {
+                        "type": "array",
+                        "default": [],
+                        "items": {
+                          "type": "object",
+                          "description": "Nested property class",
+                          "properties": {
+                            "foo": {
+                              "type": "string",
+                              "description": "Nested foo property"
+                            },
+                            "bar": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "foo",
+                            "bar"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "nestedMapProperty": {
+                        "type": "object",
+                        "default": {},
+                        "additionalProperties": {
+                          "type": "object",
+                          "description": "Nested property class",
+                          "properties": {
+                            "foo": {
+                              "type": "string",
+                              "description": "Nested foo property"
+                            },
+                            "bar": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "foo",
+                            "bar"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "polymorphicProperty": {
+                        "anyOf": [
+                          {
+                            "type": "object",
                             "properties": {
-                                "stringProperty": {
-                                    "type": "string",
-                                    "description": "A string property"
-                                },
-                                "intProperty": {
-                                    "type": "integer"
-                                },
-                                "longProperty": {
-                                    "type": "integer"
-                                },
-                                "doubleProperty": {
-                                    "type": "number"
-                                },
-                                "floatProperty": {
-                                    "type": "number"
-                                },
-                                "booleanNullableProperty": {
-                                    "type": [
-                                        "boolean",
-                                        "null"
-                                    ]
-                                },
-                                "nullableProperty": {
-                                    "type": [
-                                        "string",
-                                        "null"
-                                    ]
-                                },
-                                "listProperty": {
-                                    "type": "array",
-                                    "default": [],
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                },
-                                "mapProperty": {
-                                    "type": "object",
-                                    "default": {},
-                                    "additionalProperties": {
-                                        "type": "integer"
-                                    }
-                                },
-                                "nestedProperty": {
-                                    "type": "object",
-                                    "description": "Nested property class",
-                                    "properties": {
-                                        "foo": {
-                                            "type": "string",
-                                            "description": "Nested foo property"
-                                        },
-                                        "bar": {
-                                            "type": "integer"
-                                        }
-                                    },
-                                    "required": [
-                                        "foo",
-                                        "bar"
-                                    ],
-                                    "additionalProperties": false
-                                },
-                                "nestedListProperty": {
-                                    "type": "array",
-                                    "default": [],
-                                    "items": {
-                                        "type": "object",
-                                        "description": "Nested property class",
-                                        "properties": {
-                                            "foo": {
-                                                "type": "string",
-                                                "description": "Nested foo property"
-                                            },
-                                            "bar": {
-                                                "type": "integer"
-                                            }
-                                        },
-                                        "required": [
-                                            "foo",
-                                            "bar"
-                                        ],
-                                        "additionalProperties": false
-                                    }
-                                },
-                                "nestedMapProperty": {
-                                    "type": "object",
-                                    "default": {},
-                                    "additionalProperties": {
-                                        "type": "object",
-                                        "description": "Nested property class",
-                                        "properties": {
-                                            "foo": {
-                                                "type": "string",
-                                                "description": "Nested foo property"
-                                            },
-                                            "bar": {
-                                                "type": "integer"
-                                            }
-                                        },
-                                        "required": [
-                                            "foo",
-                                            "bar"
-                                        ],
-                                        "additionalProperties": false
-                                    }
-                                },
-                                "enumProperty": {
-                                    "type": "string",
-                                    "default": "One",
-                                    "enum": [
-                                        "One",
-                                        "Two"
-                                    ]
-                                },
-                                "objectProperty": {
-                                    "type": "object",
-                                    "properties": {},
-                                    "required": [],
-                                    "additionalProperties": false
-                                }
+                              "type": {
+                                "type": "string",
+                                "const": "TestClosedPolymorphism.SubClass1"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "property1": {
+                                "type": "string"
+                              }
                             },
                             "required": [
-                                "stringProperty",
-                                "intProperty",
-                                "longProperty",
-                                "doubleProperty",
-                                "floatProperty",
-                                "booleanNullableProperty",
-                                "nullableProperty",
-                                "listProperty",
-                                "mapProperty",
-                                "nestedProperty",
-                                "nestedListProperty",
-                                "nestedMapProperty",
-                                "enumProperty",
-                                "objectProperty"
+                              "type",
+                              "id",
+                              "property1"
                             ],
                             "additionalProperties": false
-                        }
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "const": "TestClosedPolymorphism.SubClass2"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "property2": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "id",
+                              "property2"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      "enumProperty": {
+                        "type": "string",
+                        "default": "One",
+                        "enum": [
+                          "One",
+                          "Two"
+                        ]
+                      },
+                      "objectProperty": {
+                        "type": "object",
+                        "properties": {},
+                        "required": [],
+                        "additionalProperties": false
+                      }
                     },
                     "required": [
-                        "a",
-                        "b"
+                      "stringProperty",
+                      "intProperty",
+                      "longProperty",
+                      "doubleProperty",
+                      "floatProperty",
+                      "booleanNullableProperty",
+                      "nullableProperty",
+                      "listProperty",
+                      "mapProperty",
+                      "nestedProperty",
+                      "nestedListProperty",
+                      "nestedMapProperty",
+                      "polymorphicProperty",
+                      "enumProperty",
+                      "objectProperty"
                     ],
                     "additionalProperties": false
-                }
-            }
+                  }
+                },
+                "required": [
+                  "a",
+                  "b"
+                ],
+                "additionalProperties": false
+              }
+            } 
             """.trimIndent()
     }
 

@@ -249,6 +249,8 @@ public class TypeGraphToJsonSchemaTransformer
          */
         private fun formatSchemaId(qualifiedName: String): String = qualifiedName
 
+        // FIXME correctly handle recursive polymorphism, it throws StackOverflowError now
+
         /**
          * Converts a type reference to a property definition.
          * Handles both inline types and named type references.
