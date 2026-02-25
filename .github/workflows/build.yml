@@ -201,7 +201,7 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           name: project-repo
-          path: examples/project-repo
+          path: build/project-repo
 
       - name: "Build Sample: ${{ matrix.example }}"
         working-directory: ./examples/${{ matrix.example }}
