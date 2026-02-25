@@ -1,6 +1,5 @@
 package kotlinx.schema.ksp.ir
 
-import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.Nullability
 import kotlinx.schema.generator.core.InternalSchemaGeneratorApi
@@ -24,14 +23,7 @@ import kotlinx.schema.generator.core.ir.TypeRef
  * 5. Regular objects/classes -> ObjectNode via [handleObjectOrClass]
  */
 @OptIn(InternalSchemaGeneratorApi::class)
-internal class KspIntrospectionContext : BaseIntrospectionContext<KSClassDeclaration, KSType>() {
-    /**
-     * Exposes visiting declarations as a mutable set for handler functions.
-     * KSP handlers are top-level functions that need direct mutable access.
-     */
-    internal val visiting: MutableSet<KSClassDeclaration>
-        get() = visitingDeclarations
-
+internal class KspIntrospectionContext : BaseIntrospectionContext<KSType>() {
     /**
      * Converts a KSType to a TypeRef using the standard resolution strategy.
      *
@@ -46,16 +38,16 @@ internal class KspIntrospectionContext : BaseIntrospectionContext<KSClassDeclara
      * @return TypeRef representing the type in the schema IR
      * @throws IllegalArgumentException if the type cannot be handled by any handler
      */
-    fun toRef(type: KSType): TypeRef {
+    override fun toRef(type: KSType): TypeRef {
         val nullable = type.nullability == Nullability.NULLABLE
 
         // Try each handler in order, using elvis operator chain for single return
         return requireNotNull(
             resolveBasicTypeOrNull(type, ::toRef)
                 ?: handleAnyFallback(type, _nodes)
-                ?: handleSealedClass(type, nullable, _nodes, visiting, ::toRef)
-                ?: handleEnum(type, nullable, _nodes, visiting)
-                ?: handleObjectOrClass(type, nullable, _nodes, visiting, ::toRef),
+                ?: handleSealedClass(type, nullable, _nodes, visitingTypes, ::toRef)
+                ?: handleEnum(type, nullable, _nodes, visitingTypes)
+                ?: handleObjectOrClass(type, nullable, _nodes, visitingTypes, ::toRef),
         ) {
             "Unexpected type that couldn't be handled: ${type.declaration.qualifiedName}"
         }

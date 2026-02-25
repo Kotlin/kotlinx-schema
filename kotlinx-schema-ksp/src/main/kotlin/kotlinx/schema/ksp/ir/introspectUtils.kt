@@ -124,7 +124,7 @@ private fun extractConstructorParamDescription(
  * }
  * ```
  *
- * @param decl The class declaration to process
+ * @param decl The declaration to process
  * @param id The TypeId for this class
  * @param nodes The current node map
  * @param visiting The set tracking currently visiting declarations
@@ -132,10 +132,10 @@ private fun extractConstructorParamDescription(
  * @return true if the node was created, false if it was already visited
  */
 internal inline fun processWithCycleDetection(
-    decl: KSClassDeclaration,
+    decl: KSType,
     id: TypeId,
     nodes: MutableMap<TypeId, TypeNode>,
-    visiting: MutableSet<KSClassDeclaration>,
+    visiting: MutableSet<KSType>,
     nodeBuilder: () -> TypeNode,
 ): Boolean {
     if (nodes.containsKey(id) || decl in visiting) {
@@ -223,13 +223,13 @@ internal fun handleSealedClass(
     type: KSType,
     nullable: Boolean,
     nodes: MutableMap<TypeId, TypeNode>,
-    visiting: MutableSet<KSClassDeclaration>,
+    visiting: MutableSet<KSType>,
     toRef: (KSType) -> TypeRef,
 ): TypeRef? {
     val decl = type.sealedClassDeclOrNull() ?: return null
     val id = decl.typeId()
 
-    processWithCycleDetection(decl, id, nodes, visiting) {
+    processWithCycleDetection(type, id, nodes, visiting) {
         // Find all sealed subclasses
         val sealedSubclasses = decl.getSealedSubclasses().toList()
 
@@ -280,12 +280,12 @@ internal fun handleEnum(
     type: KSType,
     nullable: Boolean,
     nodes: MutableMap<TypeId, TypeNode>,
-    visiting: MutableSet<KSClassDeclaration>,
+    visiting: MutableSet<KSType>,
 ): TypeRef? {
     val decl = type.enumClassDeclOrNull() ?: return null
     val id = decl.typeId()
 
-    processWithCycleDetection(decl, id, nodes, visiting) {
+    processWithCycleDetection(type, id, nodes, visiting) {
         val entries =
             decl.declarations
                 .filterIsInstance<KSClassDeclaration>()
@@ -324,13 +324,13 @@ internal fun handleObjectOrClass(
     type: KSType,
     nullable: Boolean,
     nodes: MutableMap<TypeId, TypeNode>,
-    visiting: MutableSet<KSClassDeclaration>,
+    visiting: MutableSet<KSType>,
     toRef: (KSType) -> TypeRef,
 ): TypeRef? {
     val decl = type.declaration as? KSClassDeclaration ?: return null
     val id = decl.typeId()
 
-    processWithCycleDetection(decl, id, nodes, visiting) {
+    processWithCycleDetection(type, id, nodes, visiting) {
         val props = ArrayList<Property>()
         val required = LinkedHashSet<String>()
 
