@@ -21,34 +21,52 @@ class AnimalSchemaTest {
               "type": "object",
               "additionalProperties": false,
               "oneOf": [
-                { "$ref": "#/$defs/kotlinx.schema.integration.type.Animal.Cat" },
-                { "$ref": "#/$defs/kotlinx.schema.integration.type.Animal.Dog" }
+                {
+                  "$ref": "#/$defs/kotlinx.schema.integration.type.Animal.Cat"
+                },
+                {
+                  "$ref": "#/$defs/kotlinx.schema.integration.type.Animal.Dog"
+                }
               ],
               "$defs": {
                 "kotlinx.schema.integration.type.Animal.Cat": {
                   "type": "object",
                   "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "kotlinx.schema.integration.type.Animal.Cat"
+                    },
                     "name": {
                       "type": "string",
                       "description": "Animal's name"
                     }
                   },
-                  "required": ["name"],
+                  "required": [
+                    "type",
+                    "name"
+                  ],
                   "additionalProperties": false
                 },
                 "kotlinx.schema.integration.type.Animal.Dog": {
                   "type": "object",
                   "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "kotlinx.schema.integration.type.Animal.Dog"
+                    },
                     "name": {
                       "type": "string",
                       "description": "Animal's name"
                     }
                   },
-                  "required": ["name"],
+                  "required": [
+                    "type",
+                    "name"
+                  ],
                   "additionalProperties": false
                 }
               }
-            }
+            } 
             """.trimIndent()
     }
 }
