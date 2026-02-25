@@ -27,7 +27,7 @@ import kotlin.reflect.full.createType
  */
 @Suppress("TooManyFunctions")
 @OptIn(InternalSchemaGeneratorApi::class)
-internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType, KType>() {
+internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>() {
     private val defaultValueExtractor = DefaultValueExtractor()
 
     /**
@@ -43,7 +43,7 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType, 
      * - Polymorphic types (referenced via TypeId)
      */
     @Suppress("ReturnCount")
-    fun toRef(type: KType): TypeRef {
+    override fun toRef(type: KType): TypeRef {
         val klass = type.klass
         val nullable = type.isMarkedNullable
 

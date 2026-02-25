@@ -37,6 +37,6 @@ public class SerializationClassSchemaIntrospector(
     public override fun introspect(root: SerialDescriptor): TypeGraph {
         val context = SerializationIntrospectionContext(json, config)
         val rootRef = context.toRef(root)
-        return TypeGraph(root = rootRef, nodes = context.nodes())
+        return TypeGraph(root = rootRef, nodes = context.nodes)
     }
 }

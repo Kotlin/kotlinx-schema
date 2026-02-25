@@ -13,7 +13,6 @@ import kotlinx.schema.generator.core.ir.PrimitiveNode
 import kotlinx.schema.generator.core.ir.Property
 import kotlinx.schema.generator.core.ir.SubtypeRef
 import kotlinx.schema.generator.core.ir.TypeId
-import kotlinx.schema.generator.core.ir.TypeNode
 import kotlinx.schema.generator.core.ir.TypeRef
 import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -36,13 +35,7 @@ import kotlinx.serialization.descriptors.PrimitiveKind as SerialPrimitiveKind
 internal class SerializationIntrospectionContext(
     private val json: Json,
     private val config: SerializationClassSchemaIntrospector.Config,
-) : BaseIntrospectionContext<SerialDescriptor, SerialDescriptor>() {
-    /**
-     * Returns the discovered type nodes.
-     * This is the main output of the introspection process.
-     */
-    fun nodes(): Map<TypeId, TypeNode> = _nodes
-
+) : BaseIntrospectionContext<SerialDescriptor>() {
     /**
      * Converts a [SerialDescriptor] to a [TypeRef].
      * This is the main entry point for type conversion.
@@ -56,50 +49,50 @@ internal class SerializationIntrospectionContext(
      * - Polymorphic types (referenced via TypeId)
      */
     @Suppress("ReturnCount")
-    fun toRef(descriptor: SerialDescriptor): TypeRef {
+    override fun toRef(type: SerialDescriptor): TypeRef {
         // Check cache first
-        typeRefCache[descriptor]?.let { cachedRef ->
-            return if (descriptor.isNullable && !cachedRef.nullable) {
+        typeRefCache[type]?.let { cachedRef ->
+            return if (type.isNullable && !cachedRef.nullable) {
                 cachedRef.withNullable(true)
             } else {
                 cachedRef
             }
         }
 
-        val nullable = descriptor.isNullable
+        val nullable = type.isNullable
 
         // Try primitives first (always inlined)
-        primitiveFor(descriptor)?.let { primitiveNode ->
+        primitiveFor(type)?.let { primitiveNode ->
             val ref = TypeRef.Inline(primitiveNode, nullable)
-            if (!nullable) typeRefCache[descriptor] = ref
+            if (!nullable) typeRefCache[type] = ref
             return ref
         }
 
         // Handle different kinds
-        return when (descriptor.kind) {
+        return when (type.kind) {
             is SerialKind.ENUM -> {
-                handleEnumType(descriptor, nullable)
+                handleEnumType(type, nullable)
             }
 
             is StructureKind.CLASS, StructureKind.OBJECT -> {
-                handleObjectType(descriptor, nullable)
+                handleObjectType(type, nullable)
             }
 
             is StructureKind.MAP -> {
-                handleMapType(descriptor, nullable)
+                handleMapType(type, nullable)
             }
 
             is StructureKind.LIST -> {
-                handleListType(descriptor, nullable)
+                handleListType(type, nullable)
             }
 
             is PolymorphicKind -> {
-                handlePolymorphicType(descriptor, nullable)
+                handlePolymorphicType(type, nullable)
             }
 
             else -> {
                 // Fallback: treat unknown kinds as empty objects
-                handleUnknownType(descriptor, nullable)
+                handleUnknownType(type, nullable)
             }
         }
     }
