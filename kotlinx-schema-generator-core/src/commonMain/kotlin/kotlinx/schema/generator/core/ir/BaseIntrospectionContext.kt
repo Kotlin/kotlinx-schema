@@ -22,6 +22,7 @@ import kotlinx.schema.generator.core.InternalSchemaGeneratorApi
  */
 @InternalSchemaGeneratorApi
 @Suppress("AbstractClassCanBeConcreteClass")
+// FIXME remove TType, it's not actually needed
 public abstract class BaseIntrospectionContext<TDecl : Any, TType : Any> {
     /**
      * Map of discovered type nodes indexed by their type ID.
