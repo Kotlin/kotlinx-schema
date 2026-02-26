@@ -21,8 +21,7 @@ public abstract class BaseIntrospectionContext<TType : Any> {
      * Map of discovered type nodes indexed by their type ID.
      * LinkedHashMap preserves discovery order for deterministic output.
      */
-    @Suppress("VariableNaming", "ktlint:standard:backing-property-naming", "PropertyName")
-    protected val _nodes: MutableMap<TypeId, TypeNode> = linkedMapOf()
+    private val _nodes: MutableMap<TypeId, TypeNode> = linkedMapOf()
 
     /**
      * Exposes discovered nodes as read-only copy for building TypeGraph.
@@ -65,7 +64,7 @@ public abstract class BaseIntrospectionContext<TType : Any> {
      * @param nodeBuilder Lambda that constructs the TypeNode
      * @return true if node was created, false if already visited/in progress
      */
-    protected inline fun withCycleDetection(
+    protected fun withCycleDetection(
         type: TType,
         id: TypeId,
         nodeBuilder: () -> TypeNode,
