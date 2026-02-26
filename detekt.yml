@@ -5,5 +5,3 @@ config:
 style:
   VarCouldBeVal:
     ignoreLateinitVar: true
-  UseCheckOrError:
-    active: false
