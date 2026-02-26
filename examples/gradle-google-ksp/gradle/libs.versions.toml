@@ -1,5 +1,5 @@
 [versions]
-koog = "0.6.2"
+koog = "0.6.3"
 kotest = "6.1.3"
 kotlin = "2.3.0"
 kotlinxSerialization = "1.10.0"
