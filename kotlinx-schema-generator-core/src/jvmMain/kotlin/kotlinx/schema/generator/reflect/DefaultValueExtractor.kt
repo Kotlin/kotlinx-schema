@@ -13,7 +13,7 @@ import kotlin.reflect.full.primaryConstructor
  * providing "mock" values for required parameters and letting Kotlin fill in the defaults
  * for optional parameters.
  */
-internal class DefaultValueExtractor {
+internal object DefaultValueExtractor {
     private val cache = ConcurrentHashMap<KClass<*>, Map<String, Any?>>()
 
     /**
