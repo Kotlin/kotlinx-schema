@@ -28,7 +28,10 @@ import kotlin.reflect.full.createType
 @Suppress("TooManyFunctions")
 @OptIn(InternalSchemaGeneratorApi::class)
 internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>() {
-    private val defaultValueExtractor = DefaultValueExtractor()
+    /**
+     * This is a shared instance, so different schema generation runs would reuse the same class metadata cache.
+     */
+    private val defaultValueExtractor = DefaultValueExtractor
 
     /**
      * Converts a [KType] to a [TypeRef].
