@@ -17,7 +17,7 @@
         <maven.compiler.release>25</maven.compiler.release>
         <ksp.plugin.version>0.4.0</ksp.plugin.version>
         <kotlinx-schema.version>0.3.2</kotlinx-schema.version>
-        <kotest.version>6.1.3</kotest.version>
+        <kotest.version>6.1.4</kotest.version>
         <kotlinx-serialization.version>1.10.0</kotlinx-serialization.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
