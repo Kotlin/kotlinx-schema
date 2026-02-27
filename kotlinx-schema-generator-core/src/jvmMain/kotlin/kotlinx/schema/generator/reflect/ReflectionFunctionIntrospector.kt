@@ -50,7 +50,7 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>, 
             val typeRef = context.toRef(paramType)
 
             // Extract description from annotations
-            val description = context.extractDescription(param.annotations)
+            val description = extractDescription(param.annotations)
 
             properties +=
                 Property(
@@ -70,7 +70,7 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>, 
                 name = functionName,
                 properties = properties,
                 required = requiredProperties,
-                description = context.extractDescription(root.annotations),
+                description = extractDescription(root.annotations),
             )
 
         // Add an object generated from a function to the nodes
