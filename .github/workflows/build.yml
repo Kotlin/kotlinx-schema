@@ -72,7 +72,7 @@ jobs:
             --no-daemon
 
       - name: Upload project repository
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: project-repo
           path: build/project-repo
@@ -80,7 +80,7 @@ jobs:
 
       - name: Upload build reports
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: build-reports
           path: |
@@ -153,7 +153,7 @@ jobs:
 
       - name: Upload integration test reports
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: integration-test-reports
           path: |
@@ -211,7 +211,7 @@ jobs:
 
       - name: Upload Reports
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: reports-${{ matrix.example }}
           path: |
