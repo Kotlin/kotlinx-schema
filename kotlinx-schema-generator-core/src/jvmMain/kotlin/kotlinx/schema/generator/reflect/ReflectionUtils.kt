@@ -1,7 +1,6 @@
 package kotlinx.schema.generator.reflect
 
 import kotlinx.schema.generator.core.ir.Introspections
-import kotlinx.schema.generator.core.ir.Property
 import kotlinx.schema.generator.core.ir.TypeRef
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
@@ -17,53 +16,6 @@ internal val KType.klass: KClass<*> get() {
             "Only KClass classifiers are supported. Type parameters and other classifiers " +
             "cannot be introspected using reflection."
     }
-}
-
-/**
- * Extracts properties from the primary constructor of a class.
- *
- * This method processes constructor parameters to create Property objects,
- * handling type conversion, default values, descriptions, and nullability.
- *
- * @param klass The class whose constructor to analyze
- * @param defaultValues Map of property names to their default values (from DefaultValueExtractor)
- * @return Pair of (list of properties, set of required property names)
- */
-internal fun ReflectionIntrospectionContext.extractConstructorProperties(
-    klass: KClass<*>,
-    defaultValues: Map<String, Any?>,
-): Pair<List<Property>, Set<String>> {
-    val properties = mutableListOf<Property>()
-    val requiredProperties = mutableSetOf<String>()
-
-    klass.constructors.firstOrNull()?.parameters?.forEach { param ->
-        val propertyName = param.name ?: return@forEach
-        val hasDefault = param.isOptional
-
-        // Get annotations both on the constructor parameter and property associated with it
-        val annotations = param.annotations + findPropertyByName(klass, propertyName)?.annotations.orEmpty()
-
-        val propertyType = param.type
-        val typeRef = toRef(propertyType)
-
-        // Get the actual default value if available
-        val defaultValue = if (hasDefault) defaultValues[propertyName] else null
-
-        properties +=
-            Property(
-                name = propertyName,
-                type = typeRef,
-                description = extractDescription(annotations),
-                hasDefaultValue = hasDefault,
-                defaultValue = defaultValue,
-            )
-
-        if (!hasDefault) {
-            requiredProperties += propertyName
-        }
-    }
-
-    return properties to requiredProperties
 }
 
 /**
