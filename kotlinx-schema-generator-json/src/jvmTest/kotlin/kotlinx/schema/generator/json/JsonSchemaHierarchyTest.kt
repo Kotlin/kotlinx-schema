@@ -48,75 +48,74 @@ class JsonSchemaHierarchyTest {
         val schema = generator.generateSchema(Animal::class)
 
         // language=json
-        val expectedSchema = $$"""
+        val expectedSchema =
+            $$"""
         {
-              "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "$id": "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal",
+          "description": "Represents an animal",
+          "type": "object",
+          "additionalProperties": false,
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Animal.Cat"
+            },
+            {
+              "$ref": "#/$defs/Animal.Dog"
+            }
+          ],
+          "$defs": {
+            "Animal.Cat": {
               "type": "object",
-              "additionalProperties": false,
-              "description": "Represents an animal",
-              "oneOf": [
-                {
-                  "$ref": "#/$defs/Animal.Cat"
+              "description": "Represents a cat",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Animal's name"
                 },
-                {
-                  "$ref": "#/$defs/Animal.Dog"
+                "color": {
+                  "type": "string",
+                  "description": "Cat's color"
+                },
+                "lives": {
+                  "type": "integer",
+                  "description": "Lives left",
+                  "default": 9
                 }
+              },
+              "required": [
+                "name",
+                "color"
               ],
-              "$defs": {
-                "Animal.Cat": {
-                  "type": "object",
-                  "description": "Represents a cat",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "const": "Animal.Cat"
-                    },
-                    "name": {
-                      "type": "string",
-                      "description": "Animal's name"
-                    },
-                    "color": {
-                      "type": "string",
-                      "description": "Cat's color"
-                    },
-                    "lives": {
-                      "type": "integer",
-                      "description": "Lives left",
-                      "default": 9
-                    }
-                  },
-                  "required": ["type", "name", "color"],
-                  "additionalProperties": false
+              "additionalProperties": false
+            },
+            "Animal.Dog": {
+              "type": "object",
+              "description": "Represents a dog",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Animal's name"
                 },
-                "Animal.Dog": {
-                  "type": "object",
-                  "description": "Represents a dog",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "const": "Animal.Dog"
-                    },
-                    "name": {
-                      "type": "string",
-                      "description": "Animal's name"
-                    },
-                    "breed": {
-                      "type": "string",
-                      "description": "Dog's breed"
-                    },
-                    "isTrained": {
-                      "type": "boolean",
-                      "description": "Trained or not",
-                      "default": false
-                    }
-                  },
-                  "required": ["type", "name", "breed"],
-                  "additionalProperties": false
+                "breed": {
+                  "type": "string",
+                  "description": "Dog's breed"
+                },
+                "isTrained": {
+                  "type": "boolean",
+                  "description": "Trained or not",
+                  "default": false
                 }
-              }
+              },
+              "required": [
+                "name",
+                "breed"
+              ],
+              "additionalProperties": false
+            }
+          }
         }
-        """
+            """.trimIndent()
         verifySchema(schema, expectedSchema)
     }
 
@@ -132,88 +131,89 @@ class JsonSchemaHierarchyTest {
         val schema = generator.generateSchema(AnimalContainer::class)
 
         // language=json
-        val expectedSchema = $$"""
+        val expectedSchema =
+            $$"""
         {
-              "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "$id": "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.AnimalContainer",
-              "type": "object",
-              "description": "Container with nullable animal",
-              "properties": {
-                "animal": {
-                  "description": "Optional animal",
-                  "anyOf": [
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.AnimalContainer",
+          "description": "Container with nullable animal",
+          "type": "object",
+          "properties": {
+            "animal": {
+              "anyOf": [
+                {
+                  "oneOf": [
                     {
-                      "oneOf": [
-                        {
-                          "$ref": "#/$defs/Animal.Cat"
-                        },
-                        {
-                          "$ref": "#/$defs/Animal.Dog"
-                        }
-                      ]
+                      "$ref": "#/$defs/Animal.Cat"
                     },
                     {
-                      "type": "null"
+                      "$ref": "#/$defs/Animal.Dog"
                     }
                   ]
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional animal"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "animal"
+          ],
+          "$defs": {
+            "Animal.Cat": {
+              "type": "object",
+              "description": "Represents a cat",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Animal's name"
+                },
+                "color": {
+                  "type": "string",
+                  "description": "Cat's color"
+                },
+                "lives": {
+                  "type": "integer",
+                  "description": "Lives left",
+                  "default": 9
                 }
               },
-              "required": ["animal"],
-              "additionalProperties": false,
-              "$defs": {
-                "Animal.Cat": {
-                  "type": "object",
-                  "description": "Represents a cat",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "const": "Animal.Cat"
-                    },
-                    "name": {
-                      "type": "string",
-                      "description": "Animal's name"
-                    },
-                    "color": {
-                      "type": "string",
-                      "description": "Cat's color"
-                    },
-                    "lives": {
-                      "type": "integer",
-                      "description": "Lives left",
-                      "default": 9
-                    }
-                  },
-                  "required": ["type", "name", "color"],
-                  "additionalProperties": false
+              "required": [
+                "name",
+                "color"
+              ],
+              "additionalProperties": false
+            },
+            "Animal.Dog": {
+              "type": "object",
+              "description": "Represents a dog",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Animal's name"
                 },
-                "Animal.Dog": {
-                  "type": "object",
-                  "description": "Represents a dog",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "const": "Animal.Dog"
-                    },
-                    "name": {
-                      "type": "string",
-                      "description": "Animal's name"
-                    },
-                    "breed": {
-                      "type": "string",
-                      "description": "Dog's breed"
-                    },
-                    "isTrained": {
-                      "type": "boolean",
-                      "description": "Trained or not",
-                      "default": false
-                    }
-                  },
-                  "required": ["type", "name", "breed"],
-                  "additionalProperties": false
+                "breed": {
+                  "type": "string",
+                  "description": "Dog's breed"
+                },
+                "isTrained": {
+                  "type": "boolean",
+                  "description": "Trained or not",
+                  "default": false
                 }
-              }
+              },
+              "required": [
+                "name",
+                "breed"
+              ],
+              "additionalProperties": false
+            }
+          }
         }
-        """
+            """.trimIndent()
 
         verifySchema(schema, expectedSchema)
     }
@@ -231,7 +231,8 @@ class JsonSchemaHierarchyTest {
                         requireNullableFields = true,
                         useUnionTypes = true,
                         useNullableField = false,
-                        includeDiscriminator = true,
+                        includePolymorphicDiscriminator = true,
+                        includeOpenAPIPolymorphicDiscriminator = true,
                     ),
             )
 

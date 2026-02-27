@@ -160,7 +160,6 @@ class SerializationIntrospectorTest {
         // Discriminator should be required due to ALL_JSON_OBJECTS
         polyNode.discriminator shouldNotBeNull {
             name shouldBe "type"
-            required shouldBe true
         }
 
         // Ensure subtypes discovered and object nodes present

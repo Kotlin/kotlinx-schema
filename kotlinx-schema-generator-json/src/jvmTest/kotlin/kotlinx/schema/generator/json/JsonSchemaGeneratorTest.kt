@@ -23,7 +23,6 @@ class JsonSchemaGeneratorTest {
         val nestedProperty: NestedProperty = NestedProperty("foo", 1),
         val nestedListProperty: List<NestedProperty> = emptyList(),
         val nestedMapProperty: Map<String, NestedProperty> = emptyMap(),
-        // FIXME Doesn't work
         val polymorphicProperty: TestClosedPolymorphism = TestClosedPolymorphism.SubClass1("id1", "property1"),
         val enumProperty: TestEnum = TestEnum.One,
         val objectProperty: TestObject = TestObject,
@@ -63,7 +62,16 @@ class JsonSchemaGeneratorTest {
     private val generator =
         ReflectionClassJsonSchemaGenerator(
             json = Json { prettyPrint = true },
-            config = JsonSchemaConfig.Default,
+            // Default, but with includePolymorphicDiscriminator enabled
+            config =
+                JsonSchemaConfig(
+                    respectDefaultPresence = true,
+                    requireNullableFields = true,
+                    useUnionTypes = true,
+                    useNullableField = false,
+                    includePolymorphicDiscriminator = true,
+                    includeOpenAPIPolymorphicDiscriminator = false,
+                ),
         )
 
     @Test

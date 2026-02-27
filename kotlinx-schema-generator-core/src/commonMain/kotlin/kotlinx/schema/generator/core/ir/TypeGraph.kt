@@ -103,6 +103,5 @@ public data class SubtypeRef(
  */
 public data class Discriminator(
     val name: String,
-    val required: Boolean,
     val mapping: Map<String, TypeId>? = null,
 )

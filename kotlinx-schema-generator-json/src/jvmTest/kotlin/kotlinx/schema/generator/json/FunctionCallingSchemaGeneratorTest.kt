@@ -14,6 +14,16 @@ class FunctionCallingSchemaGeneratorTest {
     private val generator =
         ReflectionFunctionCallingSchemaGenerator(
             json = Json { prettyPrint = true },
+            // Like Strict, but with
+            config =
+                FunctionCallingSchemaConfig(
+                    respectDefaultPresence = false,
+                    requireNullableFields = true,
+                    useUnionTypes = true,
+                    useNullableField = false,
+                    includePolymorphicDiscriminator = true,
+                    strictMode = true,
+                ),
         )
 
     object SimplePrimitives {

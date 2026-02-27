@@ -57,10 +57,6 @@ class ShapeSchemaTest {
                   "type": "object",
                   "description": "A circle defined by its radius.",
                   "properties": {
-                    "type": {
-                      "type": "string",
-                      "const": "com.example.shapes.Shape.Circle"
-                    },
                     "name": {
                       "type": "string"
                     },
@@ -70,7 +66,6 @@ class ShapeSchemaTest {
                     }
                   },
                   "required": [
-                    "type",
                     "name",
                     "radius"
                   ],
@@ -80,10 +75,6 @@ class ShapeSchemaTest {
                   "type": "object",
                   "description": "A rectangle with width and height.",
                   "properties": {
-                    "type": {
-                      "type": "string",
-                      "const": "com.example.shapes.Shape.Rectangle"
-                    },
                     "name": {
                       "type": "string"
                     },
@@ -97,7 +88,6 @@ class ShapeSchemaTest {
                     }
                   },
                   "required": [
-                    "type",
                     "name",
                     "width",
                     "height"

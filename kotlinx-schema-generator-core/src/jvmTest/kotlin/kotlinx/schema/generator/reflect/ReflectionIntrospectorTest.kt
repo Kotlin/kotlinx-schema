@@ -172,7 +172,6 @@ class ReflectionIntrospectorTest {
         // Discriminator should be required
         polyNode.discriminator shouldNotBeNull {
             name shouldBe "type"
-            required shouldBe true
         }
 
         // Verify subtypes use qualified names (Parent.Child pattern)
