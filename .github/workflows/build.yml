@@ -139,7 +139,7 @@ jobs:
             caches/keyrings
 
       - name: Download project repository
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: project-repo
           path: build/project-repo
@@ -197,7 +197,7 @@ jobs:
           cache-cleanup: always
 
       - name: Download project repository
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: project-repo
           path: build/project-repo
