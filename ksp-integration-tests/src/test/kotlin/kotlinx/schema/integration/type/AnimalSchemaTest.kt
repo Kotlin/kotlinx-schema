@@ -32,17 +32,12 @@ class AnimalSchemaTest {
                 "kotlinx.schema.integration.type.Animal.Cat": {
                   "type": "object",
                   "properties": {
-                    "type": {
-                      "type": "string",
-                      "const": "kotlinx.schema.integration.type.Animal.Cat"
-                    },
                     "name": {
                       "type": "string",
                       "description": "Animal's name"
                     }
                   },
                   "required": [
-                    "type",
                     "name"
                   ],
                   "additionalProperties": false
@@ -50,17 +45,12 @@ class AnimalSchemaTest {
                 "kotlinx.schema.integration.type.Animal.Dog": {
                   "type": "object",
                   "properties": {
-                    "type": {
-                      "type": "string",
-                      "const": "kotlinx.schema.integration.type.Animal.Dog"
-                    },
                     "name": {
                       "type": "string",
                       "description": "Animal's name"
                     }
                   },
                   "required": [
-                    "type",
                     "name"
                   ],
                   "additionalProperties": false
