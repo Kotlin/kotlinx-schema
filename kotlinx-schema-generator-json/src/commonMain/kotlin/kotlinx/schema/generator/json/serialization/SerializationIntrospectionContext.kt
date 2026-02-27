@@ -18,7 +18,6 @@ import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.descriptors.StructureKind
-import kotlinx.serialization.json.ClassDiscriminatorMode
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.descriptors.PrimitiveKind as SerialPrimitiveKind
 
@@ -259,19 +258,11 @@ internal class SerializationIntrospectionContext(
             val subtypes = subtypeDescriptors.map { SubtypeRef(TypeId(it.serialName)) }
 
             // Get discriminator configuration from Json
-            val mode = json.configuration.classDiscriminatorMode
             val discriminatorName = json.configuration.classDiscriminator
-            val discriminatorRequired =
-                mode in
-                    listOf(
-                        ClassDiscriminatorMode.ALL_JSON_OBJECTS,
-                        ClassDiscriminatorMode.POLYMORPHIC,
-                    )
 
             val discriminator =
                 Discriminator(
                     name = discriminatorName,
-                    required = discriminatorRequired,
                     mapping = null, // Mapping is typically derived from serialName
                 )
 

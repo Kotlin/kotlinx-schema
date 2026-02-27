@@ -283,17 +283,12 @@ class KspIntegrationTest {
                   "type": "object",
                   "description": "A circular shape",
                   "properties": {
-                    "type": {
-                      "type": "string",
-                      "const": "kotlinx.schema.integration.Shape.Circle"
-                    },
                     "radius": {
                       "type": "number",
                       "description": "Radius of the circle"
                     }
                   },
                   "required": [
-                    "type",
                     "radius"
                   ],
                   "additionalProperties": false
@@ -302,10 +297,6 @@ class KspIntegrationTest {
                   "type": "object",
                   "description": "A rectangular shape",
                   "properties": {
-                    "type": {
-                      "type": "string",
-                      "const": "kotlinx.schema.integration.Shape.Rectangle"
-                    },
                     "width": {
                       "type": "number",
                       "description": "Width of the rectangle"
@@ -316,7 +307,6 @@ class KspIntegrationTest {
                     }
                   },
                   "required": [
-                    "type",
                     "width",
                     "height"
                   ],
@@ -326,10 +316,6 @@ class KspIntegrationTest {
                   "type": "object",
                   "description": "A triangular shape",
                   "properties": {
-                    "type": {
-                      "type": "string",
-                      "const": "kotlinx.schema.integration.Shape.Triangle"
-                    },
                     "base": {
                       "type": "number",
                       "description": "Length of the base"
@@ -340,7 +326,6 @@ class KspIntegrationTest {
                     }
                   },
                   "required": [
-                    "type",
                     "base",
                     "height"
                   ],

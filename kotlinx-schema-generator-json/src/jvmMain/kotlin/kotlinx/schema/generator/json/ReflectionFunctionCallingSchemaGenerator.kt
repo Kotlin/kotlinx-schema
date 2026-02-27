@@ -23,11 +23,15 @@ import kotlin.reflect.KClass
  */
 public class ReflectionFunctionCallingSchemaGenerator(
     private val json: Json,
+    config: FunctionCallingSchemaConfig,
 ) : AbstractSchemaGenerator<KCallable<*>, FunctionCallingSchema, Unit>(
         introspector = ReflectionFunctionIntrospector,
-        typeGraphTransformer = TypeGraphToFunctionCallingSchemaTransformer(),
+        typeGraphTransformer = TypeGraphToFunctionCallingSchemaTransformer(config),
     ) {
-    public constructor() : this(json = Json { encodeDefaults = false })
+    public constructor() : this(
+        json = Json { encodeDefaults = false },
+        config = FunctionCallingSchemaConfig.Default,
+    )
 
     override fun getRootName(target: KCallable<*>): String = target.name
 

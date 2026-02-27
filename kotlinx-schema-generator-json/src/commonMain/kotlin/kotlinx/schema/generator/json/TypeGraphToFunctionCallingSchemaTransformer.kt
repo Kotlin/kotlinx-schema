@@ -356,8 +356,8 @@ public class TypeGraphToFunctionCallingSchemaTransformer
                                         "Found subtype '$typeName' with type '${definition::class.simpleName}'.",
                                 )
                         }.let { definition ->
-                            // Append discriminator property to the definition if required
-                            if (node.discriminator.required) {
+                            // Append discriminator property to the definition if enabled
+                            if (config.includePolymorphicDiscriminator) {
                                 val discriminatorProperty =
                                     StringPropertyDefinition(
                                         constValue = JsonPrimitive(typeName),

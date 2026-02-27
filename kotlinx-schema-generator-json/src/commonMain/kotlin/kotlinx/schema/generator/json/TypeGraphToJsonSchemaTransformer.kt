@@ -144,7 +144,12 @@ public class TypeGraphToJsonSchemaTransformer
                 additionalProperties = DenyAdditionalProperties,
                 description = rootDefinition.description,
                 oneOf = rootDefinition.oneOf,
-                discriminator = if (config.includeDiscriminator) rootDefinition.discriminator else null,
+                discriminator =
+                    if (config.includeOpenAPIPolymorphicDiscriminator) {
+                        rootDefinition.discriminator
+                    } else {
+                        null
+                    },
                 defs = definitions.takeIf { it.isNotEmpty() },
             )
 
@@ -531,8 +536,8 @@ public class TypeGraphToJsonSchemaTransformer
                                             "Found subtype '$typeName' with type '${definition::class.simpleName}'.",
                                     )
                             }.let { definition ->
-                                // Append discriminator property to the definition if required
-                                if (node.discriminator.required) {
+                                // Append discriminator property to the definition if enabled
+                                if (config.includePolymorphicDiscriminator) {
                                     val discriminatorProperty =
                                         StringPropertyDefinition(
                                             constValue = JsonPrimitive(typeName),
@@ -556,9 +561,12 @@ public class TypeGraphToJsonSchemaTransformer
                     ReferencePropertyDefinition(ref = $$"#/$defs/$$typeName")
                 }
 
-            // Convert discriminator with proper $ref paths if includeDiscriminator is enabled
+            // Convert discriminator with proper $ref paths if OpenAPI polymorphic discriminator is enabled
             val discriminator =
-                if (config.includeDiscriminator) {
+                if (
+                    config.includePolymorphicDiscriminator &&
+                    config.includeOpenAPIPolymorphicDiscriminator
+                ) {
                     node.discriminator.let { disc ->
                         val mapping =
                             disc.mapping?.mapValues { (_, typeId) ->
