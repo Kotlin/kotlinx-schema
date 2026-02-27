@@ -530,6 +530,7 @@ public class TypeGraphToJsonSchemaTransformer
                     val subtypeDefinition =
                         convertTypeRef(subtypeRef.ref, graph, definitions)
                             .let { definition ->
+                                @Suppress("UseCheckOrError")
                                 definition as? ObjectPropertyDefinition
                                     ?: throw IllegalStateException(
                                         "All subtypes of a polymorphic type must be objects. " +

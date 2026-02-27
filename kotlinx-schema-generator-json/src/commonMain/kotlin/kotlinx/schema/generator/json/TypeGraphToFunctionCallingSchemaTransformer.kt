@@ -350,6 +350,7 @@ public class TypeGraphToFunctionCallingSchemaTransformer
 
                     convertTypeRef(subtypeRef.ref, graph)
                         .let { definition ->
+                            @Suppress("UseCheckOrError")
                             definition as? ObjectPropertyDefinition
                                 ?: throw IllegalStateException(
                                     "All subtypes of a polymorphic type must be objects. " +
