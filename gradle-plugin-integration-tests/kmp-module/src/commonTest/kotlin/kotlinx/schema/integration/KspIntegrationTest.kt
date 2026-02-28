@@ -1,4 +1,4 @@
-@file:Suppress("JsonStandardCompliance")
+@file:Suppress("JsonStandardCompliance", "LongMethod")
 
 package kotlinx.schema.integration
 
@@ -268,16 +268,25 @@ class KspIntegrationTest {
               "type": "object",
               "additionalProperties": false,
               "oneOf": [
-                { "$ref": "#/$defs/kotlinx.schema.integration.Shape.Circle" },
-                { "$ref": "#/$defs/kotlinx.schema.integration.Shape.Rectangle" },
-                { "$ref": "#/$defs/kotlinx.schema.integration.Shape.Triangle" }
+                {
+                  "$ref": "#/$defs/kotlinx.schema.integration.Shape.Circle"
+                },
+                {
+                  "$ref": "#/$defs/kotlinx.schema.integration.Shape.Rectangle"
+                },
+                {
+                  "$ref": "#/$defs/kotlinx.schema.integration.Shape.Triangle"
+                }
               ],
               "$defs": {
                 "kotlinx.schema.integration.Shape.Circle": {
                   "type": "object",
                   "description": "A circular shape",
                   "properties": {
-                    "radius": { "type": "number", "description": "Radius of the circle" }
+                    "radius": {
+                      "type": "number",
+                      "description": "Radius of the circle"
+                    }
                   },
                   "required": [
                     "radius"
@@ -288,8 +297,14 @@ class KspIntegrationTest {
                   "type": "object",
                   "description": "A rectangular shape",
                   "properties": {
-                    "width": { "type": "number", "description": "Width of the rectangle" },
-                    "height": { "type": "number", "description": "Height of the rectangle" }
+                    "width": {
+                      "type": "number",
+                      "description": "Width of the rectangle"
+                    },
+                    "height": {
+                      "type": "number",
+                      "description": "Height of the rectangle"
+                    }
                   },
                   "required": [
                     "width",
@@ -301,8 +316,14 @@ class KspIntegrationTest {
                   "type": "object",
                   "description": "A triangular shape",
                   "properties": {
-                    "base": { "type": "number", "description": "Length of the base" },
-                    "height": { "type": "number", "description": "Height from base to apex" }
+                    "base": {
+                      "type": "number",
+                      "description": "Length of the base"
+                    },
+                    "height": {
+                      "type": "number",
+                      "description": "Height from base to apex"
+                    }
                   },
                   "required": [
                     "base",

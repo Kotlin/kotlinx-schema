@@ -5,12 +5,14 @@ import kotlinx.schema.generator.core.ir.EnumNode
 import kotlinx.schema.generator.core.ir.ListNode
 import kotlinx.schema.generator.core.ir.MapNode
 import kotlinx.schema.generator.core.ir.ObjectNode
+import kotlinx.schema.generator.core.ir.PolymorphicNode
 import kotlinx.schema.generator.core.ir.PrimitiveKind
 import kotlinx.schema.generator.core.ir.PrimitiveNode
 import kotlinx.schema.generator.core.ir.TypeGraph
 import kotlinx.schema.generator.core.ir.TypeNode
 import kotlinx.schema.generator.core.ir.TypeRef
 import kotlinx.schema.json.AdditionalPropertiesSchema
+import kotlinx.schema.json.AnyOfPropertyDefinition
 import kotlinx.schema.json.ArrayPropertyDefinition
 import kotlinx.schema.json.BooleanPropertyDefinition
 import kotlinx.schema.json.DenyAdditionalProperties
@@ -21,6 +23,7 @@ import kotlinx.schema.json.JsonSchemaConstants.Types.BOOLEAN_OR_NULL_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.BOOLEAN_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.INTEGER_OR_NULL_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.INTEGER_TYPE
+import kotlinx.schema.json.JsonSchemaConstants.Types.NULL_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.NUMBER_OR_NULL_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.NUMBER_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.OBJECT_OR_NULL_TYPE
@@ -31,6 +34,7 @@ import kotlinx.schema.json.NumericPropertyDefinition
 import kotlinx.schema.json.ObjectPropertyDefinition
 import kotlinx.schema.json.PropertyDefinition
 import kotlinx.schema.json.StringPropertyDefinition
+import kotlinx.serialization.json.JsonPrimitive
 import kotlin.jvm.JvmOverloads
 import kotlinx.schema.generator.json.FunctionCallingSchemaConfig.Companion.Default as DefaultConfig
 
@@ -139,6 +143,7 @@ public class TypeGraphToFunctionCallingSchemaTransformer
             )
         }
 
+        // FIXME throw on recursive polymorphism since defs are not allowed for function calling
         private fun convertTypeRef(
             typeRef: TypeRef,
             graph: TypeGraph,
@@ -150,10 +155,11 @@ public class TypeGraphToFunctionCallingSchemaTransformer
 
                 is TypeRef.Ref -> {
                     val node =
-                        graph.nodes[typeRef.id]
-                            ?: error(
-                                "Type reference '${typeRef.id.value}' not found in type graph.",
-                            )
+                        checkNotNull(graph.nodes[typeRef.id]) {
+                            "Type reference '${typeRef.id.value}' not found in type graph. " +
+                                "This indicates a bug in the introspector - all referenced types " +
+                                "should be present in the graph's nodes map."
+                        }
                     convertNode(node, typeRef.nullable, graph)
                 }
             }
@@ -210,10 +216,8 @@ public class TypeGraphToFunctionCallingSchemaTransformer
                     convertMap(node, nullable, graph)
                 }
 
-                else -> {
-                    throw IllegalArgumentException(
-                        "Unsupported node type: ${node::class.simpleName}.",
-                    )
+                is PolymorphicNode -> {
+                    convertPolymorphic(node, nullable, graph)
                 }
             }
 
@@ -332,5 +336,69 @@ public class TypeGraphToFunctionCallingSchemaTransformer
                 nullable = null,
                 additionalProperties = AdditionalPropertiesSchema(valuePropertyDef),
             )
+        }
+
+        private fun convertPolymorphic(
+            node: PolymorphicNode,
+            nullable: Boolean,
+            graph: TypeGraph,
+        ): PropertyDefinition {
+            // Get a list of subtype definitions
+            val subtypeDefs =
+                node.subtypes.map { subtypeRef ->
+                    val typeName = subtypeRef.id.value
+
+                    convertTypeRef(subtypeRef.ref, graph)
+                        .let { definition ->
+                            @Suppress("UseCheckOrError")
+                            definition as? ObjectPropertyDefinition
+                                ?: throw IllegalStateException(
+                                    "All subtypes of a polymorphic type must be objects. " +
+                                        "Found subtype '$typeName' with type '${definition::class.simpleName}'.",
+                                )
+                        }.let { definition ->
+                            // Append discriminator property to the definition if enabled
+                            if (config.includePolymorphicDiscriminator) {
+                                val discriminatorProperty =
+                                    StringPropertyDefinition(
+                                        constValue = JsonPrimitive(typeName),
+                                    )
+
+                                definition.copy(
+                                    properties =
+                                        mapOf(node.discriminator.name to discriminatorProperty) +
+                                            definition.properties.orEmpty(),
+                                    required = listOf(node.discriminator.name) + definition.required.orEmpty(),
+                                )
+                            } else {
+                                definition
+                            }
+                        }
+                }
+
+            // oneOf is not supported by OpenAI-like JSON schemas, using anyOf instead
+            val anyOfDef =
+                AnyOfPropertyDefinition(
+                    anyOf = subtypeDefs,
+                    description = if (nullable) null else node.description,
+                )
+
+            // If nullable, wrap in additional anyOf with the 'null' option
+            return if (nullable) {
+                AnyOfPropertyDefinition(
+                    anyOf =
+                        listOf(
+                            anyOfDef,
+                            StringPropertyDefinition(
+                                type = NULL_TYPE,
+                                description = null,
+                                nullable = null,
+                            ),
+                        ),
+                    description = null, // Description set by setDescription in convertObject
+                )
+            } else {
+                anyOfDef
+            }
         }
     }

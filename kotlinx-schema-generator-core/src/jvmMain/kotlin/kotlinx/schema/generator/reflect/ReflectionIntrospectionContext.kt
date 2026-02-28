@@ -2,84 +2,54 @@ package kotlinx.schema.generator.reflect
 
 import kotlinx.schema.generator.core.InternalSchemaGeneratorApi
 import kotlinx.schema.generator.core.ir.BaseIntrospectionContext
+import kotlinx.schema.generator.core.ir.Discriminator
+import kotlinx.schema.generator.core.ir.EnumNode
 import kotlinx.schema.generator.core.ir.ListNode
 import kotlinx.schema.generator.core.ir.MapNode
 import kotlinx.schema.generator.core.ir.ObjectNode
+import kotlinx.schema.generator.core.ir.PolymorphicNode
 import kotlinx.schema.generator.core.ir.PrimitiveKind
 import kotlinx.schema.generator.core.ir.PrimitiveNode
 import kotlinx.schema.generator.core.ir.Property
+import kotlinx.schema.generator.core.ir.SubtypeRef
 import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeRef
 import kotlin.reflect.KClass
+import kotlin.reflect.KProperty
 import kotlin.reflect.KType
+import kotlin.reflect.full.createType
 
 /**
- * Base class for reflection-based introspection contexts.
- *
- * Extends core [BaseIntrospectionContext] with reflection-specific type handling.
- * Provides common functionality for both class and function introspection,
- * including type conversion, caching, and cycle detection.
- *
- * Subclasses must implement [createObjectNode] to define how to extract properties
- * from different source types (classes vs function parameters).
+ * Reflection-based introspection context based on [KType].
+ * Only supports [KClass] classifiers for introspection, generics are not supported.
  */
+@Suppress("TooManyFunctions")
 @OptIn(InternalSchemaGeneratorApi::class)
-internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContext<KClass<*>, KType>() {
+internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>() {
     /**
-     * Converts a KType (with type arguments) to a TypeRef.
-     * Used for property types where we have full type information.
+     * This is a shared instance, so different schema generation runs would reuse the same class metadata cache.
      */
-    protected fun convertKTypeToTypeRef(type: KType): TypeRef {
-        val classifier =
-            requireNotNull(type.classifier as? KClass<*>) {
-                "Unsupported classifier: ${type.classifier}. " +
-                    "Only KClass classifiers are supported. Type parameters and other classifiers " +
-                    "cannot be introspected using reflection."
-            }
-        val isNullable = type.isMarkedNullable
-
-        return when {
-            isListLike(classifier) -> {
-                val elementType = type.arguments.firstOrNull()?.type
-                val elementRef =
-                    elementType?.let { convertKTypeToTypeRef(it) }
-                        ?: TypeRef.Inline(PrimitiveNode(PrimitiveKind.STRING), false)
-                TypeRef.Inline(ListNode(elementRef), isNullable)
-            }
-
-            Map::class.java.isAssignableFrom(classifier.java) -> {
-                val keyType = type.arguments.getOrNull(0)?.type
-                val valueType = type.arguments.getOrNull(1)?.type
-                val keyRef =
-                    keyType?.let { convertKTypeToTypeRef(it) }
-                        ?: TypeRef.Inline(PrimitiveNode(PrimitiveKind.STRING), false)
-                val valueRef =
-                    valueType?.let { convertKTypeToTypeRef(it) }
-                        ?: TypeRef.Inline(PrimitiveNode(PrimitiveKind.STRING), false)
-                TypeRef.Inline(MapNode(keyRef, valueRef), isNullable)
-            }
-
-            else -> {
-                convertToTypeRef(classifier, isNullable)
-            }
-        }
-    }
+    private val defaultValueExtractor = DefaultValueExtractor
 
     /**
-     * Converts a KClass to a TypeRef, handling caching and nullability.
-     * Can be overridden by subclasses to add custom type handling (e.g., sealed classes).
+     * Converts a [KType] to a [TypeRef].
+     * This is the main entry point for type conversion.
      *
-     * Default implementation handles primitives, collections, enums, and objects.
-     * Subclasses can override to add sealed class handling or other specialized behavior.
+     * Handles:
+     * - Nullability from descriptor.isNullable
+     * - Primitives (inlined)
+     * - Collections (List, Map) (inlined)
+     * - Enums (referenced via TypeId)
+     * - Objects/Classes (referenced via TypeId)
+     * - Polymorphic types (referenced via TypeId)
      */
     @Suppress("ReturnCount")
-    internal open fun convertToTypeRef(
-        klass: KClass<*>,
-        nullable: Boolean = false,
-        useSimpleName: Boolean = false,
-    ): TypeRef {
+    override fun toRef(type: KType): TypeRef {
+        val klass = type.klass
+        val nullable = type.isMarkedNullable
+
         // Check cache first
-        typeRefCache[klass]?.let { cachedRef ->
+        typeRefCache[type]?.let { cachedRef ->
             return if (nullable && !cachedRef.nullable) {
                 cachedRef.withNullable(true)
             } else {
@@ -90,30 +60,70 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
         // Try to convert to primitive type
         primitiveKindFor(klass)?.let { primitiveKind ->
             val ref = TypeRef.Inline(PrimitiveNode(primitiveKind), nullable)
-            if (!nullable) typeRefCache[klass] = ref
+            if (!nullable) typeRefCache[type] = ref
             return ref
         }
 
-        // Handle different type categories
+        // Handle different kinds
         return when {
-            isListLike(klass) -> handleListType(klass, nullable)
-            Map::class.java.isAssignableFrom(klass.java) -> handleMapType(klass, nullable)
-            isEnumClass(klass) -> handleEnumType(klass, nullable)
-            else -> handleObjectType(klass, nullable, useSimpleName)
+            isListLike(klass) -> handleListType(type)
+            isMapLike(klass) -> handleMapType(type)
+            isEnumClass(klass) -> handleEnumType(type)
+            klass.isSealed -> handleSealedType(type)
+            else -> handleObjectType(type)
         }
     }
 
+    //region KClass type matchers
+
+    /**
+     * Checks and maps a Kotlin primitive class to its corresponding [PrimitiveKind].
+     * Returns null if the class is not a supported primitive type.
+     */
+    private fun primitiveKindFor(klass: KClass<*>): PrimitiveKind? =
+        when (klass) {
+            String::class -> PrimitiveKind.STRING
+            Boolean::class -> PrimitiveKind.BOOLEAN
+            Byte::class, Short::class, Int::class -> PrimitiveKind.INT
+            Long::class -> PrimitiveKind.LONG
+            Float::class -> PrimitiveKind.FLOAT
+            Double::class -> PrimitiveKind.DOUBLE
+            Char::class -> PrimitiveKind.STRING
+            else -> null
+        }
+
+    /**
+     * Checks if a class is list-like (List, Collection, or Iterable).
+     */
+    private fun isListLike(klass: KClass<*>): Boolean = Iterable::class.java.isAssignableFrom(klass.java)
+
+    /**
+     * Checks if a class is a map-like type (Map).
+     */
+    private fun isMapLike(klass: KClass<*>): Boolean = Map::class.java.isAssignableFrom(klass.java)
+
+    /**
+     * Checks if a class is an enum class.
+     */
+    private fun isEnumClass(klass: KClass<*>): Boolean = !klass.isData && klass.java.isEnum
+
+    //endregion
+
+    //region KType to TypeRef conversion handlers
+
     /**
      * Handles list-like types (List, Collection, Iterable).
-     * Creates a fallback ListNode with String elements when type arguments are unavailable.
      */
-    protected fun handleListType(
-        klass: KClass<*>,
-        nullable: Boolean,
-    ): TypeRef {
-        val elementRef = TypeRef.Inline(PrimitiveNode(PrimitiveKind.STRING), false)
-        val ref = TypeRef.Inline(ListNode(elementRef), nullable)
-        if (!nullable) typeRefCache[klass] = ref
+    private fun handleListType(type: KType): TypeRef {
+        val elementType = type.arguments.firstOrNull()?.type
+
+        val elementRef =
+            elementType
+                ?.let { toRef(it) }
+                ?: TypeRef.Inline(PrimitiveNode(PrimitiveKind.STRING), false)
+
+        val ref = TypeRef.Inline(ListNode(elementRef), type.isMarkedNullable)
+        if (!type.isMarkedNullable) typeRefCache[type] = ref
         return ref
     }
 
@@ -121,72 +131,237 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
      * Handles Map types.
      * Creates a fallback MapNode with String keys and values when type arguments are unavailable.
      */
-    protected fun handleMapType(
-        klass: KClass<*>,
-        nullable: Boolean,
-    ): TypeRef {
-        val keyRef = TypeRef.Inline(PrimitiveNode(PrimitiveKind.STRING), false)
-        val valueRef = TypeRef.Inline(PrimitiveNode(PrimitiveKind.STRING), false)
-        val ref = TypeRef.Inline(MapNode(keyRef, valueRef), nullable)
-        if (!nullable) typeRefCache[klass] = ref
+    private fun handleMapType(type: KType): TypeRef {
+        val keyType = type.arguments.getOrNull(0)?.type
+        val valueType = type.arguments.getOrNull(1)?.type
+
+        val keyRef =
+            keyType
+                ?.let { toRef(it) }
+                ?: TypeRef.Inline(PrimitiveNode(PrimitiveKind.STRING), false)
+
+        val valueRef =
+            valueType
+                ?.let { toRef(it) }
+                ?: TypeRef.Inline(PrimitiveNode(PrimitiveKind.STRING), false)
+
+        val ref = TypeRef.Inline(MapNode(keyRef, valueRef), type.isMarkedNullable)
+        if (!type.isMarkedNullable) typeRefCache[type] = ref
         return ref
     }
 
     /**
      * Handles enum types by creating an EnumNode and adding it to discovered nodes.
      */
-    protected fun handleEnumType(
-        klass: KClass<*>,
-        nullable: Boolean,
-    ): TypeRef {
-        val id = createTypeId(klass)
+    private fun handleEnumType(type: KType): TypeRef {
+        val id = createTypeId(type.klass)
 
-        withCycleDetection(klass, id) {
-            createEnumNode(klass)
+        withCycleDetection(type, id) {
+            createEnumNode(type.klass)
         }
 
-        val ref = TypeRef.Ref(id, nullable)
-        if (!nullable) typeRefCache[klass] = ref
+        val ref = TypeRef.Ref(id, type.isMarkedNullable)
+        if (!type.isMarkedNullable) typeRefCache[type] = ref
         return ref
     }
 
     /**
      * Handles object/class types by creating an ObjectNode.
-     * Delegates actual node creation to [createObjectNode] which is implemented by subclasses.
      */
-    protected fun handleObjectType(
-        klass: KClass<*>,
-        nullable: Boolean,
-        useSimpleName: Boolean,
+    private fun handleObjectType(
+        type: KType,
         parentPrefix: String? = null,
     ): TypeRef {
+        val klass = type.klass
+
         val id =
             when {
                 parentPrefix != null -> TypeId(generateQualifiedName(klass, parentPrefix))
-                useSimpleName -> TypeId(klass.simpleName ?: "Unknown")
                 else -> createTypeId(klass)
             }
 
-        withCycleDetection(klass, id) {
-            createObjectNode(klass, parentPrefix)
+        withCycleDetection(type, id) {
+            createObjectNode(klass)
         }
 
-        val ref = TypeRef.Ref(id, nullable)
-        if (!nullable) typeRefCache[klass] = ref
+        val ref = TypeRef.Ref(id, type.isMarkedNullable)
+        if (!type.isMarkedNullable) typeRefCache[type] = ref
         return ref
     }
 
     /**
-     * Creates an ObjectNode from a KClass.
-     * This is the main extension point for subclasses to customize how properties are extracted.
-     *
-     * @param klass The class to create an ObjectNode for
-     * @param parentPrefix Optional parent prefix for qualified naming (used for sealed subclasses)
+     * Handles sealed types by creating a PolymorphicNode and processing each sealed subclass.
      */
-    protected abstract fun createObjectNode(
-        klass: KClass<*>,
-        parentPrefix: String? = null,
-    ): ObjectNode
+    private fun handleSealedType(type: KType): TypeRef {
+        val klass = type.klass
+        val id = createTypeId(klass)
+
+        withCycleDetection(type, id) {
+            val polymorphicNode = createPolymorphicNode(klass)
+
+            // Process each sealed subclass with parent-qualified names
+            val parentName = klass.simpleName ?: "UnknownSealed"
+            klass.sealedSubclasses.forEach { subclass ->
+                val subclassType = subclass.createType()
+
+                handleObjectType(
+                    type = subclassType,
+                    parentPrefix = parentName,
+                )
+            }
+
+            polymorphicNode
+        }
+
+        val ref = TypeRef.Ref(id, type.isMarkedNullable)
+        if (!type.isMarkedNullable) typeRefCache[type] = ref
+        return ref
+    }
+
+    //endregion
+
+    //region Create methods
+
+    /**
+     * Creates a [TypeId] from a [KClass], using qualified name or simple name as fallback.
+     */
+    private fun createTypeId(klass: KClass<*>): TypeId = TypeId(klass.qualifiedName ?: klass.simpleName ?: "Anonymous")
+
+    /**
+     * Creates an [EnumNode] from an enum [KClass].
+     */
+    private fun createEnumNode(klass: KClass<*>): EnumNode {
+        @Suppress("UNCHECKED_CAST")
+        val enumConstants = (klass.java as Class<out Enum<*>>).enumConstants
+        return EnumNode(
+            name = klass.simpleName ?: "UnknownEnum",
+            entries = enumConstants.map { it.name },
+            description = extractDescription(klass.annotations),
+        )
+    }
+
+    /**
+     * Creates an [ObjectNode] from a [KClass].
+     */
+    @Suppress("LongMethod", "CyclomaticComplexMethod")
+    private fun createObjectNode(klass: KClass<*>): ObjectNode {
+        val properties = mutableListOf<Property>()
+        val requiredProperties = mutableSetOf<String>()
+
+        // Find sealed parent classes to inherit property descriptions
+        val sealedParents =
+            klass.supertypes
+                .mapNotNull { it.classifier as? KClass<*> }
+                .filter { it.isSealed }
+
+        // Build a map of parent property descriptions and properties
+        val parentPropertyDescriptions = mutableMapOf<String, String>()
+        val parentProperties = mutableSetOf<String>()
+        sealedParents.forEach { parent ->
+            parent.members
+                .filterIsInstance<KProperty<*>>()
+                .forEach { prop ->
+                    parentProperties.add(prop.name)
+                    val desc = extractDescription(prop.annotations)
+                    if (desc != null) {
+                        parentPropertyDescriptions[prop.name] = desc
+                    }
+                }
+        }
+
+        // Try to extract default values by creating an instance
+        val defaultValues = defaultValueExtractor.extractDefaultValues(klass)
+
+        // Extract properties from primary constructor using shared method
+        val (constructorProperties, constructorRequired) = extractConstructorProperties(klass, defaultValues)
+
+        // Track which properties were processed from constructor
+        val processedProperties = constructorProperties.map { it.name }.toSet()
+
+        // If there are sealed parents, update descriptions to inherit from parent if needed
+        if (sealedParents.isNotEmpty()) {
+            constructorProperties.forEach { prop ->
+                val updatedProp =
+                    if (prop.description == null && parentPropertyDescriptions.containsKey(prop.name)) {
+                        prop.copy(description = parentPropertyDescriptions[prop.name])
+                    } else {
+                        prop
+                    }
+                properties += updatedProp
+            }
+        } else {
+            properties += constructorProperties
+        }
+
+        requiredProperties += constructorRequired
+
+        // Add inherited properties from sealed parents that weren't in the constructor
+        val inheritedPropertyNames = parentProperties - processedProperties
+        inheritedPropertyNames.forEach { propertyName ->
+            // Find the property in the current class (inherited)
+            val property = findPropertyByName(klass, propertyName)
+
+            if (property != null) {
+                val typeRef = toRef(property.returnType)
+                val description = parentPropertyDescriptions[propertyName]
+
+                // For inherited properties, try to get the fixed value from the instance
+                val fixedValue = defaultValues[propertyName]
+
+                properties +=
+                    Property(
+                        name = propertyName,
+                        type = typeRef,
+                        description = description,
+                        hasDefaultValue = fixedValue != null,
+                        defaultValue = fixedValue,
+                    )
+
+                // Inherited properties with fixed values are required
+                requiredProperties += propertyName
+            }
+        }
+
+        return ObjectNode(
+            name = klass.simpleName ?: "UnknownClass",
+            properties = properties,
+            required = requiredProperties,
+            description = extractDescription(klass.annotations),
+        )
+    }
+
+    /**
+     * Creates a [PolymorphicNode] from a [KClass]
+     */
+    private fun createPolymorphicNode(klass: KClass<*>): PolymorphicNode {
+        val parentName = klass.simpleName ?: "UnknownSealed"
+
+        val subtypes =
+            klass.sealedSubclasses.map { subclass ->
+                SubtypeRef(TypeId(generateQualifiedName(subclass, parentName)))
+            }
+
+        // Build discriminator mapping: discriminator value -> TypeId
+        val discriminatorMapping =
+            klass.sealedSubclasses.associate { subclass ->
+                val simpleName = subclass.simpleName ?: "Unknown"
+                simpleName to TypeId(generateQualifiedName(subclass, parentName))
+            }
+
+        return PolymorphicNode(
+            baseName = parentName,
+            subtypes = subtypes,
+            discriminator =
+                Discriminator(
+                    // TODO allow to configure discriminator property name
+                    name = "type",
+                    mapping = discriminatorMapping,
+                ),
+            description = extractDescription(klass.annotations),
+        )
+    }
+
+    //endregion
 
     /**
      * Extracts properties from the primary constructor of a class.
@@ -198,14 +373,16 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
      * @param defaultValues Map of property names to their default values (from DefaultValueExtractor)
      * @return Pair of (list of properties, set of required property names)
      */
-    protected fun extractConstructorProperties(
+    private fun extractConstructorProperties(
         klass: KClass<*>,
         defaultValues: Map<String, Any?>,
     ): Pair<List<Property>, Set<String>> {
         val properties = mutableListOf<Property>()
         val requiredProperties = mutableSetOf<String>()
 
-        klass.constructors.firstOrNull()?.parameters?.forEach { param ->
+        val constructor = findPrimaryConstructor(klass)
+
+        constructor?.parameters?.forEach { param ->
             val propertyName = param.name ?: return@forEach
             val hasDefault = param.isOptional
 
@@ -213,7 +390,7 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
             val annotations = param.annotations + findPropertyByName(klass, propertyName)?.annotations.orEmpty()
 
             val propertyType = param.type
-            val typeRef = convertKTypeToTypeRef(propertyType)
+            val typeRef = toRef(propertyType)
 
             // Get the actual default value if available
             val defaultValue = if (hasDefault) defaultValues[propertyName] else null
@@ -234,40 +411,4 @@ internal abstract class ReflectionIntrospectionContext : BaseIntrospectionContex
 
         return properties to requiredProperties
     }
-
-    /**
-     * Generates a qualified type name for a class, optionally prefixed with parent name.
-     * Used for sealed class subclasses to avoid name collisions (e.g., "Parent.Child").
-     *
-     * @param klass The class to generate a name for
-     * @param parentPrefix Optional parent prefix (typically the sealed parent's simple name)
-     * @return Qualified name like "Parent.Child" if parentPrefix provided, otherwise simple name
-     */
-    protected fun generateQualifiedName(
-        klass: KClass<*>,
-        parentPrefix: String?,
-    ): String {
-        val simpleName = klass.simpleName ?: "Unknown"
-        return if (parentPrefix != null) {
-            "$parentPrefix.$simpleName"
-        } else {
-            simpleName
-        }
-    }
-
-    /**
-     * Finds a property in a class by name.
-     * Used when extracting metadata from constructor parameters to find corresponding property annotations.
-     *
-     * @param klass The class to search in
-     * @param propertyName The name of the property to find
-     * @return The property if found, null otherwise
-     */
-    protected fun findPropertyByName(
-        klass: KClass<*>,
-        propertyName: String,
-    ): kotlin.reflect.KProperty<*>? =
-        klass.members
-            .filterIsInstance<kotlin.reflect.KProperty<*>>()
-            .firstOrNull { it.name == propertyName }
 }

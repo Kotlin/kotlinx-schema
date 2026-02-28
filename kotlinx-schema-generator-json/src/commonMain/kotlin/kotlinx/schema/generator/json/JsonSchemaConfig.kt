@@ -27,11 +27,6 @@ import kotlinx.schema.generator.json.JsonSchemaConfig.Companion.Strict
  * | false | true | `{"type": "string", "nullable": true}` (legacy OpenAPI) |
  * | false | false | `{"type": "string"}` (no nullable indication) |
  *
- * @property respectDefaultPresence Whether to use introspector's DefaultPresence for determining required fields
- * @property requireNullableFields Whether nullable fields must be present in JSON (when not using default presence)
- * @property useUnionTypes Whether to use union types for nullable fields (JSON Schema Draft 2020-12)
- * @property useNullableField Whether to emit the nullable field for nullable types (legacy OpenAPI)
- *
  * @see [JSON Schema Draft 2020-12](https://json-schema.org/draft/2020-12/json-schema-core.html)
  * @author Konstantin Pavlov
  */
@@ -108,16 +103,24 @@ public open class JsonSchemaConfig(
      */
     public val useNullableField: Boolean = false,
     /**
+     * Whether to include a type discriminator field in polymorphic schemas.
+     *
+     * When enabled, each polymorphic subtype schema gets an additional `"type"` property
+     * containing a constant string equal to the subtype's simple class name.
+     **/
+    public val includePolymorphicDiscriminator: Boolean = false,
+    /**
      * Whether to include discriminator in polymorphic schemas.
      *
      * When `true`: Includes discriminator object in oneOf schemas (OpenAPI 3.x compatibility).
      * When `false`: Omits discriminator (standard JSON Schema Draft 2020-12).
      *
      * Note: Discriminator is an OpenAPI extension, not part of JSON Schema specification.
+     * Note: to enable this option, [includePolymorphicDiscriminator] must also be `true`.
      *
      * Default: `false`
      */
-    public val includeDiscriminator: Boolean = false,
+    public val includeOpenAPIPolymorphicDiscriminator: Boolean = false,
 ) {
     init {
         // Validate flag combinations
@@ -128,6 +131,10 @@ public open class JsonSchemaConfig(
 
         require(useUnionTypes || useNullableField) {
             "Either useUnionTypes or useNullableField must be enabled..."
+        }
+
+        require(!includeOpenAPIPolymorphicDiscriminator || includePolymorphicDiscriminator) {
+            "includeOpenAPIPolymorphicDiscriminator requires includePolymorphicDiscriminator to be enabled"
         }
     }
 
@@ -148,24 +155,8 @@ public open class JsonSchemaConfig(
                 requireNullableFields = true,
                 useUnionTypes = true,
                 useNullableField = false,
-                includeDiscriminator = false,
-            )
-
-        /**
-         * Simplified configuration using default presence detection.
-         *
-         * - Required fields based on default values (uses introspector's DefaultPresence)
-         * - Uses union types for nullable fields
-         *
-         * **Note**: Identical to [Default]. Kept for backward compatibility.
-         */
-        public val Simple: JsonSchemaConfig =
-            JsonSchemaConfig(
-                respectDefaultPresence = true,
-                requireNullableFields = true,
-                useUnionTypes = true,
-                useNullableField = false,
-                includeDiscriminator = false,
+                includePolymorphicDiscriminator = false,
+                includeOpenAPIPolymorphicDiscriminator = false,
             )
 
         /**
@@ -185,7 +176,8 @@ public open class JsonSchemaConfig(
                 requireNullableFields = true,
                 useUnionTypes = true,
                 useNullableField = false,
-                includeDiscriminator = false,
+                includePolymorphicDiscriminator = false,
+                includeOpenAPIPolymorphicDiscriminator = false,
             )
 
         /**
@@ -207,7 +199,8 @@ public open class JsonSchemaConfig(
                 requireNullableFields = false,
                 useUnionTypes = false,
                 useNullableField = true,
-                includeDiscriminator = true,
+                includePolymorphicDiscriminator = true,
+                includeOpenAPIPolymorphicDiscriminator = true,
             )
     }
 }

@@ -1,23 +1,31 @@
+@file:Suppress("FunctionOnlyReturningConstant", "LongMethod", "LongParameterList", "UnusedParameter", "unused")
+
 package kotlinx.schema.generator.json
 
 import io.kotest.assertions.json.shouldEqualJson
-import io.kotest.matchers.shouldBe
 import kotlinx.schema.Description
 import kotlinx.schema.generator.core.SchemaGeneratorService
 import kotlinx.schema.json.FunctionCallingSchema
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import kotlin.reflect.KCallable
 import kotlin.test.Test
 
 class FunctionCallingSchemaGeneratorTest {
     private val generator =
-        requireNotNull(
-            SchemaGeneratorService.getGenerator(
-                KCallable::class,
-                FunctionCallingSchema::class,
-            ),
-        ) {
-            "${ReflectionFunctionCallingSchemaGenerator::class} must be registered"
-        }
+        ReflectionFunctionCallingSchemaGenerator(
+            json = Json { prettyPrint = true },
+            // Like Strict, but with
+            config =
+                FunctionCallingSchemaConfig(
+                    respectDefaultPresence = false,
+                    requireNullableFields = true,
+                    useUnionTypes = true,
+                    useNullableField = false,
+                    includePolymorphicDiscriminator = true,
+                    strictMode = true,
+                ),
+        )
 
     object SimplePrimitives {
         @Description("Greets a person")
@@ -26,11 +34,17 @@ class FunctionCallingSchemaGeneratorTest {
             name: String,
             @Description("Person's age")
             age: Int?,
+            byteVal: Byte,
+            shortVal: Short,
+            intVal: Int,
+            longVal: Long,
+            floatVal: Float? = null,
+            doubleVal: Double = 2.0,
         ): String = "$name: $age"
     }
 
     @Test
-    fun `generates schema for simple function with primitives`() {
+    fun `generates schema for simple function with primitives, numbers, nullable and default values`() {
         val schema = generator.generateSchema(SimplePrimitives::greet)
 
         val schemaString = generator.generateSchemaString(SimplePrimitives::greet)
@@ -43,6 +57,7 @@ class FunctionCallingSchemaGeneratorTest {
               "description": "Greets a person",
               "strict": true,
               "parameters": {
+                "type": "object",
                 "properties": {
                   "name": {
                     "type": "string",
@@ -54,14 +69,40 @@ class FunctionCallingSchemaGeneratorTest {
                       "null"
                     ],
                     "description": "Person's age"
+                  },
+                  "byteVal": {
+                    "type": "integer"
+                  },
+                  "shortVal": {
+                    "type": "integer"
+                  },
+                  "intVal": {
+                    "type": "integer"
+                  },
+                  "longVal": {
+                    "type": "integer"
+                  },
+                  "floatVal": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "doubleVal": {
+                    "type": "number"
                   }
                 },
                 "required": [
                   "name",
-                  "age"
+                  "age",
+                  "byteVal",
+                  "shortVal",
+                  "intVal",
+                  "longVal",
+                  "floatVal",
+                  "doubleVal"
                 ],
-                "additionalProperties": false,
-                "type": "object"
+                "additionalProperties": false
               }
             }
             """.trimIndent()
@@ -111,98 +152,6 @@ class FunctionCallingSchemaGeneratorTest {
             """.trimIndent()
     }
 
-    object NullableParameters {
-        @Description("Process data with optional fields")
-        fun processData(
-            required: String,
-            optional: String?,
-            optional2: String? = "foo",
-        ): String = "$required: $optional, $optional2"
-    }
-
-    @Test
-    fun `generates schema for function with nullable parameters`() {
-        val schemaString = generator.generateSchemaString(NullableParameters::processData)
-        schemaString shouldEqualJson
-            // language=json
-            """
-            {
-                "type": "function",
-                "name": "processData",
-                "description": "Process data with optional fields",
-                "strict": true,
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "required": {
-                            "type": "string"
-                        },
-                        "optional": {
-                            "type": ["string", "null"]
-                        },
-                        "optional2": {
-                            "type": ["string", "null"]
-                        }
-                    },
-                    "required": ["required", "optional", "optional2"],
-                    "additionalProperties": false
-                }
-            }
-            """.trimIndent()
-    }
-
-    object ComplexTypes {
-        data class Config(
-            val host: String,
-            val port: Int = 8080,
-        )
-
-        @Description("Connect to a server")
-        fun connect(
-            config: Config,
-            timeout: Long = 5000,
-        ): String = "${config.host}:${config.port} - $timeout"
-    }
-
-    @Test
-    fun `generates schema for function with complex types`() {
-        val schemaString = generator.generateSchemaString(ComplexTypes::connect)
-        schemaString shouldEqualJson
-            // language=json
-            """
-            {
-                "type": "function",
-                "name": "connect",
-                "description": "Connect to a server",
-                "strict": true,
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "config": {
-                            "type": "object",
-                            "properties": {
-                                "host": {
-                                    "type": "string"
-                                },
-                                "port": {
-                                    "type": "integer",
-                                    "default": 8080
-                                }
-                            },
-                            "required": ["host", "port"],
-                            "additionalProperties": false
-                        },
-                        "timeout": {
-                            "type": "integer"
-                        }
-                    },
-                    "required": ["config", "timeout"],
-                    "additionalProperties": false
-                }
-            }
-            """.trimIndent()
-    }
-
     object EnumParameter {
         @Suppress("unused")
         enum class LogLevel { DEBUG, INFO, WARN, ERROR }
@@ -245,64 +194,296 @@ class FunctionCallingSchemaGeneratorTest {
             """.trimIndent()
     }
 
-    object VariousNumericTypes {
-        @Suppress("LongParameterList")
-        @Description("Calculate sum of numeric values")
-        fun calculate(
-            byteVal: Byte,
-            shortVal: Short,
-            intVal: Int,
-            longVal: Long,
-            floatVal: Float,
-            doubleVal: Double,
-        ): Double = byteVal + shortVal + intVal + longVal + floatVal + doubleVal
+    @Description("A test class")
+    data class TestClass(
+        @property:Description("A string property")
+        val stringProperty: String,
+        val intProperty: Int,
+        val longProperty: Long,
+        val doubleProperty: Double,
+        val floatProperty: Float,
+        val booleanNullableProperty: Boolean?,
+        val nullableProperty: String? = null,
+        val listProperty: List<String> = emptyList(),
+        val mapProperty: Map<String, Int> = emptyMap(),
+        val nestedProperty: NestedProperty = NestedProperty("foo", 1),
+        val nestedListProperty: List<NestedProperty> = emptyList(),
+        val nestedMapProperty: Map<String, NestedProperty> = emptyMap(),
+        val polymorphicProperty: TestClosedPolymorphism = TestClosedPolymorphism.SubClass1("id1", "property1"),
+        val enumProperty: TestEnum = TestEnum.One,
+        val objectProperty: TestObject = TestObject,
+    )
+
+    @Description("Nested property class")
+    data class NestedProperty(
+        @property:Description("Nested foo property")
+        val foo: String,
+        val bar: Int,
+    )
+
+    sealed class TestClosedPolymorphism {
+        abstract val id: String
+
+        @Suppress("unused")
+        data class SubClass1(
+            override val id: String,
+            val property1: String,
+        ) : TestClosedPolymorphism()
+
+        @Suppress("unused")
+        data class SubClass2(
+            override val id: String,
+            val property2: Int,
+        ) : TestClosedPolymorphism()
+    }
+
+    @Suppress("unused")
+    enum class TestEnum {
+        One,
+        Two,
+    }
+
+    data object TestObject
+
+    /**
+     * Suspendable complex
+     */
+    object SuspendableComplexTypes {
+        @Suppress("RedundantSuspendModifier")
+        @Description("Sample function")
+        suspend fun sampleFunction(
+            @Description("Sample parameter")
+            a: String,
+            @Description("Another sample parameter")
+            b: TestClass? = null,
+        ): String = ""
     }
 
     @Test
-    fun `generates schema for function with various numeric types`() {
-        val schemaString = generator.generateSchemaString(VariousNumericTypes::calculate)
+    fun `generates schema for suspendable function with complex parameters`() {
+        val schemaString = generator.generateSchemaString(SuspendableComplexTypes::sampleFunction)
         schemaString shouldEqualJson
-            // language=json
+            // language=JSON
             """
             {
-                "type": "function",
-                "name": "calculate",
-                "description": "Calculate sum of numeric values",
-                "strict": true,
-                "parameters": {
-                    "type": "object",
+              "type": "function",
+              "name": "sampleFunction",
+              "description": "Sample function",
+              "strict": true,
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "a": {
+                    "type": "string",
+                    "description": "Sample parameter"
+                  },
+                  "b": {
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "description": "Another sample parameter",
                     "properties": {
-                        "byteVal": {
-                            "type": "integer"
-                        },
-                        "shortVal": {
-                            "type": "integer"
-                        },
-                        "intVal": {
-                            "type": "integer"
-                        },
-                        "longVal": {
-                            "type": "integer"
-                        },
-                        "floatVal": {
-                            "type": "number"
-                        },
-                        "doubleVal": {
-                            "type": "number"
+                      "stringProperty": {
+                        "type": "string",
+                        "description": "A string property"
+                      },
+                      "intProperty": {
+                        "type": "integer"
+                      },
+                      "longProperty": {
+                        "type": "integer"
+                      },
+                      "doubleProperty": {
+                        "type": "number"
+                      },
+                      "floatProperty": {
+                        "type": "number"
+                      },
+                      "booleanNullableProperty": {
+                        "type": [
+                          "boolean",
+                          "null"
+                        ]
+                      },
+                      "nullableProperty": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "listProperty": {
+                        "type": "array",
+                        "default": [],
+                        "items": {
+                          "type": "string"
                         }
+                      },
+                      "mapProperty": {
+                        "type": "object",
+                        "default": {},
+                        "additionalProperties": {
+                          "type": "integer"
+                        }
+                      },
+                      "nestedProperty": {
+                        "type": "object",
+                        "description": "Nested property class",
+                        "properties": {
+                          "foo": {
+                            "type": "string",
+                            "description": "Nested foo property"
+                          },
+                          "bar": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "foo",
+                          "bar"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "nestedListProperty": {
+                        "type": "array",
+                        "default": [],
+                        "items": {
+                          "type": "object",
+                          "description": "Nested property class",
+                          "properties": {
+                            "foo": {
+                              "type": "string",
+                              "description": "Nested foo property"
+                            },
+                            "bar": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "foo",
+                            "bar"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "nestedMapProperty": {
+                        "type": "object",
+                        "default": {},
+                        "additionalProperties": {
+                          "type": "object",
+                          "description": "Nested property class",
+                          "properties": {
+                            "foo": {
+                              "type": "string",
+                              "description": "Nested foo property"
+                            },
+                            "bar": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "foo",
+                            "bar"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "polymorphicProperty": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "const": "TestClosedPolymorphism.SubClass1"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "property1": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "id",
+                              "property1"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "const": "TestClosedPolymorphism.SubClass2"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "property2": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "id",
+                              "property2"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      "enumProperty": {
+                        "type": "string",
+                        "default": "One",
+                        "enum": [
+                          "One",
+                          "Two"
+                        ]
+                      },
+                      "objectProperty": {
+                        "type": "object",
+                        "properties": {},
+                        "required": [],
+                        "additionalProperties": false
+                      }
                     },
-                    "required": ["byteVal", "shortVal", "intVal", "longVal", "floatVal", "doubleVal"],
+                    "required": [
+                      "stringProperty",
+                      "intProperty",
+                      "longProperty",
+                      "doubleProperty",
+                      "floatProperty",
+                      "booleanNullableProperty",
+                      "nullableProperty",
+                      "listProperty",
+                      "mapProperty",
+                      "nestedProperty",
+                      "nestedListProperty",
+                      "nestedMapProperty",
+                      "polymorphicProperty",
+                      "enumProperty",
+                      "objectProperty"
+                    ],
                     "additionalProperties": false
-                }
-            }
+                  }
+                },
+                "required": [
+                  "a",
+                  "b"
+                ],
+                "additionalProperties": false
+              }
+            } 
             """.trimIndent()
     }
 
-    @Test
-    fun `should use default instance of generator`() {
-        val generator = ReflectionFunctionCallingSchemaGenerator.Default
-        val schema = generator.generateSchema(SimpleFunction::greet)
-        schema.name shouldBe "greet"
+    // Service locator test
+
+    object SimpleFunction {
+        @Description("Greet a person")
+        fun greet(name: String) = "Hello, $name"
     }
 
     @Test
@@ -335,108 +516,78 @@ class FunctionCallingSchemaGeneratorTest {
             """.trimIndent()
     }
 
-    object SimpleFunction {
-        @Description("Greet a person")
-        fun greet(name: String) = "Hello, $name"
-    }
+    @Serializable
+    data class TestArg(
+        @property:Description("int argument")
+        val a: Int,
+        @property:Description("string argument")
+        val b: String? = null,
+    )
 
-    /**
-     * Nested complex types to demonstrate flat vs non-flat schemas.
-     */
-    @Suppress("unused")
-    object NestedTypes {
-        data class Address(
-            val street: String,
-            val city: String,
+    @Serializable
+    data class TestResult(
+        val field1: String,
+        val field2: Int,
+    )
+
+    @Description("Serialization args tool")
+    fun serializationArgsTool(
+        @Description("Test argument")
+        foo: TestArg,
+    ): TestResult =
+        TestResult(
+            field1 = "foo",
+            field2 = foo.a,
         )
 
-        data class Company(
-            val name: String,
-            val address: Address,
-        )
-
-        @Description("Register a company")
-        fun registerCompany(
-            company: Company,
-            taxId: String,
-        ): Unit = TODO()
-    }
-
     /**
-     * Test that verifies function schemas use FLAT structure by default (useDefsAndRefs = false).
-     *
-     * This test uses nested complex types to demonstrate the architectural difference:
-     * - Function calling schemas: Inline everything by default (useDefsAndRefs = false)
-     *   - Optimized for LLM consumption
-     *   - Self-contained, no reference resolution needed
-     *   - Default behavior for OpenAI, Anthropic, etc.
-     * - Regular JSON schemas: Can use $defs/$ref for type reuse
-     *
-     * The flat/inline behavior is the DEFAULT and should remain so for function schemas.
+     * kotlinx.serialization generates synthetic primary constructor, check that it's handled properly and
+     * effective primary constructor is used for schema generation.
      */
     @Test
-    fun `function schemas are flat while regular JSON schemas use defs`() {
-        val functionSchema = generator.generateSchemaString(NestedTypes::registerCompany)
-        functionSchema shouldEqualJson
-            // language=json
+    fun `generates schema for function with kotlinx serialization annotated args`() {
+        val schemaString = generator.generateSchemaString(::serializationArgsTool)
+
+        schemaString shouldEqualJson
+            // language=JSON
             """
             {
                 "type": "function",
-                "name": "registerCompany",
-                "description": "Register a company",
+                "name": "serializationArgsTool",
+                "description": "Serialization args tool",
                 "strict": true,
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "company": {
+                        "foo": {
                             "type": "object",
+                            "description": "Test argument",
                             "properties": {
-                                "name": {
-                                    "type": "string"
+                                "a": {
+                                    "type": "integer",
+                                    "description": "int argument"
                                 },
-                                "address": {
-                                    "type": "object",
-                                    "properties": {
-                                        "street": {
-                                            "type": "string"
-                                        },
-                                        "city": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "required": ["street", "city"],
-                                    "additionalProperties": false
+                                "b": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "description": "string argument"
                                 }
                             },
-                            "required": ["name", "address"],
+                            "required": [
+                                "a",
+                                "b"
+                            ],
                             "additionalProperties": false
-                        },
-                        "taxId": {
-                            "type": "string"
                         }
                     },
-                    "required": ["company", "taxId"],
+                    "required": [
+                        "foo"
+                    ],
                     "additionalProperties": false
                 }
-            }
+            } 
             """.trimIndent()
-
-        // === REGULAR JSON SCHEMA: Uses $defs (non-flat) ===
-        val jsonSchemaGenerator =
-            requireNotNull(
-                SchemaGeneratorService.getGenerator(
-                    kotlin.reflect.KClass::class,
-                    kotlinx.schema.json.JsonSchema::class,
-                ),
-            )
-        val jsonSchema = jsonSchemaGenerator.generateSchemaString(NestedTypes.Company::class)
-
-        // Verify that regular JSON schema would use $defs for nested types
-        // (This is aspirational - showing the architectural difference)
-        // Note: Current implementation may inline or use $defs depending on context
-        // The key point is that function schemas ALWAYS inline, while JSON schemas CAN use $defs
-        assert(jsonSchema.contains("Company") || jsonSchema.contains("object")) {
-            "JSON schema should contain type definitions"
-        }
     }
 }
