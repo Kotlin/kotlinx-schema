@@ -6,6 +6,7 @@ import io.kotest.assertions.json.shouldEqualJson
 import kotlinx.schema.Description
 import kotlinx.schema.generator.core.SchemaGeneratorService
 import kotlinx.schema.json.FunctionCallingSchema
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlin.reflect.KCallable
 import kotlin.test.Test
@@ -512,6 +513,81 @@ class FunctionCallingSchemaGeneratorTest {
                     "additionalProperties": false
                 }
             }
+            """.trimIndent()
+    }
+
+    @Serializable
+    data class TestArg(
+        @property:Description("int argument")
+        val a: Int,
+        @property:Description("string argument")
+        val b: String? = null,
+    )
+
+    @Serializable
+    data class TestResult(
+        val field1: String,
+        val field2: Int,
+    )
+
+    @Description("Serialization args tool")
+    fun serializationArgsTool(
+        @Description("Test argument")
+        foo: TestArg,
+    ): TestResult =
+        TestResult(
+            field1 = "foo",
+            field2 = foo.a,
+        )
+
+    /**
+     * kotlinx.serialization generates synthetic primary constructor, check that it's handled properly and
+     * effective primary constructor is used for schema generation.
+     */
+    @Test
+    fun `generates schema for function with kotlinx serialization annotated args`() {
+        val schemaString = generator.generateSchemaString(::serializationArgsTool)
+
+        schemaString shouldEqualJson
+            // language=JSON
+            """
+            {
+                "type": "function",
+                "name": "serializationArgsTool",
+                "description": "Serialization args tool",
+                "strict": true,
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "foo": {
+                            "type": "object",
+                            "description": "Test argument",
+                            "properties": {
+                                "a": {
+                                    "type": "integer",
+                                    "description": "int argument"
+                                },
+                                "b": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "description": "string argument"
+                                }
+                            },
+                            "required": [
+                                "a",
+                                "b"
+                            ],
+                            "additionalProperties": false
+                        }
+                    },
+                    "required": [
+                        "foo"
+                    ],
+                    "additionalProperties": false
+                }
+            } 
             """.trimIndent()
     }
 }
