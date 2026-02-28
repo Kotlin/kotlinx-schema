@@ -380,7 +380,9 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
         val properties = mutableListOf<Property>()
         val requiredProperties = mutableSetOf<String>()
 
-        klass.constructors.firstOrNull()?.parameters?.forEach { param ->
+        val constructor = findPrimaryConstructor(klass)
+
+        constructor?.parameters?.forEach { param ->
             val propertyName = param.name ?: return@forEach
             val hasDefault = param.isOptional
 
