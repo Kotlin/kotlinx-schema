@@ -590,4 +590,56 @@ class FunctionCallingSchemaGeneratorTest {
             } 
             """.trimIndent()
     }
+
+    abstract class Base {
+        @Description("Tool from a base class")
+        open fun overriddenTool(
+            @Description("Foo description")
+            foo: String,
+            @Description("Bar description")
+            bar: Int,
+        ): String = "$foo, $bar"
+    }
+
+    object BaseImpl : Base() {
+        override fun overriddenTool(
+            foo: String,
+            @Description("Overridden bar description")
+            bar: Int,
+        ): String = "Overridden $foo, $bar"
+    }
+
+    @Test
+    fun `generates schema for function overridden from the base class`() {
+        val schemaString = generator.generateSchemaString(BaseImpl::overriddenTool)
+
+        schemaString shouldEqualJson
+            // language=JSON
+            """
+            {
+                "type": "function",
+                "name": "overriddenTool",
+                "description": "Tool from a base class",
+                "strict": true,
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "foo": {
+                            "type": "string",
+                            "description": "Foo description"
+                        },
+                        "bar": {
+                            "type": "integer",
+                            "description": "Overridden bar description"
+                        }
+                    },
+                    "required": [
+                        "foo",
+                        "bar"
+                    ],
+                    "additionalProperties": false
+                }
+            }
+            """.trimIndent()
+    }
 }

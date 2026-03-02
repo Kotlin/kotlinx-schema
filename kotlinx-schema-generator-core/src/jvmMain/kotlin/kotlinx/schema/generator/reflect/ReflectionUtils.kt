@@ -7,7 +7,10 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
+import kotlin.reflect.full.allSuperclasses
 import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.jvm.javaMethod
+import kotlin.reflect.jvm.kotlinFunction
 
 /**
  * Gets the [KType.classifier], ensuring it is a [KClass].
@@ -110,4 +113,27 @@ internal fun findPrimaryConstructor(klass: KClass<*>): KFunction<Any>? {
     } else {
         constructor
     }
+}
+
+/**
+ * Retrieves a list of methods that are implemented by the current function within its class hierarchy.
+ */
+internal fun KFunction<*>.findImplementedMethods(): List<KFunction<*>> {
+    val javaMethod = this.javaMethod ?: return emptyList()
+    val methodName = javaMethod.name
+    val parameterTypes = javaMethod.parameterTypes
+
+    return javaMethod.declaringClass.kotlin.allSuperclasses
+        .toList()
+        .mapNotNull { superclass ->
+            try {
+                @Suppress("SpreadOperator")
+                superclass.java
+                    .getDeclaredMethod(methodName, *parameterTypes)
+                    .kotlinFunction
+                    ?.takeIf { it != this }
+            } catch (_: NoSuchMethodException) {
+                null
+            }
+        }
 }

@@ -7,6 +7,7 @@ import kotlinx.schema.generator.core.ir.TypeGraph
 import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeRef
 import kotlin.reflect.KCallable
+import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
 
 /**
@@ -35,6 +36,12 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>, 
         val functionName = root.name
         val id = TypeId(functionName)
 
+        // Find implemented methods if this function is an override
+        val implementedMethods =
+            (root as? KFunction<*>)
+                ?.findImplementedMethods()
+                ?: emptyList()
+
         // Create an ObjectNode representing the function parameters
         val properties = mutableListOf<Property>()
         val requiredProperties = mutableSetOf<String>()
@@ -49,8 +56,13 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>, 
 
             val typeRef = context.toRef(paramType)
 
-            // Extract description from annotations
-            val description = extractDescription(param.annotations)
+            // Find all annotations on the same parameter in parent functions too
+            val allParamAnnotations =
+                param.annotations + implementedMethods
+                        .map { it.parameters.first { it.name == paramName } }
+                        .flatMap { it.annotations }
+
+            val description = extractDescription(allParamAnnotations)
 
             properties +=
                 Property(
@@ -65,12 +77,15 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>, 
             }
         }
 
+        // Find all annotations on the function and on the parent functions too
+        val allFunctionAnnotations = root.annotations + implementedMethods.flatMap { it.annotations }
+
         val objectNode =
             ObjectNode(
                 name = functionName,
                 properties = properties,
                 required = requiredProperties,
-                description = extractDescription(root.annotations),
+                description = extractDescription(allFunctionAnnotations),
             )
 
         // Add an object generated from a function to the nodes
