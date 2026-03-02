@@ -98,7 +98,10 @@ internal fun findPrimaryConstructor(klass: KClass<*>): KFunction<Any>? {
                 "kotlinx.serialization.internal.SerializationConstructorMarker"
         }
 
-    val constructor = klass.primaryConstructor ?: return null
+    val constructor =
+        klass.primaryConstructor
+            ?: klass.constructors.firstOrNull() // If no primary defined, fallback to the first one
+            ?: return null
 
     return if (constructor.isSyntheticSerializationConstructor()) {
         // Find the real constructor without the SerializationConstructorMarker param
