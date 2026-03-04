@@ -68,6 +68,24 @@ internal class SchemaExtensionProcessor(
         const val OPTION_ROOT_PACKAGE = "kotlinx.schema.rootPackage"
 
         /**
+         * Key for the option that includes specific classes in schema generation.
+         * Value is a comma- or semicolon-separated list of glob patterns of fully qualified class names.
+         * If set, only classes matching at least one pattern are processed.
+         *
+         * Example: `com.example.*,**.*ModelDto`
+         */
+        const val OPTION_CLASSES_INCLUDE = "kotlinx.schema.classes.include"
+
+        /**
+         * Key for the option that excludes specific classes from schema generation.
+         * Value is a comma- or semicolon-separated list of glob patterns of fully qualified class names.
+         * Classes matching any pattern are skipped even if they match an include pattern.
+         *
+         * Example: `**.ignore.*,**.*ExcludedDto`
+         */
+        const val OPTION_CLASSES_EXCLUDE = "kotlinx.schema.classes.exclude"
+
+        /**
          * Represents the key used to retrieve the visibility modifier for generated schema classes/functions
          * from the compiler options passed to the plugin. This option allows users to specify
          * the visibility level (e.g., public, internal, private, "") for the generated schema classes and functions.
@@ -104,90 +122,76 @@ internal class SchemaExtensionProcessor(
     }
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        val schemaAnnotationName = KOTLINX_SCHEMA_ANNOTATION
-        val symbols = resolver.getSymbolsWithAnnotation(schemaAnnotationName)
-        val ret = mutableListOf<KSAnnotated>()
-
         val enabled = options[OPTION_ENABLED]?.trim()?.takeIf { it.isNotEmpty() } != "false"
-        val rootPackage = options[OPTION_ROOT_PACKAGE]?.trim()?.takeIf { it.isNotEmpty() }
-        logger.info("[kotlinx-schema] Options: ${options.entries.joinToString()} | rootPackage=$rootPackage")
+
+        logger.info("[kotlinx-schema] Options: ${options.entries.joinToString()}")
 
         if (!enabled) {
-            logger.info("[kotlinx-schema] Plugin disabled")
+            logger.info("[kotlinx-schema] Plugin is disabled")
             return emptyList()
         }
 
+        val symbols = resolver.getSymbolsWithAnnotation(KOTLINX_SCHEMA_ANNOTATION)
+        val unprocessable = mutableListOf<KSAnnotated>()
+
+        val symbolFilter = SymbolFilter.fromOptions(
+            rootPackage = options[OPTION_ROOT_PACKAGE],
+            includeOption = options[OPTION_CLASSES_INCLUDE],
+            excludeOption = options[OPTION_CLASSES_EXCLUDE],
+            logger = logger,
+        )
+
         // Process classes annotated with @Schema
-        processClassDeclarations(symbols, ret, rootPackage)
+        processClassDeclarations(symbolFilter.filter<KSClassDeclaration>(symbols), unprocessable)
 
         // Process functions annotated with @Schema
-        processFunctionDeclarations(symbols, ret, rootPackage)
+        processFunctionDeclarations(symbolFilter.filter<KSFunctionDeclaration>(symbols), unprocessable)
 
-        return ret
+        return unprocessable
     }
 
     private fun processFunctionDeclarations(
-        symbols: Sequence<KSAnnotated>,
-        ret: MutableList<KSAnnotated>,
-        rootPackage: String?,
+        functionDeclarations: Sequence<KSFunctionDeclaration>,
+        unprocessable: MutableList<KSAnnotated>,
     ) {
-        symbols
-            .filterIsInstance<KSFunctionDeclaration>()
-            .filter { filterByRootPackage(it, rootPackage, logger) }
-            .forEach { functionDeclaration ->
-                if (!functionDeclaration.validate()) {
-                    ret.add(functionDeclaration)
-                    return@forEach
-                }
-
-                @Suppress("TooGenericExceptionCaught")
-                try {
-                    generateFunctionSchemaExtension(functionDeclaration)
-                } catch (e: Exception) {
-                    logger.error(
-                        "Failed to generate function schema extension " +
-                            "for ${functionDeclaration.qualifiedName?.asString()}: ${e.message}",
-                    )
-                }
+        functionDeclarations.forEach { functionDeclaration ->
+            if (!functionDeclaration.validate()) {
+                unprocessable.add(functionDeclaration)
+                return@forEach
             }
+
+            @Suppress("TooGenericExceptionCaught")
+            try {
+                generateFunctionSchemaExtension(functionDeclaration)
+            } catch (e: Exception) {
+                logger.error(
+                    "Failed to generate function schema extension " +
+                        "for ${functionDeclaration.qualifiedName?.asString()}: ${e.message}",
+                )
+            }
+        }
     }
 
-    /**
-     * Processes a sequence of class declarations, validating and generating schema
-     * extensions for eligible classes. Any invalid or ignored classes are added
-     * to the provided list for further handling. Optionally filters by a specified
-     * root package.
-     *
-     * @param symbols The sequence of annotated symbols to process, expected to
-     *     include class declarations.
-     * @param unprocessable A mutable list to collect invalid or unprocessed class declarations.
-     * @param rootPackage The optional root package name to constrain class processing.
-     *     Classes outside this package (or its subpackages) are skipped.
-     */
     private fun processClassDeclarations(
-        symbols: Sequence<KSAnnotated>,
+        classDeclarations: Sequence<KSClassDeclaration>,
         unprocessable: MutableList<KSAnnotated>,
-        rootPackage: String?,
     ) {
-        symbols
-            .filterIsInstance<KSClassDeclaration>()
-            .filter { filterByRootPackage(it, rootPackage, logger) }
-            .forEach { classDeclaration ->
-                if (!classDeclaration.validate()) {
-                    unprocessable.add(classDeclaration)
-                    return@forEach
-                }
-
-                @Suppress("TooGenericExceptionCaught")
-                try {
-                    generateSchemaExtension(classDeclaration)
-                } catch (e: Exception) {
-                    logger.error(
-                        "Failed to generate schema extension " +
-                            "for ${classDeclaration.qualifiedName?.asString()}: ${e.message}",
-                    )
-                }
+        classDeclarations.forEach { classDeclaration ->
+            if (!classDeclaration.validate()) {
+                unprocessable.add(classDeclaration)
+                return@forEach
             }
+
+            @Suppress("TooGenericExceptionCaught")
+            try {
+                generateSchemaExtension(classDeclaration)
+            } catch (e: Exception) {
+                logger.error(
+                    "Failed to generate schema extension " +
+                        "for ${classDeclaration.qualifiedName?.asString()}: ${e.message}",
+                )
+            }
+        }
     }
 
     private fun generateSchemaExtension(classDeclaration: KSClassDeclaration) {
@@ -215,9 +219,6 @@ internal class SchemaExtensionProcessor(
         logger.info("Generated schema extension for $qualifiedName")
     }
 
-    /**
-     * Gets the default parameter values from the Schema annotation class using KSP symbol processing
-     */
     private val schemaAnnotationDefaults: Map<String, Any?> =
         mapOf(
             "value" to "json", // Default from Schema annotation
