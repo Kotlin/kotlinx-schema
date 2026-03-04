@@ -13,6 +13,10 @@
   * [Maven Plugin](#maven-plugin)
 * [Configuration options](#configuration-options)
   * [Options reference](#options-reference)
+  * [Filtering by class/function name](#filtering-by-classfunction-name)
+    * [Kotlinx-Schema Gradle plugin](#kotlinx-schema-gradle-plugin)
+    * [Google KSP plugin](#google-ksp-plugin)
+    * [Maven plugin](#maven-plugin)
   * [Option priority](#option-priority)
 * [Generated Code](#generated-code)
 * [See Also](#see-also)
@@ -198,8 +202,65 @@ Options can be set globally in your build configuration or overridden per-class 
 |:-------------------|:----------|:--------|:-----------------------------------------------------------------------------------|
 | `enabled`          | `Boolean` | `true`  | Enable or disable schema generation.                                               |
 | `rootPackage`      | `String`  | `null`  | Limit processing to this package and its subpackages. Improves build performance.  |
+| `include`          | `String`  | `null`  | Comma- or semicolon-separated glob patterns. Only matching symbols are processed.  |
+| `exclude`          | `String`  | `null`  | Comma- or semicolon-separated glob patterns. Matching symbols are always skipped.  |
 | `withSchemaObject` | `Boolean` | `false` | Generate `jsonSchema: JsonObject` property. Requires `kotlinx-serialization-json`. |
 | `visibility`       | `String`  | `""`    | Visibility modifier for generated extensions (`public`, `internal`, etc.).         |
+
+### Filtering by class/function name
+
+Use `kotlinx.schema.include` and `kotlinx.schema.exclude` to control exactly which annotated classes 
+and functions get schemas generated — without touching the annotations themselves. 
+Both options accept a comma- or semicolon-separated list of glob patterns matched against the fully qualified name.
+
+**Glob syntax:**
+
+| Pattern | Matches                                                             |
+|:--------|:--------------------------------------------------------------------|
+| `*`     | Any sequence of characters within a single package segment (no `.`) |
+| `**`    | Any sequence of characters across package segments (including `.`)  |
+| `?`     | Any single character (no `.`)                                       |
+
+**Rules:**
+- If `include` is set, only symbols matching at least one pattern are processed.
+- `exclude` is applied after `include` — a symbol matching any exclude pattern is always skipped.
+- Both options apply to classes and functions, and work alongside `rootPackage`; the root package filter runs first.
+
+#### Kotlinx-Schema Gradle plugin
+
+```kotlin
+kotlinxSchema {
+    // Generate schemas only for symbols in the api and dto subpackages
+    include.set("com.example.api.**, com.example.dto.**")
+
+    // Skip internal implementation symbols even if they match the include pattern
+    exclude.set("**.internal.**, **.*Internal")
+}
+```
+
+#### Google KSP plugin
+
+```kotlin
+ksp {
+    arg("kotlinx.schema.include", "com.example.api.**, com.example.dto.**")
+    arg("kotlinx.schema.exclude", "**.internal.**, **.*Internal")
+}
+```
+
+#### Maven plugin
+
+```xml
+<configuration>
+    <options>
+        <kotlinx.schema.include>com.example.api.**, com.example.dto.**</kotlinx.schema.include>
+        <kotlinx.schema.exclude>**.internal.**, **.*Internal</kotlinx.schema.exclude>
+    </options>
+</configuration>
+```
+
+> [!TIP]
+> For large projects, combine `rootPackage` with `include` for maximum build performance:
+> `rootPackage` narrows the KSP symbol scan, then `include` filters the remaining candidates.
 
 ### Option priority
 
