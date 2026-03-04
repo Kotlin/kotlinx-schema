@@ -591,7 +591,7 @@ class FunctionCallingSchemaGeneratorTest {
             """.trimIndent()
     }
 
-    abstract class Base {
+    open class Base {
         @Description("Tool from a base class")
         open fun overriddenTool(
             @Description("Foo description")

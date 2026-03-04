@@ -40,7 +40,7 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>, 
         val implementedMethods =
             (root as? KFunction<*>)
                 ?.findImplementedMethods()
-                ?: emptyList()
+                .orEmpty()
 
         // Create an ObjectNode representing the function parameters
         val properties = mutableListOf<Property>()
@@ -59,7 +59,7 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>, 
             // Find all annotations on the same parameter in parent functions too
             val allParamAnnotations =
                 param.annotations + implementedMethods
-                        .map { it.parameters.first { it.name == paramName } }
+                        .map { method -> method.parameters.first { it.name == paramName } }
                         .flatMap { it.annotations }
 
             val description = extractDescription(allParamAnnotations)
