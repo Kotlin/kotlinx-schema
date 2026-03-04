@@ -56,28 +56,28 @@ class KspTaskBuilderTest {
 
     //endregion
 
-    //region classesInclude / classesExclude
+    //region include / exclude
 
     @Test
-    fun `classesInclude is absent from options when not set`() {
-        setupProject() shouldNotContainKey PluginConstants.OPTION_CLASSES_INCLUDE
+    fun `include is absent from options when not set`() {
+        setupProject() shouldNotContainKey PluginConstants.OPTION_INCLUDE
     }
 
     @Test
-    fun `classesExclude is absent from options when not set`() {
-        setupProject() shouldNotContainKey PluginConstants.OPTION_CLASSES_EXCLUDE
+    fun `exclude is absent from options when not set`() {
+        setupProject() shouldNotContainKey PluginConstants.OPTION_EXCLUDE
     }
 
     @Test
-    fun `classesInclude is passed as processor option when set`() {
-        setupProject { classesInclude.set("com.example.api.**") } shouldContain
-            (PluginConstants.OPTION_CLASSES_INCLUDE to "com.example.api.**")
+    fun `include is passed as processor option when set`() {
+        setupProject { include.set("com.example.api.**") } shouldContain
+            (PluginConstants.OPTION_INCLUDE to "com.example.api.**")
     }
 
     @Test
-    fun `classesExclude is passed as processor option when set`() {
-        setupProject { classesExclude.set("**.internal.**") } shouldContain
-            (PluginConstants.OPTION_CLASSES_EXCLUDE to "**.internal.**")
+    fun `exclude is passed as processor option when set`() {
+        setupProject { exclude.set("**.internal.**") } shouldContain
+            (PluginConstants.OPTION_EXCLUDE to "**.internal.**")
     }
 
     //endregion

@@ -68,22 +68,22 @@ internal class SchemaExtensionProcessor(
         const val OPTION_ROOT_PACKAGE = "kotlinx.schema.rootPackage"
 
         /**
-         * Key for the option that includes specific classes in schema generation.
-         * Value is a comma- or semicolon-separated list of glob patterns of fully qualified class names.
-         * If set, only classes matching at least one pattern are processed.
+         * Key for the option that includes specific classes and functions in schema generation.
+         * Value is a comma- or semicolon-separated list of glob patterns of fully qualified names.
+         * If set, only symbols matching at least one pattern are processed.
          *
-         * Example: `com.example.*,**.*ModelDto`
+         * Example: `com.example.api.**,**.*ModelDto`
          */
-        const val OPTION_CLASSES_INCLUDE = "kotlinx.schema.classes.include"
+        const val OPTION_INCLUDE = "kotlinx.schema.include"
 
         /**
-         * Key for the option that excludes specific classes from schema generation.
-         * Value is a comma- or semicolon-separated list of glob patterns of fully qualified class names.
-         * Classes matching any pattern are skipped even if they match an include pattern.
+         * Key for the option that excludes specific classes and functions from schema generation.
+         * Value is a comma- or semicolon-separated list of glob patterns of fully qualified names.
+         * Symbols matching any pattern are skipped even if they match an include pattern.
          *
          * Example: `**.ignore.*,**.*ExcludedDto`
          */
-        const val OPTION_CLASSES_EXCLUDE = "kotlinx.schema.classes.exclude"
+        const val OPTION_EXCLUDE = "kotlinx.schema.exclude"
 
         /**
          * Represents the key used to retrieve the visibility modifier for generated schema classes/functions
@@ -136,8 +136,8 @@ internal class SchemaExtensionProcessor(
 
         val symbolFilter = SymbolFilter.fromOptions(
             rootPackage = options[OPTION_ROOT_PACKAGE],
-            includeOption = options[OPTION_CLASSES_INCLUDE],
-            excludeOption = options[OPTION_CLASSES_EXCLUDE],
+            includeOption = options[OPTION_INCLUDE],
+            excludeOption = options[OPTION_EXCLUDE],
             logger = logger,
         )
 

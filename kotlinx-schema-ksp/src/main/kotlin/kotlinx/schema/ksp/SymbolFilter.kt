@@ -23,8 +23,8 @@ import com.google.devtools.ksp.symbol.KSDeclaration
  * ```kotlin
  * val filter = SymbolFilter.fromOptions(
  *     rootPackage = options["kotlinx.schema.rootPackage"],
- *     includeOption = options["kotlinx.schema.classes.include"],
- *     excludeOption = options["kotlinx.schema.classes.exclude"],
+ *     includeOption = options["kotlinx.schema.include"],
+ *     excludeOption = options["kotlinx.schema.exclude"],
  *     logger = logger,
  * )
  * val classes: Sequence<KSClassDeclaration> = filter.filter<KSClassDeclaration>(allSymbols)
@@ -53,8 +53,8 @@ internal class SymbolFilter(
          * and drops blanks. A `null` or blank option value means no filtering for that dimension.
          *
          * @param rootPackage raw value of the `kotlinx.schema.rootPackage` option.
-         * @param includeOption raw value of the `kotlinx.schema.classes.include` option.
-         * @param excludeOption raw value of the `kotlinx.schema.classes.exclude` option.
+         * @param includeOption raw value of the `kotlinx.schema.include` option.
+         * @param excludeOption raw value of the `kotlinx.schema.exclude` option.
          * @param logger KSP logger for diagnostic messages.
          */
         fun fromOptions(

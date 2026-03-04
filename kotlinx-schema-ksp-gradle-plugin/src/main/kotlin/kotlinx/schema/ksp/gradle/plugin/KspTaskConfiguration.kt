@@ -59,8 +59,8 @@ internal object PluginConstants {
     const val OPTION_ROOT_PACKAGE = "kotlinx.schema.rootPackage"
     const val OPTION_WITH_SCHEMA_OBJECT = "kotlinx.schema.withSchemaObject"
     const val OPTION_VISIBILITY = "kotlinx.schema.visibility"
-    const val OPTION_CLASSES_INCLUDE = "kotlinx.schema.classes.include"
-    const val OPTION_CLASSES_EXCLUDE = "kotlinx.schema.classes.exclude"
+    const val OPTION_INCLUDE = "kotlinx.schema.include"
+    const val OPTION_EXCLUDE = "kotlinx.schema.exclude"
 }
 
 /**

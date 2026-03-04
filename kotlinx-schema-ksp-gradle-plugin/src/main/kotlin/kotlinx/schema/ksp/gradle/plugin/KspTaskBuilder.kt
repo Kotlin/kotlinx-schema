@@ -100,11 +100,11 @@ internal class KspTaskBuilder(
         if (extension.rootPackage.isPresent) {
             options[PluginConstants.OPTION_ROOT_PACKAGE] = extension.rootPackage.get()
         }
-        if (extension.classesInclude.isPresent) {
-            options[PluginConstants.OPTION_CLASSES_INCLUDE] = extension.classesInclude.get()
+        if (extension.include.isPresent) {
+            options[PluginConstants.OPTION_INCLUDE] = extension.include.get()
         }
-        if (extension.classesExclude.isPresent) {
-            options[PluginConstants.OPTION_CLASSES_EXCLUDE] = extension.classesExclude.get()
+        if (extension.exclude.isPresent) {
+            options[PluginConstants.OPTION_EXCLUDE] = extension.exclude.get()
         }
         options[PluginConstants.OPTION_WITH_SCHEMA_OBJECT] = extension.withSchemaObject.get().toString()
         options[PluginConstants.OPTION_VISIBILITY] = extension.visibility.get()
