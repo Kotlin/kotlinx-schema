@@ -40,13 +40,25 @@ changes safe, comprehensible, and easy to maintain.
 - Use multi-dollar interpolation prefix for strings, where applicable
 - Use fully qualified imports instead of star imports
 - Ensure to preserve backward compatibility when making changes
+- Use `//region region_name` / `//endregion` comments to group related members within a class or file
+  (e.g. `//region Filtering`, `//region Test cases`). This enables IDE code folding and makes structure scannable
+  at a glance. Keep region names short and descriptive.
 
 ## Testing guidance
 
 - Write comprehensive tests for new features
 - **Prioritize test readability**
-- Avoid creating too many test methods. If multiple parameters can be tested in one scenario, go for it. Consider using
-  parametrized tests.
+- Avoid creating too many test methods. If multiple inputs can be tested against the same logic, use a parameterized
+  test instead of repeating `@Test` methods.
+- **Prefer parameterized tests** for any scenario with 3+ input/output variations. Choose the source that makes
+  the test easiest to read:
+  - `@CsvSource` — for short scalar values (String, Boolean, Int, Enum) with no need for grouping. Inline and
+    requires no separate provider method.
+  - `@MethodSource` — when cases need complex types (collections, data classes), grouping comments, or descriptive
+    `override fun toString()` names. Annotate the test class with `@TestInstance(TestInstance.Lifecycle.PER_CLASS)`
+    so provider functions are plain instance methods — no `companion object` or `@JvmStatic` needed.
+  - Prefer `@MethodSource` over `@CsvSource` when the inline strings would be long or hard to scan.
+  - Keep non-parameterizable structural tests (e.g. null handling, type filtering) as plain `@Test`.
 - When running tests on a Kotlin Multiplatform project, run only JVM tests,
   if no asked to run tests on another platform too.
 - Use function `Names with backticks` for test methods in Kotlin, e.g. "fun `should return 200 OK`()"
@@ -144,6 +156,8 @@ changes safe, comprehensible, and easy to maintain.
 - Write tutorial in Markdown format in README.md
 - Make sure that in production code interfaces and abstract classes are properly documented. Avoid adding KDocs to
   override functions to avoid verbosity.
+- Do not add KDoc to private functions or properties unless the intent is non-obvious from the name and types alone.
+  Prefer self-documenting code over exessive explanatory comments.
 - Update KDocs when api is changed.
 - When referring classes in KDoc, use references: `[SendMessageRequest]` instead of `SendMessageRequest`.
 - Add brief code examples to KDoc
