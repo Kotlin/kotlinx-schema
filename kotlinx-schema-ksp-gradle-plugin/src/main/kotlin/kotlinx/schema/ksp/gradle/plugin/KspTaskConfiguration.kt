@@ -53,6 +53,14 @@ internal object PluginConstants {
 
     // Compilation names
     const val COMPILATION_MAIN = "main"
+
+    // KSP processor option keys — must match constants in SchemaExtensionProcessor
+    const val OPTION_ENABLED = "kotlinx.schema.enabled"
+    const val OPTION_ROOT_PACKAGE = "kotlinx.schema.rootPackage"
+    const val OPTION_WITH_SCHEMA_OBJECT = "kotlinx.schema.withSchemaObject"
+    const val OPTION_VISIBILITY = "kotlinx.schema.visibility"
+    const val OPTION_CLASSES_INCLUDE = "kotlinx.schema.classes.include"
+    const val OPTION_CLASSES_EXCLUDE = "kotlinx.schema.classes.exclude"
 }
 
 /**

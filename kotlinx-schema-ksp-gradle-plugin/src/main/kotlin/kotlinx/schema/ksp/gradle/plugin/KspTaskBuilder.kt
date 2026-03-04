@@ -84,8 +84,8 @@ internal class KspTaskBuilder(
         // Configure processor classpath (already correct)
         task.processorClasspath.from(kspConfig)
 
-        // Configure processor options
-        task.processorOptions.set(buildProcessorOptions(extension))
+        // Configure processor options — use a Provider so extension values are captured lazily
+        task.processorOptions.set(project.provider { buildProcessorOptions(extension) })
 
         // Extract compiler config during configuration phase
         val compileTask =
@@ -96,11 +96,18 @@ internal class KspTaskBuilder(
 
     private fun buildProcessorOptions(extension: KotlinxSchemaExtension): Map<String, String> {
         val options = mutableMapOf<String, String>()
+        options[PluginConstants.OPTION_ENABLED] = extension.enabled.get().toString()
         if (extension.rootPackage.isPresent) {
-            options["kotlinx.schema.rootPackage"] = extension.rootPackage.get()
+            options[PluginConstants.OPTION_ROOT_PACKAGE] = extension.rootPackage.get()
         }
-        options["kotlinx.schema.withSchemaObject"] = extension.withSchemaObject.get().toString()
-        options["kotlinx.schema.visibility"] = extension.visibility.get()
+        if (extension.classesInclude.isPresent) {
+            options[PluginConstants.OPTION_CLASSES_INCLUDE] = extension.classesInclude.get()
+        }
+        if (extension.classesExclude.isPresent) {
+            options[PluginConstants.OPTION_CLASSES_EXCLUDE] = extension.classesExclude.get()
+        }
+        options[PluginConstants.OPTION_WITH_SCHEMA_OBJECT] = extension.withSchemaObject.get().toString()
+        options[PluginConstants.OPTION_VISIBILITY] = extension.visibility.get()
         return options
     }
 
