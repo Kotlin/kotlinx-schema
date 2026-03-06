@@ -43,6 +43,7 @@ dependencies {
     testRuntimeOnly(project(":kotlinx-schema-ksp"))
     testRuntimeOnly(project(":kotlinx-schema-annotations"))
     testImplementation(libs.kotlin.test)
+    testImplementation(libs.junit.jupiter.params)
     testImplementation(libs.mockk)
     testImplementation(libs.kotest.assertions.core)
 
