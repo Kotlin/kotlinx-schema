@@ -69,6 +69,10 @@ class JsonSchemaHierarchyTest {
               "type": "object",
               "description": "Represents a cat",
               "properties": {
+                "type": {
+                  "type": "string",
+                  "const": "Animal.Cat"
+                },
                 "name": {
                   "type": "string",
                   "description": "Animal's name"
@@ -84,6 +88,7 @@ class JsonSchemaHierarchyTest {
                 }
               },
               "required": [
+                "type",
                 "name",
                 "color"
               ],
@@ -93,6 +98,10 @@ class JsonSchemaHierarchyTest {
               "type": "object",
               "description": "Represents a dog",
               "properties": {
+                "type": {
+                  "type": "string",
+                  "const": "Animal.Dog"
+                },
                 "name": {
                   "type": "string",
                   "description": "Animal's name"
@@ -108,6 +117,7 @@ class JsonSchemaHierarchyTest {
                 }
               },
               "required": [
+                "type",
                 "name",
                 "breed"
               ],
@@ -167,6 +177,10 @@ class JsonSchemaHierarchyTest {
               "type": "object",
               "description": "Represents a cat",
               "properties": {
+                "type": {
+                      "type": "string",
+                      "const": "Animal.Cat"
+                 },
                 "name": {
                   "type": "string",
                   "description": "Animal's name"
@@ -182,6 +196,7 @@ class JsonSchemaHierarchyTest {
                 }
               },
               "required": [
+                "type",
                 "name",
                 "color"
               ],
@@ -191,6 +206,10 @@ class JsonSchemaHierarchyTest {
               "type": "object",
               "description": "Represents a dog",
               "properties": {
+                "type": {
+                  "type": "string",
+                  "const": "Animal.Dog"
+                },
                 "name": {
                   "type": "string",
                   "description": "Animal's name"
@@ -206,6 +225,7 @@ class JsonSchemaHierarchyTest {
                 }
               },
               "required": [
+                "type",
                 "name",
                 "breed"
               ],
@@ -225,15 +245,7 @@ class JsonSchemaHierarchyTest {
         val generatorWithDiscriminator =
             ReflectionClassJsonSchemaGenerator(
                 json = json,
-                config =
-                    JsonSchemaConfig(
-                        respectDefaultPresence = true,
-                        requireNullableFields = true,
-                        useUnionTypes = true,
-                        useNullableField = false,
-                        includePolymorphicDiscriminator = true,
-                        includeOpenAPIPolymorphicDiscriminator = true,
-                    ),
+                config = JsonSchemaConfig.OpenAPI
             )
 
         val schema = generatorWithDiscriminator.generateSchema(Animal::class)

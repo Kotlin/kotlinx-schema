@@ -115,11 +115,16 @@ class SealedClassNameCollisionTest {
                   "type": "object",
                   "description": "Success result for A",
                   "properties": {
+                    "type": { 
+                      "type": "string", 
+                       "const": "ResultA.Success"
+                    },
                     "value": {
                       "type": "string"
                     }
                   },
                   "required": [
+                    "type",
                     "value"
                   ],
                   "additionalProperties": false
@@ -128,11 +133,13 @@ class SealedClassNameCollisionTest {
                   "type": "object",
                   "description": "Unknown error for A",
                   "properties": {
+                    "type": { "type": "string", "const": "ResultA.Unknown" },
                     "code": {
                       "type": "integer"
                     }
                   },
                   "required": [
+                    "type",
                     "code"
                   ],
                   "additionalProperties": false
@@ -141,11 +148,13 @@ class SealedClassNameCollisionTest {
                   "type": "object",
                   "description": "Success result for B",
                   "properties": {
+                    "type": { "type": "string", "const": "ResultB.Success" },
                     "data": {
                       "type": "integer"
                     }
                   },
                   "required": [
+                    "type",
                     "data"
                   ],
                   "additionalProperties": false
@@ -154,11 +163,13 @@ class SealedClassNameCollisionTest {
                   "type": "object",
                   "description": "Unknown error for B",
                   "properties": {
+                    "type": { "type": "string", "const": "ResultB.Unknown" },
                     "message": {
                       "type": "string"
                     }
                   },
                   "required": [
+                    "type",
                     "message"
                   ],
                   "additionalProperties": false
