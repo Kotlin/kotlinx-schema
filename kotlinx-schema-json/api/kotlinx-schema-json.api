@@ -3,6 +3,9 @@ public abstract interface class kotlinx/schema/json/AdditionalPropertiesConstrai
 }
 
 public final class kotlinx/schema/json/AdditionalPropertiesConstraint$Companion {
+	public final fun allow ()Lkotlinx/schema/json/AdditionalPropertiesConstraint;
+	public final fun deny ()Lkotlinx/schema/json/AdditionalPropertiesConstraint;
+	public final fun schema (Lkotlinx/schema/json/PropertyDefinition;)Lkotlinx/schema/json/AdditionalPropertiesConstraint;
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
@@ -373,15 +376,6 @@ public abstract interface class kotlinx/schema/json/ArrayContainer {
 	public abstract fun getUniqueItems ()Ljava/lang/Boolean;
 }
 
-public final class kotlinx/schema/json/ArrayEnumSerializer : kotlinx/serialization/KSerializer {
-	public fun <init> ()V
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/util/List;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/util/List;)V
-}
-
 public final class kotlinx/schema/json/ArrayPropertyBuilder {
 	public final fun build ()Lkotlinx/schema/json/ArrayPropertyDefinition;
 	public final fun getDefault ()Ljava/lang/Object;
@@ -511,15 +505,6 @@ public final synthetic class kotlinx/schema/json/ArrayPropertyDefinition$$serial
 
 public final class kotlinx/schema/json/ArrayPropertyDefinition$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class kotlinx/schema/json/BooleanEnumSerializer : kotlinx/serialization/KSerializer {
-	public fun <init> ()V
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/util/List;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/util/List;)V
 }
 
 public final class kotlinx/schema/json/BooleanPropertyBuilder {
@@ -1247,15 +1232,6 @@ public abstract interface class kotlinx/schema/json/NumericConstraints {
 	public abstract fun getMultipleOf ()Ljava/lang/Double;
 }
 
-public final class kotlinx/schema/json/NumericEnumSerializer : kotlinx/serialization/KSerializer {
-	public fun <init> ()V
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/util/List;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/util/List;)V
-}
-
 public final class kotlinx/schema/json/NumericPropertyBuilder {
 	public fun <init> ()V
 	public final fun build ()Lkotlinx/schema/json/NumericPropertyDefinition;
@@ -1371,15 +1347,6 @@ public final synthetic class kotlinx/schema/json/NumericPropertyDefinition$$seri
 
 public final class kotlinx/schema/json/NumericPropertyDefinition$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class kotlinx/schema/json/ObjectEnumSerializer : kotlinx/serialization/KSerializer {
-	public fun <init> ()V
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/util/List;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/util/List;)V
 }
 
 public final class kotlinx/schema/json/ObjectPropertyBuilder {
@@ -1671,12 +1638,6 @@ public final class kotlinx/schema/json/OneOfPropertyDefinition$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
-public final class kotlinx/schema/json/PolymorphicEnumSerializerKt {
-	public static final fun booleanListToJsonElements (Ljava/util/List;)Ljava/util/List;
-	public static final fun numberListToJsonElements (Ljava/util/List;)Ljava/util/List;
-	public static final fun stringListToJsonElements (Ljava/util/List;)Ljava/util/List;
-}
-
 public abstract interface class kotlinx/schema/json/PolymorphicOptionsCollector {
 	public abstract fun addOption (Lkotlinx/schema/json/PropertyDefinition;)V
 }
@@ -1911,24 +1872,6 @@ public abstract interface class kotlinx/schema/json/StringConstraints {
 	public abstract fun getPattern ()Ljava/lang/String;
 }
 
-public final class kotlinx/schema/json/StringEnumSerializer : kotlinx/serialization/KSerializer {
-	public fun <init> ()V
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/util/List;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/util/List;)V
-}
-
-public final class kotlinx/schema/json/StringOrListSerializer : kotlinx/serialization/KSerializer {
-	public fun <init> ()V
-	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
-	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/util/List;
-	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
-	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
-	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/util/List;)V
-}
-
 public final class kotlinx/schema/json/StringPropertyBuilder {
 	public final fun build ()Lkotlinx/schema/json/StringPropertyDefinition;
 	public final fun getConstValue ()Ljava/lang/Object;
@@ -2057,5 +2000,65 @@ public abstract interface class kotlinx/schema/json/ValuePropertyDefinition : ko
 	public abstract fun getType ()Ljava/util/List;
 	public abstract fun getTypedConst ()Ljava/lang/Object;
 	public abstract fun getTypedDefault ()Ljava/lang/Object;
+}
+
+public final class kotlinx/schema/json/serializers/ArrayEnumSerializer : kotlinx/serialization/KSerializer {
+	public fun <init> ()V
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/util/List;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/util/List;)V
+}
+
+public final class kotlinx/schema/json/serializers/BooleanEnumSerializer : kotlinx/serialization/KSerializer {
+	public fun <init> ()V
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/util/List;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/util/List;)V
+}
+
+public final class kotlinx/schema/json/serializers/NumericEnumSerializer : kotlinx/serialization/KSerializer {
+	public fun <init> ()V
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/util/List;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/util/List;)V
+}
+
+public final class kotlinx/schema/json/serializers/ObjectEnumSerializer : kotlinx/serialization/KSerializer {
+	public fun <init> ()V
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/util/List;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/util/List;)V
+}
+
+public final class kotlinx/schema/json/serializers/PolymorphicEnumSerializerKt {
+	public static final fun booleanListToJsonElements (Ljava/util/List;)Ljava/util/List;
+	public static final fun numberListToJsonElements (Ljava/util/List;)Ljava/util/List;
+	public static final fun stringListToJsonElements (Ljava/util/List;)Ljava/util/List;
+}
+
+public final class kotlinx/schema/json/serializers/StringEnumSerializer : kotlinx/serialization/KSerializer {
+	public fun <init> ()V
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/util/List;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/util/List;)V
+}
+
+public final class kotlinx/schema/json/serializers/StringOrListSerializer : kotlinx/serialization/KSerializer {
+	public fun <init> ()V
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/util/List;
+	public fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/util/List;)V
 }
 
