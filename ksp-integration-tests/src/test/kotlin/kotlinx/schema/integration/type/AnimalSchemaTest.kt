@@ -21,8 +21,12 @@ class AnimalSchemaTest {
               "type": "object",
               "additionalProperties": false,
               "oneOf": [
-                { "$ref": "#/$defs/kotlinx.schema.integration.type.Animal.Cat" },
-                { "$ref": "#/$defs/kotlinx.schema.integration.type.Animal.Dog" }
+                {
+                  "$ref": "#/$defs/kotlinx.schema.integration.type.Animal.Cat"
+                },
+                {
+                  "$ref": "#/$defs/kotlinx.schema.integration.type.Animal.Dog"
+                }
               ],
               "$defs": {
                 "kotlinx.schema.integration.type.Animal.Cat": {
@@ -33,7 +37,9 @@ class AnimalSchemaTest {
                       "description": "Animal's name"
                     }
                   },
-                  "required": ["name"],
+                  "required": [
+                    "name"
+                  ],
                   "additionalProperties": false
                 },
                 "kotlinx.schema.integration.type.Animal.Dog": {
@@ -44,11 +50,13 @@ class AnimalSchemaTest {
                       "description": "Animal's name"
                     }
                   },
-                  "required": ["name"],
+                  "required": [
+                    "name"
+                  ],
                   "additionalProperties": false
                 }
               }
-            }
+            } 
             """.trimIndent()
     }
 }

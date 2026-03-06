@@ -4,7 +4,6 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.KProperty1
-import kotlin.reflect.full.primaryConstructor
 
 /**
  * Extracts default values from data class properties using reflection.
@@ -41,7 +40,8 @@ internal object DefaultValueExtractor {
                 }.filterValues { it != null }
         }
 
-        val constructor = klass.primaryConstructor ?: return emptyMap()
+        val constructor = findPrimaryConstructor(klass) ?: return emptyMap()
+
         val requiredParams = constructor.parameters.filter { !it.isOptional }
 
         // Build map of required parameters with mock values

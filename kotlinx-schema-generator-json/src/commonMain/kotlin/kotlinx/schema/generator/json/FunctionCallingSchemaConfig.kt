@@ -18,6 +18,7 @@ public class FunctionCallingSchemaConfig(
     requireNullableFields: Boolean = true,
     useUnionTypes: Boolean = true,
     useNullableField: Boolean = false,
+    includePolymorphicDiscriminator: Boolean = false,
     /**
      * Whether to set the `strict: true` flag in function calling schema output.
      *
@@ -32,6 +33,7 @@ public class FunctionCallingSchemaConfig(
         requireNullableFields = requireNullableFields,
         useUnionTypes = useUnionTypes,
         useNullableField = useNullableField,
+        includePolymorphicDiscriminator = includePolymorphicDiscriminator,
     ) {
     public companion object {
         /**
@@ -47,6 +49,7 @@ public class FunctionCallingSchemaConfig(
                 requireNullableFields = true,
                 useUnionTypes = true,
                 useNullableField = false,
+                includePolymorphicDiscriminator = false,
                 strictMode = true,
             )
 
@@ -63,6 +66,7 @@ public class FunctionCallingSchemaConfig(
                 requireNullableFields = false,
                 useUnionTypes = true,
                 useNullableField = false,
+                includePolymorphicDiscriminator = false,
                 strictMode = false,
             )
 

@@ -7,7 +7,7 @@ import kotlinx.schema.generator.core.ir.TypeGraph
 import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeRef
 import kotlin.reflect.KCallable
-import kotlin.reflect.KClass
+import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
 
 /**
@@ -26,86 +26,71 @@ public object ReflectionFunctionIntrospector : SchemaIntrospector<KCallable<*>, 
     override val config: Unit = Unit
 
     override fun introspect(root: KCallable<*>): TypeGraph {
-        require(!root.isSuspend) { "Suspend functions are not supported" }
         require(root.parameters.none { it.kind == KParameter.Kind.EXTENSION_RECEIVER }) {
             "Extension functions are not supported"
         }
 
-        val context = IntrospectionContext()
-        val rootRef = context.convertFunctionToTypeRef(root)
-        return TypeGraph(root = rootRef, nodes = context.nodes)
-    }
+        val context = ReflectionIntrospectionContext()
 
-    /**
-     * Maintains state during function introspection including discovered nodes,
-     * visited classes, and type reference cache.
-     */
-    private class IntrospectionContext : ReflectionIntrospectionContext() {
-        /**
-         * Converts a KCallable (function) to a TypeRef representing its parameters as an object.
-         */
-        fun convertFunctionToTypeRef(callable: KCallable<*>): TypeRef {
-            val functionName = callable.name
-            val id = TypeId(functionName)
+        // Extract function information
+        val functionName = root.name
+        val id = TypeId(functionName)
 
-            // Create an ObjectNode representing the function parameters
-            val properties = mutableListOf<Property>()
-            val requiredProperties = mutableSetOf<String>()
+        // Find implemented methods if this function is an override
+        val implementedMethods =
+            (root as? KFunction<*>)
+                ?.findImplementedMethods()
+                .orEmpty()
 
-            callable.parameters.forEach { param ->
-                // Skip instance parameter for member functions
-                if (param.kind == KParameter.Kind.INSTANCE) return@forEach
+        // Create an ObjectNode representing the function parameters
+        val properties = mutableListOf<Property>()
+        val requiredProperties = mutableSetOf<String>()
 
-                val paramName = param.name ?: return@forEach
-                val paramType = param.type
-                val hasDefault = param.isOptional
+        root.parameters.forEach { param ->
+            // Skip instance parameter for member functions
+            if (param.kind == KParameter.Kind.INSTANCE) return@forEach
 
-                val typeRef = convertKTypeToTypeRef(paramType)
+            val paramName = param.name ?: return@forEach
+            val paramType = param.type
+            val hasDefault = param.isOptional
 
-                // Extract description from annotations
-                val description = extractDescription(param.annotations)
+            val typeRef = context.toRef(paramType)
 
-                properties +=
-                    Property(
-                        name = paramName,
-                        type = typeRef,
-                        description = description,
-                        hasDefaultValue = hasDefault,
-                    )
+            // Find all annotations on the same parameter in parent functions too
+            val allParamAnnotations =
+                param.annotations + implementedMethods
+                        .map { method -> method.parameters.first { it.name == paramName } }
+                        .flatMap { it.annotations }
 
-                if (!hasDefault) {
-                    requiredProperties += paramName
-                }
-            }
+            val description = extractDescription(allParamAnnotations)
 
-            val objectNode =
-                ObjectNode(
-                    name = functionName,
-                    properties = properties,
-                    required = requiredProperties,
-                    description = extractDescription(callable.annotations),
+            properties +=
+                Property(
+                    name = paramName,
+                    type = typeRef,
+                    description = description,
+                    hasDefaultValue = hasDefault,
                 )
 
-            discoveredNodes[id] = objectNode
-            return TypeRef.Ref(id, nullable = false)
+            if (!hasDefault) {
+                requiredProperties += paramName
+            }
         }
 
-        override fun createObjectNode(
-            klass: KClass<*>,
-            parentPrefix: String?,
-        ): ObjectNode {
-            // Try to extract default values by creating an instance
-            val defaultValues = DefaultValueExtractor.extractDefaultValues(klass)
+        // Find all annotations on the function and on the parent functions too
+        val allFunctionAnnotations = root.annotations + implementedMethods.flatMap { it.annotations }
 
-            // Extract properties from primary constructor using shared method
-            val (properties, requiredProperties) = extractConstructorProperties(klass, defaultValues)
-
-            return ObjectNode(
-                name = klass.simpleName ?: "UnknownClass",
+        val objectNode =
+            ObjectNode(
+                name = functionName,
                 properties = properties,
                 required = requiredProperties,
-                description = extractDescription(klass.annotations),
+                description = extractDescription(allFunctionAnnotations),
             )
-        }
+
+        // Add an object generated from a function to the nodes
+        val nodes = context.nodes + (id to objectNode)
+
+        return TypeGraph(root = TypeRef.Ref(id, nullable = false), nodes = nodes)
     }
 }

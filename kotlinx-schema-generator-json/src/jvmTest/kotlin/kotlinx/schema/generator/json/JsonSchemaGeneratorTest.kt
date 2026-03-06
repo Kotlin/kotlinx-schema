@@ -1,207 +1,275 @@
+@file:Suppress("FunctionOnlyReturningConstant", "LongMethod", "LongParameterList", "UnusedParameter", "unused")
+
 package kotlinx.schema.generator.json
 
+import io.kotest.assertions.json.shouldEqualJson
 import kotlinx.schema.Description
-import kotlinx.schema.generator.core.SchemaGeneratorService
-import kotlinx.schema.json.JsonSchema
-import kotlin.reflect.KClass
+import kotlinx.serialization.json.Json
 import kotlin.test.Test
 
 class JsonSchemaGeneratorTest {
-    @Suppress("unused")
-    @Description("Available colors")
-    enum class Color {
-        RED,
-        GREEN,
-        BLUE,
+    @Description("A test class")
+    data class TestClass(
+        @property:Description("A string property")
+        val stringProperty: String,
+        val intProperty: Int,
+        val longProperty: Long,
+        val doubleProperty: Double,
+        val floatProperty: Float,
+        val booleanNullableProperty: Boolean?,
+        val nullableProperty: String? = null,
+        val listProperty: List<String> = emptyList(),
+        val mapProperty: Map<String, Int> = emptyMap(),
+        val nestedProperty: NestedProperty = NestedProperty("foo", 1),
+        val nestedListProperty: List<NestedProperty> = emptyList(),
+        val nestedMapProperty: Map<String, NestedProperty> = emptyMap(),
+        val polymorphicProperty: TestClosedPolymorphism = TestClosedPolymorphism.SubClass1("id1", "property1"),
+        val enumProperty: TestEnum = TestEnum.One,
+        val objectProperty: TestObject = TestObject,
+    )
+
+    @Description("Nested property class")
+    data class NestedProperty(
+        @property:Description("Nested foo property")
+        val foo: String,
+        val bar: Int,
+    )
+
+    sealed class TestClosedPolymorphism {
+        abstract val id: String
+
+        @Suppress("unused")
+        data class SubClass1(
+            override val id: String,
+            val property1: String,
+        ) : TestClosedPolymorphism()
+
+        @Suppress("unused")
+        data class SubClass2(
+            override val id: String,
+            val property2: Int,
+        ) : TestClosedPolymorphism()
     }
 
-    data class WithEnum(
-        @property:Description("The color of the rainbow")
-        val color: Color,
-    )
+    @Suppress("unused")
+    enum class TestEnum {
+        One,
+        Two,
+    }
 
-    @Description("Personal information")
-    data class Person(
-        @property:Description("Person's first name")
-        val firstName: String,
-    )
-
-    @Description("Pet information")
-    open class Pet(
-        @property:Description("Pet name")
-        val name: String,
-    )
-
-    @Description("Cat information")
-    open class Cat(
-        @property:Description("Most cats have 18 toes, 5 on each front foot and 4 on each hind paw")
-        val toes: Int,
-        name: String,
-    ) : Pet(name = name)
+    data object TestObject
 
     private val generator =
-        requireNotNull(
-            SchemaGeneratorService.getGenerator(
-                KClass::class,
-                JsonSchema::class,
-            ),
-        ) {
-            "ReflectionClassJsonSchemaGenerator must be registered"
-        }
-
-    @Test
-    fun `Should generate schema for simple data class`() {
-        val schema = generator.generateSchema(Person::class)
-
-        // language=json
-        val expectedSchema = $$"""
-        {
-              "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "$id": "kotlinx.schema.generator.json.JsonSchemaGeneratorTest.Person",
-              "description": "Personal information",
-              "required": [ "firstName" ],
-              "type": "object",
-              "properties": {
-                "firstName": {
-                  "type": "string",
-                  "description": "Person's first name"
-                }
-              },
-              "additionalProperties": false
-        }
-        """
-
-        verifySchema(schema, expectedSchema)
-    }
-
-    @Test
-    fun `Should generate schema for simple class`() {
-        val schema = generator.generateSchema(Pet::class)
-
-        // language=json
-        val expectedSchema = $$"""
-        {
-              "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "$id": "kotlinx.schema.generator.json.JsonSchemaGeneratorTest.Pet",
-              "description": "Pet information",
-              "required": [ "name" ],
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "description": "Pet name"
-                }
-              },
-              "additionalProperties": false
-        }
-        """
-        verifySchema(schema, expectedSchema)
-    }
-
-    @Test
-    fun `Should generate schema for simple class hierarchy`() {
-        val schema = generator.generateSchema(Cat::class)
-
-        // language=json
-        val expectedSchema = $$"""
-        {
-              "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "$id": "kotlinx.schema.generator.json.JsonSchemaGeneratorTest.Cat",
-              "description": "Cat information",
-              "required": ["toes" , "name"],
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "description": "Pet name"
-                },
-                "toes": {
-                  "type": "integer",
-                  "description": "Most cats have 18 toes, 5 on each front foot and 4 on each hind paw"
-                }
-              },
-              "additionalProperties": false
-        }
-        """
-        verifySchema(schema, expectedSchema)
-    }
-
-    @Test
-    fun `Should generate schema for data class with various properties`() {
-        @Description("A user model")
-        data class User(
-            @property:Description("The name of the user")
-            val name: String,
-            val age: Int?,
-            val email: String = "n/a",
-            val tags: List<String>,
-            val attributes: Map<String, Int>?,
+        ReflectionClassJsonSchemaGenerator(
+            json = Json { prettyPrint = true },
+            // Default, but with includePolymorphicDiscriminator enabled
+            config =
+                JsonSchemaConfig(
+                    respectDefaultPresence = true,
+                    requireNullableFields = true,
+                    useUnionTypes = true,
+                    useNullableField = false,
+                    includePolymorphicDiscriminator = true,
+                    includeOpenAPIPolymorphicDiscriminator = false,
+                ),
         )
 
-        val schema = generator.generateSchema(User::class)
+    @Test
+    fun `Should generate JsonSchema for complex class`() {
+        val schema = generator.generateSchemaString(TestClass::class)
 
-        // language=json
-        val expectedSchema = $$"""
-        {
+        schema shouldEqualJson
+            // language=JSON
+            $$"""
+            {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "$id": "User",
-              "description": "A user model",
-              "required": [ "name", "age", "tags", "attributes" ],
+              "$id": "kotlinx.schema.generator.json.JsonSchemaGeneratorTest.TestClass",
+              "description": "A test class",
               "type": "object",
               "properties": {
-                "name": {
+                "stringProperty": {
                   "type": "string",
-                  "description": "The name of the user"
+                  "description": "A string property"
                 },
-                "age": {
-                  "type": ["integer", "null"]
+                "intProperty": {
+                  "type": "integer"
                 },
-                "email": {
-                  "type": "string",
-                  "default": "n/a"
+                "longProperty": {
+                  "type": "integer"
                 },
-                "tags": {
+                "doubleProperty": {
+                  "type": "number"
+                },
+                "floatProperty": {
+                  "type": "number"
+                },
+                "booleanNullableProperty": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "nullableProperty": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "listProperty": {
                   "type": "array",
+                  "default": [],
                   "items": {
                     "type": "string"
                   }
                 },
-                "attributes": {
-                  "type": ["object", "null"],
+                "mapProperty": {
+                  "type": "object",
+                  "default": {},
                   "additionalProperties": {
                     "type": "integer"
                   }
-                }
-              },
-              "additionalProperties": false
-        }
-        """
-
-        verifySchema(schema, expectedSchema)
-    }
-
-    @Test
-    fun `Should generate schema with enum property`() {
-        val schema = generator.generateSchema(WithEnum::class)
-
-        // language=json
-        val expectedSchema = $$"""
-        {
-              "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "$id": "kotlinx.schema.generator.json.JsonSchemaGeneratorTest.WithEnum",
-              "required": [ "color" ],
-              "type": "object",
-              "properties": {
-                "color": {
+                },
+                "nestedProperty": {
+                  "type": "object",
+                  "description": "Nested property class",
+                  "properties": {
+                    "foo": {
+                      "type": "string",
+                      "description": "Nested foo property"
+                    },
+                    "bar": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "foo",
+                    "bar"
+                  ],
+                  "additionalProperties": false
+                },
+                "nestedListProperty": {
+                  "type": "array",
+                  "default": [],
+                  "items": {
+                    "type": "object",
+                    "description": "Nested property class",
+                    "properties": {
+                      "foo": {
+                        "type": "string",
+                        "description": "Nested foo property"
+                      },
+                      "bar": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "foo",
+                      "bar"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "nestedMapProperty": {
+                  "type": "object",
+                  "default": {},
+                  "additionalProperties": {
+                    "type": "object",
+                    "description": "Nested property class",
+                    "properties": {
+                      "foo": {
+                        "type": "string",
+                        "description": "Nested foo property"
+                      },
+                      "bar": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "foo",
+                      "bar"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "polymorphicProperty": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/$defs/TestClosedPolymorphism.SubClass1"
+                    },
+                    {
+                      "$ref": "#/$defs/TestClosedPolymorphism.SubClass2"
+                    }
+                  ]
+                },
+                "enumProperty": {
                   "type": "string",
-                  "description": "The color of the rainbow",
-                  "enum": ["RED", "GREEN", "BLUE"]
+                  "default": "One",
+                  "enum": [
+                    "One",
+                    "Two"
+                  ]
+                },
+                "objectProperty": {
+                  "type": "object",
+                  "properties": {},
+                  "required": [],
+                  "additionalProperties": false
                 }
               },
-              "additionalProperties": false
-        }
-        """
-
-        verifySchema(schema, expectedSchema)
+              "additionalProperties": false,
+              "required": [
+                "stringProperty",
+                "intProperty",
+                "longProperty",
+                "doubleProperty",
+                "floatProperty",
+                "booleanNullableProperty"
+              ],
+              "$defs": {
+                "TestClosedPolymorphism.SubClass1": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "TestClosedPolymorphism.SubClass1"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "property1": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "id",
+                    "property1"
+                  ],
+                  "additionalProperties": false
+                },
+                "TestClosedPolymorphism.SubClass2": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "TestClosedPolymorphism.SubClass2"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "property2": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "id",
+                    "property2"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            } 
+            """.trimIndent()
     }
 }

@@ -3,5 +3,6 @@
   <component name="com.nbadal.ktlint.KtlintProjectSettings">
     <ktlintMode>DISTRACT_FREE</ktlintMode>
     <ktlintRulesetVersion>DEFAULT</ktlintRulesetVersion>
+    <formatOnSave>false</formatOnSave>
   </component>
 </project>

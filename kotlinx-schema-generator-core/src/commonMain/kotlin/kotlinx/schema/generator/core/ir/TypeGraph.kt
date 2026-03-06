@@ -76,7 +76,7 @@ public data class MapNode(
 public data class PolymorphicNode(
     val baseName: String,
     val subtypes: List<SubtypeRef>,
-    val discriminator: Discriminator?,
+    val discriminator: Discriminator,
     override val description: String? = null,
 ) : TypeNode
 
@@ -102,7 +102,6 @@ public data class SubtypeRef(
  * (typically discriminator value equals subtype serial name).
  */
 public data class Discriminator(
-    val name: String = "type",
-    val required: Boolean,
+    val name: String,
     val mapping: Map<String, TypeId>? = null,
 )
