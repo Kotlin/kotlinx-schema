@@ -51,11 +51,32 @@ public abstract class KotlinxSchemaExtension
          */
         public abstract val visibility: Property<String>
 
+        /**
+         * Comma- or semicolon-separated glob patterns of fully qualified names to include in schema generation.
+         * Applies to both classes and functions. If not set, all symbols within [rootPackage] are included.
+         *
+         * Glob syntax: `*` matches within one package segment, `**` matches across segments, `?` matches one character.
+         *
+         * Example: `com.example.api.**, com.example.dto.**.*Dto`
+         */
+        public abstract val include: Property<String>
+
+        /**
+         * Comma- or semicolon-separated glob patterns of fully qualified names to exclude from schema generation.
+         * Applies to both classes and functions. Exclusions are applied after [include]; a symbol matching any
+         * exclude pattern is always skipped.
+         *
+         * Example: `**.internal.**, **.*Internal`
+         */
+        public abstract val exclude: Property<String>
+
         init {
             // Set default values
             enabled.convention(true)
-            withSchemaObject.convention(false) // Enable JsonObject property by default
+            withSchemaObject.convention(false) // Disabled by default; set to true to generate a typed jsonSchema object
             rootPackage.unsetConvention() // rootPackage intentionally has no default; absence means no filtering
             visibility.convention("") // no visibility modifier by default
+            include.unsetConvention() // absence means no include filtering
+            exclude.unsetConvention() // absence means no exclude filtering
         }
     }

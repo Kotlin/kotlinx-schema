@@ -1,5 +1,5 @@
 // Klib ABI Dump
-// Targets: [iosArm64, iosSimulatorArm64, js, linuxArm64, linuxX64, macosArm64, mingwX64, tvosArm64, tvosSimulatorArm64, wasmJs, watchosArm32, watchosArm64, watchosSimulatorArm64]
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, js, linuxArm64, linuxX64, macosArm64, macosX64, mingwX64, tvosArm64, tvosSimulatorArm64, tvosX64, wasmJs, watchosArm32, watchosArm64, watchosSimulatorArm64, watchosX64]
 // Rendering settings:
 // - Signature version: 2
 // - Show manifest properties: true
@@ -171,6 +171,9 @@ sealed interface <#A: out kotlin/Any?> kotlinx.schema.json/ValuePropertyDefiniti
 
 sealed interface kotlinx.schema.json/AdditionalPropertiesConstraint { // kotlinx.schema.json/AdditionalPropertiesConstraint|null[0]
     final object Companion : kotlinx.serialization.internal/SerializerFactory { // kotlinx.schema.json/AdditionalPropertiesConstraint.Companion|null[0]
+        final fun allow(): kotlinx.schema.json/AdditionalPropertiesConstraint // kotlinx.schema.json/AdditionalPropertiesConstraint.Companion.allow|allow(){}[0]
+        final fun deny(): kotlinx.schema.json/AdditionalPropertiesConstraint // kotlinx.schema.json/AdditionalPropertiesConstraint.Companion.deny|deny(){}[0]
+        final fun schema(kotlinx.schema.json/PropertyDefinition): kotlinx.schema.json/AdditionalPropertiesConstraint // kotlinx.schema.json/AdditionalPropertiesConstraint.Companion.schema|schema(kotlinx.schema.json.PropertyDefinition){}[0]
         final fun serializer(): kotlinx.serialization/KSerializer<kotlinx.schema.json/AdditionalPropertiesConstraint> // kotlinx.schema.json/AdditionalPropertiesConstraint.Companion.serializer|serializer(){}[0]
         final fun serializer(kotlin/Array<out kotlinx.serialization/KSerializer<*>>...): kotlinx.serialization/KSerializer<*> // kotlinx.schema.json/AdditionalPropertiesConstraint.Companion.serializer|serializer(kotlin.Array<out|kotlinx.serialization.KSerializer<*>>...){}[0]
     }
@@ -181,6 +184,66 @@ sealed interface kotlinx.schema.json/PropertyDefinition { // kotlinx.schema.json
         final fun serializer(): kotlinx.serialization/KSerializer<kotlinx.schema.json/PropertyDefinition> // kotlinx.schema.json/PropertyDefinition.Companion.serializer|serializer(){}[0]
         final fun serializer(kotlin/Array<out kotlinx.serialization/KSerializer<*>>...): kotlinx.serialization/KSerializer<*> // kotlinx.schema.json/PropertyDefinition.Companion.serializer|serializer(kotlin.Array<out|kotlinx.serialization.KSerializer<*>>...){}[0]
     }
+}
+
+final class kotlinx.schema.json.serializers/ArrayEnumSerializer : kotlinx.serialization/KSerializer<kotlin.collections/List<kotlinx.serialization.json/JsonArray>?> { // kotlinx.schema.json.serializers/ArrayEnumSerializer|null[0]
+    constructor <init>() // kotlinx.schema.json.serializers/ArrayEnumSerializer.<init>|<init>(){}[0]
+
+    final val descriptor // kotlinx.schema.json.serializers/ArrayEnumSerializer.descriptor|{}descriptor[0]
+        final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.schema.json.serializers/ArrayEnumSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+    final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlin.collections/List<kotlinx.serialization.json/JsonArray>? // kotlinx.schema.json.serializers/ArrayEnumSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+    final fun serialize(kotlinx.serialization.encoding/Encoder, kotlin.collections/List<kotlinx.serialization.json/JsonArray>?) // kotlinx.schema.json.serializers/ArrayEnumSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlin.collections.List<kotlinx.serialization.json.JsonArray>?){}[0]
+}
+
+final class kotlinx.schema.json.serializers/BooleanEnumSerializer : kotlinx.serialization/KSerializer<kotlin.collections/List<kotlin/Boolean>?> { // kotlinx.schema.json.serializers/BooleanEnumSerializer|null[0]
+    constructor <init>() // kotlinx.schema.json.serializers/BooleanEnumSerializer.<init>|<init>(){}[0]
+
+    final val descriptor // kotlinx.schema.json.serializers/BooleanEnumSerializer.descriptor|{}descriptor[0]
+        final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.schema.json.serializers/BooleanEnumSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+    final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlin.collections/List<kotlin/Boolean>? // kotlinx.schema.json.serializers/BooleanEnumSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+    final fun serialize(kotlinx.serialization.encoding/Encoder, kotlin.collections/List<kotlin/Boolean>?) // kotlinx.schema.json.serializers/BooleanEnumSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlin.collections.List<kotlin.Boolean>?){}[0]
+}
+
+final class kotlinx.schema.json.serializers/NumericEnumSerializer : kotlinx.serialization/KSerializer<kotlin.collections/List<kotlin/Double>?> { // kotlinx.schema.json.serializers/NumericEnumSerializer|null[0]
+    constructor <init>() // kotlinx.schema.json.serializers/NumericEnumSerializer.<init>|<init>(){}[0]
+
+    final val descriptor // kotlinx.schema.json.serializers/NumericEnumSerializer.descriptor|{}descriptor[0]
+        final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.schema.json.serializers/NumericEnumSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+    final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlin.collections/List<kotlin/Double>? // kotlinx.schema.json.serializers/NumericEnumSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+    final fun serialize(kotlinx.serialization.encoding/Encoder, kotlin.collections/List<kotlin/Double>?) // kotlinx.schema.json.serializers/NumericEnumSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlin.collections.List<kotlin.Double>?){}[0]
+}
+
+final class kotlinx.schema.json.serializers/ObjectEnumSerializer : kotlinx.serialization/KSerializer<kotlin.collections/List<kotlinx.serialization.json/JsonObject>?> { // kotlinx.schema.json.serializers/ObjectEnumSerializer|null[0]
+    constructor <init>() // kotlinx.schema.json.serializers/ObjectEnumSerializer.<init>|<init>(){}[0]
+
+    final val descriptor // kotlinx.schema.json.serializers/ObjectEnumSerializer.descriptor|{}descriptor[0]
+        final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.schema.json.serializers/ObjectEnumSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+    final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlin.collections/List<kotlinx.serialization.json/JsonObject>? // kotlinx.schema.json.serializers/ObjectEnumSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+    final fun serialize(kotlinx.serialization.encoding/Encoder, kotlin.collections/List<kotlinx.serialization.json/JsonObject>?) // kotlinx.schema.json.serializers/ObjectEnumSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlin.collections.List<kotlinx.serialization.json.JsonObject>?){}[0]
+}
+
+final class kotlinx.schema.json.serializers/StringEnumSerializer : kotlinx.serialization/KSerializer<kotlin.collections/List<kotlin/String>?> { // kotlinx.schema.json.serializers/StringEnumSerializer|null[0]
+    constructor <init>() // kotlinx.schema.json.serializers/StringEnumSerializer.<init>|<init>(){}[0]
+
+    final val descriptor // kotlinx.schema.json.serializers/StringEnumSerializer.descriptor|{}descriptor[0]
+        final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.schema.json.serializers/StringEnumSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+    final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlin.collections/List<kotlin/String>? // kotlinx.schema.json.serializers/StringEnumSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+    final fun serialize(kotlinx.serialization.encoding/Encoder, kotlin.collections/List<kotlin/String>?) // kotlinx.schema.json.serializers/StringEnumSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlin.collections.List<kotlin.String>?){}[0]
+}
+
+final class kotlinx.schema.json.serializers/StringOrListSerializer : kotlinx.serialization/KSerializer<kotlin.collections/List<kotlin/String>> { // kotlinx.schema.json.serializers/StringOrListSerializer|null[0]
+    constructor <init>() // kotlinx.schema.json.serializers/StringOrListSerializer.<init>|<init>(){}[0]
+
+    final val descriptor // kotlinx.schema.json.serializers/StringOrListSerializer.descriptor|{}descriptor[0]
+        final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.schema.json.serializers/StringOrListSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+    final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlin.collections/List<kotlin/String> // kotlinx.schema.json.serializers/StringOrListSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+    final fun serialize(kotlinx.serialization.encoding/Encoder, kotlin.collections/List<kotlin/String>) // kotlinx.schema.json.serializers/StringOrListSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlin.collections.List<kotlin.String>){}[0]
 }
 
 final class kotlinx.schema.json/AdditionalPropertiesSchema : kotlinx.schema.json/AdditionalPropertiesConstraint { // kotlinx.schema.json/AdditionalPropertiesSchema|null[0]
@@ -615,16 +678,6 @@ final class kotlinx.schema.json/AnyOfPropertyDefinition : kotlinx.schema.json/Ap
     }
 }
 
-final class kotlinx.schema.json/ArrayEnumSerializer : kotlinx.serialization/KSerializer<kotlin.collections/List<kotlinx.serialization.json/JsonArray>?> { // kotlinx.schema.json/ArrayEnumSerializer|null[0]
-    constructor <init>() // kotlinx.schema.json/ArrayEnumSerializer.<init>|<init>(){}[0]
-
-    final val descriptor // kotlinx.schema.json/ArrayEnumSerializer.descriptor|{}descriptor[0]
-        final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.schema.json/ArrayEnumSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
-
-    final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlin.collections/List<kotlinx.serialization.json/JsonArray>? // kotlinx.schema.json/ArrayEnumSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
-    final fun serialize(kotlinx.serialization.encoding/Encoder, kotlin.collections/List<kotlinx.serialization.json/JsonArray>?) // kotlinx.schema.json/ArrayEnumSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlin.collections.List<kotlinx.serialization.json.JsonArray>?){}[0]
-}
-
 final class kotlinx.schema.json/ArrayPropertyBuilder { // kotlinx.schema.json/ArrayPropertyBuilder|null[0]
     final var default // kotlinx.schema.json/ArrayPropertyBuilder.default|{}default[0]
         final fun <get-default>(): kotlin/Any? // kotlinx.schema.json/ArrayPropertyBuilder.default.<get-default>|<get-default>(){}[0]
@@ -786,16 +839,6 @@ final class kotlinx.schema.json/ArrayPropertyDefinition : kotlinx.schema.json/Ar
 
         final fun serializer(): kotlinx.serialization/KSerializer<kotlinx.schema.json/ArrayPropertyDefinition> // kotlinx.schema.json/ArrayPropertyDefinition.Companion.serializer|serializer(){}[0]
     }
-}
-
-final class kotlinx.schema.json/BooleanEnumSerializer : kotlinx.serialization/KSerializer<kotlin.collections/List<kotlin/Boolean>?> { // kotlinx.schema.json/BooleanEnumSerializer|null[0]
-    constructor <init>() // kotlinx.schema.json/BooleanEnumSerializer.<init>|<init>(){}[0]
-
-    final val descriptor // kotlinx.schema.json/BooleanEnumSerializer.descriptor|{}descriptor[0]
-        final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.schema.json/BooleanEnumSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
-
-    final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlin.collections/List<kotlin/Boolean>? // kotlinx.schema.json/BooleanEnumSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
-    final fun serialize(kotlinx.serialization.encoding/Encoder, kotlin.collections/List<kotlin/Boolean>?) // kotlinx.schema.json/BooleanEnumSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlin.collections.List<kotlin.Boolean>?){}[0]
 }
 
 final class kotlinx.schema.json/BooleanPropertyBuilder { // kotlinx.schema.json/BooleanPropertyBuilder|null[0]
@@ -1472,16 +1515,6 @@ final class kotlinx.schema.json/JsonSchemaBuilder { // kotlinx.schema.json/JsonS
     final fun property(kotlin/String, kotlin/Function1<kotlinx.schema.json/PropertyBuilder, kotlinx.schema.json/PropertyDefinition>) // kotlinx.schema.json/JsonSchemaBuilder.property|property(kotlin.String;kotlin.Function1<kotlinx.schema.json.PropertyBuilder,kotlinx.schema.json.PropertyDefinition>){}[0]
 }
 
-final class kotlinx.schema.json/NumericEnumSerializer : kotlinx.serialization/KSerializer<kotlin.collections/List<kotlin/Double>?> { // kotlinx.schema.json/NumericEnumSerializer|null[0]
-    constructor <init>() // kotlinx.schema.json/NumericEnumSerializer.<init>|<init>(){}[0]
-
-    final val descriptor // kotlinx.schema.json/NumericEnumSerializer.descriptor|{}descriptor[0]
-        final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.schema.json/NumericEnumSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
-
-    final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlin.collections/List<kotlin/Double>? // kotlinx.schema.json/NumericEnumSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
-    final fun serialize(kotlinx.serialization.encoding/Encoder, kotlin.collections/List<kotlin/Double>?) // kotlinx.schema.json/NumericEnumSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlin.collections.List<kotlin.Double>?){}[0]
-}
-
 final class kotlinx.schema.json/NumericPropertyBuilder { // kotlinx.schema.json/NumericPropertyBuilder|null[0]
     final var constValue // kotlinx.schema.json/NumericPropertyBuilder.constValue|{}constValue[0]
         final fun <get-constValue>(): kotlin/Any? // kotlinx.schema.json/NumericPropertyBuilder.constValue.<get-constValue>|<get-constValue>(){}[0]
@@ -1635,16 +1668,6 @@ final class kotlinx.schema.json/NumericPropertyDefinition : kotlinx.schema.json/
 
         final fun serializer(): kotlinx.serialization/KSerializer<kotlinx.schema.json/NumericPropertyDefinition> // kotlinx.schema.json/NumericPropertyDefinition.Companion.serializer|serializer(){}[0]
     }
-}
-
-final class kotlinx.schema.json/ObjectEnumSerializer : kotlinx.serialization/KSerializer<kotlin.collections/List<kotlinx.serialization.json/JsonObject>?> { // kotlinx.schema.json/ObjectEnumSerializer|null[0]
-    constructor <init>() // kotlinx.schema.json/ObjectEnumSerializer.<init>|<init>(){}[0]
-
-    final val descriptor // kotlinx.schema.json/ObjectEnumSerializer.descriptor|{}descriptor[0]
-        final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.schema.json/ObjectEnumSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
-
-    final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlin.collections/List<kotlinx.serialization.json/JsonObject>? // kotlinx.schema.json/ObjectEnumSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
-    final fun serialize(kotlinx.serialization.encoding/Encoder, kotlin.collections/List<kotlinx.serialization.json/JsonObject>?) // kotlinx.schema.json/ObjectEnumSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlin.collections.List<kotlinx.serialization.json.JsonObject>?){}[0]
 }
 
 final class kotlinx.schema.json/ObjectPropertyBuilder { // kotlinx.schema.json/ObjectPropertyBuilder|null[0]
@@ -2225,26 +2248,6 @@ final class kotlinx.schema.json/ReferencePropertyDefinition : kotlinx.schema.jso
     }
 }
 
-final class kotlinx.schema.json/StringEnumSerializer : kotlinx.serialization/KSerializer<kotlin.collections/List<kotlin/String>?> { // kotlinx.schema.json/StringEnumSerializer|null[0]
-    constructor <init>() // kotlinx.schema.json/StringEnumSerializer.<init>|<init>(){}[0]
-
-    final val descriptor // kotlinx.schema.json/StringEnumSerializer.descriptor|{}descriptor[0]
-        final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.schema.json/StringEnumSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
-
-    final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlin.collections/List<kotlin/String>? // kotlinx.schema.json/StringEnumSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
-    final fun serialize(kotlinx.serialization.encoding/Encoder, kotlin.collections/List<kotlin/String>?) // kotlinx.schema.json/StringEnumSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlin.collections.List<kotlin.String>?){}[0]
-}
-
-final class kotlinx.schema.json/StringOrListSerializer : kotlinx.serialization/KSerializer<kotlin.collections/List<kotlin/String>> { // kotlinx.schema.json/StringOrListSerializer|null[0]
-    constructor <init>() // kotlinx.schema.json/StringOrListSerializer.<init>|<init>(){}[0]
-
-    final val descriptor // kotlinx.schema.json/StringOrListSerializer.descriptor|{}descriptor[0]
-        final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // kotlinx.schema.json/StringOrListSerializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
-
-    final fun deserialize(kotlinx.serialization.encoding/Decoder): kotlin.collections/List<kotlin/String> // kotlinx.schema.json/StringOrListSerializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
-    final fun serialize(kotlinx.serialization.encoding/Encoder, kotlin.collections/List<kotlin/String>) // kotlinx.schema.json/StringOrListSerializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;kotlin.collections.List<kotlin.String>){}[0]
-}
-
 final class kotlinx.schema.json/StringPropertyBuilder { // kotlinx.schema.json/StringPropertyBuilder|null[0]
     final var constValue // kotlinx.schema.json/StringPropertyBuilder.constValue|{}constValue[0]
         final fun <get-constValue>(): kotlin/Any? // kotlinx.schema.json/StringPropertyBuilder.constValue.<get-constValue>|<get-constValue>(){}[0]
@@ -2593,9 +2596,9 @@ final object kotlinx.schema.json/JsonSchemaConstants { // kotlinx.schema.json/Js
     }
 }
 
-final fun (kotlin.collections/List<kotlin/Boolean>).kotlinx.schema.json/toJsonElements(): kotlin.collections/List<kotlinx.serialization.json/JsonElement> // kotlinx.schema.json/toJsonElements|toJsonElements@kotlin.collections.List<kotlin.Boolean>(){}[0]
-final fun (kotlin.collections/List<kotlin/Number>).kotlinx.schema.json/toJsonElements(): kotlin.collections/List<kotlinx.serialization.json/JsonElement> // kotlinx.schema.json/toJsonElements|toJsonElements@kotlin.collections.List<kotlin.Number>(){}[0]
-final fun (kotlin.collections/List<kotlin/String>).kotlinx.schema.json/toJsonElements(): kotlin.collections/List<kotlinx.serialization.json/JsonElement> // kotlinx.schema.json/toJsonElements|toJsonElements@kotlin.collections.List<kotlin.String>(){}[0]
+final fun (kotlin.collections/List<kotlin/Boolean>).kotlinx.schema.json.serializers/toJsonElements(): kotlin.collections/List<kotlinx.serialization.json/JsonElement> // kotlinx.schema.json.serializers/toJsonElements|toJsonElements@kotlin.collections.List<kotlin.Boolean>(){}[0]
+final fun (kotlin.collections/List<kotlin/Number>).kotlinx.schema.json.serializers/toJsonElements(): kotlin.collections/List<kotlinx.serialization.json/JsonElement> // kotlinx.schema.json.serializers/toJsonElements|toJsonElements@kotlin.collections.List<kotlin.Number>(){}[0]
+final fun (kotlin.collections/List<kotlin/String>).kotlinx.schema.json.serializers/toJsonElements(): kotlin.collections/List<kotlinx.serialization.json/JsonElement> // kotlinx.schema.json.serializers/toJsonElements|toJsonElements@kotlin.collections.List<kotlin.String>(){}[0]
 final fun (kotlinx.schema.json/FunctionCallingSchema).kotlinx.schema.json/encodeToJsonObject(kotlinx.serialization.json/Json = ...): kotlinx.serialization.json/JsonObject // kotlinx.schema.json/encodeToJsonObject|encodeToJsonObject@kotlinx.schema.json.FunctionCallingSchema(kotlinx.serialization.json.Json){}[0]
 final fun (kotlinx.schema.json/FunctionCallingSchema).kotlinx.schema.json/encodeToString(kotlinx.serialization.json/Json = ...): kotlin/String // kotlinx.schema.json/encodeToString|encodeToString@kotlinx.schema.json.FunctionCallingSchema(kotlinx.serialization.json.Json){}[0]
 final fun (kotlinx.schema.json/JsonSchema).kotlinx.schema.json/encodeToJsonObject(kotlinx.serialization.json/Json = ...): kotlinx.serialization.json/JsonObject // kotlinx.schema.json/encodeToJsonObject|encodeToJsonObject@kotlinx.schema.json.JsonSchema(kotlinx.serialization.json.Json){}[0]

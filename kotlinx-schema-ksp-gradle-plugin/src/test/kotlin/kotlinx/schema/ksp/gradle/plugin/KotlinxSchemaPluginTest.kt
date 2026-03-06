@@ -1,25 +1,21 @@
 package kotlinx.schema.ksp.gradle.plugin
 
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.testfixtures.ProjectBuilder
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import kotlin.test.Test
 
 private const val PLUGIN_ID = "org.jetbrains.kotlinx.schema.ksp"
 
 private const val EXTENSION_NAME = "kotlinxSchema"
 
-/**
- * Unit tests for KotlinxSchemaPlugin.
- */
 class KotlinxSchemaPluginTest {
-    /**
-     * Sets up a test project with the Kotlin JVM and kotlinx-schema plugins applied.
-     */
-    private fun setupProject(): Pair<org.gradle.api.Project, KotlinxSchemaExtension> {
+    private fun setupProject(platform: String = "jvm"): Pair<org.gradle.api.Project, KotlinxSchemaExtension> {
         val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply("org.jetbrains.kotlin.jvm")
+        project.pluginManager.apply("org.jetbrains.kotlin.$platform")
         project.pluginManager.apply(PLUGIN_ID)
         val extension = project.extensions.getByType(KotlinxSchemaExtension::class.java)
         return project to extension
@@ -27,64 +23,42 @@ class KotlinxSchemaPluginTest {
 
     @Test
     fun `plugin registers extension with default values`() {
-        val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply("org.jetbrains.kotlin.jvm")
-        project.pluginManager.apply(PLUGIN_ID)
+        val (project, _) = setupProject()
 
         val extension = project.extensions.getByType(KotlinxSchemaExtension::class.java)
 
-        extension shouldNotBe null
+        extension shouldNotBeNull {
+            enabled.get() shouldBe true
+            visibility.get() shouldBe ""
+            include.isPresent shouldBe false
+            exclude.isPresent shouldBe false
+            rootPackage.isPresent shouldBe false
+            withSchemaObject.get() shouldBe false
+        }
+    }
+
+    //endregion
+
+    //region Extension registration
+
+    @ParameterizedTest
+    @ValueSource(strings = ["multiplatform", "jvm"])
+    fun `plugin can be applied to platforms`(platform: String) {
+        val (project, extension) = setupProject(platform)
+
+        project.pluginManager.hasPlugin(PLUGIN_ID) shouldBe true
+
+        project.extensions.findByName(EXTENSION_NAME) shouldBe extension
         extension.enabled.get() shouldBe true
     }
 
-    @Test
-    fun `plugin extension allows custom configuration`() {
-        val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply("org.jetbrains.kotlin.jvm")
-        project.pluginManager.apply(PLUGIN_ID)
+    //endregion
 
-        val extension = project.extensions.getByType(KotlinxSchemaExtension::class.java)
-        extension.enabled.set(false)
-
-        extension.enabled.get() shouldBe false
-    }
-
-    @Test
-    fun `plugin can be applied to JVM project`() {
-        val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply("org.jetbrains.kotlin.jvm")
-        project.pluginManager.apply(PLUGIN_ID)
-
-        project.pluginManager.hasPlugin(PLUGIN_ID) shouldBe true
-    }
-
-    @Test
-    fun `plugin can be applied to multiplatform project`() {
-        val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply("org.jetbrains.kotlin.multiplatform")
-        project.pluginManager.apply(PLUGIN_ID)
-
-        project.pluginManager.hasPlugin(PLUGIN_ID) shouldBe true
-    }
-
-    @Test
-    fun `Check extension name`() {
-        val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply("org.jetbrains.kotlin.jvm")
-        project.pluginManager.apply(PLUGIN_ID)
-
-        val extension = project.extensions.findByName(EXTENSION_NAME)
-        extension shouldNotBe null
-        extension shouldBe project.extensions.getByType(KotlinxSchemaExtension::class.java)
-    }
+    //region Plugin behaviour
 
     @Test
     fun `plugin can be disabled`() {
-        val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply("org.jetbrains.kotlin.jvm")
-        project.pluginManager.apply(PLUGIN_ID)
-
-        val extension = project.extensions.getByType(KotlinxSchemaExtension::class.java)
+        val (project, extension) = setupProject()
         extension.enabled.set(false)
 
         (project as ProjectInternal).evaluate()
@@ -94,23 +68,13 @@ class KotlinxSchemaPluginTest {
 
     @Test
     fun `plugin configures ksp with rootPackage`() {
-        val project = ProjectBuilder.builder().build()
-        project.pluginManager.apply("org.jetbrains.kotlin.jvm")
-        project.pluginManager.apply(PLUGIN_ID)
+        val (project, extension) = setupProject()
 
-        val extension = project.extensions.getByType(KotlinxSchemaExtension::class.java)
         extension.rootPackage.set("com.example")
 
         (project as ProjectInternal).evaluate()
 
         extension.rootPackage.get() shouldBe "com.example"
-    }
-
-    @Test
-    fun `visibility property has correct default value (empty string)`() {
-        val (_, extension) = setupProject()
-
-        extension.visibility.get() shouldBe ""
     }
 
     @Test
@@ -122,30 +86,35 @@ class KotlinxSchemaPluginTest {
         extension.visibility.get() shouldBe "public"
     }
 
-    @Test
-    fun `visibility can be set to internal`() {
+    @ParameterizedTest
+    @ValueSource(strings = ["internal", "public", "private", ""])
+    fun `can set visibility`(visibility: String) {
         val (_, extension) = setupProject()
 
-        extension.visibility.set("internal")
+        extension.visibility.set(visibility)
 
-        extension.visibility.get() shouldBe "internal"
+        extension.visibility.get() shouldBe visibility
     }
 
-    @Test
-    fun `visibility can be set to private`() {
+    @ParameterizedTest
+    @ValueSource(strings = ["foo.bar**", ""])
+    fun `can set include`(value: String) {
         val (_, extension) = setupProject()
 
-        extension.visibility.set("private")
+        extension.include.set(value)
 
-        extension.visibility.get() shouldBe "private"
+        extension.include.get() shouldBe value
     }
 
-    @Test
-    fun `visibility can be set to empty string explicitly`() {
+    @ParameterizedTest
+    @ValueSource(strings = ["foo.bar**", ""])
+    fun `can set exclude`(value: String) {
         val (_, extension) = setupProject()
 
-        extension.visibility.set("")
+        extension.exclude.set(value)
 
-        extension.visibility.get() shouldBe ""
+        extension.exclude.get() shouldBe value
     }
+
+    // endregion
 }
