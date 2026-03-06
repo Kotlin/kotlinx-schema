@@ -131,17 +131,24 @@ internal class SchemaExtensionProcessor(
             return emptyList()
         }
 
-        val symbols = resolver.getSymbolsWithAnnotation(KOTLINX_SCHEMA_ANNOTATION)
         val unprocessable = mutableListOf<KSAnnotated>()
 
-        val symbolFilter = SymbolFilter.fromOptions(
-            rootPackage = options[OPTION_ROOT_PACKAGE],
-            includeOption = options[OPTION_INCLUDE],
-            excludeOption = options[OPTION_EXCLUDE],
-            logger = logger,
-        )
+        val symbolFilter =
+            SymbolFilter.fromOptions(
+                rootPackage = options[OPTION_ROOT_PACKAGE],
+                includeOption = options[OPTION_INCLUDE],
+                excludeOption = options[OPTION_EXCLUDE],
+                logger = logger,
+            )
+
+        val symbols =
+            resolver
+                .getSymbolsWithAnnotation(KOTLINX_SCHEMA_ANNOTATION)
+                .toList()
+                .asSequence()
 
         // Process classes annotated with @Schema
+
         processClassDeclarations(symbolFilter.filter<KSClassDeclaration>(symbols), unprocessable)
 
         // Process functions annotated with @Schema

@@ -12,6 +12,7 @@ import com.google.devtools.ksp.symbol.KSDeclaration
  * 1. Type cast — only the target declaration type is kept.
  * 2. Root package check via [filterByRootPackage].
  * 3. Include patterns: if non-empty, the qualified name must match at least one.
+ *    A declaration with no qualified name is excluded when any include pattern is present.
  * 4. Exclude patterns: a declaration matching any of these is dropped.
  *
  * Glob syntax: `*` matches any sequence of non-`.` characters; `**` matches any sequence
@@ -70,7 +71,8 @@ internal class SymbolFilter(
         )
 
         private fun String?.parsePatterns(): List<String> =
-            this?.trim()
+            this
+                ?.trim()
                 ?.takeIf { it.isNotEmpty() }
                 ?.split(Regex("[,;]"))
                 ?.map { it.trim() }
@@ -84,10 +86,12 @@ internal class SymbolFilter(
             .filter { filterByRootPackage(it, rootPackage, logger) }
             .filter { matchesPatterns(it.qualifiedName?.asString()) }
 
+    @Suppress("ReturnCount")
     private fun matchesPatterns(name: String?): Boolean {
         if (includeRegexes.isEmpty() && excludeRegexes.isEmpty()) return true
-        val included = name == null || includeRegexes.isEmpty() || includeRegexes.any { it.matches(name) }
-        val excluded = name != null && excludeRegexes.isNotEmpty() && excludeRegexes.any { it.matches(name) }
+        if (name == null) return includeRegexes.isEmpty()
+        val included = includeRegexes.isEmpty() || includeRegexes.any { it.matches(name) }
+        val excluded = excludeRegexes.isNotEmpty() && excludeRegexes.any { it.matches(name) }
         return included && !excluded
     }
 }

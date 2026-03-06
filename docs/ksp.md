@@ -223,6 +223,7 @@ Both options accept a comma- or semicolon-separated list of glob patterns matche
 
 **Rules:**
 - If `include` is set, only symbols matching at least one pattern are processed.
+  Symbols without a qualified name (e.g. local or anonymous declarations) are excluded when any include pattern is present.
 - `exclude` is applied after `include` — a symbol matching any exclude pattern is always skipped.
 - Both options apply to classes and functions, and work alongside `rootPackage`; the root package filter runs first.
 

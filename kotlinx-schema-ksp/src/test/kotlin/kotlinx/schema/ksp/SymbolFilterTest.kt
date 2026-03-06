@@ -200,13 +200,26 @@ class SymbolFilterTest {
     }
 
     @Test
-    fun `symbol with null qualifiedName passes through include filter`() {
+    fun `symbol with null qualifiedName is excluded when include patterns are present`() {
         val classDecl =
             mockk<KSClassDeclaration> {
                 every { qualifiedName } returns null
                 every { packageName } returns mockk<KSName> { every { asString() } returns "com.example" }
             }
         SymbolFilter(null, listOf("com.example.*"), emptyList(), logger)
+            .filter<KSClassDeclaration>(sequenceOf(classDecl))
+            .toList()
+            .shouldBeEmpty()
+    }
+
+    @Test
+    fun `symbol with null qualifiedName passes through when no include patterns are set`() {
+        val classDecl =
+            mockk<KSClassDeclaration> {
+                every { qualifiedName } returns null
+                every { packageName } returns mockk<KSName> { every { asString() } returns "com.example" }
+            }
+        SymbolFilter(null, emptyList(), emptyList(), logger)
             .filter<KSClassDeclaration>(sequenceOf(classDecl))
             .toList()
             .size shouldBe 1
