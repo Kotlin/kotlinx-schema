@@ -83,14 +83,14 @@ class JsonSchemaHierarchyTest {
                 },
                 "lives": {
                   "type": "integer",
-                  "description": "Lives left",
-                  "default": 9
+                  "description": "Lives left"
                 }
               },
               "required": [
                 "type",
                 "name",
-                "color"
+                "color",
+                "lives"
               ],
               "additionalProperties": false
             },
@@ -112,14 +112,14 @@ class JsonSchemaHierarchyTest {
                 },
                 "isTrained": {
                   "type": "boolean",
-                  "description": "Trained or not",
-                  "default": false
+                  "description": "Trained or not"
                 }
               },
               "required": [
                 "type",
                 "name",
-                "breed"
+                "breed",
+                "isTrained"
               ],
               "additionalProperties": false
             }
@@ -191,14 +191,14 @@ class JsonSchemaHierarchyTest {
                 },
                 "lives": {
                   "type": "integer",
-                  "description": "Lives left",
-                  "default": 9
+                  "description": "Lives left"
                 }
               },
               "required": [
                 "type",
                 "name",
-                "color"
+                "color",
+                "lives"
               ],
               "additionalProperties": false
             },
@@ -220,14 +220,14 @@ class JsonSchemaHierarchyTest {
                 },
                 "isTrained": {
                   "type": "boolean",
-                  "description": "Trained or not",
-                  "default": false
+                  "description": "Trained or not"
                 }
               },
               "required": [
                 "type",
                 "name",
-                "breed"
+                "breed",
+                "isTrained"
               ],
               "additionalProperties": false
             }

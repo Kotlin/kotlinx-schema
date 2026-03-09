@@ -314,14 +314,12 @@ class FunctionCallingSchemaGeneratorTest {
                       },
                       "listProperty": {
                         "type": "array",
-                        "default": [],
                         "items": {
                           "type": "string"
                         }
                       },
                       "mapProperty": {
                         "type": "object",
-                        "default": {},
                         "additionalProperties": {
                           "type": "integer"
                         }
@@ -346,7 +344,6 @@ class FunctionCallingSchemaGeneratorTest {
                       },
                       "nestedListProperty": {
                         "type": "array",
-                        "default": [],
                         "items": {
                           "type": "object",
                           "description": "Nested property class",
@@ -368,7 +365,6 @@ class FunctionCallingSchemaGeneratorTest {
                       },
                       "nestedMapProperty": {
                         "type": "object",
-                        "default": {},
                         "additionalProperties": {
                           "type": "object",
                           "description": "Nested property class",
@@ -436,7 +432,6 @@ class FunctionCallingSchemaGeneratorTest {
                       },
                       "enumProperty": {
                         "type": "string",
-                        "default": "One",
                         "enum": [
                           "One",
                           "Two"

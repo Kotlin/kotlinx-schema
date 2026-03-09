@@ -389,28 +389,18 @@ public class TypeGraphToJsonSchemaTransformer
         ): PropertyDefinition {
             // Build required list based on config flags
             val required =
-                when {
-                    config.respectDefaultPresence -> {
-                        // Use introspector's hasDefaultValue: only fields without defaults are required
-                        node.properties
-                            .filter { property ->
-                                !property.hasDefaultValue || property.isConstant
-                            }.map { it.name }
-                    }
-
-                    config.requireNullableFields -> {
-                        // All fields required (including nullables) - strict mode
-                        node.properties.map { it.name }
-                    }
-
-                    else -> {
-                        // Only non-nullable fields required
-                        node.properties
-                            .filter { property ->
-                                !property.type.nullable || property.isConstant
-                            }.map { it.name }
-                    }
-                }.toSet()
+                node.properties
+                    .filter { property ->
+                        property.isConstant ||
+                            when {
+                                config.respectDefaultPresence ->
+                                    !property.hasDefaultValue ||
+                                        (config.requireNullableFields && property.type.nullable)
+                                config.requireNullableFields -> true
+                                else -> !property.type.nullable
+                            }
+                    }.map { it.name }
+                    .toSet()
 
             // Convert all properties
             val properties =
@@ -428,17 +418,13 @@ public class TypeGraphToJsonSchemaTransformer
                             propertyDef
                         }
 
-                    // Set const or default value if property has one
-                    // Use const for constant properties or required properties with fixed values
                     val withDefaultOrConst =
-                        if (property.defaultValue != null || property.isConstant) {
-                            if (isRequired || property.isConstant) {
+                        when {
+                            property.isConstant ->
                                 setConstValue(withoutNullableIfRequired, property.defaultValue)
-                            } else {
+                            !isRequired && property.defaultValue != null ->
                                 setDefaultValue(withoutNullableIfRequired, property.defaultValue)
-                            }
-                        } else {
-                            withoutNullableIfRequired
+                            else -> withoutNullableIfRequired
                         }
 
                     // Add description if available

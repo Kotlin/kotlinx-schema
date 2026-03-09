@@ -14,8 +14,9 @@ import kotlinx.schema.generator.json.JsonSchemaConfig.Companion.Strict
  *
  * | respectDefaultPresence | requireNullableFields | Behavior |
  * |------------------------|-----------------------|----------|
- * | true | ignored | Use introspector's DefaultPresence (fields with defaults are optional) |
- * | false | true | All fields required (including nullables) - strict mode |
+ * | true  | false | Fields without defaults required; nullable fields with defaults optional |
+ * | true  | true  | Fields without defaults required; nullable fields always required |
+ * | false | true  | All fields required (including nullables) |
  * | false | false | Only non-nullable fields required |
  *
  * ### Nullable Type Representation
@@ -33,26 +34,29 @@ public open class JsonSchemaConfig(
     /**
      * Whether to use hasDefaultValue from introspector to determine required fields.
      *
-     * When `true`: Uses `hasDefaultValue` from introspector. Fields without defaults
-     * are marked as required, fields with defaults are optional.
+     * When `true`: Fields without defaults are required; fields with defaults are optional.
+     * If [requireNullableFields] is also `true`, nullable fields are additionally required
+     * even when they carry a default value.
      *
      * When `false`: Uses [requireNullableFields] to determine required field behavior.
      *
-     * **Note**: This doesn't work reliably with KSP because KSP cannot detect default values
+     * **Note**: Does not work reliably with KSP because KSP cannot detect default values
      * in the same compilation unit. Works best with reflection-based introspection.
      *
-     * Default: `false`
+     * Default: `true`
      */
     public val respectDefaultPresence: Boolean = true,
     /**
      * Whether nullable fields must be present in JSON.
      *
-     * Only applies when [respectDefaultPresence] is `false`.
+     * When [respectDefaultPresence] is `true`: additionally requires nullable fields
+     * even when they have a default value (e.g. `val x: String? = null`).
      *
-     * When `true`: Nullable fields ARE in the required array (must be present, can be null).
-     * When `false`: Nullable fields are NOT in the required array (can be omitted).
+     * When [respectDefaultPresence] is `false`:
+     * - `true`: All fields are required (must be present, can be null).
+     * - `false`: Only non-nullable fields are required.
      *
-     * Example with `requireNullableFields = true` (strict mode):
+     * Example with `requireNullableFields = true`:
      * ```kotlin
      * fun writeLog(level: String, exception: String? = null)
      * ```
@@ -67,18 +71,7 @@ public open class JsonSchemaConfig(
      * }
      * ```
      *
-     * Example with `requireNullableFields = false`:
-     * ```json
-     * {
-     *   "required": ["level"],
-     *   "properties": {
-     *     "level": { "type": "string" },
-     *     "exception": { "type": ["string", "null"] }
-     *   }
-     * }
-     * ```
-     *
-     * Default: `true` (Draft 2020-12 strict mode)
+     * Default: `false`
      */
     public val requireNullableFields: Boolean = false,
     /**
@@ -154,20 +147,20 @@ public open class JsonSchemaConfig(
             JsonSchemaConfig()
 
         /**
-         * Configuration for full JSON Schema Draft 2020-12 compliance:
-         *  - `respectDefaultPresence = false` - ignore default values (KSP limitation)
-         *  - `requireNullableFields = true` - all fields in required array (including nullables)
-         *  - `useUnionTypes = true` - union types for nullable fields
+         * Configuration where all fields are required regardless of Kotlin default values.
+         *
+         *  - `requireNullableFields = true` — all fields in required array (including nullables)
+         *  - `useUnionTypes = true` — union types for nullable fields: `["string", "null"]`
          *  - Type discriminators are enabled for polymorphic types
          *
-         * Use this when generating schemas that must strictly comply with JSON Schema Draft 2020-12,
-         * or when using with OpenAI function calling APIs with strict mode enabled.
+         * Use this when generating schemas for OpenAI function calling APIs with strict mode enabled,
+         * or any other schema consumer that requires all properties to be present in the JSON object.
          *
          * See [JSON Schema Draft 2020-12](https://json-schema.org/draft/2020-12/json-schema-core.html)
          */
         public val Strict: JsonSchemaConfig =
             JsonSchemaConfig(
-                respectDefaultPresence = true,
+                respectDefaultPresence = false,
                 requireNullableFields = true,
                 useUnionTypes = true,
                 useNullableField = false,

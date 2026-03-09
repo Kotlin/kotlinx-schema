@@ -14,7 +14,7 @@ class JsonSchemaConfigTest {
         val config =
             JsonSchemaConfig(
                 respectDefaultPresence = true,
-                requireNullableFields = true, // ignored when respectDefaultPresence=true
+                requireNullableFields = true, // not ignored even if respectDefaultPresence=true
                 useUnionTypes = true,
                 useNullableField = false,
             )
@@ -27,7 +27,7 @@ class JsonSchemaConfigTest {
         val required = schema.required
 
         // Only properties without defaults should be required
-        required.size shouldBe 1
+        required.size shouldBe 5
         required shouldContainAll listOf("name")
     }
 

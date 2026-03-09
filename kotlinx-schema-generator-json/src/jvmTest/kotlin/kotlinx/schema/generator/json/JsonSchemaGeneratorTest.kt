@@ -223,7 +223,8 @@ class JsonSchemaGeneratorTest {
                 "longProperty",
                 "doubleProperty",
                 "floatProperty",
-                "booleanNullableProperty"
+                "booleanNullableProperty",
+                "nullableProperty"
               ],
               "$defs": {
                 "kotlinx.schema.generator.json.JsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass1": {
