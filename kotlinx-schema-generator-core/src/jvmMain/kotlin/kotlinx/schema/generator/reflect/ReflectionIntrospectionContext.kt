@@ -169,17 +169,9 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
     /**
      * Handles object/class types by creating an ObjectNode.
      */
-    private fun handleObjectType(
-        type: KType,
-        parentPrefix: String? = null,
-    ): TypeRef {
+    private fun handleObjectType(type: KType): TypeRef {
         val klass = type.klass
-
-        val id =
-            when {
-                parentPrefix != null -> TypeId(generateQualifiedName(klass, parentPrefix))
-                else -> createTypeId(klass)
-            }
+        val id = createTypeId(klass)
 
         withCycleDetection(type, id) {
             createObjectNode(klass)
@@ -200,15 +192,8 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
         withCycleDetection(type, id) {
             val polymorphicNode = createPolymorphicNode(klass)
 
-            // Process each sealed subclass with parent-qualified names
-            val parentName = klass.simpleName ?: "UnknownSealed"
             klass.sealedSubclasses.forEach { subclass ->
-                val subclassType = subclass.createType()
-
-                handleObjectType(
-                    type = subclassType,
-                    parentPrefix = parentName,
-                )
+                handleObjectType(type = subclass.createType())
             }
 
             polymorphicNode
@@ -360,22 +345,23 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
      * Creates a [PolymorphicNode] from a [KClass]
      */
     private fun createPolymorphicNode(klass: KClass<*>): PolymorphicNode {
-        val parentName = klass.simpleName ?: "UnknownSealed"
+        val baseName = klass.simpleName ?: "UnknownSealed"
 
         val subtypes =
             klass.sealedSubclasses.map { subclass ->
-                SubtypeRef(TypeId(generateQualifiedName(subclass, parentName)))
+                SubtypeRef(createTypeId(subclass))
             }
 
         // Build discriminator mapping: discriminator value -> TypeId
+        // Key must equal the TypeId value so it matches the `const` value the transformer emits
         val discriminatorMapping =
             klass.sealedSubclasses.associate { subclass ->
-                val simpleName = subclass.simpleName ?: "Unknown"
-                simpleName to TypeId(generateQualifiedName(subclass, parentName))
+                val id = createTypeId(subclass)
+                id.value to id
             }
 
         return PolymorphicNode(
-            baseName = parentName,
+            baseName = baseName,
             subtypes = subtypes,
             discriminator =
                 Discriminator(

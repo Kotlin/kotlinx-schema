@@ -178,16 +178,28 @@ class ReflectionIntrospectorTest {
         val subtypeIds = polyNode.subtypes.map { it.id.value }.toSet()
         subtypeIds.shouldContainExactlyInAnyOrder(
             setOf(
-                "Shape.Circle",
-                "Shape.Rectangle",
+                "kotlinx.schema.generator.reflect.ReflectionIntrospectorTest.Shape.Circle",
+                "kotlinx.schema.generator.reflect.ReflectionIntrospectorTest.Shape.Rectangle",
             ),
         )
 
         // Verify each subtype node is registered with qualified name
-        val circleNode = graph.nodes[TypeId("Shape.Circle")].shouldNotBeNull().shouldBeInstanceOf<ObjectNode>()
+        val circleNode =
+            graph.nodes[
+                TypeId(
+                    "kotlinx.schema.generator.reflect.ReflectionIntrospectorTest.Shape.Circle",
+                ),
+            ].shouldNotBeNull()
+                .shouldBeInstanceOf<ObjectNode>()
         circleNode.description shouldBe "Circle shape"
 
-        val rectangleNode = graph.nodes[TypeId("Shape.Rectangle")].shouldNotBeNull().shouldBeInstanceOf<ObjectNode>()
+        val rectangleNode =
+            graph.nodes[
+                TypeId(
+                    "kotlinx.schema.generator.reflect.ReflectionIntrospectorTest.Shape.Rectangle",
+                ),
+            ].shouldNotBeNull()
+                .shouldBeInstanceOf<ObjectNode>()
         rectangleNode.description shouldBe "Rectangle shape"
     }
 }

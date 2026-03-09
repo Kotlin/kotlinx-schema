@@ -194,10 +194,10 @@ class JsonSchemaGeneratorTest {
                 "polymorphicProperty": {
                   "oneOf": [
                     {
-                      "$ref": "#/$defs/TestClosedPolymorphism.SubClass1"
+                      "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass1"
                     },
                     {
-                      "$ref": "#/$defs/TestClosedPolymorphism.SubClass2"
+                      "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass2"
                     }
                   ]
                 },
@@ -226,12 +226,12 @@ class JsonSchemaGeneratorTest {
                 "booleanNullableProperty"
               ],
               "$defs": {
-                "TestClosedPolymorphism.SubClass1": {
+                "kotlinx.schema.generator.json.JsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass1": {
                   "type": "object",
                   "properties": {
                     "type": {
                       "type": "string",
-                      "const": "TestClosedPolymorphism.SubClass1"
+                      "const": "kotlinx.schema.generator.json.JsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass1"
                     },
                     "id": {
                       "type": "string"
@@ -247,12 +247,12 @@ class JsonSchemaGeneratorTest {
                   ],
                   "additionalProperties": false
                 },
-                "TestClosedPolymorphism.SubClass2": {
+                "kotlinx.schema.generator.json.JsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass2": {
                   "type": "object",
                   "properties": {
                     "type": {
                       "type": "string",
-                      "const": "TestClosedPolymorphism.SubClass2"
+                      "const": "kotlinx.schema.generator.json.JsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass2"
                     },
                     "id": {
                       "type": "string"

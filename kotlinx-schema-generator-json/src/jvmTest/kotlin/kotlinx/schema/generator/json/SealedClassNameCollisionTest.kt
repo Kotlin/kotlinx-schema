@@ -85,10 +85,10 @@ class SealedClassNameCollisionTest {
                 "resultA": {
                   "oneOf": [
                     {
-                      "$ref": "#/$defs/ResultA.Success"
+                      "$ref": "#/$defs/kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultA.Success"
                     },
                     {
-                      "$ref": "#/$defs/ResultA.Unknown"
+                      "$ref": "#/$defs/kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultA.Unknown"
                     }
                   ],
                   "description": "Result type A"
@@ -96,10 +96,10 @@ class SealedClassNameCollisionTest {
                 "resultB": {
                   "oneOf": [
                     {
-                      "$ref": "#/$defs/ResultB.Success"
+                      "$ref": "#/$defs/kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultB.Success"
                     },
                     {
-                      "$ref": "#/$defs/ResultB.Unknown"
+                      "$ref": "#/$defs/kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultB.Unknown"
                     }
                   ],
                   "description": "Result type B"
@@ -111,13 +111,13 @@ class SealedClassNameCollisionTest {
                 "resultB"
               ],
               "$defs": {
-                "ResultA.Success": {
+                "kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultA.Success": {
                   "type": "object",
                   "description": "Success result for A",
                   "properties": {
                     "type": { 
                       "type": "string", 
-                       "const": "ResultA.Success"
+                       "const": "kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultA.Success"
                     },
                     "value": {
                       "type": "string"
@@ -129,11 +129,11 @@ class SealedClassNameCollisionTest {
                   ],
                   "additionalProperties": false
                 },
-                "ResultA.Unknown": {
+                "kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultA.Unknown": {
                   "type": "object",
                   "description": "Unknown error for A",
                   "properties": {
-                    "type": { "type": "string", "const": "ResultA.Unknown" },
+                    "type": { "type": "string", "const": "kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultA.Unknown" },
                     "code": {
                       "type": "integer"
                     }
@@ -144,11 +144,11 @@ class SealedClassNameCollisionTest {
                   ],
                   "additionalProperties": false
                 },
-                "ResultB.Success": {
+                "kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultB.Success": {
                   "type": "object",
                   "description": "Success result for B",
                   "properties": {
-                    "type": { "type": "string", "const": "ResultB.Success" },
+                    "type": { "type": "string", "const": "kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultB.Success" },
                     "data": {
                       "type": "integer"
                     }
@@ -159,11 +159,11 @@ class SealedClassNameCollisionTest {
                   ],
                   "additionalProperties": false
                 },
-                "ResultB.Unknown": {
+                "kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultB.Unknown": {
                   "type": "object",
                   "description": "Unknown error for B",
                   "properties": {
-                    "type": { "type": "string", "const": "ResultB.Unknown" },
+                    "type": { "type": "string", "const": "kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultB.Unknown" },
                     "message": {
                       "type": "string"
                     }

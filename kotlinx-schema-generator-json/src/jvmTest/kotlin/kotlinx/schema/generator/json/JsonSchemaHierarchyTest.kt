@@ -58,20 +58,20 @@ class JsonSchemaHierarchyTest {
           "additionalProperties": false,
           "oneOf": [
             {
-              "$ref": "#/$defs/Animal.Cat"
+              "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Cat"
             },
             {
-              "$ref": "#/$defs/Animal.Dog"
+              "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Dog"
             }
           ],
           "$defs": {
-            "Animal.Cat": {
+            "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Cat": {
               "type": "object",
               "description": "Represents a cat",
               "properties": {
                 "type": {
                   "type": "string",
-                  "const": "Animal.Cat"
+                  "const": "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Cat"
                 },
                 "name": {
                   "type": "string",
@@ -94,13 +94,13 @@ class JsonSchemaHierarchyTest {
               ],
               "additionalProperties": false
             },
-            "Animal.Dog": {
+            "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Dog": {
               "type": "object",
               "description": "Represents a dog",
               "properties": {
                 "type": {
                   "type": "string",
-                  "const": "Animal.Dog"
+                  "const": "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Dog"
                 },
                 "name": {
                   "type": "string",
@@ -154,10 +154,10 @@ class JsonSchemaHierarchyTest {
                 {
                   "oneOf": [
                     {
-                      "$ref": "#/$defs/Animal.Cat"
+                      "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Cat"
                     },
                     {
-                      "$ref": "#/$defs/Animal.Dog"
+                      "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Dog"
                     }
                   ]
                 },
@@ -173,13 +173,13 @@ class JsonSchemaHierarchyTest {
             "animal"
           ],
           "$defs": {
-            "Animal.Cat": {
+            "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Cat": {
               "type": "object",
               "description": "Represents a cat",
               "properties": {
                 "type": {
                       "type": "string",
-                      "const": "Animal.Cat"
+                      "const": "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Cat"
                  },
                 "name": {
                   "type": "string",
@@ -202,13 +202,13 @@ class JsonSchemaHierarchyTest {
               ],
               "additionalProperties": false
             },
-            "Animal.Dog": {
+            "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Dog": {
               "type": "object",
               "description": "Represents a dog",
               "properties": {
                 "type": {
                   "type": "string",
-                  "const": "Animal.Dog"
+                  "const": "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Dog"
                 },
                 "name": {
                   "type": "string",
@@ -250,6 +250,9 @@ class JsonSchemaHierarchyTest {
 
         val schema = generatorWithDiscriminator.generateSchema(Animal::class)
 
+        // The OpenAPI discriminator mapping key MUST equal the "type" const value in each subtype.
+        // Both the mapping key and the const value use the fully qualified class name so that
+        // clients can dispatch correctly. The mapping value is the $ref path to the $defs entry.
         // language=json
         val expectedSchema = $$"""
         {
@@ -260,27 +263,27 @@ class JsonSchemaHierarchyTest {
               "description": "Represents an animal",
               "oneOf": [
                 {
-                  "$ref": "#/$defs/Animal.Cat"
+                  "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Cat"
                 },
                 {
-                  "$ref": "#/$defs/Animal.Dog"
+                  "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Dog"
                 }
               ],
               "discriminator": {
                 "propertyName": "type",
                 "mapping": {
-                  "Cat": "#/$defs/Animal.Cat",
-                  "Dog": "#/$defs/Animal.Dog"
+                  "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Cat": "#/$defs/kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Cat",
+                  "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Dog": "#/$defs/kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Dog"
                 }
               },
               "$defs": {
-                "Animal.Cat": {
+                "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Cat": {
                   "type": "object",
                   "description": "Represents a cat",
                   "properties": {
                     "type": {
                       "type": "string",
-                      "const": "Animal.Cat"
+                      "const": "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Cat"
                     },
                     "name": {
                       "type": "string",
@@ -299,13 +302,13 @@ class JsonSchemaHierarchyTest {
                   "required": ["type", "name", "color"],
                   "additionalProperties": false
                 },
-                "Animal.Dog": {
+                "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Dog": {
                   "type": "object",
                   "description": "Represents a dog",
                   "properties": {
                     "type": {
                       "type": "string",
-                      "const": "Animal.Dog"
+                      "const": "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Dog"
                     },
                     "name": {
                       "type": "string",

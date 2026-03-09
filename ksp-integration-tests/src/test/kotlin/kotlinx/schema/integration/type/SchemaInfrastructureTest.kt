@@ -1,5 +1,6 @@
 package kotlinx.schema.integration.type
 
+import io.kotest.assertions.json.shouldEqualJson
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.ints.shouldBeGreaterThan
@@ -141,5 +142,21 @@ class SchemaInfrastructureTest {
                 .generateSchema(Order::class)
                 .encodeToJsonObject()
         schema shouldBeEqualToComparingFields reflectionSchema
+    }
+
+    @Test
+    fun `KSP and Reflection produce identical discriminators for sealed class hierarchies`() {
+        // Both introspectors must agree on the discriminator value. Clients that validate
+        // JSON against the generated schema (e.g., OpenAPI tooling) will see inconsistent
+        // behaviour when switching between introspectors or mixing schemas from both.
+        val kspSchemaString = Animal::class.jsonSchemaString
+        val reflectionSchemaString =
+            Json.encodeToString(
+                ReflectionClassJsonSchemaGenerator()
+                    .generateSchema(Animal::class)
+                    .encodeToJsonObject(),
+            )
+
+        kspSchemaString shouldEqualJson reflectionSchemaString
     }
 }

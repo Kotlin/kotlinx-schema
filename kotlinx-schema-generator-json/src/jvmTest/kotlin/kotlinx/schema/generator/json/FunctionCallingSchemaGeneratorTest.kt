@@ -395,7 +395,7 @@ class FunctionCallingSchemaGeneratorTest {
                             "properties": {
                               "type": {
                                 "type": "string",
-                                "const": "TestClosedPolymorphism.SubClass1"
+                                "const": "kotlinx.schema.generator.json.FunctionCallingSchemaGeneratorTest.TestClosedPolymorphism.SubClass1"
                               },
                               "id": {
                                 "type": "string"
@@ -416,7 +416,7 @@ class FunctionCallingSchemaGeneratorTest {
                             "properties": {
                               "type": {
                                 "type": "string",
-                                "const": "TestClosedPolymorphism.SubClass2"
+                                "const": "kotlinx.schema.generator.json.FunctionCallingSchemaGeneratorTest.TestClosedPolymorphism.SubClass2"
                               },
                               "id": {
                                 "type": "string"

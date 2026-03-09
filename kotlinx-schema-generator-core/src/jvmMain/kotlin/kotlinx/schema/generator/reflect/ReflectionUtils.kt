@@ -24,26 +24,6 @@ internal val KType.klass: KClass<*> get() {
 }
 
 /**
- * Generates a qualified type name for a class, optionally prefixed with parent name.
- * Used for sealed class subclasses to avoid name collisions (e.g., "Parent.Child").
- *
- * @param klass The class to generate a name for
- * @param parentPrefix Optional parent prefix (typically the sealed parent's simple name)
- * @return Qualified name like "Parent.Child" if parentPrefix provided, otherwise simple name
- */
-internal fun generateQualifiedName(
-    klass: KClass<*>,
-    parentPrefix: String?,
-): String {
-    val simpleName = klass.simpleName ?: "Unknown"
-    return if (parentPrefix != null) {
-        "$parentPrefix.$simpleName"
-    } else {
-        simpleName
-    }
-}
-
-/**
  * Finds a property in a class by name.
  * Used when extracting metadata from constructor parameters to find corresponding property annotations.
  *
