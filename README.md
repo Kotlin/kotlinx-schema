@@ -109,11 +109,13 @@ Quick Links:
 
 **Comprehensive Type Support:**
 
-- Enums, collections, maps, nested objects, nullability, generics (with star-projection)
-- Sealed class hierarchies with automatic `oneOf` generation
-- Proper union types for nullable parameters (`["string", "null"]`)
-- Type constraints (min/max, patterns, formats)
+- **Enums, collections, maps, nested objects, nullability, generics** (with star-projection)
+- **Sealed class hierarchies** with automatic `oneOf` generation and discriminator field
+- **Union types** for nullable parameters (`["string", "null"]`)
+- **Type constraints** (min/max, patterns, formats)
 - **Default values** (compile-time: tracked but not extracted; runtime: fully extracted)
+- **`$ref`/`$defs` deduplication**: named types appear once in `$defs` and are referenced everywhere via `$ref`
+- **`kotlin.Any`**: maps to the empty schema `{}` (accepts any JSON value)
 
 **Developer Experience:**
 
@@ -323,7 +325,8 @@ Schemas follow JSON Schema Draft 2020-12 format. Example (pretty-printed):
 - Nullable properties are emitted as a union including `null`.
 - Collections: `List<T>`/`Set<T>` → `{ "type":"array", "items": T }`; `Map<String, V>` →
   `{ "type":"object", "additionalProperties": V }`.
-- Unknown/generic type parameters resolve to `kotlin.Any` with a minimal definition in `$defs`.
+- `kotlin.Any` / unbound generic type parameters (e.g., `T`) map to the empty schema `{}`, which accepts any JSON value.
+- Named types (nested objects, enums, sealed classes) are deduplicated in a `$defs` section and referenced via `$ref` at every usage site.
 
 ## Examples
 
@@ -395,16 +398,14 @@ val schemaObject = Product::class.jsonSchema
         },
         "inStock": {
             "type": "boolean",
-            "description": "Whether the product is currently in stock",
-            "default": true
+            "description": "Whether the product is currently in stock"
         },
         "tags": {
             "type": "array",
             "items": {
                 "type": "string"
             },
-            "description": "List of tags for categorization and search",
-            "default": []
+            "description": "List of tags for categorization and search"
         }
     },
     "required": [
@@ -542,9 +543,9 @@ data class Container<T>(
 
 <!--- KNIT example-knit-readme-06.kt -->
 
-Generic type parameters are resolved at the usage site. When generating a schema for a generic class, unbound type
-parameters (like `T`) are treated as `kotlin.Any` with a minimal definition in the `$defs` section. For more specific
-typing, instantiate the generic class with concrete types when you need them.
+Generic type parameters are resolved at the usage site. Unbound type parameters (like `T`) and `kotlin.Any`-typed
+properties map to `{}` — the empty JSON Schema that accepts any JSON value. For more specific typing, instantiate the
+generic class with concrete types when you need them.
 
 ### Sealed class polymorphism
 
@@ -611,19 +612,19 @@ println(schema.encodeToString(Json { prettyPrint = true }))
     "additionalProperties": false,
     "oneOf": [
         {
-            "$ref": "#/$defs/Animal.Cat"
+            "$ref": "#/$defs/kotlinx.schema.integration.type.Animal.Cat"
         },
         {
-            "$ref": "#/$defs/Animal.Dog"
+            "$ref": "#/$defs/kotlinx.schema.integration.type.Animal.Dog"
         }
     ],
     "$defs": {
-        "Animal.Cat": {
+        "kotlinx.schema.integration.type.Animal.Cat": {
             "type": "object",
             "properties": {
                 "type": {
                     "type": "string",
-                    "const": "Animal.Cat"
+                    "const": "kotlinx.schema.integration.type.Animal.Cat"
                 },
                 "name": {
                     "type": "string",
@@ -636,12 +637,12 @@ println(schema.encodeToString(Json { prettyPrint = true }))
             ],
             "additionalProperties": false
         },
-        "Animal.Dog": {
+        "kotlinx.schema.integration.type.Animal.Dog": {
             "type": "object",
             "properties": {
                 "type": {
                     "type": "string",
-                    "const": "Animal.Dog"
+                    "const": "kotlinx.schema.integration.type.Animal.Dog"
                 },
                 "name": {
                     "type": "string",
@@ -662,10 +663,11 @@ println(schema.encodeToString(Json { prettyPrint = true }))
 
 **Key features:**
 
-- **`oneOf` with `$ref`**: Each sealed subclass is referenced from a `$defs` section
-- **Property inheritance**: Base class properties included in each subtype
+- **`oneOf` with `$ref`**: Each sealed subclass is stored in `$defs` and referenced via `$ref`
+- **Fully qualified names**: `$defs` keys and discriminator `const` values use fully qualified class names (e.g., `com.example.Animal.Cat`) to avoid collisions across packages
+- **Discriminator property**: A `type` field with a `const` value is automatically added to each subtype for runtime dispatch
+- **Property inheritance**: Base class properties are included in each subtype
 - **Type safety**: Each subtype gets its own schema definition
-- **Default values**: Subtype properties with defaults (like `lives: Int = 9`) are included
 
 ## Using @Schema and @Description annotations
 

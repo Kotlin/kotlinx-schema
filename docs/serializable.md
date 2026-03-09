@@ -281,13 +281,14 @@ This code generates:
 
 ### JsonSchemaConfig reference
 
-| Property                 | Type      | Default | Description                                                                    |
-|:-------------------------|:----------|:--------|:-------------------------------------------------------------------------------|
-| `respectDefaultPresence` | `Boolean` | `false` | Mark fields with default values as optional (requires reflection).             |
-| `requireNullableFields`  | `Boolean` | `true`  | Whether nullable fields appear in the `required` array.                        |
-| `useUnionTypes`          | `Boolean` | `true`  | Represent nullable types as `["string", "null"]` (Draft 2020-12).              |
-| `useNullableField`       | `Boolean` | `false` | Emit `"nullable": true` instead of union types (legacy OpenAPI compatibility). |
-| `includeDiscriminator`   | `Boolean` | `false` | Include a `discriminator` object in polymorphic schemas (OpenAPI 3.x).         |
+| Property                                 | Type      | Default | Description                                                                                                            |
+|:-----------------------------------------|:----------|:--------|:-----------------------------------------------------------------------------------------------------------------------|
+| `respectDefaultPresence`                 | `Boolean` | `true`  | Mark fields with default values as optional (requires reflection; KSP tracks presence but not values).                 |
+| `requireNullableFields`                  | `Boolean` | `false` | Include nullable fields in the `required` array.                                                                       |
+| `useUnionTypes`                          | `Boolean` | `true`  | Represent nullable types as `["string", "null"]` (Draft 2020-12).                                                      |
+| `useNullableField`                       | `Boolean` | `false` | Emit `"nullable": true` instead of union types (legacy OpenAPI compatibility).                                         |
+| `includePolymorphicDiscriminator`        | `Boolean` | `true`  | Add a `"type"` property with a constant discriminator value to each polymorphic subtype schema.                        |
+| `includeOpenAPIPolymorphicDiscriminator` | `Boolean` | `false` | Include a `discriminator` mapping object in `oneOf` schemas (OpenAPI 3.x). Requires `includePolymorphicDiscriminator`. |
 
 > [!NOTE]
 > `useUnionTypes` and `useNullableField` are mutually exclusive — exactly one must be `true`.
@@ -337,7 +338,9 @@ println(schemaString)
 -->
 <!--- KNIT example-knit-serializable-04.kt -->
 
-The generated schema uses `oneOf` with a `$defs` section for each subtype, with a required `type` discriminator field on each subtype object.
+The generated schema uses `oneOf` with a `$defs` section for each subtype. 
+Each subtype gets a required `type` property containing the subtype's serial name as a constant (from `@SerialName`), 
+enabling runtime dispatch.
 
 ```json
 {
@@ -357,11 +360,16 @@ The generated schema uses `oneOf` with a `$defs` section for each subtype, with 
         "com.example.Shape.Circle": {
             "type": "object",
             "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "com.example.Shape.Circle"
+                },
                 "radius": {
                     "type": "number"
                 }
             },
             "required": [
+                "type",
                 "radius"
             ],
             "additionalProperties": false
@@ -369,6 +377,10 @@ The generated schema uses `oneOf` with a `$defs` section for each subtype, with 
         "com.example.Shape.Rectangle": {
             "type": "object",
             "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "com.example.Shape.Rectangle"
+                },
                 "width": {
                     "type": "number"
                 },
@@ -377,6 +389,7 @@ The generated schema uses `oneOf` with a `$defs` section for each subtype, with 
                 }
             },
             "required": [
+                "type",
                 "width",
                 "height"
             ],
