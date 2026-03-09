@@ -51,7 +51,18 @@ internal class ClassSchemaStrategy : SchemaGenerationStrategy<KSClassDeclaration
                 introspector = KspClassIntrospector(),
                 transformer =
                     TypeGraphToJsonSchemaTransformer(
-                        config = JsonSchemaConfig.Strict,
+                        // build JsonSchemaConfig upon Strict config
+                        config =
+                            with(JsonSchemaConfig.Strict) {
+                                JsonSchemaConfig(
+                                    respectDefaultPresence = false,
+                                    requireNullableFields = requireNullableFields,
+                                    useUnionTypes = useUnionTypes,
+                                    useNullableField = useNullableField,
+                                    includePolymorphicDiscriminator = includePolymorphicDiscriminator,
+                                    includeOpenAPIPolymorphicDiscriminator = includeOpenAPIPolymorphicDiscriminator,
+                                )
+                            },
                     ),
                 serializer = JsonSchema.serializer(),
                 jsonPrettyPrint = true,

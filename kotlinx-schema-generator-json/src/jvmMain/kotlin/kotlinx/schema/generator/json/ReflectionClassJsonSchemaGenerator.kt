@@ -30,7 +30,7 @@ public class ReflectionClassJsonSchemaGenerator(
     ) {
     public constructor() : this(
         json = Json { encodeDefaults = false },
-        config = JsonSchemaConfig.Default,
+        config = JsonSchemaConfig.Strict,
     )
 
     override fun getRootName(target: KClass<out Any>): String = target.qualifiedName ?: target.simpleName ?: "Anonymous"
@@ -53,7 +53,7 @@ public class ReflectionClassJsonSchemaGenerator(
         public val Default: ReflectionClassJsonSchemaGenerator =
             ReflectionClassJsonSchemaGenerator(
                 json = Json { encodeDefaults = false },
-                config = JsonSchemaConfig.Default,
+                config = JsonSchemaConfig.Strict,
             )
     }
 }

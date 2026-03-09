@@ -245,7 +245,7 @@ class JsonSchemaHierarchyTest {
         val generatorWithDiscriminator =
             ReflectionClassJsonSchemaGenerator(
                 json = json,
-                config = JsonSchemaConfig.OpenAPI
+                config = JsonSchemaConfig.OpenAPI,
             )
 
         val schema = generatorWithDiscriminator.generateSchema(Animal::class)

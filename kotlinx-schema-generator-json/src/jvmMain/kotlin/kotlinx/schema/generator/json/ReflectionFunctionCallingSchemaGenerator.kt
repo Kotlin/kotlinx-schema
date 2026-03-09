@@ -30,7 +30,7 @@ public class ReflectionFunctionCallingSchemaGenerator(
     ) {
     public constructor() : this(
         json = Json { encodeDefaults = false },
-        config = FunctionCallingSchemaConfig.Default,
+        config = FunctionCallingSchemaConfig.Strict,
     )
 
     override fun getRootName(target: KCallable<*>): String = target.name

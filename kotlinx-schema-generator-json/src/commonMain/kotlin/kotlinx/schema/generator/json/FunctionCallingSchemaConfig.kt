@@ -1,7 +1,5 @@
 package kotlinx.schema.generator.json
 
-import kotlinx.schema.generator.json.FunctionCallingSchemaConfig.Companion.Strict
-
 /**
  * Configuration for function calling schema transformers.
  *
@@ -14,11 +12,11 @@ import kotlinx.schema.generator.json.FunctionCallingSchemaConfig.Companion.Stric
  * @see [OpenAI Function Calling](https://platform.openai.com/docs/guides/function-calling)
  */
 public class FunctionCallingSchemaConfig(
-    respectDefaultPresence: Boolean = false,
-    requireNullableFields: Boolean = true,
-    useUnionTypes: Boolean = true,
-    useNullableField: Boolean = false,
-    includePolymorphicDiscriminator: Boolean = false,
+    respectDefaultPresence: Boolean = JsonSchemaConfig.Default.respectDefaultPresence,
+    requireNullableFields: Boolean = JsonSchemaConfig.Default.requireNullableFields,
+    useUnionTypes: Boolean = JsonSchemaConfig.Default.useUnionTypes,
+    useNullableField: Boolean = JsonSchemaConfig.Default.useNullableField,
+    includePolymorphicDiscriminator: Boolean = JsonSchemaConfig.Default.includePolymorphicDiscriminator,
     /**
      * Whether to set the `strict: true` flag in function calling schema output.
      *
@@ -45,11 +43,11 @@ public class FunctionCallingSchemaConfig(
          */
         public val Strict: FunctionCallingSchemaConfig =
             FunctionCallingSchemaConfig(
-                respectDefaultPresence = false,
-                requireNullableFields = true,
-                useUnionTypes = true,
-                useNullableField = false,
-                includePolymorphicDiscriminator = false,
+                respectDefaultPresence = JsonSchemaConfig.Strict.respectDefaultPresence,
+                requireNullableFields = JsonSchemaConfig.Strict.requireNullableFields,
+                useUnionTypes = JsonSchemaConfig.Strict.useUnionTypes,
+                useNullableField = JsonSchemaConfig.Strict.useNullableField,
+                includePolymorphicDiscriminator = JsonSchemaConfig.Strict.includePolymorphicDiscriminator,
                 strictMode = true,
             )
 
@@ -62,7 +60,7 @@ public class FunctionCallingSchemaConfig(
          */
         public val Simple: FunctionCallingSchemaConfig =
             FunctionCallingSchemaConfig(
-                respectDefaultPresence = false,
+                respectDefaultPresence = true,
                 requireNullableFields = false,
                 useUnionTypes = true,
                 useNullableField = false,
@@ -71,8 +69,8 @@ public class FunctionCallingSchemaConfig(
             )
 
         /**
-         * Default configuration for function calling schemas is [Strict] configuration.
+         * Default configuration for function calling schemas.
          */
-        public val Default: FunctionCallingSchemaConfig = Strict
+        public val Default: FunctionCallingSchemaConfig = FunctionCallingSchemaConfig()
     }
 }

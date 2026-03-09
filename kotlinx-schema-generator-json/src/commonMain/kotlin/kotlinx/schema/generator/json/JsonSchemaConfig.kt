@@ -1,6 +1,5 @@
 package kotlinx.schema.generator.json
 
-import kotlinx.schema.generator.json.JsonSchemaConfig.Companion.Default
 import kotlinx.schema.generator.json.JsonSchemaConfig.Companion.Strict
 
 /**
@@ -44,7 +43,7 @@ public open class JsonSchemaConfig(
      *
      * Default: `false`
      */
-    public val respectDefaultPresence: Boolean = false,
+    public val respectDefaultPresence: Boolean = true,
     /**
      * Whether nullable fields must be present in JSON.
      *
@@ -81,7 +80,7 @@ public open class JsonSchemaConfig(
      *
      * Default: `true` (Draft 2020-12 strict mode)
      */
-    public val requireNullableFields: Boolean = true,
+    public val requireNullableFields: Boolean = false,
     /**
      * Whether to use union types for nullable fields.
      *
@@ -107,8 +106,10 @@ public open class JsonSchemaConfig(
      *
      * When enabled, each polymorphic subtype schema gets an additional `"type"` property
      * containing a constant string equal to the subtype's simple class name.
+     *
+     * It's a good practice to enable it by default
      **/
-    public val includePolymorphicDiscriminator: Boolean = false,
+    public val includePolymorphicDiscriminator: Boolean = true,
     /**
      * Whether to include discriminator in polymorphic schemas.
      *
@@ -150,20 +151,14 @@ public open class JsonSchemaConfig(
          * With KSP, behaves like [Strict] (all fields required).
          */
         public val Default: JsonSchemaConfig =
-            JsonSchemaConfig(
-                respectDefaultPresence = true,
-                requireNullableFields = true,
-                useUnionTypes = true,
-                useNullableField = false,
-                includePolymorphicDiscriminator = false,
-                includeOpenAPIPolymorphicDiscriminator = false,
-            )
+            JsonSchemaConfig()
 
         /**
          * Configuration for full JSON Schema Draft 2020-12 compliance:
          *  - `respectDefaultPresence = false` - ignore default values (KSP limitation)
          *  - `requireNullableFields = true` - all fields in required array (including nullables)
          *  - `useUnionTypes = true` - union types for nullable fields
+         *  - Type discriminators are enabled for polymorphic types
          *
          * Use this when generating schemas that must strictly comply with JSON Schema Draft 2020-12,
          * or when using with OpenAI function calling APIs with strict mode enabled.
@@ -172,11 +167,11 @@ public open class JsonSchemaConfig(
          */
         public val Strict: JsonSchemaConfig =
             JsonSchemaConfig(
-                respectDefaultPresence = false,
+                respectDefaultPresence = true,
                 requireNullableFields = true,
                 useUnionTypes = true,
                 useNullableField = false,
-                includePolymorphicDiscriminator = false,
+                includePolymorphicDiscriminator = true,
                 includeOpenAPIPolymorphicDiscriminator = false,
             )
 
