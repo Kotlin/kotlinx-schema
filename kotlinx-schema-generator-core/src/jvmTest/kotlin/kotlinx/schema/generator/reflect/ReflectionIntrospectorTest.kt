@@ -5,6 +5,7 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.schema.Description
+import kotlinx.schema.generator.core.ir.AnyNode
 import kotlinx.schema.generator.core.ir.EnumNode
 import kotlinx.schema.generator.core.ir.ListNode
 import kotlinx.schema.generator.core.ir.MapNode
@@ -58,6 +59,12 @@ class ReflectionIntrospectorTest {
 
         data class Bicycle(val gears: Int) : Vehicle()
     }
+
+    data class WithAny(
+        val content: Any,
+        val optContent: Any?,
+        val metadata: Map<String, Any>,
+    )
 
     private val introspector = ReflectionClassIntrospector
 
@@ -211,5 +218,38 @@ class ReflectionIntrospectorTest {
             ].shouldNotBeNull()
                 .shouldBeInstanceOf<ObjectNode>()
         rectangleNode.description shouldBe "Rectangle shape"
+    }
+
+    @Test
+    fun `introspects kotlin Any as inline AnyNode for non-nullable nullable and map value`() {
+        val graph = introspector.introspect(WithAny::class)
+
+        val root = graph.root.shouldBeInstanceOf<TypeRef.Ref>()
+        val node = graph.nodes[root.id].shouldBeInstanceOf<ObjectNode>()
+        val props = node.properties.associateBy { it.name }
+
+        // non-nullable Any → TypeRef.Inline(AnyNode(), nullable=false)
+        props.getValue("content").type.shouldBeInstanceOf<TypeRef.Inline> {
+            it.node.shouldBeInstanceOf<AnyNode>()
+            it.nullable shouldBe false
+        }
+
+        // nullable Any? → TypeRef.Inline(AnyNode(), nullable=true)
+        props.getValue("optContent").type.shouldBeInstanceOf<TypeRef.Inline> {
+            it.node.shouldBeInstanceOf<AnyNode>()
+            it.nullable shouldBe true
+        }
+
+        // Map<String, Any> value type → AnyNode
+        props.getValue("metadata").type.shouldBeInstanceOf<TypeRef.Inline> { mapRef ->
+            mapRef.node.shouldBeInstanceOf<MapNode> { mapNode ->
+                mapNode.value.shouldBeInstanceOf<TypeRef.Inline> {
+                    it.node.shouldBeInstanceOf<AnyNode>()
+                }
+            }
+        }
+
+        // kotlin.Any does not create a named node in the graph
+        graph.nodes.keys.none { it.value == "kotlin.Any" } shouldBe true
     }
 }

@@ -86,7 +86,7 @@ internal class KspIntrospectionContext : BaseIntrospectionContext<KSType>() {
      * a qualified name (e.g., generic type parameters like `T` in `fun <T> foo(param: T)`).
      *
      * @param type The KSType to check
-     * @return TypeRef.Ref to kotlin.Any if fallback is needed, null otherwise
+     * @return [TypeRef.Inline] wrapping [AnyNode] if fallback is needed, null otherwise
      */
     private fun handleAnyFallback(type: KSType): TypeRef? {
         val nullable = type.nullability == Nullability.NULLABLE

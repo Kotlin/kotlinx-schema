@@ -340,6 +340,7 @@ public class TypeGraphToJsonSchemaTransformer
                 }
 
                 is AnyNode -> {
+                    // AnyNode emits {} which already accepts null — nullable flag intentionally ignored
                     GenericPropertyDefinition(description = node.description)
                 }
 
@@ -372,6 +373,7 @@ public class TypeGraphToJsonSchemaTransformer
         ): PropertyDefinition =
             when (node) {
                 is PrimitiveNode -> convertPrimitive(node, nullable)
+                // AnyNode emits {} which already accepts null — nullable flag intentionally ignored
                 is AnyNode -> GenericPropertyDefinition(description = node.description)
                 is ObjectNode -> convertObject(node, nullable, graph, definitions)
                 is EnumNode -> convertEnum(node, nullable)

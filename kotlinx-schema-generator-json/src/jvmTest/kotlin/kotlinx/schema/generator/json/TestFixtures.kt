@@ -143,6 +143,15 @@ data class MapOfNested(
     val optionalData: Map<String, Address>? = null,
 )
 
+@Description("Class with Any typed properties")
+data class WithAnyProperties(
+    @property:Description("Unconstrained content")
+    val content: Any,
+    val optContent: Any? = null,
+    @property:Description("Metadata map")
+    val metadata: Map<String, Any> = emptyMap(),
+)
+
 // Mixed required, optional, and default fields
 @Description("Mixed required and optional")
 data class MixedRequiredOptional(

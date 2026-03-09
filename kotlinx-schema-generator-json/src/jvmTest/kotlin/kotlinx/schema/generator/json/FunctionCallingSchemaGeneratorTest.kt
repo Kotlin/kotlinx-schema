@@ -169,7 +169,6 @@ class FunctionCallingSchemaGeneratorTest {
     fun `generates schema for function with enum parameter`() {
         val schemaString = generator.generateSchemaString(EnumParameter::log)
         schemaString shouldEqualJson
-            // language=json
             """
             {
                 "type": "function",
@@ -263,7 +262,6 @@ class FunctionCallingSchemaGeneratorTest {
     fun `generates schema for suspendable function with complex parameters`() {
         val schemaString = generator.generateSchemaString(SuspendableComplexTypes::sampleFunction)
         schemaString shouldEqualJson
-            // language=JSON
             """
             {
               "type": "function",
@@ -490,7 +488,6 @@ class FunctionCallingSchemaGeneratorTest {
             )
         val result = generator?.generateSchemaString(SimpleFunction::greet)
         result!! shouldEqualJson
-            // language=json
             """
             {
                 "type": "function",
@@ -544,7 +541,6 @@ class FunctionCallingSchemaGeneratorTest {
         val schemaString = generator.generateSchemaString(::serializationArgsTool)
 
         schemaString shouldEqualJson
-            // language=JSON
             """
             {
                 "type": "function",
@@ -583,6 +579,47 @@ class FunctionCallingSchemaGeneratorTest {
                     "additionalProperties": false
                 }
             } 
+            """.trimIndent()
+    }
+
+    object AnyTypedParameters {
+        @Description("Process arbitrary data")
+        fun process(
+            data: Map<String, Any>,
+            extra: Any?,
+            @Description("Labelled content")
+            content: Any,
+        ): String = ""
+    }
+
+    @Test
+    fun `generates schema for function with kotlin Any typed parameters`() {
+        val schemaString = generator.generateSchemaString(AnyTypedParameters::process)
+
+        schemaString shouldEqualJson
+            // language=JSON
+            """
+            {
+              "type": "function",
+              "name": "process",
+              "description": "Process arbitrary data",
+              "strict": true,
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object",
+                    "additionalProperties": {}
+                  },
+                  "extra": {},
+                  "content": {
+                    "description": "Labelled content"
+                  }
+                },
+                "required": ["data", "extra", "content"],
+                "additionalProperties": false
+              }
+            }
             """.trimIndent()
     }
 

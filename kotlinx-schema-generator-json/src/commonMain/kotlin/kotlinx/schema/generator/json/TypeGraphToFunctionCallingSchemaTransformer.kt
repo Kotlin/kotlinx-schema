@@ -200,6 +200,11 @@ public class TypeGraphToFunctionCallingSchemaTransformer
                     convertPrimitive(node, nullable)
                 }
 
+                is AnyNode -> {
+                    // AnyNode emits {} which already accepts null — nullable flag intentionally ignored
+                    GenericPropertyDefinition(description = node.description)
+                }
+
                 is ListNode -> {
                     convertList(node, nullable, graph)
                 }
@@ -211,7 +216,7 @@ public class TypeGraphToFunctionCallingSchemaTransformer
                 else -> {
                     throw IllegalArgumentException(
                         "Unsupported inline node type: ${node::class.simpleName}. " +
-                            "Only PrimitiveNode, ListNode, and MapNode can be inlined.",
+                            "Only PrimitiveNode, AnyNode, ListNode, and MapNode can be inlined.",
                     )
                 }
             }

@@ -627,6 +627,35 @@ class JsonSchemaTypesTest {
     }
 
     @Test
+    fun `Should handle kotlin Any typed properties as empty schema`() {
+        val schema = generator.generateSchemaString(WithAnyProperties::class)
+
+        schema shouldEqualJson
+            // language=JSON
+            $$"""
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.generator.json.WithAnyProperties",
+              "description": "Class with Any typed properties",
+              "type": "object",
+              "properties": {
+                "content": {
+                  "description": "Unconstrained content"
+                },
+                "optContent": {},
+                "metadata": {
+                  "type": "object",
+                  "description": "Metadata map",
+                  "additionalProperties": {}
+                }
+              },
+              "required": ["content"],
+              "additionalProperties": false
+            }
+            """.trimIndent()
+    }
+
+    @Test
     fun `should handle data object schema with constant values`() {
         val schema = ReflectionClassJsonSchemaGenerator().generateSchemaString(ObjectWithProps::class)
         schema shouldEqualJson """
