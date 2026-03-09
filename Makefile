@@ -27,7 +27,7 @@ scan:
 .PHONY: apidocs
 apidocs:
 	@echo "📚 Generating API documentation..."
-	@rm -rf docs/public/apidocs && \
+	@rm -rf docs/public/apidocs
 	@./gradlew clean :docs:dokkaGenerate
 	@echo "✅ API docs generated!"
 

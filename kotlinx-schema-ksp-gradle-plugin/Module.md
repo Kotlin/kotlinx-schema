@@ -34,6 +34,6 @@ kotlinxSchema {
 
 See [Plugin Documentation](https://github.com/Kotlin/kotlinx-schema/blob/main/kotlinx-schema-ksp-gradle-plugin/README.md).
 
-# Package kotlinx.schema.gradle.plugin
+# Package kotlinx.schema.ksp.gradle.plugin
 
 Gradle plugin implementation and extension DSL.

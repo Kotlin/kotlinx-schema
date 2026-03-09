@@ -56,10 +56,22 @@ See [KSP Configuration Guide](https://github.com/Kotlin/kotlinx-schema/blob/main
 
 KSP symbol processor implementation.
 
-# Package kotlinx.schema.ksp.codegen
+# Package kotlinx.schema.ksp.generator
 
-Code generation for schema extensions.
+KSP-specific schema generation logic.
 
-# Package kotlinx.schema.ksp.introspection
+# Package kotlinx.schema.ksp.ir
 
-KSP-based type introspection.
+Intermediate representation for KSP-based introspection.
+
+# Package kotlinx.schema.ksp.type
+
+KSP-based type analysis.
+
+# Package kotlinx.schema.ksp.functions
+
+KSP-based function analysis.
+
+# Package kotlinx.schema.ksp.strategy
+
+KSP-based generation strategies.
