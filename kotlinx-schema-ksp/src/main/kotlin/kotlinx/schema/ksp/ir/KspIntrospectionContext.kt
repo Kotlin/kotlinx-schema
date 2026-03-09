@@ -134,9 +134,10 @@ internal class KspIntrospectionContext : BaseIntrospectionContext<KSType>() {
                         .SubtypeRef(it.typeId())
                 }
 
-            // Build discriminator mapping: discriminator value (simple name) -> TypeId (full qualified name)
+            // Build discriminator mapping: discriminator value (fully qualified name) -> TypeId
+            // Keys must match the `const` values emitted for each subtype's discriminator property.
             val discriminatorMapping =
-                sealedSubclasses.associate { it.simpleName.asString() to it.typeId() }
+                sealedSubclasses.associate { it.typeId().value to it.typeId() }
 
             // Process each sealed subclass
             sealedSubclasses.forEach { toRef(it.asType(emptyList())) }
