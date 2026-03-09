@@ -52,6 +52,16 @@ class SerializationIntrospectorTest {
         ) : Shape()
     }
 
+    @Serializable
+    sealed class InheritedShape(
+        val meta: String,
+    ) {
+        @Serializable
+        data class Circle(
+            val radius: Double,
+        ) : InheritedShape("circle-meta")
+    }
+
     private val introspector = SerializationIntrospector()
 
     @Test
@@ -178,5 +188,17 @@ class SerializationIntrospectorTest {
         subtypeIds.forEach { id ->
             graph.nodes[TypeId(id)].shouldNotBeNull().shouldBeInstanceOf<ObjectNode>()
         }
+    }
+
+    @Test
+    fun `introspects inherited property from sealed parent in serialization`() {
+        val graph = introspector.introspect(InheritedShape.Circle.serializer().descriptor)
+
+        val rootRef = graph.root.shouldBeInstanceOf<TypeRef.Ref>()
+        val circleNode = graph.nodes[rootRef.id].shouldNotBeNull().shouldBeInstanceOf<ObjectNode>()
+
+        val propNames = circleNode.properties.map { it.name }
+        // Radius should be there
+        propNames.shouldContainExactlyInAnyOrder("radius", "meta")
     }
 }

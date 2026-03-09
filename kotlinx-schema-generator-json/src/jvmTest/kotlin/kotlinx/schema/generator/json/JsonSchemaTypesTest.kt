@@ -1,254 +1,731 @@
 package kotlinx.schema.generator.json
 
-import io.kotest.matchers.collections.shouldContainAll
-import io.kotest.matchers.nulls.shouldBeNull
-import io.kotest.matchers.nulls.shouldNotBeNull
-import io.kotest.matchers.shouldBe
-import kotlinx.schema.generator.core.SchemaGeneratorService
-import kotlinx.schema.json.ArrayPropertyDefinition
+import io.kotest.assertions.json.shouldEqualJson
+import kotlinx.schema.Schema
+import kotlinx.schema.generator.core.SchemaGenerator
 import kotlinx.schema.json.JsonSchema
-import kotlinx.schema.json.NumericPropertyDefinition
-import kotlinx.schema.json.ObjectPropertyDefinition
-import kotlinx.schema.json.StringPropertyDefinition
+import kotlinx.serialization.json.Json
 import kotlin.reflect.KClass
 import kotlin.test.Test
 
 class JsonSchemaTypesTest {
-    private val generator =
-        requireNotNull(
-            SchemaGeneratorService.getGenerator(
-                KClass::class,
-                JsonSchema::class,
-            ),
+    private val generator: SchemaGenerator<KClass<out Any>, JsonSchema> =
+        ReflectionClassJsonSchemaGenerator(
+            json = Json { encodeDefaults = false },
+            config = JsonSchemaConfig.Default,
         )
 
     // Primitive Types Tests
 
     @Test
     fun `Should handle all numeric types correctly`() {
-        val jsonSchema = generator.generateSchema(WithNumericTypes::class)
-        val properties = jsonSchema.properties
+        val schema = generator.generateSchemaString(WithNumericTypes::class)
 
-        // Non-nullable integer types
-        jsonSchema.numericProperty("intVal") shouldNotBeNull {
-            type shouldBe listOf("integer")
-            nullable.shouldBeNull()
-        }
-
-        val longProperty = properties["longVal"] as NumericPropertyDefinition
-        longProperty.type shouldBe listOf("integer")
-        longProperty.nullable.shouldBeNull()
-
-        // Non-nullable floating point types
-        val floatProperty = properties["floatVal"] as NumericPropertyDefinition
-        floatProperty.type shouldBe listOf("number")
-        floatProperty.nullable.shouldBeNull()
-
-        val doubleProperty = properties["doubleVal"] as NumericPropertyDefinition
-        doubleProperty.type shouldBe listOf("number")
-        doubleProperty.nullable.shouldBeNull()
-
-        // Nullable integer types (using union types)
-        val nullableIntProperty = properties["nullableInt"] as NumericPropertyDefinition
-        nullableIntProperty.type shouldBe listOf("integer", "null")
-        nullableIntProperty.nullable.shouldBeNull()
-
-        val nullableLongProperty = properties["nullableLong"] as NumericPropertyDefinition
-        nullableLongProperty.type shouldBe listOf("integer", "null")
-        nullableLongProperty.nullable.shouldBeNull()
-
-        // Nullable floating point types (using union types)
-        val nullableFloatProperty = properties["nullableFloat"] as NumericPropertyDefinition
-        nullableFloatProperty.type shouldBe listOf("number", "null")
-        nullableFloatProperty.nullable.shouldBeNull()
-
-        val nullableDoubleProperty = properties["nullableDouble"] as NumericPropertyDefinition
-        nullableDoubleProperty.type shouldBe listOf("number", "null")
-        nullableDoubleProperty.nullable.shouldBeNull()
+        schema shouldEqualJson
+            // language=JSON
+            $$"""
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.generator.json.WithNumericTypes",
+              "description": "Class with numeric types",
+              "type": "object",
+              "properties": {
+                "intVal": {
+                  "type": "integer",
+                  "description": "Int value"
+                },
+                "longVal": {
+                  "type": "integer",
+                  "description": "Long value"
+                },
+                "floatVal": {
+                  "type": "number",
+                  "description": "Float value"
+                },
+                "doubleVal": {
+                  "type": "number",
+                  "description": "Double value"
+                },
+                "nullableInt": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "description": "Nullable int"
+                },
+                "nullableLong": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "description": "Nullable long"
+                },
+                "nullableFloat": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "description": "Nullable float"
+                },
+                "nullableDouble": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "description": "Nullable double"
+                }
+              },
+              "required": [
+                "intVal",
+                "longVal",
+                "floatVal",
+                "doubleVal"
+              ],
+              "additionalProperties": false
+            }
+            """
     }
 
     @Test
     fun `Should handle enum types`() {
-        val schema = generator.generateSchema(WithEnum::class)
-        val properties = schema.properties
+        val schema = generator.generateSchemaString(WithEnum::class)
 
-        val statusProperty = properties["status"] as StringPropertyDefinition
-        statusProperty.type shouldBe listOf("string")
-        statusProperty.nullable.shouldBeNull()
-        statusProperty.enum shouldNotBeNull {
-            size shouldBe 3
-            this shouldContainAll
-                listOf(
+        schema shouldEqualJson
+            // language=JSON
+            $$"""
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.generator.json.WithEnum",
+              "description": "Class with enum",
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "description": "Status",
+                  "enum": [
                     "ACTIVE",
                     "INACTIVE",
-                    "PENDING",
-                )
-        }
-
-        val optStatusProperty = properties["optStatus"] as StringPropertyDefinition
-        optStatusProperty.type shouldBe listOf("string", "null")
-        optStatusProperty.nullable.shouldBeNull()
-        optStatusProperty.enum.shouldNotBeNull()
+                    "PENDING"
+                  ]
+                },
+                "optStatus": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Optional status",
+                  "enum": [
+                    "ACTIVE",
+                    "INACTIVE",
+                    "PENDING"
+                  ]
+                }
+              },
+              "required": [
+                "status"
+              ],
+              "additionalProperties": false
+            }
+            """
     }
 
     // Collection Types Tests
 
     @Test
     fun `Should handle collection types`() {
-        val schema = generator.generateSchema(WithCollections::class)
-        val properties = schema.properties
+        val schema = generator.generateSchemaString(WithCollections::class)
 
-        val itemsProperty = properties["items"] as ArrayPropertyDefinition
-        itemsProperty.type shouldBe listOf("array")
-        itemsProperty.nullable.shouldBeNull()
-        itemsProperty.items.shouldNotBeNull()
-
-        val dataProperty = properties["data"] as ObjectPropertyDefinition
-        dataProperty.type shouldBe listOf("object")
-        dataProperty.nullable.shouldBeNull()
-        dataProperty.additionalProperties.shouldNotBeNull()
-
-        val optListProperty = properties["optList"] as ArrayPropertyDefinition
-        optListProperty.type shouldBe listOf("array", "null")
-        optListProperty.nullable.shouldBeNull()
-
-        val optMapProperty = properties["optMap"] as ObjectPropertyDefinition
-        optMapProperty.type shouldBe listOf("object", "null")
-        optMapProperty.nullable.shouldBeNull()
+        schema shouldEqualJson
+            // language=JSON
+            $$"""
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.generator.json.WithCollections",
+              "description": "Class with collections",
+              "type": "object",
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "description": "String list",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "data": {
+                  "type": "object",
+                  "description": "String to int map",
+                  "additionalProperties": {
+                    "type": "integer"
+                  }
+                },
+                "optList": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "description": "Nullable list",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "optMap": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "description": "Nullable map",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "items",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+            """
     }
 
     @Test
     fun `Should handle list of nested objects`() {
-        val schema = generator.generateSchema(ListOfNested::class)
-        val properties = schema.properties
+        val schema = generator.generateSchemaString(ListOfNested::class)
 
-        val itemsProperty = properties["items"] as ArrayPropertyDefinition
-        itemsProperty.items.shouldNotBeNull()
-        val itemType = itemsProperty.items as ObjectPropertyDefinition
-        itemType.type shouldBe listOf("object")
-
-        val optionalItemsProperty = properties["optionalItems"] as ArrayPropertyDefinition
-        optionalItemsProperty.type shouldBe listOf("array", "null")
-        optionalItemsProperty.nullable.shouldBeNull()
+        schema shouldEqualJson
+            // language=JSON
+            $$"""
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.generator.json.ListOfNested",
+              "description": "List of nested",
+              "type": "object",
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "description": "Items",
+                  "items": {
+                    "type": "object",
+                    "description": "Nested object",
+                    "properties": {
+                      "street": {
+                        "type": "string",
+                        "description": "Street name"
+                      },
+                      "city": {
+                        "type": "string",
+                        "description": "City name"
+                      }
+                    },
+                    "required": [
+                      "street",
+                      "city"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "optionalItems": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "description": "Optional items",
+                  "items": {
+                    "type": "object",
+                    "description": "Nested object",
+                    "properties": {
+                      "street": {
+                        "type": "string",
+                        "description": "Street name"
+                      },
+                      "city": {
+                        "type": "string",
+                        "description": "City name"
+                      }
+                    },
+                    "required": [
+                      "street",
+                      "city"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "items"
+              ],
+              "additionalProperties": false
+            }
+            """
     }
 
     @Test
     fun `Should handle map of nested objects`() {
-        val schema = generator.generateSchema(MapOfNested::class)
-        val properties = schema.properties
+        val schema = generator.generateSchemaString(MapOfNested::class)
 
-        val dataProperty = properties["data"] as ObjectPropertyDefinition
-        dataProperty.additionalProperties.shouldNotBeNull()
-
-        val optionalDataProperty = properties["optionalData"] as ObjectPropertyDefinition
-        optionalDataProperty.type shouldBe listOf("object", "null")
-        optionalDataProperty.nullable.shouldBeNull()
+        schema shouldEqualJson
+            // language=JSON
+            $$"""
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.generator.json.MapOfNested",
+              "description": "Map of nested",
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "description": "Data",
+                  "additionalProperties": {
+                    "type": "object",
+                    "description": "Nested object",
+                    "properties": {
+                      "street": {
+                        "type": "string",
+                        "description": "Street name"
+                      },
+                      "city": {
+                        "type": "string",
+                        "description": "City name"
+                      }
+                    },
+                    "required": [
+                      "street",
+                      "city"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "optionalData": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "description": "Optional data",
+                  "additionalProperties": {
+                    "type": "object",
+                    "description": "Nested object",
+                    "properties": {
+                      "street": {
+                        "type": "string",
+                        "description": "Street name"
+                      },
+                      "city": {
+                        "type": "string",
+                        "description": "City name"
+                      }
+                    },
+                    "required": [
+                      "street",
+                      "city"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "data"
+              ],
+              "additionalProperties": false
+            }
+            """
     }
 
     // Nested Object Tests
 
     @Test
     fun `Should handle nested objects`() {
-        val schema = generator.generateSchema(WithNested::class)
-        val properties = schema.properties
+        val schema = generator.generateSchemaString(WithNested::class)
 
-        properties.size shouldBe 3
-
-        val addressProperty = properties["address"] as ObjectPropertyDefinition
-        addressProperty.type shouldBe listOf("object")
-        addressProperty.nullable.shouldBeNull()
-        addressProperty.properties.shouldNotBeNull()
-        addressProperty.properties!!.size shouldBe 2
-
-        val optAddressProperty = properties["optAddress"] as ObjectPropertyDefinition
-        optAddressProperty.type shouldBe listOf("object", "null")
-        optAddressProperty.nullable.shouldBeNull()
+        schema shouldEqualJson
+            // language=JSON
+            $$"""
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.generator.json.WithNested",
+              "description": "Class with nested object",
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Name"
+                },
+                "address": {
+                  "type": "object",
+                  "description": "Address",
+                  "properties": {
+                    "street": {
+                      "type": "string",
+                      "description": "Street name"
+                    },
+                    "city": {
+                      "type": "string",
+                      "description": "City name"
+                    }
+                  },
+                  "required": [
+                    "street",
+                    "city"
+                  ],
+                  "additionalProperties": false
+                },
+                "optAddress": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "description": "Optional address",
+                  "properties": {
+                    "street": {
+                      "type": "string",
+                      "description": "Street name"
+                    },
+                    "city": {
+                      "type": "string",
+                      "description": "City name"
+                    }
+                  },
+                  "required": [
+                    "street",
+                    "city"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "name",
+                "address"
+              ],
+              "additionalProperties": false
+            }
+            """
     }
 
     @Test
     fun `Should handle deeply nested structures`() {
-        val schema = generator.generateSchema(DeepNested::class)
-        val properties = schema.properties
+        val schema = generator.generateSchemaString(DeepNested::class)
 
-        val level1Property = properties["level1"] as ObjectPropertyDefinition
-        level1Property.properties.shouldNotBeNull()
-        level1Property.properties!!.size shouldBe 2
-
-        val level2Property = level1Property.properties!!["level2"] as ObjectPropertyDefinition
-        level2Property.properties.shouldNotBeNull()
-        level2Property.properties!!.size shouldBe 3
-
-        val level3Property = level2Property.properties!!["level3"] as ObjectPropertyDefinition
-        level3Property.properties.shouldNotBeNull()
-        level3Property.properties!!.size shouldBe 1
+        schema shouldEqualJson
+            // language=JSON
+            $$"""
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.generator.json.DeepNested",
+              "description": "Deep nested structure",
+              "type": "object",
+              "properties": {
+                "level1": {
+                  "type": "object",
+                  "description": "Level 1",
+                  "properties": {
+                    "level2": {
+                      "type": "object",
+                      "description": "Level 2",
+                      "properties": {
+                        "value": {
+                          "type": "integer",
+                          "description": "Value"
+                        },
+                        "level3": {
+                          "type": "object",
+                          "description": "Level 3",
+                          "properties": {
+                            "value": {
+                              "type": "string",
+                              "description": "Value"
+                            }
+                          },
+                          "required": [
+                            "value"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "optional": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Optional value"
+                        }
+                      },
+                      "required": [
+                        "value",
+                        "level3"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "value": {
+                      "type": "string",
+                      "description": "Value"
+                    }
+                  },
+                  "required": [
+                    "level2",
+                    "value"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "level1"
+              ],
+              "additionalProperties": false
+            }
+            """
     }
 
     // Required Fields Tests
 
     @Test
     fun `Should correctly distinguish required vs optional vs default`() {
-        val schema = generator.generateSchema(MixedRequiredOptional::class)
-        val required = schema.required
+        val schema = generator.generateSchemaString(MixedRequiredOptional::class)
 
-        // Only truly required (no defaults) should be in required list
-        required.size shouldBe 2
-        required.toSet() shouldBe setOf("req1", "req2")
+        schema shouldEqualJson
+            // language=JSON
+            $$"""
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.generator.json.MixedRequiredOptional",
+              "description": "Mixed required and optional",
+              "type": "object",
+              "properties": {
+                "req1": {
+                  "type": "string",
+                  "description": "Required string"
+                },
+                "req2": {
+                  "type": "integer",
+                  "description": "Required int"
+                },
+                "opt1": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Optional string"
+                },
+                "opt2": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "description": "Optional int"
+                },
+                "def1": {
+                  "type": "string",
+                  "description": "Default string",
+                  "default": "default"
+                },
+                "def2": {
+                  "type": "integer",
+                  "description": "Default int",
+                  "default": 42
+                }
+              },
+              "required": [
+                "req1",
+                "req2"
+              ],
+              "additionalProperties": false
+            }
+            """
     }
 
     @Test
     fun `Should handle class with all optional fields`() {
-        val schema = generator.generateSchema(EmptyClass::class)
-        val required = schema.required
+        val schema = generator.generateSchemaString(EmptyClass::class)
 
-        // No required fields
-        required.size shouldBe 0
+        schema shouldEqualJson
+            // language=JSON
+            $$"""
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.generator.json.EmptyClass",
+              "description": "Empty class",
+              "type": "object",
+              "properties": {
+                "dummy": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": "ignored"
+                }
+              },
+              "additionalProperties": false
+            }
+            """
     }
 
     @Test
     fun `Should handle class with single required field`() {
-        val schema = generator.generateSchema(SingleRequired::class)
-        val required = schema.required
+        val schema = generator.generateSchemaString(SingleRequired::class)
 
-        required.size shouldBe 1
-        required[0] shouldBe "value"
+        schema shouldEqualJson
+            // language=JSON
+            $$"""
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.generator.json.SingleRequired",
+              "description": "Single required field",
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "description": "Only field"
+                }
+              },
+              "required": [
+                "value"
+              ],
+              "additionalProperties": false
+            }
+            """
     }
 
     // Description Preservation Tests
 
     @Test
     fun `Should preserve descriptions through transformations`() {
-        val schema = generator.generateSchema(MixedRequiredOptional::class)
-        val properties = schema.properties
+        val schema = generator.generateSchemaString(MixedRequiredOptional::class)
 
-        val req1Property = properties["req1"] as StringPropertyDefinition
-        req1Property.description shouldBe "Required string"
-
-        val opt1Property = properties["opt1"] as StringPropertyDefinition
-        opt1Property.description shouldBe "Optional string"
-
-        val def1Property = properties["def1"] as StringPropertyDefinition
-        def1Property.description shouldBe "Default string"
+        schema shouldEqualJson
+            // language=JSON
+            $$"""
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.generator.json.MixedRequiredOptional",
+              "description": "Mixed required and optional",
+              "type": "object",
+              "properties": {
+                "req1": {
+                  "type": "string",
+                  "description": "Required string"
+                },
+                "req2": {
+                  "type": "integer",
+                  "description": "Required int"
+                },
+                "opt1": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Optional string"
+                },
+                "opt2": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "description": "Optional int"
+                },
+                "def1": {
+                  "type": "string",
+                  "description": "Default string",
+                  "default": "default"
+                },
+                "def2": {
+                  "type": "integer",
+                  "description": "Default int",
+                  "default": 42
+                }
+              },
+              "required": [
+                "req1",
+                "req2"
+              ],
+              "additionalProperties": false
+            }
+            """
     }
 
     // Nullable Optional Fields Tests
 
     @Test
     fun `Should handle nullable optional fields with default config`() {
-        val schema = generator.generateSchema(PersonWithOptionals::class)
-        val properties = schema.properties
-        val required = schema.required
+        val schema = generator.generateSchemaString(PersonWithOptionals::class)
 
-        // Only required properties (no defaults) should be in required list
-        required.size shouldBe 1
-        required shouldContainAll listOf("name")
+        schema shouldEqualJson
+            // language=JSON
+            $$"""
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.generator.json.PersonWithOptionals",
+              "description": "Person with various optional fields",
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Name"
+                },
+                "age": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "description": "Age"
+                },
+                "email": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Email"
+                },
+                "score": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "description": "Score"
+                },
+                "active": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ],
+                  "description": "Active"
+                }
+              },
+              "required": [
+                "name"
+              ],
+              "additionalProperties": false
+            }
+            """
+    }
 
-        // Nullable optional fields should use union types
-        val ageProperty = properties["age"] as NumericPropertyDefinition
-        ageProperty.type shouldBe listOf("integer", "null")
-        ageProperty.nullable.shouldBeNull()
+    @Schema
+    @Suppress("MayBeConstant")
+    data object ObjectWithProps {
+        val foo = "bar"
+        val num = 42
+    }
 
-        val emailProperty = properties["email"] as StringPropertyDefinition
-        emailProperty.type shouldBe listOf("string", "null")
-        emailProperty.nullable.shouldBeNull()
+    @Test
+    fun `should handle data object schema with constant values`() {
+        val schema = ReflectionClassJsonSchemaGenerator().generateSchemaString(ObjectWithProps::class)
+        schema shouldEqualJson """
+            {
+              "${'$'}schema": "https://json-schema.org/draft/2020-12/schema",
+              "${'$'}id": "kotlinx.schema.generator.json.JsonSchemaTypesTest.ObjectWithProps",
+              "type": "object",
+              "properties": {
+                "foo": {
+                  "type": "string",
+                  "const": "bar"
+                },
+                "num": {
+                  "type": "integer",
+                  "const": 42
+                }
+              },
+              "required": [
+                "foo",
+                "num"
+              ],
+              "additionalProperties": false
+            }
+            """
     }
 }

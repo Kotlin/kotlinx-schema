@@ -163,7 +163,7 @@ data class MixedRequiredOptional(
 // Edge cases
 @Description("Empty class")
 data class EmptyClass(
-    val dummy: String = "ignored",
+    val dummy: String? = "ignored",
 )
 
 @Description("Single required field")

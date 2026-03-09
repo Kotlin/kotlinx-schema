@@ -1,0 +1,119 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, js, linuxArm64, linuxX64, macosArm64, macosX64, mingwX64, tvosArm64, tvosSimulatorArm64, tvosX64, wasmJs, watchosArm32, watchosArm64, watchosSimulatorArm64, watchosX64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <org.jetbrains.kotlinx:kotlinx-schema-generator-json>
+abstract interface <#A: kotlin/Any> kotlinx.schema.generator.json/JsonSchemaGenerator : kotlinx.schema.generator.core/SchemaGenerator<#A, kotlinx.serialization.json/JsonObject> { // kotlinx.schema.generator.json/JsonSchemaGenerator|null[0]
+    abstract fun generateSchema(#A): kotlinx.serialization.json/JsonObject // kotlinx.schema.generator.json/JsonSchemaGenerator.generateSchema|generateSchema(1:0){}[0]
+    open fun encodeToString(kotlinx.serialization.json/JsonObject): kotlin/String // kotlinx.schema.generator.json/JsonSchemaGenerator.encodeToString|encodeToString(kotlinx.serialization.json.JsonObject){}[0]
+    open fun generateSchemaString(#A): kotlin/String // kotlinx.schema.generator.json/JsonSchemaGenerator.generateSchemaString|generateSchemaString(1:0){}[0]
+}
+
+final class kotlinx.schema.generator.json.serialization/SerializationClassJsonSchemaGenerator : kotlinx.schema.generator.core/AbstractSchemaGenerator<kotlinx.serialization.descriptors/SerialDescriptor, kotlinx.schema.json/JsonSchema, kotlinx.schema.generator.json.serialization/SerializationClassSchemaIntrospector.Config> { // kotlinx.schema.generator.json.serialization/SerializationClassJsonSchemaGenerator|null[0]
+    constructor <init>(kotlinx.serialization.json/Json = ..., kotlinx.schema.generator.json.serialization/SerializationClassSchemaIntrospector.Config = ..., kotlinx.schema.generator.json/JsonSchemaConfig = ...) // kotlinx.schema.generator.json.serialization/SerializationClassJsonSchemaGenerator.<init>|<init>(kotlinx.serialization.json.Json;kotlinx.schema.generator.json.serialization.SerializationClassSchemaIntrospector.Config;kotlinx.schema.generator.json.JsonSchemaConfig){}[0]
+
+    final fun encodeToString(kotlinx.schema.json/JsonSchema): kotlin/String // kotlinx.schema.generator.json.serialization/SerializationClassJsonSchemaGenerator.encodeToString|encodeToString(kotlinx.schema.json.JsonSchema){}[0]
+    final fun schemaType(): kotlin.reflect/KClass<kotlinx.schema.json/JsonSchema> // kotlinx.schema.generator.json.serialization/SerializationClassJsonSchemaGenerator.schemaType|schemaType(){}[0]
+    final fun targetType(): kotlin.reflect/KClass<kotlinx.serialization.descriptors/SerialDescriptor> // kotlinx.schema.generator.json.serialization/SerializationClassJsonSchemaGenerator.targetType|targetType(){}[0]
+
+    final object Companion { // kotlinx.schema.generator.json.serialization/SerializationClassJsonSchemaGenerator.Companion|null[0]
+        final val Default // kotlinx.schema.generator.json.serialization/SerializationClassJsonSchemaGenerator.Companion.Default|{}Default[0]
+            final fun <get-Default>(): kotlinx.schema.generator.json.serialization/SerializationClassJsonSchemaGenerator // kotlinx.schema.generator.json.serialization/SerializationClassJsonSchemaGenerator.Companion.Default.<get-Default>|<get-Default>(){}[0]
+    }
+}
+
+final class kotlinx.schema.generator.json.serialization/SerializationClassSchemaIntrospector : kotlinx.schema.generator.core.ir/SchemaIntrospector<kotlinx.serialization.descriptors/SerialDescriptor, kotlinx.schema.generator.json.serialization/SerializationClassSchemaIntrospector.Config> { // kotlinx.schema.generator.json.serialization/SerializationClassSchemaIntrospector|null[0]
+    constructor <init>(kotlinx.schema.generator.json.serialization/SerializationClassSchemaIntrospector.Config = ..., kotlinx.serialization.json/Json = ...) // kotlinx.schema.generator.json.serialization/SerializationClassSchemaIntrospector.<init>|<init>(kotlinx.schema.generator.json.serialization.SerializationClassSchemaIntrospector.Config;kotlinx.serialization.json.Json){}[0]
+
+    final val config // kotlinx.schema.generator.json.serialization/SerializationClassSchemaIntrospector.config|{}config[0]
+        final fun <get-config>(): kotlinx.schema.generator.json.serialization/SerializationClassSchemaIntrospector.Config // kotlinx.schema.generator.json.serialization/SerializationClassSchemaIntrospector.config.<get-config>|<get-config>(){}[0]
+
+    final fun introspect(kotlinx.serialization.descriptors/SerialDescriptor): kotlinx.schema.generator.core.ir/TypeGraph // kotlinx.schema.generator.json.serialization/SerializationClassSchemaIntrospector.introspect|introspect(kotlinx.serialization.descriptors.SerialDescriptor){}[0]
+
+    final class Config { // kotlinx.schema.generator.json.serialization/SerializationClassSchemaIntrospector.Config|null[0]
+        constructor <init>(kotlinx.schema.generator.core.ir/DescriptionExtractor = ...) // kotlinx.schema.generator.json.serialization/SerializationClassSchemaIntrospector.Config.<init>|<init>(kotlinx.schema.generator.core.ir.DescriptionExtractor){}[0]
+
+        final val descriptionExtractor // kotlinx.schema.generator.json.serialization/SerializationClassSchemaIntrospector.Config.descriptionExtractor|{}descriptionExtractor[0]
+            final fun <get-descriptionExtractor>(): kotlinx.schema.generator.core.ir/DescriptionExtractor // kotlinx.schema.generator.json.serialization/SerializationClassSchemaIntrospector.Config.descriptionExtractor.<get-descriptionExtractor>|<get-descriptionExtractor>(){}[0]
+
+        final fun component1(): kotlinx.schema.generator.core.ir/DescriptionExtractor // kotlinx.schema.generator.json.serialization/SerializationClassSchemaIntrospector.Config.component1|component1(){}[0]
+        final fun copy(kotlinx.schema.generator.core.ir/DescriptionExtractor = ...): kotlinx.schema.generator.json.serialization/SerializationClassSchemaIntrospector.Config // kotlinx.schema.generator.json.serialization/SerializationClassSchemaIntrospector.Config.copy|copy(kotlinx.schema.generator.core.ir.DescriptionExtractor){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.schema.generator.json.serialization/SerializationClassSchemaIntrospector.Config.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // kotlinx.schema.generator.json.serialization/SerializationClassSchemaIntrospector.Config.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // kotlinx.schema.generator.json.serialization/SerializationClassSchemaIntrospector.Config.toString|toString(){}[0]
+    }
+}
+
+final class kotlinx.schema.generator.json/FunctionCallingSchemaConfig : kotlinx.schema.generator.json/JsonSchemaConfig { // kotlinx.schema.generator.json/FunctionCallingSchemaConfig|null[0]
+    constructor <init>(kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ...) // kotlinx.schema.generator.json/FunctionCallingSchemaConfig.<init>|<init>(kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean){}[0]
+
+    final val strictMode // kotlinx.schema.generator.json/FunctionCallingSchemaConfig.strictMode|{}strictMode[0]
+        final fun <get-strictMode>(): kotlin/Boolean // kotlinx.schema.generator.json/FunctionCallingSchemaConfig.strictMode.<get-strictMode>|<get-strictMode>(){}[0]
+
+    final object Companion { // kotlinx.schema.generator.json/FunctionCallingSchemaConfig.Companion|null[0]
+        final val Default // kotlinx.schema.generator.json/FunctionCallingSchemaConfig.Companion.Default|{}Default[0]
+            final fun <get-Default>(): kotlinx.schema.generator.json/FunctionCallingSchemaConfig // kotlinx.schema.generator.json/FunctionCallingSchemaConfig.Companion.Default.<get-Default>|<get-Default>(){}[0]
+        final val Simple // kotlinx.schema.generator.json/FunctionCallingSchemaConfig.Companion.Simple|{}Simple[0]
+            final fun <get-Simple>(): kotlinx.schema.generator.json/FunctionCallingSchemaConfig // kotlinx.schema.generator.json/FunctionCallingSchemaConfig.Companion.Simple.<get-Simple>|<get-Simple>(){}[0]
+        final val Strict // kotlinx.schema.generator.json/FunctionCallingSchemaConfig.Companion.Strict|{}Strict[0]
+            final fun <get-Strict>(): kotlinx.schema.generator.json/FunctionCallingSchemaConfig // kotlinx.schema.generator.json/FunctionCallingSchemaConfig.Companion.Strict.<get-Strict>|<get-Strict>(){}[0]
+    }
+}
+
+final class kotlinx.schema.generator.json/TypeGraphToFunctionCallingSchemaTransformer : kotlinx.schema.generator.core.ir/AbstractTypeGraphTransformer<kotlinx.schema.json/FunctionCallingSchema, kotlinx.schema.generator.json/FunctionCallingSchemaConfig> { // kotlinx.schema.generator.json/TypeGraphToFunctionCallingSchemaTransformer|null[0]
+    constructor <init>(kotlinx.schema.generator.json/FunctionCallingSchemaConfig = ...) // kotlinx.schema.generator.json/TypeGraphToFunctionCallingSchemaTransformer.<init>|<init>(kotlinx.schema.generator.json.FunctionCallingSchemaConfig){}[0]
+
+    final val config // kotlinx.schema.generator.json/TypeGraphToFunctionCallingSchemaTransformer.config|{}config[0]
+        final fun <get-config>(): kotlinx.schema.generator.json/FunctionCallingSchemaConfig // kotlinx.schema.generator.json/TypeGraphToFunctionCallingSchemaTransformer.config.<get-config>|<get-config>(){}[0]
+
+    final fun transform(kotlinx.schema.generator.core.ir/TypeGraph, kotlin/String): kotlinx.schema.json/FunctionCallingSchema // kotlinx.schema.generator.json/TypeGraphToFunctionCallingSchemaTransformer.transform|transform(kotlinx.schema.generator.core.ir.TypeGraph;kotlin.String){}[0]
+}
+
+final class kotlinx.schema.generator.json/TypeGraphToJsonObjectSchemaTransformer : kotlinx.schema.generator.core.ir/AbstractTypeGraphTransformer<kotlinx.serialization.json/JsonObject, kotlinx.schema.generator.json/JsonSchemaConfig> { // kotlinx.schema.generator.json/TypeGraphToJsonObjectSchemaTransformer|null[0]
+    constructor <init>(kotlinx.schema.generator.json/JsonSchemaConfig = ..., kotlinx.serialization.json/Json = ..., kotlinx.schema.generator.json/TypeGraphToJsonSchemaTransformer = ...) // kotlinx.schema.generator.json/TypeGraphToJsonObjectSchemaTransformer.<init>|<init>(kotlinx.schema.generator.json.JsonSchemaConfig;kotlinx.serialization.json.Json;kotlinx.schema.generator.json.TypeGraphToJsonSchemaTransformer){}[0]
+
+    final val config // kotlinx.schema.generator.json/TypeGraphToJsonObjectSchemaTransformer.config|{}config[0]
+        final fun <get-config>(): kotlinx.schema.generator.json/JsonSchemaConfig // kotlinx.schema.generator.json/TypeGraphToJsonObjectSchemaTransformer.config.<get-config>|<get-config>(){}[0]
+
+    final fun transform(kotlinx.schema.generator.core.ir/TypeGraph, kotlin/String): kotlinx.serialization.json/JsonObject // kotlinx.schema.generator.json/TypeGraphToJsonObjectSchemaTransformer.transform|transform(kotlinx.schema.generator.core.ir.TypeGraph;kotlin.String){}[0]
+}
+
+final class kotlinx.schema.generator.json/TypeGraphToJsonSchemaTransformer : kotlinx.schema.generator.core.ir/AbstractTypeGraphTransformer<kotlinx.schema.json/JsonSchema, kotlinx.schema.generator.json/JsonSchemaConfig> { // kotlinx.schema.generator.json/TypeGraphToJsonSchemaTransformer|null[0]
+    constructor <init>(kotlinx.schema.generator.json/JsonSchemaConfig, kotlinx.serialization.json/Json = ...) // kotlinx.schema.generator.json/TypeGraphToJsonSchemaTransformer.<init>|<init>(kotlinx.schema.generator.json.JsonSchemaConfig;kotlinx.serialization.json.Json){}[0]
+
+    final val config // kotlinx.schema.generator.json/TypeGraphToJsonSchemaTransformer.config|{}config[0]
+        final fun <get-config>(): kotlinx.schema.generator.json/JsonSchemaConfig // kotlinx.schema.generator.json/TypeGraphToJsonSchemaTransformer.config.<get-config>|<get-config>(){}[0]
+    final val json // kotlinx.schema.generator.json/TypeGraphToJsonSchemaTransformer.json|{}json[0]
+        final fun <get-json>(): kotlinx.serialization.json/Json // kotlinx.schema.generator.json/TypeGraphToJsonSchemaTransformer.json.<get-json>|<get-json>(){}[0]
+
+    final fun transform(kotlinx.schema.generator.core.ir/TypeGraph, kotlin/String): kotlinx.schema.json/JsonSchema // kotlinx.schema.generator.json/TypeGraphToJsonSchemaTransformer.transform|transform(kotlinx.schema.generator.core.ir.TypeGraph;kotlin.String){}[0]
+}
+
+open class kotlinx.schema.generator.json/JsonSchemaConfig { // kotlinx.schema.generator.json/JsonSchemaConfig|null[0]
+    constructor <init>(kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ...) // kotlinx.schema.generator.json/JsonSchemaConfig.<init>|<init>(kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;kotlin.Boolean){}[0]
+
+    final val includeOpenAPIPolymorphicDiscriminator // kotlinx.schema.generator.json/JsonSchemaConfig.includeOpenAPIPolymorphicDiscriminator|{}includeOpenAPIPolymorphicDiscriminator[0]
+        final fun <get-includeOpenAPIPolymorphicDiscriminator>(): kotlin/Boolean // kotlinx.schema.generator.json/JsonSchemaConfig.includeOpenAPIPolymorphicDiscriminator.<get-includeOpenAPIPolymorphicDiscriminator>|<get-includeOpenAPIPolymorphicDiscriminator>(){}[0]
+    final val includePolymorphicDiscriminator // kotlinx.schema.generator.json/JsonSchemaConfig.includePolymorphicDiscriminator|{}includePolymorphicDiscriminator[0]
+        final fun <get-includePolymorphicDiscriminator>(): kotlin/Boolean // kotlinx.schema.generator.json/JsonSchemaConfig.includePolymorphicDiscriminator.<get-includePolymorphicDiscriminator>|<get-includePolymorphicDiscriminator>(){}[0]
+    final val requireNullableFields // kotlinx.schema.generator.json/JsonSchemaConfig.requireNullableFields|{}requireNullableFields[0]
+        final fun <get-requireNullableFields>(): kotlin/Boolean // kotlinx.schema.generator.json/JsonSchemaConfig.requireNullableFields.<get-requireNullableFields>|<get-requireNullableFields>(){}[0]
+    final val respectDefaultPresence // kotlinx.schema.generator.json/JsonSchemaConfig.respectDefaultPresence|{}respectDefaultPresence[0]
+        final fun <get-respectDefaultPresence>(): kotlin/Boolean // kotlinx.schema.generator.json/JsonSchemaConfig.respectDefaultPresence.<get-respectDefaultPresence>|<get-respectDefaultPresence>(){}[0]
+    final val useNullableField // kotlinx.schema.generator.json/JsonSchemaConfig.useNullableField|{}useNullableField[0]
+        final fun <get-useNullableField>(): kotlin/Boolean // kotlinx.schema.generator.json/JsonSchemaConfig.useNullableField.<get-useNullableField>|<get-useNullableField>(){}[0]
+    final val useUnionTypes // kotlinx.schema.generator.json/JsonSchemaConfig.useUnionTypes|{}useUnionTypes[0]
+        final fun <get-useUnionTypes>(): kotlin/Boolean // kotlinx.schema.generator.json/JsonSchemaConfig.useUnionTypes.<get-useUnionTypes>|<get-useUnionTypes>(){}[0]
+
+    final object Companion { // kotlinx.schema.generator.json/JsonSchemaConfig.Companion|null[0]
+        final val Default // kotlinx.schema.generator.json/JsonSchemaConfig.Companion.Default|{}Default[0]
+            final fun <get-Default>(): kotlinx.schema.generator.json/JsonSchemaConfig // kotlinx.schema.generator.json/JsonSchemaConfig.Companion.Default.<get-Default>|<get-Default>(){}[0]
+        final val OpenAPI // kotlinx.schema.generator.json/JsonSchemaConfig.Companion.OpenAPI|{}OpenAPI[0]
+            final fun <get-OpenAPI>(): kotlinx.schema.generator.json/JsonSchemaConfig // kotlinx.schema.generator.json/JsonSchemaConfig.Companion.OpenAPI.<get-OpenAPI>|<get-OpenAPI>(){}[0]
+        final val Strict // kotlinx.schema.generator.json/JsonSchemaConfig.Companion.Strict|{}Strict[0]
+            final fun <get-Strict>(): kotlinx.schema.generator.json/JsonSchemaConfig // kotlinx.schema.generator.json/JsonSchemaConfig.Companion.Strict.<get-Strict>|<get-Strict>(){}[0]
+    }
+}
