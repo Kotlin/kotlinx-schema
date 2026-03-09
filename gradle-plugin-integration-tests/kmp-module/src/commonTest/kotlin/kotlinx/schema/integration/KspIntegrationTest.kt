@@ -1,4 +1,4 @@
-@file:Suppress("JsonStandardCompliance", "LongMethod")
+@file:Suppress("JsonStandardCompliance")
 
 package kotlinx.schema.integration
 

@@ -19,7 +19,6 @@ import kotlin.test.Test
  * 2. Match expected JSON format (using shouldEqualJson)
  * 3. Deserialized back to equivalent objects
  */
-@Suppress("LargeClass", "LongMethod")
 internal class JsonSchemaDslTest {
     private val json = Json { prettyPrint = true }
 

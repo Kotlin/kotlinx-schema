@@ -26,7 +26,6 @@ import kotlin.test.Test
 /**
  * Tests for polymorphic property definitions DSL usage.
  */
-@Suppress("LargeClass", "LongMethod")
 internal class PolymorphicDslTest {
     private val json = Json { prettyPrint = true }
 

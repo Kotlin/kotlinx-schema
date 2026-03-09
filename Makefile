@@ -6,8 +6,9 @@ all:clean build integration-test examples
 .PHONY: build
 build:clean
 	@echo "🔨 Coverage reports..."
-	@./gradlew --rerun-tasks kotlinUpgradePackageLock \
-		build \
+	@./gradlew --rerun-tasks detekt checkLegacyAbi
+	@./gradlew --rerun-tasks  \
+		kotlinUpgradePackageLock build \
 		koverLog koverXmlReport koverHtmlReport
 	@echo "✅ Build complete!"
 
@@ -70,6 +71,6 @@ integration-test:clean publish
 .PHONY: examples
 examples:
 	@echo "Running examples..."
-	@(cd examples/gradle-google-ksp && ./gradlew clean build --no-daemon --rerun-tasks)
-	@(cd examples/maven-ksp && mvn clean package)
+	@(cd examples/gradle-google-ksp && rm -rf kotlin-js-store && ./gradlew clean build --no-daemon --rerun-tasks)
+	@(cd examples/maven-ksp && rm -rf target && mvn package)
 	@echo "✅ Examples complete!"

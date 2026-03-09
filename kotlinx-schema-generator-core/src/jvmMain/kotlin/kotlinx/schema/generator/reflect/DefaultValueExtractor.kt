@@ -58,12 +58,6 @@ internal object DefaultValueExtractor {
 
                     classifier == Int::class -> 0
 
-                    classifier == UInt::class -> 0u
-
-                    classifier == UShort::class -> 0u
-
-                    classifier == ULong::class -> 0L
-
                     classifier == Long::class -> 0L
 
                     classifier == Double::class -> 0.0

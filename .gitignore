@@ -12,6 +12,7 @@ xcuserdata
 # Maven Wrapper
 .mvn/wrapper/maven-wrapper.jar
 !/gradle/wrapper/gradle-wrapper.jar
+target/
 kotlin-js-store
 
 ### dotenv template

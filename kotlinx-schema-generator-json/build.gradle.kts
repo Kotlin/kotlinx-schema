@@ -33,6 +33,7 @@ kotlin {
             dependencies {
                 implementation(libs.junit.pioneer)
                 implementation(libs.mockk)
+                runtimeOnly(libs.slf4j.simple)
             }
         }
     }
