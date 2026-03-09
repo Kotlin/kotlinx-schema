@@ -1,6 +1,7 @@
 package kotlinx.schema.generator.reflect
 
 import kotlinx.schema.generator.core.InternalSchemaGeneratorApi
+import kotlinx.schema.generator.core.ir.AnyNode
 import kotlinx.schema.generator.core.ir.BaseIntrospectionContext
 import kotlinx.schema.generator.core.ir.Discriminator
 import kotlinx.schema.generator.core.ir.EnumNode
@@ -56,6 +57,11 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
             } else {
                 cachedRef
             }
+        }
+
+        // kotlin.Any / java.lang.Object: any value — emit empty schema {}
+        if (klass == Any::class) {
+            return TypeRef.Inline(AnyNode(), nullable)
         }
 
         // Try to convert to primitive type

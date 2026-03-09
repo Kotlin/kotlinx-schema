@@ -1,6 +1,7 @@
 package kotlinx.schema.generator.json
 
 import kotlinx.schema.generator.core.ir.AbstractTypeGraphTransformer
+import kotlinx.schema.generator.core.ir.AnyNode
 import kotlinx.schema.generator.core.ir.EnumNode
 import kotlinx.schema.generator.core.ir.ListNode
 import kotlinx.schema.generator.core.ir.MapNode
@@ -30,6 +31,7 @@ import kotlinx.schema.json.JsonSchemaConstants.Types.OBJECT_OR_NULL_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.OBJECT_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.STRING_OR_NULL_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.STRING_TYPE
+import kotlinx.schema.json.GenericPropertyDefinition
 import kotlinx.schema.json.NumericPropertyDefinition
 import kotlinx.schema.json.ObjectPropertyDefinition
 import kotlinx.schema.json.PropertyDefinition
@@ -222,6 +224,10 @@ public class TypeGraphToFunctionCallingSchemaTransformer
             when (node) {
                 is PrimitiveNode -> {
                     convertPrimitive(node, nullable)
+                }
+
+                is AnyNode -> {
+                    GenericPropertyDefinition(description = node.description)
                 }
 
                 is ObjectNode -> {

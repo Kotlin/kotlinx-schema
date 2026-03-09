@@ -7,10 +7,10 @@ import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.Modifier
 import com.google.devtools.ksp.symbol.Nullability
 import kotlinx.schema.generator.core.InternalSchemaGeneratorApi
+import kotlinx.schema.generator.core.ir.AnyNode
 import kotlinx.schema.generator.core.ir.BaseIntrospectionContext
 import kotlinx.schema.generator.core.ir.ObjectNode
 import kotlinx.schema.generator.core.ir.Property
-import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeRef
 
 /**
@@ -89,20 +89,11 @@ internal class KspIntrospectionContext : BaseIntrospectionContext<KSType>() {
      * @return TypeRef.Ref to kotlin.Any if fallback is needed, null otherwise
      */
     private fun handleAnyFallback(type: KSType): TypeRef? {
+        val nullable = type.nullability == Nullability.NULLABLE
         val declAnyFallback = type.declaration !is KSClassDeclaration || type.declaration.qualifiedName == null
         if (!declAnyFallback) return null
 
-        val anyId = TypeId("kotlin.Any")
-        withCycleDetection(type, anyId) {
-            ObjectNode(
-                name = "kotlin.Any",
-                properties = emptyList(),
-                required = emptySet(),
-                description = null,
-            )
-        }
-
-        return TypeRef.Ref(anyId, false)
+        return TypeRef.Inline(AnyNode(), nullable)
     }
 
     /**
@@ -207,11 +198,19 @@ internal class KspIntrospectionContext : BaseIntrospectionContext<KSType>() {
      * @param nullable Whether the type reference should be nullable
      * @return TypeRef.Ref to the object node if this is a class/object, null otherwise
      */
+    @Suppress("ReturnCount")
     private fun handleObjectOrClass(
         type: KSType,
         nullable: Boolean,
     ): TypeRef? {
         val decl = type.declaration as? KSClassDeclaration ?: return null
+
+        // kotlin.Any / java.lang.Object: any value — emit empty schema {}
+        val qualifiedName = decl.qualifiedName?.asString()
+        if (qualifiedName == "kotlin.Any" || qualifiedName == "java.lang.Object") {
+            return TypeRef.Inline(AnyNode(), nullable)
+        }
+
         val id = decl.typeId()
 
         withCycleDetection(type, id) {

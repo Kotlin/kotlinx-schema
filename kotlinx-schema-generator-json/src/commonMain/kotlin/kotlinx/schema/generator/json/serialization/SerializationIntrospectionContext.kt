@@ -1,6 +1,7 @@
 package kotlinx.schema.generator.json.serialization
 
 import kotlinx.schema.generator.core.InternalSchemaGeneratorApi
+import kotlinx.schema.generator.core.ir.AnyNode
 import kotlinx.schema.generator.core.ir.BaseIntrospectionContext
 import kotlinx.schema.generator.core.ir.Discriminator
 import kotlinx.schema.generator.core.ir.EnumNode
@@ -59,6 +60,11 @@ internal class SerializationIntrospectionContext(
         }
 
         val nullable = type.isNullable
+
+        // kotlin.Any / java.lang.Object: any value — emit empty schema {}
+        if (type.serialName.removeSuffix("?") in ANY_SERIAL_NAMES) {
+            return TypeRef.Inline(AnyNode(), nullable)
+        }
 
         // Try primitives first (always inlined)
         primitiveFor(type)?.let { primitiveNode ->
@@ -361,4 +367,9 @@ internal class SerializationIntrospectionContext(
             is TypeRef.Inline -> copy(nullable = nullable)
             is TypeRef.Ref -> copy(nullable = nullable)
         }
+
+    private companion object {
+        /** Serial names that represent "any value" — mapped to [AnyNode] (empty schema `{}`). */
+        val ANY_SERIAL_NAMES = setOf("kotlin.Any", "java.lang.Object")
+    }
 }

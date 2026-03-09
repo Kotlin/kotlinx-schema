@@ -127,6 +127,19 @@ abstract class <#A: kotlin/Any?, #B: kotlin/Any?> kotlinx.schema.generator.core.
         open fun <get-config>(): #B // kotlinx.schema.generator.core.ir/AbstractTypeGraphTransformer.config.<get-config>|<get-config>(){}[0]
 }
 
+final class kotlinx.schema.generator.core.ir/AnyNode : kotlinx.schema.generator.core.ir/TypeNode { // kotlinx.schema.generator.core.ir/AnyNode|null[0]
+    constructor <init>(kotlin/String? = ...) // kotlinx.schema.generator.core.ir/AnyNode.<init>|<init>(kotlin.String?){}[0]
+
+    final val description // kotlinx.schema.generator.core.ir/AnyNode.description|{}description[0]
+        final fun <get-description>(): kotlin/String? // kotlinx.schema.generator.core.ir/AnyNode.description.<get-description>|<get-description>(){}[0]
+
+    final fun component1(): kotlin/String? // kotlinx.schema.generator.core.ir/AnyNode.component1|component1(){}[0]
+    final fun copy(kotlin/String? = ...): kotlinx.schema.generator.core.ir/AnyNode // kotlinx.schema.generator.core.ir/AnyNode.copy|copy(kotlin.String?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.schema.generator.core.ir/AnyNode.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // kotlinx.schema.generator.core.ir/AnyNode.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // kotlinx.schema.generator.core.ir/AnyNode.toString|toString(){}[0]
+}
+
 final class kotlinx.schema.generator.core.ir/Discriminator { // kotlinx.schema.generator.core.ir/Discriminator|null[0]
     constructor <init>(kotlin/String, kotlin.collections/Map<kotlin/String, kotlinx.schema.generator.core.ir/TypeId>? = ...) // kotlinx.schema.generator.core.ir/Discriminator.<init>|<init>(kotlin.String;kotlin.collections.Map<kotlin.String,kotlinx.schema.generator.core.ir.TypeId>?){}[0]
 

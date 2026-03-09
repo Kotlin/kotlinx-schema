@@ -1,6 +1,7 @@
 package kotlinx.schema.generator.json
 
 import kotlinx.schema.generator.core.ir.AbstractTypeGraphTransformer
+import kotlinx.schema.generator.core.ir.AnyNode
 import kotlinx.schema.generator.core.ir.EnumNode
 import kotlinx.schema.generator.core.ir.ListNode
 import kotlinx.schema.generator.core.ir.MapNode
@@ -32,6 +33,7 @@ import kotlinx.schema.json.JsonSchemaConstants.Types.OBJECT_OR_NULL_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.OBJECT_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.STRING_OR_NULL_TYPE
 import kotlinx.schema.json.JsonSchemaConstants.Types.STRING_TYPE
+import kotlinx.schema.json.GenericPropertyDefinition
 import kotlinx.schema.json.NumericPropertyDefinition
 import kotlinx.schema.json.ObjectPropertyDefinition
 import kotlinx.schema.json.OneOfPropertyDefinition
@@ -337,6 +339,10 @@ public class TypeGraphToJsonSchemaTransformer
                     convertPrimitive(node, nullable)
                 }
 
+                is AnyNode -> {
+                    GenericPropertyDefinition(description = node.description)
+                }
+
                 is ListNode -> {
                     convertList(node, nullable, graph, definitions)
                 }
@@ -348,7 +354,7 @@ public class TypeGraphToJsonSchemaTransformer
                 else -> {
                     throw IllegalArgumentException(
                         "Unsupported inline node type: ${node::class.simpleName}. " +
-                            "Only PrimitiveNode, ListNode, and MapNode can be inlined. " +
+                            "Only PrimitiveNode, AnyNode, ListNode, and MapNode can be inlined. " +
                             "Complex types like ObjectNode and EnumNode must use TypeRef.Ref.",
                     )
                 }
@@ -366,6 +372,7 @@ public class TypeGraphToJsonSchemaTransformer
         ): PropertyDefinition =
             when (node) {
                 is PrimitiveNode -> convertPrimitive(node, nullable)
+                is AnyNode -> GenericPropertyDefinition(description = node.description)
                 is ObjectNode -> convertObject(node, nullable, graph, definitions)
                 is EnumNode -> convertEnum(node, nullable)
                 is ListNode -> convertList(node, nullable, graph, definitions)

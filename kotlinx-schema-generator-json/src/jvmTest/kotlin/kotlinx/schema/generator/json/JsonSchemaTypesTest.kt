@@ -243,36 +243,41 @@ class JsonSchemaTypesTest {
             $$"""
             {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "$id": "kotlinx.schema.integration.type.Container",
-              "description": "A generic container that wraps content with optional metadata.",
+              "$id": "kotlinx.schema.generator.json.MapOfNested",
+              "description": "Map of nested",
               "type": "object",
               "properties": {
-                "content": {
-                  "$ref": "#/$defs/kotlin.Any"
-                },
-                "metadata": {
+                "data": {
                   "type": "object",
-                  "description": "Arbitrary metadata key-value pairs",
+                  "description": "Data",
                   "additionalProperties": {
-                    "$ref": "#/$defs/kotlin.Any"
+                    "$ref": "#/$defs/kotlinx.schema.generator.json.Address"
+                  }
+                },
+                "optionalData": {
+                  "type": ["object", "null"],
+                  "description": "Optional data",
+                  "additionalProperties": {
+                    "$ref": "#/$defs/kotlinx.schema.generator.json.Address"
                   }
                 }
               },
+              "required": ["data"],
               "additionalProperties": false,
-              "required": [
-                "content",
-                "metadata"
-              ],
               "$defs": {
-                "kotlin.Any": {
+                "kotlinx.schema.generator.json.Address": {
                   "type": "object",
-                  "properties": {},
-                  "required": [],
+                  "description": "Nested object",
+                  "properties": {
+                    "street": { "type": "string", "description": "Street name" },
+                    "city": { "type": "string", "description": "City name" }
+                  },
+                  "required": ["street", "city"],
                   "additionalProperties": false
                 }
               }
             }
-            """.trimIndent()
+            """
     }
 
     // Nested Object Tests

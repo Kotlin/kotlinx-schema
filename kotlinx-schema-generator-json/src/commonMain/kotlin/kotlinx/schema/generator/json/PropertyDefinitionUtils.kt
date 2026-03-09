@@ -3,6 +3,7 @@ package kotlinx.schema.generator.json
 import kotlinx.schema.json.AnyOfPropertyDefinition
 import kotlinx.schema.json.ArrayPropertyDefinition
 import kotlinx.schema.json.BooleanPropertyDefinition
+import kotlinx.schema.json.GenericPropertyDefinition
 import kotlinx.schema.json.NumericPropertyDefinition
 import kotlinx.schema.json.ObjectPropertyDefinition
 import kotlinx.schema.json.OneOfPropertyDefinition
@@ -66,6 +67,7 @@ internal fun setDescription(
         is ObjectPropertyDefinition -> propertyDef.copy(description = description)
         is AnyOfPropertyDefinition -> propertyDef.copy(description = description)
         is OneOfPropertyDefinition -> propertyDef.copy(description = description)
+        is GenericPropertyDefinition -> propertyDef.copy(description = description)
         else -> propertyDef
     }
 

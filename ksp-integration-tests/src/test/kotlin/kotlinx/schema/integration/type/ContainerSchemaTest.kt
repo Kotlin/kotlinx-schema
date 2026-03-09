@@ -21,21 +21,12 @@ class ContainerSchemaTest {
               "type": "object",
               "properties": {
                 "content": {
-                  "type": "object",
-                  "description": "The wrapped content value",
-                  "properties": {},
-                  "required": [],
-                  "additionalProperties": false
+                  "description": "The wrapped content value"
                 },
                 "metadata": {
                   "type": "object",
                   "description": "Arbitrary metadata key-value pairs",
-                  "additionalProperties": {
-                    "type": "object",
-                    "properties": {},
-                    "required": [],
-                    "additionalProperties": false
-                  }
+                  "additionalProperties": {}
                 }
               },
               "required": ["content", "metadata"],

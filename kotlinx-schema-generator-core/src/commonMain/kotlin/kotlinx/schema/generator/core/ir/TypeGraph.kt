@@ -72,6 +72,11 @@ public data class MapNode(
     override val description: String? = null,
 ) : TypeNode
 
+/** Any/unconstrained type node — emits `{}` in JSON Schema (accepts any value). */
+public data class AnyNode(
+    override val description: String? = null,
+) : TypeNode
+
 /** Polymorphic node for sealed/open hierarchies. */
 public data class PolymorphicNode(
     val baseName: String,
