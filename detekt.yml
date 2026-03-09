@@ -5,3 +5,17 @@ config:
 style:
   VarCouldBeVal:
     ignoreLateinitVar: true
+
+
+complexity:
+  LargeClass:
+    excludes: &testFolders
+      - '**/test/**'
+      - '**/commonTest/**'
+      - '**/jvmTest/**'
+      - '**/jsTest/**'
+      - '**/iosTest/**'
+  LongMethod:
+    ignoreAnnotated:
+      - kotlin.test.Test
+      - org.junit.jupiter.api.Test
