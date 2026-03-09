@@ -87,6 +87,7 @@ internal fun extractConstructorParamDescription(
  * @param type Property type reference
  * @param description Property description (from annotations or KDoc)
  * @param hasDefaultValue Whether the property has a default value
+ * @param isConstant Whether the property is constant (fixed value)
  * @return Property instance with defaultValue set to null (KSP limitation)
  */
 internal fun createProperty(
@@ -94,6 +95,7 @@ internal fun createProperty(
     type: TypeRef,
     description: String?,
     hasDefaultValue: Boolean,
+    isConstant: Boolean = false,
 ): Property =
     Property(
         name = name,
@@ -101,4 +103,5 @@ internal fun createProperty(
         description = description,
         hasDefaultValue = hasDefaultValue,
         defaultValue = null, // KSP cannot extract default values at compile-time
+        isConstant = isConstant,
     )

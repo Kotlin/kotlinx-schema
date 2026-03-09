@@ -380,6 +380,7 @@ public class TypeGraphToJsonSchemaTransformer
          * Converts object nodes (classes, data classes) to object property definitions.
          * Handles property mapping, required fields, and nullable optional properties based on config.
          */
+        @Suppress("CyclomaticComplexMethod")
         private fun convertObject(
             node: ObjectNode,
             nullable: Boolean,
@@ -393,7 +394,7 @@ public class TypeGraphToJsonSchemaTransformer
                         // Use introspector's hasDefaultValue: only fields without defaults are required
                         node.properties
                             .filter { property ->
-                                !property.hasDefaultValue
+                                !property.hasDefaultValue || property.isConstant
                             }.map { it.name }
                     }
 
@@ -406,7 +407,7 @@ public class TypeGraphToJsonSchemaTransformer
                         // Only non-nullable fields required
                         node.properties
                             .filter { property ->
-                                !property.type.nullable
+                                !property.type.nullable || property.isConstant
                             }.map { it.name }
                     }
                 }.toSet()
@@ -428,10 +429,10 @@ public class TypeGraphToJsonSchemaTransformer
                         }
 
                     // Set const or default value if property has one
-                    // Use const for required properties with fixed values in all modes
+                    // Use const for constant properties or required properties with fixed values
                     val withDefaultOrConst =
-                        if (property.defaultValue != null) {
-                            if (isRequired) {
+                        if (property.defaultValue != null || property.isConstant) {
+                            if (isRequired || property.isConstant) {
                                 setConstValue(withoutNullableIfRequired, property.defaultValue)
                             } else {
                                 setDefaultValue(withoutNullableIfRequired, property.defaultValue)

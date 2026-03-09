@@ -4,6 +4,7 @@ import com.google.devtools.ksp.getDeclaredProperties
 import com.google.devtools.ksp.isPublic
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSType
+import com.google.devtools.ksp.symbol.Modifier
 import com.google.devtools.ksp.symbol.Nullability
 import kotlinx.schema.generator.core.InternalSchemaGeneratorApi
 import kotlinx.schema.generator.core.ir.BaseIntrospectionContext
@@ -87,7 +88,7 @@ internal class KspIntrospectionContext : BaseIntrospectionContext<KSType>() {
      * @param type The KSType to check
      * @return TypeRef.Ref to kotlin.Any if fallback is needed, null otherwise
      */
-    internal fun handleAnyFallback(type: KSType): TypeRef? {
+    private fun handleAnyFallback(type: KSType): TypeRef? {
         val declAnyFallback = type.declaration !is KSClassDeclaration || type.declaration.qualifiedName == null
         if (!declAnyFallback) return null
 
@@ -115,7 +116,7 @@ internal class KspIntrospectionContext : BaseIntrospectionContext<KSType>() {
      * @param nullable Whether the type reference should be nullable
      * @return TypeRef.Ref to the polymorphic node if this is a sealed class, null otherwise
      */
-    internal fun handleSealedClass(
+    private fun handleSealedClass(
         type: KSType,
         nullable: Boolean,
     ): TypeRef? {
@@ -166,7 +167,7 @@ internal class KspIntrospectionContext : BaseIntrospectionContext<KSType>() {
      * @param nullable Whether the type reference should be nullable
      * @return TypeRef.Ref to the enum node if this is an enum class, null otherwise
      */
-    internal fun handleEnum(
+    private fun handleEnum(
         type: KSType,
         nullable: Boolean,
     ): TypeRef? {
@@ -205,7 +206,7 @@ internal class KspIntrospectionContext : BaseIntrospectionContext<KSType>() {
      * @param nullable Whether the type reference should be nullable
      * @return TypeRef.Ref to the object node if this is a class/object, null otherwise
      */
-    internal fun handleObjectOrClass(
+    private fun handleObjectOrClass(
         type: KSType,
         nullable: Boolean,
     ): TypeRef? {
@@ -215,6 +216,8 @@ internal class KspIntrospectionContext : BaseIntrospectionContext<KSType>() {
         withCycleDetection(type, id) {
             val props = ArrayList<Property>()
             val required = LinkedHashSet<String>()
+
+            val processedProperties = HashSet<String>()
 
             /**
              * Helper to add a property and track whether it's required.
@@ -226,42 +229,15 @@ internal class KspIntrospectionContext : BaseIntrospectionContext<KSType>() {
                 type: KSType,
                 description: String?,
                 hasDefaultValue: Boolean,
+                isConstant: Boolean = false,
             ) {
-                if (!hasDefaultValue) required += name
-                props += createProperty(name, toRef(type), description, hasDefaultValue)
+                if (!hasDefaultValue || isConstant) required += name
+                props += createProperty(name, toRef(type), description, hasDefaultValue, isConstant)
+                processedProperties += name
             }
 
-            // Prefer primary constructor parameters for data classes; fall back to public properties
-            val params = decl.primaryConstructor?.parameters.orEmpty()
-            if (params.isNotEmpty()) {
-                // Note: KSP does not provide access to default value expressions at compile-time.
-                // https://github.com/google/ksp/issues/1868
-                // Only runtime reflection can extract actual default values.
-                params.forEach { p ->
-                    val name = p.name?.asString() ?: return@forEach
-                    val description = extractConstructorParamDescription(p, name, decl.docString)
-                    addProperty(name, p.type.resolve(), description, p.hasDefault)
-                }
-            } else {
-                decl.getDeclaredProperties().filter { it.isPublic() }.forEach { prop ->
-                    val name = prop.simpleName.asString()
-                    // Extract description from: annotations -> property KDoc -> class KDoc @property tag
-                    val description =
-                        extractPropertyDescription(
-                            annotated = prop,
-                            propertyName = name,
-                            parentKdoc = decl.docString,
-                            kdocTagName = "property",
-                            elementKdocFallback = { prop.descriptionFromKdoc() },
-                        )
-                    addProperty(
-                        name,
-                        prop.type.resolve(),
-                        description,
-                        false,
-                    )
-                }
-            }
+            extractConstructorOrProperties(decl, ::addProperty)
+            extractInheritedSealedProperties(decl, processedProperties, ::addProperty)
 
             ObjectNode(
                 name = decl.qualifiedName?.asString() ?: decl.simpleName.asString(),
@@ -272,5 +248,69 @@ internal class KspIntrospectionContext : BaseIntrospectionContext<KSType>() {
         }
 
         return TypeRef.Ref(id, nullable)
+    }
+
+    private fun extractConstructorOrProperties(
+        decl: KSClassDeclaration,
+        addProperty: (String, KSType, String?, Boolean) -> Unit,
+    ) {
+        // Prefer primary constructor parameters for data classes; fall back to public properties
+        val params = decl.primaryConstructor?.parameters.orEmpty()
+        if (params.isNotEmpty()) {
+            params.forEach { p ->
+                val name = p.name?.asString() ?: return@forEach
+                val description = extractConstructorParamDescription(p, name, decl.docString)
+                addProperty(name, p.type.resolve(), description, p.hasDefault)
+            }
+        } else {
+            decl.getDeclaredProperties().filter { it.isPublic() }.forEach { prop ->
+                val name = prop.simpleName.asString()
+                val description =
+                    extractPropertyDescription(
+                        annotated = prop,
+                        propertyName = name,
+                        parentKdoc = decl.docString,
+                        kdocTagName = "property",
+                        elementKdocFallback = { prop.descriptionFromKdoc() },
+                    )
+                addProperty(name, prop.type.resolve(), description, false)
+            }
+        }
+    }
+
+    private fun extractInheritedSealedProperties(
+        decl: KSClassDeclaration,
+        processedProperties: Set<String>,
+        addProperty: (String, KSType, String?, Boolean, Boolean) -> Unit,
+    ) {
+        // Add inherited properties from sealed parents that weren't in the constructor
+        val sealedParents =
+            decl.superTypes
+                .mapNotNull { it.resolve().declaration as? KSClassDeclaration }
+                .filter { it.modifiers.contains(Modifier.SEALED) }
+                .toList()
+
+        sealedParents.forEach { parent ->
+            parent.getDeclaredProperties().filter { it.isPublic() }.forEach { prop ->
+                val name = prop.simpleName.asString()
+                if (name !in processedProperties) {
+                    val description =
+                        extractPropertyDescription(
+                            annotated = prop,
+                            propertyName = name,
+                            parentKdoc = parent.docString,
+                            kdocTagName = "property",
+                            elementKdocFallback = { prop.descriptionFromKdoc() },
+                        )
+                    addProperty(
+                        name,
+                        prop.type.resolve(),
+                        description,
+                        true, // Fixed value in the subclass
+                        false, // KSP cannot get the value
+                    )
+                }
+            }
+        }
     }
 }

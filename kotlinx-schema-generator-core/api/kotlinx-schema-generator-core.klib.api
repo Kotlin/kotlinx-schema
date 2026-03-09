@@ -1,0 +1,341 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, js, linuxArm64, linuxX64, macosArm64, macosX64, mingwX64, tvosArm64, tvosSimulatorArm64, tvosX64, wasmJs, watchosArm32, watchosArm64, watchosSimulatorArm64, watchosX64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <org.jetbrains.kotlinx:kotlinx-schema-generator-core>
+open annotation class kotlinx.schema.generator.core/InternalSchemaGeneratorApi : kotlin/Annotation { // kotlinx.schema.generator.core/InternalSchemaGeneratorApi|null[0]
+    constructor <init>() // kotlinx.schema.generator.core/InternalSchemaGeneratorApi.<init>|<init>(){}[0]
+}
+
+final enum class kotlinx.schema.generator.core.ir/PrimitiveKind : kotlin/Enum<kotlinx.schema.generator.core.ir/PrimitiveKind> { // kotlinx.schema.generator.core.ir/PrimitiveKind|null[0]
+    enum entry BOOLEAN // kotlinx.schema.generator.core.ir/PrimitiveKind.BOOLEAN|null[0]
+    enum entry DOUBLE // kotlinx.schema.generator.core.ir/PrimitiveKind.DOUBLE|null[0]
+    enum entry FLOAT // kotlinx.schema.generator.core.ir/PrimitiveKind.FLOAT|null[0]
+    enum entry INT // kotlinx.schema.generator.core.ir/PrimitiveKind.INT|null[0]
+    enum entry LONG // kotlinx.schema.generator.core.ir/PrimitiveKind.LONG|null[0]
+    enum entry STRING // kotlinx.schema.generator.core.ir/PrimitiveKind.STRING|null[0]
+
+    final val entries // kotlinx.schema.generator.core.ir/PrimitiveKind.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<kotlinx.schema.generator.core.ir/PrimitiveKind> // kotlinx.schema.generator.core.ir/PrimitiveKind.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): kotlinx.schema.generator.core.ir/PrimitiveKind // kotlinx.schema.generator.core.ir/PrimitiveKind.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<kotlinx.schema.generator.core.ir/PrimitiveKind> // kotlinx.schema.generator.core.ir/PrimitiveKind.values|values#static(){}[0]
+}
+
+abstract fun interface kotlinx.schema.generator.core.ir/DescriptionExtractor { // kotlinx.schema.generator.core.ir/DescriptionExtractor|null[0]
+    abstract fun extract(kotlin.collections/List<kotlin/Annotation>): kotlin/String? // kotlinx.schema.generator.core.ir/DescriptionExtractor.extract|extract(kotlin.collections.List<kotlin.Annotation>){}[0]
+}
+
+abstract interface <#A: kotlin/Any, #B: kotlin/Any> kotlinx.schema.generator.core/SchemaGenerator { // kotlinx.schema.generator.core/SchemaGenerator|null[0]
+    abstract fun encodeToString(#B): kotlin/String // kotlinx.schema.generator.core/SchemaGenerator.encodeToString|encodeToString(1:1){}[0]
+    abstract fun generateSchema(#A): #B // kotlinx.schema.generator.core/SchemaGenerator.generateSchema|generateSchema(1:0){}[0]
+    abstract fun generateSchemaString(#A): kotlin/String // kotlinx.schema.generator.core/SchemaGenerator.generateSchemaString|generateSchemaString(1:0){}[0]
+    abstract fun schemaType(): kotlin.reflect/KClass<#B> // kotlinx.schema.generator.core/SchemaGenerator.schemaType|schemaType(){}[0]
+    abstract fun targetType(): kotlin.reflect/KClass<#A> // kotlinx.schema.generator.core/SchemaGenerator.targetType|targetType(){}[0]
+}
+
+abstract interface <#A: kotlin/Any?, #B: kotlin/Any?> kotlinx.schema.generator.core.ir/SchemaIntrospector { // kotlinx.schema.generator.core.ir/SchemaIntrospector|null[0]
+    abstract val config // kotlinx.schema.generator.core.ir/SchemaIntrospector.config|{}config[0]
+        abstract fun <get-config>(): #B // kotlinx.schema.generator.core.ir/SchemaIntrospector.config.<get-config>|<get-config>(){}[0]
+
+    abstract fun introspect(#A): kotlinx.schema.generator.core.ir/TypeGraph // kotlinx.schema.generator.core.ir/SchemaIntrospector.introspect|introspect(1:0){}[0]
+}
+
+abstract interface <#A: kotlin/Any?, #B: kotlin/Any?> kotlinx.schema.generator.core.ir/TypeGraphTransformer { // kotlinx.schema.generator.core.ir/TypeGraphTransformer|null[0]
+    abstract val config // kotlinx.schema.generator.core.ir/TypeGraphTransformer.config|{}config[0]
+        abstract fun <get-config>(): #B // kotlinx.schema.generator.core.ir/TypeGraphTransformer.config.<get-config>|<get-config>(){}[0]
+
+    abstract fun transform(kotlinx.schema.generator.core.ir/TypeGraph, kotlin/String): #A // kotlinx.schema.generator.core.ir/TypeGraphTransformer.transform|transform(kotlinx.schema.generator.core.ir.TypeGraph;kotlin.String){}[0]
+}
+
+sealed interface kotlinx.schema.generator.core.ir/TypeNode { // kotlinx.schema.generator.core.ir/TypeNode|null[0]
+    abstract val description // kotlinx.schema.generator.core.ir/TypeNode.description|{}description[0]
+        abstract fun <get-description>(): kotlin/String? // kotlinx.schema.generator.core.ir/TypeNode.description.<get-description>|<get-description>(){}[0]
+}
+
+sealed interface kotlinx.schema.generator.core.ir/TypeRef { // kotlinx.schema.generator.core.ir/TypeRef|null[0]
+    abstract val nullable // kotlinx.schema.generator.core.ir/TypeRef.nullable|{}nullable[0]
+        abstract fun <get-nullable>(): kotlin/Boolean // kotlinx.schema.generator.core.ir/TypeRef.nullable.<get-nullable>|<get-nullable>(){}[0]
+
+    final class Inline : kotlinx.schema.generator.core.ir/TypeRef { // kotlinx.schema.generator.core.ir/TypeRef.Inline|null[0]
+        constructor <init>(kotlinx.schema.generator.core.ir/TypeNode, kotlin/Boolean = ...) // kotlinx.schema.generator.core.ir/TypeRef.Inline.<init>|<init>(kotlinx.schema.generator.core.ir.TypeNode;kotlin.Boolean){}[0]
+
+        final val node // kotlinx.schema.generator.core.ir/TypeRef.Inline.node|{}node[0]
+            final fun <get-node>(): kotlinx.schema.generator.core.ir/TypeNode // kotlinx.schema.generator.core.ir/TypeRef.Inline.node.<get-node>|<get-node>(){}[0]
+        final val nullable // kotlinx.schema.generator.core.ir/TypeRef.Inline.nullable|{}nullable[0]
+            final fun <get-nullable>(): kotlin/Boolean // kotlinx.schema.generator.core.ir/TypeRef.Inline.nullable.<get-nullable>|<get-nullable>(){}[0]
+
+        final fun component1(): kotlinx.schema.generator.core.ir/TypeNode // kotlinx.schema.generator.core.ir/TypeRef.Inline.component1|component1(){}[0]
+        final fun component2(): kotlin/Boolean // kotlinx.schema.generator.core.ir/TypeRef.Inline.component2|component2(){}[0]
+        final fun copy(kotlinx.schema.generator.core.ir/TypeNode = ..., kotlin/Boolean = ...): kotlinx.schema.generator.core.ir/TypeRef.Inline // kotlinx.schema.generator.core.ir/TypeRef.Inline.copy|copy(kotlinx.schema.generator.core.ir.TypeNode;kotlin.Boolean){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.schema.generator.core.ir/TypeRef.Inline.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // kotlinx.schema.generator.core.ir/TypeRef.Inline.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // kotlinx.schema.generator.core.ir/TypeRef.Inline.toString|toString(){}[0]
+    }
+
+    final class Ref : kotlinx.schema.generator.core.ir/TypeRef { // kotlinx.schema.generator.core.ir/TypeRef.Ref|null[0]
+        constructor <init>(kotlinx.schema.generator.core.ir/TypeId, kotlin/Boolean = ...) // kotlinx.schema.generator.core.ir/TypeRef.Ref.<init>|<init>(kotlinx.schema.generator.core.ir.TypeId;kotlin.Boolean){}[0]
+
+        final val id // kotlinx.schema.generator.core.ir/TypeRef.Ref.id|{}id[0]
+            final fun <get-id>(): kotlinx.schema.generator.core.ir/TypeId // kotlinx.schema.generator.core.ir/TypeRef.Ref.id.<get-id>|<get-id>(){}[0]
+        final val nullable // kotlinx.schema.generator.core.ir/TypeRef.Ref.nullable|{}nullable[0]
+            final fun <get-nullable>(): kotlin/Boolean // kotlinx.schema.generator.core.ir/TypeRef.Ref.nullable.<get-nullable>|<get-nullable>(){}[0]
+
+        final fun component1(): kotlinx.schema.generator.core.ir/TypeId // kotlinx.schema.generator.core.ir/TypeRef.Ref.component1|component1(){}[0]
+        final fun component2(): kotlin/Boolean // kotlinx.schema.generator.core.ir/TypeRef.Ref.component2|component2(){}[0]
+        final fun copy(kotlinx.schema.generator.core.ir/TypeId = ..., kotlin/Boolean = ...): kotlinx.schema.generator.core.ir/TypeRef.Ref // kotlinx.schema.generator.core.ir/TypeRef.Ref.copy|copy(kotlinx.schema.generator.core.ir.TypeId;kotlin.Boolean){}[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.schema.generator.core.ir/TypeRef.Ref.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // kotlinx.schema.generator.core.ir/TypeRef.Ref.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // kotlinx.schema.generator.core.ir/TypeRef.Ref.toString|toString(){}[0]
+    }
+}
+
+abstract class <#A: kotlin/Any, #B: kotlin/Any, #C: kotlin/Any> kotlinx.schema.generator.core/AbstractSchemaGenerator : kotlinx.schema.generator.core/SchemaGenerator<#A, #B> { // kotlinx.schema.generator.core/AbstractSchemaGenerator|null[0]
+    constructor <init>(kotlinx.schema.generator.core.ir/SchemaIntrospector<#A, #C>, kotlinx.schema.generator.core.ir/TypeGraphTransformer<#B, *>) // kotlinx.schema.generator.core/AbstractSchemaGenerator.<init>|<init>(kotlinx.schema.generator.core.ir.SchemaIntrospector<1:0,1:2>;kotlinx.schema.generator.core.ir.TypeGraphTransformer<1:1,*>){}[0]
+
+    final val introspector // kotlinx.schema.generator.core/AbstractSchemaGenerator.introspector|{}introspector[0]
+        final fun <get-introspector>(): kotlinx.schema.generator.core.ir/SchemaIntrospector<#A, #C> // kotlinx.schema.generator.core/AbstractSchemaGenerator.introspector.<get-introspector>|<get-introspector>(){}[0]
+    final val typeGraphTransformer // kotlinx.schema.generator.core/AbstractSchemaGenerator.typeGraphTransformer|{}typeGraphTransformer[0]
+        final fun <get-typeGraphTransformer>(): kotlinx.schema.generator.core.ir/TypeGraphTransformer<#B, *> // kotlinx.schema.generator.core/AbstractSchemaGenerator.typeGraphTransformer.<get-typeGraphTransformer>|<get-typeGraphTransformer>(){}[0]
+
+    abstract fun getRootName(#A): kotlin/String // kotlinx.schema.generator.core/AbstractSchemaGenerator.getRootName|getRootName(1:0){}[0]
+    open fun generateSchema(#A): #B // kotlinx.schema.generator.core/AbstractSchemaGenerator.generateSchema|generateSchema(1:0){}[0]
+    open fun generateSchemaString(#A): kotlin/String // kotlinx.schema.generator.core/AbstractSchemaGenerator.generateSchemaString|generateSchemaString(1:0){}[0]
+}
+
+abstract class <#A: kotlin/Any> kotlinx.schema.generator.core.ir/BaseIntrospectionContext { // kotlinx.schema.generator.core.ir/BaseIntrospectionContext|null[0]
+    constructor <init>() // kotlinx.schema.generator.core.ir/BaseIntrospectionContext.<init>|<init>(){}[0]
+
+    final val nodes // kotlinx.schema.generator.core.ir/BaseIntrospectionContext.nodes|{}nodes[0]
+        final fun <get-nodes>(): kotlin.collections/Map<kotlinx.schema.generator.core.ir/TypeId, kotlinx.schema.generator.core.ir/TypeNode> // kotlinx.schema.generator.core.ir/BaseIntrospectionContext.nodes.<get-nodes>|<get-nodes>(){}[0]
+    final val typeRefCache // kotlinx.schema.generator.core.ir/BaseIntrospectionContext.typeRefCache|{}typeRefCache[0]
+        final fun <get-typeRefCache>(): kotlin.collections/MutableMap<#A, kotlinx.schema.generator.core.ir/TypeRef> // kotlinx.schema.generator.core.ir/BaseIntrospectionContext.typeRefCache.<get-typeRefCache>|<get-typeRefCache>(){}[0]
+    final val visitingTypes // kotlinx.schema.generator.core.ir/BaseIntrospectionContext.visitingTypes|{}visitingTypes[0]
+        final fun <get-visitingTypes>(): kotlin.collections/MutableSet<#A> // kotlinx.schema.generator.core.ir/BaseIntrospectionContext.visitingTypes.<get-visitingTypes>|<get-visitingTypes>(){}[0]
+
+    abstract fun toRef(#A): kotlinx.schema.generator.core.ir/TypeRef // kotlinx.schema.generator.core.ir/BaseIntrospectionContext.toRef|toRef(1:0){}[0]
+    final fun withCycleDetection(#A, kotlinx.schema.generator.core.ir/TypeId, kotlin/Function0<kotlinx.schema.generator.core.ir/TypeNode>): kotlin/Boolean // kotlinx.schema.generator.core.ir/BaseIntrospectionContext.withCycleDetection|withCycleDetection(1:0;kotlinx.schema.generator.core.ir.TypeId;kotlin.Function0<kotlinx.schema.generator.core.ir.TypeNode>){}[0]
+}
+
+abstract class <#A: kotlin/Any?, #B: kotlin/Any?> kotlinx.schema.generator.core.ir/AbstractTypeGraphTransformer : kotlinx.schema.generator.core.ir/TypeGraphTransformer<#A, #B> { // kotlinx.schema.generator.core.ir/AbstractTypeGraphTransformer|null[0]
+    constructor <init>(#B) // kotlinx.schema.generator.core.ir/AbstractTypeGraphTransformer.<init>|<init>(1:1){}[0]
+
+    open val config // kotlinx.schema.generator.core.ir/AbstractTypeGraphTransformer.config|{}config[0]
+        open fun <get-config>(): #B // kotlinx.schema.generator.core.ir/AbstractTypeGraphTransformer.config.<get-config>|<get-config>(){}[0]
+}
+
+final class kotlinx.schema.generator.core.ir/Discriminator { // kotlinx.schema.generator.core.ir/Discriminator|null[0]
+    constructor <init>(kotlin/String, kotlin.collections/Map<kotlin/String, kotlinx.schema.generator.core.ir/TypeId>? = ...) // kotlinx.schema.generator.core.ir/Discriminator.<init>|<init>(kotlin.String;kotlin.collections.Map<kotlin.String,kotlinx.schema.generator.core.ir.TypeId>?){}[0]
+
+    final val mapping // kotlinx.schema.generator.core.ir/Discriminator.mapping|{}mapping[0]
+        final fun <get-mapping>(): kotlin.collections/Map<kotlin/String, kotlinx.schema.generator.core.ir/TypeId>? // kotlinx.schema.generator.core.ir/Discriminator.mapping.<get-mapping>|<get-mapping>(){}[0]
+    final val name // kotlinx.schema.generator.core.ir/Discriminator.name|{}name[0]
+        final fun <get-name>(): kotlin/String // kotlinx.schema.generator.core.ir/Discriminator.name.<get-name>|<get-name>(){}[0]
+
+    final fun component1(): kotlin/String // kotlinx.schema.generator.core.ir/Discriminator.component1|component1(){}[0]
+    final fun component2(): kotlin.collections/Map<kotlin/String, kotlinx.schema.generator.core.ir/TypeId>? // kotlinx.schema.generator.core.ir/Discriminator.component2|component2(){}[0]
+    final fun copy(kotlin/String = ..., kotlin.collections/Map<kotlin/String, kotlinx.schema.generator.core.ir/TypeId>? = ...): kotlinx.schema.generator.core.ir/Discriminator // kotlinx.schema.generator.core.ir/Discriminator.copy|copy(kotlin.String;kotlin.collections.Map<kotlin.String,kotlinx.schema.generator.core.ir.TypeId>?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.schema.generator.core.ir/Discriminator.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // kotlinx.schema.generator.core.ir/Discriminator.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // kotlinx.schema.generator.core.ir/Discriminator.toString|toString(){}[0]
+}
+
+final class kotlinx.schema.generator.core.ir/EnumNode : kotlinx.schema.generator.core.ir/TypeNode { // kotlinx.schema.generator.core.ir/EnumNode|null[0]
+    constructor <init>(kotlin/String, kotlin.collections/List<kotlin/String>, kotlin/String? = ...) // kotlinx.schema.generator.core.ir/EnumNode.<init>|<init>(kotlin.String;kotlin.collections.List<kotlin.String>;kotlin.String?){}[0]
+
+    final val description // kotlinx.schema.generator.core.ir/EnumNode.description|{}description[0]
+        final fun <get-description>(): kotlin/String? // kotlinx.schema.generator.core.ir/EnumNode.description.<get-description>|<get-description>(){}[0]
+    final val entries // kotlinx.schema.generator.core.ir/EnumNode.entries|{}entries[0]
+        final fun <get-entries>(): kotlin.collections/List<kotlin/String> // kotlinx.schema.generator.core.ir/EnumNode.entries.<get-entries>|<get-entries>(){}[0]
+    final val name // kotlinx.schema.generator.core.ir/EnumNode.name|{}name[0]
+        final fun <get-name>(): kotlin/String // kotlinx.schema.generator.core.ir/EnumNode.name.<get-name>|<get-name>(){}[0]
+
+    final fun component1(): kotlin/String // kotlinx.schema.generator.core.ir/EnumNode.component1|component1(){}[0]
+    final fun component2(): kotlin.collections/List<kotlin/String> // kotlinx.schema.generator.core.ir/EnumNode.component2|component2(){}[0]
+    final fun component3(): kotlin/String? // kotlinx.schema.generator.core.ir/EnumNode.component3|component3(){}[0]
+    final fun copy(kotlin/String = ..., kotlin.collections/List<kotlin/String> = ..., kotlin/String? = ...): kotlinx.schema.generator.core.ir/EnumNode // kotlinx.schema.generator.core.ir/EnumNode.copy|copy(kotlin.String;kotlin.collections.List<kotlin.String>;kotlin.String?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.schema.generator.core.ir/EnumNode.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // kotlinx.schema.generator.core.ir/EnumNode.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // kotlinx.schema.generator.core.ir/EnumNode.toString|toString(){}[0]
+}
+
+final class kotlinx.schema.generator.core.ir/ListNode : kotlinx.schema.generator.core.ir/TypeNode { // kotlinx.schema.generator.core.ir/ListNode|null[0]
+    constructor <init>(kotlinx.schema.generator.core.ir/TypeRef, kotlin/String? = ...) // kotlinx.schema.generator.core.ir/ListNode.<init>|<init>(kotlinx.schema.generator.core.ir.TypeRef;kotlin.String?){}[0]
+
+    final val description // kotlinx.schema.generator.core.ir/ListNode.description|{}description[0]
+        final fun <get-description>(): kotlin/String? // kotlinx.schema.generator.core.ir/ListNode.description.<get-description>|<get-description>(){}[0]
+    final val element // kotlinx.schema.generator.core.ir/ListNode.element|{}element[0]
+        final fun <get-element>(): kotlinx.schema.generator.core.ir/TypeRef // kotlinx.schema.generator.core.ir/ListNode.element.<get-element>|<get-element>(){}[0]
+
+    final fun component1(): kotlinx.schema.generator.core.ir/TypeRef // kotlinx.schema.generator.core.ir/ListNode.component1|component1(){}[0]
+    final fun component2(): kotlin/String? // kotlinx.schema.generator.core.ir/ListNode.component2|component2(){}[0]
+    final fun copy(kotlinx.schema.generator.core.ir/TypeRef = ..., kotlin/String? = ...): kotlinx.schema.generator.core.ir/ListNode // kotlinx.schema.generator.core.ir/ListNode.copy|copy(kotlinx.schema.generator.core.ir.TypeRef;kotlin.String?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.schema.generator.core.ir/ListNode.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // kotlinx.schema.generator.core.ir/ListNode.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // kotlinx.schema.generator.core.ir/ListNode.toString|toString(){}[0]
+}
+
+final class kotlinx.schema.generator.core.ir/MapNode : kotlinx.schema.generator.core.ir/TypeNode { // kotlinx.schema.generator.core.ir/MapNode|null[0]
+    constructor <init>(kotlinx.schema.generator.core.ir/TypeRef, kotlinx.schema.generator.core.ir/TypeRef, kotlin/String? = ...) // kotlinx.schema.generator.core.ir/MapNode.<init>|<init>(kotlinx.schema.generator.core.ir.TypeRef;kotlinx.schema.generator.core.ir.TypeRef;kotlin.String?){}[0]
+
+    final val description // kotlinx.schema.generator.core.ir/MapNode.description|{}description[0]
+        final fun <get-description>(): kotlin/String? // kotlinx.schema.generator.core.ir/MapNode.description.<get-description>|<get-description>(){}[0]
+    final val key // kotlinx.schema.generator.core.ir/MapNode.key|{}key[0]
+        final fun <get-key>(): kotlinx.schema.generator.core.ir/TypeRef // kotlinx.schema.generator.core.ir/MapNode.key.<get-key>|<get-key>(){}[0]
+    final val value // kotlinx.schema.generator.core.ir/MapNode.value|{}value[0]
+        final fun <get-value>(): kotlinx.schema.generator.core.ir/TypeRef // kotlinx.schema.generator.core.ir/MapNode.value.<get-value>|<get-value>(){}[0]
+
+    final fun component1(): kotlinx.schema.generator.core.ir/TypeRef // kotlinx.schema.generator.core.ir/MapNode.component1|component1(){}[0]
+    final fun component2(): kotlinx.schema.generator.core.ir/TypeRef // kotlinx.schema.generator.core.ir/MapNode.component2|component2(){}[0]
+    final fun component3(): kotlin/String? // kotlinx.schema.generator.core.ir/MapNode.component3|component3(){}[0]
+    final fun copy(kotlinx.schema.generator.core.ir/TypeRef = ..., kotlinx.schema.generator.core.ir/TypeRef = ..., kotlin/String? = ...): kotlinx.schema.generator.core.ir/MapNode // kotlinx.schema.generator.core.ir/MapNode.copy|copy(kotlinx.schema.generator.core.ir.TypeRef;kotlinx.schema.generator.core.ir.TypeRef;kotlin.String?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.schema.generator.core.ir/MapNode.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // kotlinx.schema.generator.core.ir/MapNode.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // kotlinx.schema.generator.core.ir/MapNode.toString|toString(){}[0]
+}
+
+final class kotlinx.schema.generator.core.ir/ObjectNode : kotlinx.schema.generator.core.ir/TypeNode { // kotlinx.schema.generator.core.ir/ObjectNode|null[0]
+    constructor <init>(kotlin/String, kotlin.collections/List<kotlinx.schema.generator.core.ir/Property>, kotlin.collections/Set<kotlin/String>, kotlin/String? = ...) // kotlinx.schema.generator.core.ir/ObjectNode.<init>|<init>(kotlin.String;kotlin.collections.List<kotlinx.schema.generator.core.ir.Property>;kotlin.collections.Set<kotlin.String>;kotlin.String?){}[0]
+
+    final val description // kotlinx.schema.generator.core.ir/ObjectNode.description|{}description[0]
+        final fun <get-description>(): kotlin/String? // kotlinx.schema.generator.core.ir/ObjectNode.description.<get-description>|<get-description>(){}[0]
+    final val name // kotlinx.schema.generator.core.ir/ObjectNode.name|{}name[0]
+        final fun <get-name>(): kotlin/String // kotlinx.schema.generator.core.ir/ObjectNode.name.<get-name>|<get-name>(){}[0]
+    final val properties // kotlinx.schema.generator.core.ir/ObjectNode.properties|{}properties[0]
+        final fun <get-properties>(): kotlin.collections/List<kotlinx.schema.generator.core.ir/Property> // kotlinx.schema.generator.core.ir/ObjectNode.properties.<get-properties>|<get-properties>(){}[0]
+    final val required // kotlinx.schema.generator.core.ir/ObjectNode.required|{}required[0]
+        final fun <get-required>(): kotlin.collections/Set<kotlin/String> // kotlinx.schema.generator.core.ir/ObjectNode.required.<get-required>|<get-required>(){}[0]
+
+    final fun component1(): kotlin/String // kotlinx.schema.generator.core.ir/ObjectNode.component1|component1(){}[0]
+    final fun component2(): kotlin.collections/List<kotlinx.schema.generator.core.ir/Property> // kotlinx.schema.generator.core.ir/ObjectNode.component2|component2(){}[0]
+    final fun component3(): kotlin.collections/Set<kotlin/String> // kotlinx.schema.generator.core.ir/ObjectNode.component3|component3(){}[0]
+    final fun component4(): kotlin/String? // kotlinx.schema.generator.core.ir/ObjectNode.component4|component4(){}[0]
+    final fun copy(kotlin/String = ..., kotlin.collections/List<kotlinx.schema.generator.core.ir/Property> = ..., kotlin.collections/Set<kotlin/String> = ..., kotlin/String? = ...): kotlinx.schema.generator.core.ir/ObjectNode // kotlinx.schema.generator.core.ir/ObjectNode.copy|copy(kotlin.String;kotlin.collections.List<kotlinx.schema.generator.core.ir.Property>;kotlin.collections.Set<kotlin.String>;kotlin.String?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.schema.generator.core.ir/ObjectNode.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // kotlinx.schema.generator.core.ir/ObjectNode.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // kotlinx.schema.generator.core.ir/ObjectNode.toString|toString(){}[0]
+}
+
+final class kotlinx.schema.generator.core.ir/PolymorphicNode : kotlinx.schema.generator.core.ir/TypeNode { // kotlinx.schema.generator.core.ir/PolymorphicNode|null[0]
+    constructor <init>(kotlin/String, kotlin.collections/List<kotlinx.schema.generator.core.ir/SubtypeRef>, kotlinx.schema.generator.core.ir/Discriminator, kotlin/String? = ...) // kotlinx.schema.generator.core.ir/PolymorphicNode.<init>|<init>(kotlin.String;kotlin.collections.List<kotlinx.schema.generator.core.ir.SubtypeRef>;kotlinx.schema.generator.core.ir.Discriminator;kotlin.String?){}[0]
+
+    final val baseName // kotlinx.schema.generator.core.ir/PolymorphicNode.baseName|{}baseName[0]
+        final fun <get-baseName>(): kotlin/String // kotlinx.schema.generator.core.ir/PolymorphicNode.baseName.<get-baseName>|<get-baseName>(){}[0]
+    final val description // kotlinx.schema.generator.core.ir/PolymorphicNode.description|{}description[0]
+        final fun <get-description>(): kotlin/String? // kotlinx.schema.generator.core.ir/PolymorphicNode.description.<get-description>|<get-description>(){}[0]
+    final val discriminator // kotlinx.schema.generator.core.ir/PolymorphicNode.discriminator|{}discriminator[0]
+        final fun <get-discriminator>(): kotlinx.schema.generator.core.ir/Discriminator // kotlinx.schema.generator.core.ir/PolymorphicNode.discriminator.<get-discriminator>|<get-discriminator>(){}[0]
+    final val subtypes // kotlinx.schema.generator.core.ir/PolymorphicNode.subtypes|{}subtypes[0]
+        final fun <get-subtypes>(): kotlin.collections/List<kotlinx.schema.generator.core.ir/SubtypeRef> // kotlinx.schema.generator.core.ir/PolymorphicNode.subtypes.<get-subtypes>|<get-subtypes>(){}[0]
+
+    final fun component1(): kotlin/String // kotlinx.schema.generator.core.ir/PolymorphicNode.component1|component1(){}[0]
+    final fun component2(): kotlin.collections/List<kotlinx.schema.generator.core.ir/SubtypeRef> // kotlinx.schema.generator.core.ir/PolymorphicNode.component2|component2(){}[0]
+    final fun component3(): kotlinx.schema.generator.core.ir/Discriminator // kotlinx.schema.generator.core.ir/PolymorphicNode.component3|component3(){}[0]
+    final fun component4(): kotlin/String? // kotlinx.schema.generator.core.ir/PolymorphicNode.component4|component4(){}[0]
+    final fun copy(kotlin/String = ..., kotlin.collections/List<kotlinx.schema.generator.core.ir/SubtypeRef> = ..., kotlinx.schema.generator.core.ir/Discriminator = ..., kotlin/String? = ...): kotlinx.schema.generator.core.ir/PolymorphicNode // kotlinx.schema.generator.core.ir/PolymorphicNode.copy|copy(kotlin.String;kotlin.collections.List<kotlinx.schema.generator.core.ir.SubtypeRef>;kotlinx.schema.generator.core.ir.Discriminator;kotlin.String?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.schema.generator.core.ir/PolymorphicNode.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // kotlinx.schema.generator.core.ir/PolymorphicNode.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // kotlinx.schema.generator.core.ir/PolymorphicNode.toString|toString(){}[0]
+}
+
+final class kotlinx.schema.generator.core.ir/PrimitiveNode : kotlinx.schema.generator.core.ir/TypeNode { // kotlinx.schema.generator.core.ir/PrimitiveNode|null[0]
+    constructor <init>(kotlinx.schema.generator.core.ir/PrimitiveKind, kotlin/String? = ...) // kotlinx.schema.generator.core.ir/PrimitiveNode.<init>|<init>(kotlinx.schema.generator.core.ir.PrimitiveKind;kotlin.String?){}[0]
+
+    final val description // kotlinx.schema.generator.core.ir/PrimitiveNode.description|{}description[0]
+        final fun <get-description>(): kotlin/String? // kotlinx.schema.generator.core.ir/PrimitiveNode.description.<get-description>|<get-description>(){}[0]
+    final val kind // kotlinx.schema.generator.core.ir/PrimitiveNode.kind|{}kind[0]
+        final fun <get-kind>(): kotlinx.schema.generator.core.ir/PrimitiveKind // kotlinx.schema.generator.core.ir/PrimitiveNode.kind.<get-kind>|<get-kind>(){}[0]
+
+    final fun component1(): kotlinx.schema.generator.core.ir/PrimitiveKind // kotlinx.schema.generator.core.ir/PrimitiveNode.component1|component1(){}[0]
+    final fun component2(): kotlin/String? // kotlinx.schema.generator.core.ir/PrimitiveNode.component2|component2(){}[0]
+    final fun copy(kotlinx.schema.generator.core.ir/PrimitiveKind = ..., kotlin/String? = ...): kotlinx.schema.generator.core.ir/PrimitiveNode // kotlinx.schema.generator.core.ir/PrimitiveNode.copy|copy(kotlinx.schema.generator.core.ir.PrimitiveKind;kotlin.String?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.schema.generator.core.ir/PrimitiveNode.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // kotlinx.schema.generator.core.ir/PrimitiveNode.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // kotlinx.schema.generator.core.ir/PrimitiveNode.toString|toString(){}[0]
+}
+
+final class kotlinx.schema.generator.core.ir/Property { // kotlinx.schema.generator.core.ir/Property|null[0]
+    constructor <init>(kotlin/String, kotlinx.schema.generator.core.ir/TypeRef, kotlin/String? = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Any? = ..., kotlin/Boolean = ..., kotlin.collections/Map<kotlin/String, kotlin/String?> = ...) // kotlinx.schema.generator.core.ir/Property.<init>|<init>(kotlin.String;kotlinx.schema.generator.core.ir.TypeRef;kotlin.String?;kotlin.Boolean;kotlin.Boolean;kotlin.Any?;kotlin.Boolean;kotlin.collections.Map<kotlin.String,kotlin.String?>){}[0]
+
+    final val annotations // kotlinx.schema.generator.core.ir/Property.annotations|{}annotations[0]
+        final fun <get-annotations>(): kotlin.collections/Map<kotlin/String, kotlin/String?> // kotlinx.schema.generator.core.ir/Property.annotations.<get-annotations>|<get-annotations>(){}[0]
+    final val defaultValue // kotlinx.schema.generator.core.ir/Property.defaultValue|{}defaultValue[0]
+        final fun <get-defaultValue>(): kotlin/Any? // kotlinx.schema.generator.core.ir/Property.defaultValue.<get-defaultValue>|<get-defaultValue>(){}[0]
+    final val deprecated // kotlinx.schema.generator.core.ir/Property.deprecated|{}deprecated[0]
+        final fun <get-deprecated>(): kotlin/Boolean // kotlinx.schema.generator.core.ir/Property.deprecated.<get-deprecated>|<get-deprecated>(){}[0]
+    final val description // kotlinx.schema.generator.core.ir/Property.description|{}description[0]
+        final fun <get-description>(): kotlin/String? // kotlinx.schema.generator.core.ir/Property.description.<get-description>|<get-description>(){}[0]
+    final val hasDefaultValue // kotlinx.schema.generator.core.ir/Property.hasDefaultValue|{}hasDefaultValue[0]
+        final fun <get-hasDefaultValue>(): kotlin/Boolean // kotlinx.schema.generator.core.ir/Property.hasDefaultValue.<get-hasDefaultValue>|<get-hasDefaultValue>(){}[0]
+    final val isConstant // kotlinx.schema.generator.core.ir/Property.isConstant|{}isConstant[0]
+        final fun <get-isConstant>(): kotlin/Boolean // kotlinx.schema.generator.core.ir/Property.isConstant.<get-isConstant>|<get-isConstant>(){}[0]
+    final val name // kotlinx.schema.generator.core.ir/Property.name|{}name[0]
+        final fun <get-name>(): kotlin/String // kotlinx.schema.generator.core.ir/Property.name.<get-name>|<get-name>(){}[0]
+    final val type // kotlinx.schema.generator.core.ir/Property.type|{}type[0]
+        final fun <get-type>(): kotlinx.schema.generator.core.ir/TypeRef // kotlinx.schema.generator.core.ir/Property.type.<get-type>|<get-type>(){}[0]
+
+    final fun component1(): kotlin/String // kotlinx.schema.generator.core.ir/Property.component1|component1(){}[0]
+    final fun component2(): kotlinx.schema.generator.core.ir/TypeRef // kotlinx.schema.generator.core.ir/Property.component2|component2(){}[0]
+    final fun component3(): kotlin/String? // kotlinx.schema.generator.core.ir/Property.component3|component3(){}[0]
+    final fun component4(): kotlin/Boolean // kotlinx.schema.generator.core.ir/Property.component4|component4(){}[0]
+    final fun component5(): kotlin/Boolean // kotlinx.schema.generator.core.ir/Property.component5|component5(){}[0]
+    final fun component6(): kotlin/Any? // kotlinx.schema.generator.core.ir/Property.component6|component6(){}[0]
+    final fun component7(): kotlin/Boolean // kotlinx.schema.generator.core.ir/Property.component7|component7(){}[0]
+    final fun component8(): kotlin.collections/Map<kotlin/String, kotlin/String?> // kotlinx.schema.generator.core.ir/Property.component8|component8(){}[0]
+    final fun copy(kotlin/String = ..., kotlinx.schema.generator.core.ir/TypeRef = ..., kotlin/String? = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Any? = ..., kotlin/Boolean = ..., kotlin.collections/Map<kotlin/String, kotlin/String?> = ...): kotlinx.schema.generator.core.ir/Property // kotlinx.schema.generator.core.ir/Property.copy|copy(kotlin.String;kotlinx.schema.generator.core.ir.TypeRef;kotlin.String?;kotlin.Boolean;kotlin.Boolean;kotlin.Any?;kotlin.Boolean;kotlin.collections.Map<kotlin.String,kotlin.String?>){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.schema.generator.core.ir/Property.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // kotlinx.schema.generator.core.ir/Property.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // kotlinx.schema.generator.core.ir/Property.toString|toString(){}[0]
+}
+
+final class kotlinx.schema.generator.core.ir/SubtypeRef { // kotlinx.schema.generator.core.ir/SubtypeRef|null[0]
+    constructor <init>(kotlinx.schema.generator.core.ir/TypeId, kotlinx.schema.generator.core.ir/TypeRef.Ref = ...) // kotlinx.schema.generator.core.ir/SubtypeRef.<init>|<init>(kotlinx.schema.generator.core.ir.TypeId;kotlinx.schema.generator.core.ir.TypeRef.Ref){}[0]
+
+    final val id // kotlinx.schema.generator.core.ir/SubtypeRef.id|{}id[0]
+        final fun <get-id>(): kotlinx.schema.generator.core.ir/TypeId // kotlinx.schema.generator.core.ir/SubtypeRef.id.<get-id>|<get-id>(){}[0]
+    final val ref // kotlinx.schema.generator.core.ir/SubtypeRef.ref|{}ref[0]
+        final fun <get-ref>(): kotlinx.schema.generator.core.ir/TypeRef.Ref // kotlinx.schema.generator.core.ir/SubtypeRef.ref.<get-ref>|<get-ref>(){}[0]
+
+    final fun component1(): kotlinx.schema.generator.core.ir/TypeId // kotlinx.schema.generator.core.ir/SubtypeRef.component1|component1(){}[0]
+    final fun component2(): kotlinx.schema.generator.core.ir/TypeRef.Ref // kotlinx.schema.generator.core.ir/SubtypeRef.component2|component2(){}[0]
+    final fun copy(kotlinx.schema.generator.core.ir/TypeId = ..., kotlinx.schema.generator.core.ir/TypeRef.Ref = ...): kotlinx.schema.generator.core.ir/SubtypeRef // kotlinx.schema.generator.core.ir/SubtypeRef.copy|copy(kotlinx.schema.generator.core.ir.TypeId;kotlinx.schema.generator.core.ir.TypeRef.Ref){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.schema.generator.core.ir/SubtypeRef.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // kotlinx.schema.generator.core.ir/SubtypeRef.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // kotlinx.schema.generator.core.ir/SubtypeRef.toString|toString(){}[0]
+}
+
+final class kotlinx.schema.generator.core.ir/TypeGraph { // kotlinx.schema.generator.core.ir/TypeGraph|null[0]
+    constructor <init>(kotlinx.schema.generator.core.ir/TypeRef, kotlin.collections/Map<kotlinx.schema.generator.core.ir/TypeId, kotlinx.schema.generator.core.ir/TypeNode>) // kotlinx.schema.generator.core.ir/TypeGraph.<init>|<init>(kotlinx.schema.generator.core.ir.TypeRef;kotlin.collections.Map<kotlinx.schema.generator.core.ir.TypeId,kotlinx.schema.generator.core.ir.TypeNode>){}[0]
+
+    final val nodes // kotlinx.schema.generator.core.ir/TypeGraph.nodes|{}nodes[0]
+        final fun <get-nodes>(): kotlin.collections/Map<kotlinx.schema.generator.core.ir/TypeId, kotlinx.schema.generator.core.ir/TypeNode> // kotlinx.schema.generator.core.ir/TypeGraph.nodes.<get-nodes>|<get-nodes>(){}[0]
+    final val root // kotlinx.schema.generator.core.ir/TypeGraph.root|{}root[0]
+        final fun <get-root>(): kotlinx.schema.generator.core.ir/TypeRef // kotlinx.schema.generator.core.ir/TypeGraph.root.<get-root>|<get-root>(){}[0]
+
+    final fun component1(): kotlinx.schema.generator.core.ir/TypeRef // kotlinx.schema.generator.core.ir/TypeGraph.component1|component1(){}[0]
+    final fun component2(): kotlin.collections/Map<kotlinx.schema.generator.core.ir/TypeId, kotlinx.schema.generator.core.ir/TypeNode> // kotlinx.schema.generator.core.ir/TypeGraph.component2|component2(){}[0]
+    final fun copy(kotlinx.schema.generator.core.ir/TypeRef = ..., kotlin.collections/Map<kotlinx.schema.generator.core.ir/TypeId, kotlinx.schema.generator.core.ir/TypeNode> = ...): kotlinx.schema.generator.core.ir/TypeGraph // kotlinx.schema.generator.core.ir/TypeGraph.copy|copy(kotlinx.schema.generator.core.ir.TypeRef;kotlin.collections.Map<kotlinx.schema.generator.core.ir.TypeId,kotlinx.schema.generator.core.ir.TypeNode>){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.schema.generator.core.ir/TypeGraph.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // kotlinx.schema.generator.core.ir/TypeGraph.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // kotlinx.schema.generator.core.ir/TypeGraph.toString|toString(){}[0]
+}
+
+final class kotlinx.schema.generator.core.ir/TypeId { // kotlinx.schema.generator.core.ir/TypeId|null[0]
+    constructor <init>(kotlin/String) // kotlinx.schema.generator.core.ir/TypeId.<init>|<init>(kotlin.String){}[0]
+
+    final val value // kotlinx.schema.generator.core.ir/TypeId.value|{}value[0]
+        final fun <get-value>(): kotlin/String // kotlinx.schema.generator.core.ir/TypeId.value.<get-value>|<get-value>(){}[0]
+
+    final fun component1(): kotlin/String // kotlinx.schema.generator.core.ir/TypeId.component1|component1(){}[0]
+    final fun copy(kotlin/String = ...): kotlinx.schema.generator.core.ir/TypeId // kotlinx.schema.generator.core.ir/TypeId.copy|copy(kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.schema.generator.core.ir/TypeId.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // kotlinx.schema.generator.core.ir/TypeId.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // kotlinx.schema.generator.core.ir/TypeId.toString|toString(){}[0]
+}
+
+final object kotlinx.schema.generator.core.ir/Introspections { // kotlinx.schema.generator.core.ir/Introspections|null[0]
+    final fun getDescriptionFromAnnotation(kotlin/String, kotlin.collections/List<kotlin/Pair<kotlin/String, kotlin/Any?>>): kotlin/String? // kotlinx.schema.generator.core.ir/Introspections.getDescriptionFromAnnotation|getDescriptionFromAnnotation(kotlin.String;kotlin.collections.List<kotlin.Pair<kotlin.String,kotlin.Any?>>){}[0]
+}

@@ -107,27 +107,40 @@ public class TypeGraphToFunctionCallingSchemaTransformer
         ): FunctionCallingSchema {
             val properties =
                 node.properties.associate { property ->
+                    val isRequired = property.name in node.required
                     val finalDef =
                         convertTypeRef(property.type, graph)
                             .let { def ->
                                 property.description?.let { setDescription(def, it) } ?: def
                             }.let { def ->
-                                property.defaultValue?.let { setDefaultValue(def, it) } ?: def
+                                if (property.defaultValue != null || property.isConstant) {
+                                    if (isRequired || property.isConstant) {
+                                        setConstValue(def, property.defaultValue)
+                                    } else {
+                                        setDefaultValue(def, property.defaultValue)
+                                    }
+                                } else {
+                                    def
+                                }
                             }
 
                     property.name to finalDef
                 }
 
             val requiredFields =
-                if (config.respectDefaultPresence) {
+                if (config.strictMode) {
+                    // In strict mode, all properties must be required
+                    // Note: OpenAI requires all properties in strict mode to be required
+                    node.properties.map { it.name }
+                } else if (config.respectDefaultPresence) {
                     // Use the required set from the ObjectNode (respects DefaultPresence)
                     node.required.toList()
                 } else if (config.requireNullableFields) {
-                    // All properties are required (strict mode)
+                    // All properties are required (legacy strict mode from JsonSchemaConfig)
                     node.properties.map { it.name }
                 } else {
                     // Only non-nullable properties are required
-                    node.properties.filter { !it.type.nullable }.map { it.name }
+                    node.properties.filter { !it.type.nullable || it.isConstant }.map { it.name }
                 }
 
             return FunctionCallingSchema(
@@ -266,27 +279,40 @@ public class TypeGraphToFunctionCallingSchemaTransformer
         ): PropertyDefinition {
             val properties =
                 node.properties.associate { property ->
+                    val isRequired = property.name in node.required
                     val finalDef =
                         convertTypeRef(property.type, graph)
                             .let { def ->
                                 property.description?.let { setDescription(def, it) } ?: def
                             }.let { def ->
-                                property.defaultValue?.let { setDefaultValue(def, it) } ?: def
+                                if (property.defaultValue != null || property.isConstant) {
+                                    if (isRequired || property.isConstant) {
+                                        setConstValue(def, property.defaultValue)
+                                    } else {
+                                        setDefaultValue(def, property.defaultValue)
+                                    }
+                                } else {
+                                    def
+                                }
                             }
 
                     property.name to finalDef
                 }
 
             val requiredFields =
-                if (config.respectDefaultPresence) {
+                if (config.strictMode) {
+                    // In strict mode, all properties must be required
+                    // Note: OpenAI requires all properties in strict mode to be required
+                    node.properties.map { it.name }
+                } else if (config.respectDefaultPresence) {
                     // Use the required set from the ObjectNode (respects DefaultPresence)
                     node.required.toList()
                 } else if (config.requireNullableFields) {
-                    // All properties are required (strict mode)
+                    // All properties are required (legacy strict mode from JsonSchemaConfig)
                     node.properties.map { it.name }
                 } else {
                     // Only non-nullable properties are required
-                    node.properties.filter { !it.type.nullable }.map { it.name }
+                    node.properties.filter { !it.type.nullable || it.isConstant }.map { it.name }
                 }
 
             return ObjectPropertyDefinition(

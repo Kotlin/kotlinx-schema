@@ -17,6 +17,7 @@ import kotlinx.schema.generator.core.ir.TypeRef
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 import kotlin.reflect.KType
+import kotlin.reflect.KVisibility
 import kotlin.reflect.full.createType
 
 /**
@@ -276,7 +277,7 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
         val (constructorProperties, constructorRequired) = extractConstructorProperties(klass, defaultValues)
 
         // Track which properties were processed from constructor
-        val processedProperties = constructorProperties.map { it.name }.toSet()
+        val processedProperties = constructorProperties.map { it.name }.toMutableSet()
 
         // If there are sealed parents, update descriptions to inherit from parent if needed
         if (sealedParents.isNotEmpty()) {
@@ -315,11 +316,36 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
                         description = description,
                         hasDefaultValue = fixedValue != null,
                         defaultValue = fixedValue,
+                        isConstant = fixedValue != null,
                     )
 
                 // Inherited properties with fixed values are required
                 requiredProperties += propertyName
+                processedProperties += propertyName
             }
+        }
+
+        // Add public properties for objects (singletons) that weren't in the constructor or from parents
+        if (klass.objectInstance != null) {
+            klass.members
+                .filterIsInstance<KProperty<*>>()
+                .filter { it.visibility == KVisibility.PUBLIC }
+                .forEach { prop ->
+                    if (prop.name !in processedProperties) {
+                        val fixedValue = defaultValues[prop.name]
+                        properties +=
+                            Property(
+                                name = prop.name,
+                                type = toRef(prop.returnType),
+                                description = extractDescription(prop.annotations),
+                                hasDefaultValue = fixedValue != null,
+                                defaultValue = fixedValue,
+                                isConstant = fixedValue != null,
+                            )
+                        requiredProperties += prop.name
+                        processedProperties += prop.name
+                    }
+                }
         }
 
         return ObjectNode(

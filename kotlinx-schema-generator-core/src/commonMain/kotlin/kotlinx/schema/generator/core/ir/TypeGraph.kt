@@ -88,6 +88,7 @@ public data class Property(
     val deprecated: Boolean = false,
     val hasDefaultValue: Boolean = false,
     val defaultValue: Any? = null,
+    val isConstant: Boolean = false,
     val annotations: Map<String, String?> = emptyMap(),
 )
 
