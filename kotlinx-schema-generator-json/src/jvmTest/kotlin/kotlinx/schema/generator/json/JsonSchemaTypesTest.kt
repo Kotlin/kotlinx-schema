@@ -100,31 +100,26 @@ class JsonSchemaTypesTest {
               "type": "object",
               "properties": {
                 "status": {
-                  "type": "string",
-                  "description": "Status",
-                  "enum": [
-                    "ACTIVE",
-                    "INACTIVE",
-                    "PENDING"
-                  ]
+                  "$ref": "#/$defs/kotlinx.schema.generator.json.Status"
                 },
                 "optStatus": {
-                  "type": [
-                    "string",
-                    "null"
+                  "oneOf": [
+                    { "type": "null" },
+                    { "$ref": "#/$defs/kotlinx.schema.generator.json.Status" }
                   ],
-                  "description": "Optional status",
-                  "enum": [
-                    "ACTIVE",
-                    "INACTIVE",
-                    "PENDING"
-                  ]
+                  "description": "Optional status"
                 }
               },
               "required": [
                 "status"
               ],
-              "additionalProperties": false
+              "additionalProperties": false,
+              "$defs": {
+                "kotlinx.schema.generator.json.Status": {
+                  "type": "string",
+                  "enum": ["ACTIVE", "INACTIVE", "PENDING"]
+                }
+              }
             }
             """
     }
@@ -205,23 +200,7 @@ class JsonSchemaTypesTest {
                   "type": "array",
                   "description": "Items",
                   "items": {
-                    "type": "object",
-                    "description": "Nested object",
-                    "properties": {
-                      "street": {
-                        "type": "string",
-                        "description": "Street name"
-                      },
-                      "city": {
-                        "type": "string",
-                        "description": "City name"
-                      }
-                    },
-                    "required": [
-                      "street",
-                      "city"
-                    ],
-                    "additionalProperties": false
+                    "$ref": "#/$defs/kotlinx.schema.generator.json.Address"
                   }
                 },
                 "optionalItems": {
@@ -231,30 +210,26 @@ class JsonSchemaTypesTest {
                   ],
                   "description": "Optional items",
                   "items": {
-                    "type": "object",
-                    "description": "Nested object",
-                    "properties": {
-                      "street": {
-                        "type": "string",
-                        "description": "Street name"
-                      },
-                      "city": {
-                        "type": "string",
-                        "description": "City name"
-                      }
-                    },
-                    "required": [
-                      "street",
-                      "city"
-                    ],
-                    "additionalProperties": false
+                    "$ref": "#/$defs/kotlinx.schema.generator.json.Address"
                   }
                 }
               },
               "required": [
                 "items"
               ],
-              "additionalProperties": false
+              "additionalProperties": false,
+              "$defs": {
+                "kotlinx.schema.generator.json.Address": {
+                  "type": "object",
+                  "description": "Nested object",
+                  "properties": {
+                    "street": { "type": "string", "description": "Street name" },
+                    "city": { "type": "string", "description": "City name" }
+                  },
+                  "required": ["street", "city"],
+                  "additionalProperties": false
+                }
+              }
             }
             """
     }
@@ -268,66 +243,36 @@ class JsonSchemaTypesTest {
             $$"""
             {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "$id": "kotlinx.schema.generator.json.MapOfNested",
-              "description": "Map of nested",
+              "$id": "kotlinx.schema.integration.type.Container",
+              "description": "A generic container that wraps content with optional metadata.",
               "type": "object",
               "properties": {
-                "data": {
-                  "type": "object",
-                  "description": "Data",
-                  "additionalProperties": {
-                    "type": "object",
-                    "description": "Nested object",
-                    "properties": {
-                      "street": {
-                        "type": "string",
-                        "description": "Street name"
-                      },
-                      "city": {
-                        "type": "string",
-                        "description": "City name"
-                      }
-                    },
-                    "required": [
-                      "street",
-                      "city"
-                    ],
-                    "additionalProperties": false
-                  }
+                "content": {
+                  "$ref": "#/$defs/kotlin.Any"
                 },
-                "optionalData": {
-                  "type": [
-                    "object",
-                    "null"
-                  ],
-                  "description": "Optional data",
+                "metadata": {
+                  "type": "object",
+                  "description": "Arbitrary metadata key-value pairs",
                   "additionalProperties": {
-                    "type": "object",
-                    "description": "Nested object",
-                    "properties": {
-                      "street": {
-                        "type": "string",
-                        "description": "Street name"
-                      },
-                      "city": {
-                        "type": "string",
-                        "description": "City name"
-                      }
-                    },
-                    "required": [
-                      "street",
-                      "city"
-                    ],
-                    "additionalProperties": false
+                    "$ref": "#/$defs/kotlin.Any"
                   }
                 }
               },
+              "additionalProperties": false,
               "required": [
-                "data"
+                "content",
+                "metadata"
               ],
-              "additionalProperties": false
+              "$defs": {
+                "kotlin.Any": {
+                  "type": "object",
+                  "properties": {},
+                  "required": [],
+                  "additionalProperties": false
+                }
+              }
             }
-            """
+            """.trimIndent()
     }
 
     // Nested Object Tests
@@ -350,30 +295,25 @@ class JsonSchemaTypesTest {
                   "description": "Name"
                 },
                 "address": {
-                  "type": "object",
-                  "description": "Address",
-                  "properties": {
-                    "street": {
-                      "type": "string",
-                      "description": "Street name"
-                    },
-                    "city": {
-                      "type": "string",
-                      "description": "City name"
-                    }
-                  },
-                  "required": [
-                    "street",
-                    "city"
-                  ],
-                  "additionalProperties": false
+                  "$ref": "#/$defs/kotlinx.schema.generator.json.Address"
                 },
                 "optAddress": {
-                  "type": [
-                    "object",
-                    "null"
+                  "oneOf": [
+                    { "type": "null" },
+                    { "$ref": "#/$defs/kotlinx.schema.generator.json.Address" }
                   ],
-                  "description": "Optional address",
+                  "description": "Optional address"
+                }
+              },
+              "required": [
+                "name",
+                "address"
+              ],
+              "additionalProperties": false,
+              "$defs": {
+                "kotlinx.schema.generator.json.Address": {
+                  "type": "object",
+                  "description": "Nested object",
                   "properties": {
                     "street": {
                       "type": "string",
@@ -390,12 +330,7 @@ class JsonSchemaTypesTest {
                   ],
                   "additionalProperties": false
                 }
-              },
-              "required": [
-                "name",
-                "address"
-              ],
-              "additionalProperties": false
+              }
             }
             """
     }
@@ -414,61 +349,45 @@ class JsonSchemaTypesTest {
               "type": "object",
               "properties": {
                 "level1": {
-                  "type": "object",
-                  "description": "Level 1",
-                  "properties": {
-                    "level2": {
-                      "type": "object",
-                      "description": "Level 2",
-                      "properties": {
-                        "value": {
-                          "type": "integer",
-                          "description": "Value"
-                        },
-                        "level3": {
-                          "type": "object",
-                          "description": "Level 3",
-                          "properties": {
-                            "value": {
-                              "type": "string",
-                              "description": "Value"
-                            }
-                          },
-                          "required": [
-                            "value"
-                          ],
-                          "additionalProperties": false
-                        },
-                        "optional": {
-                          "type": [
-                            "string",
-                            "null"
-                          ],
-                          "description": "Optional value"
-                        }
-                      },
-                      "required": [
-                        "value",
-                        "level3"
-                      ],
-                      "additionalProperties": false
-                    },
-                    "value": {
-                      "type": "string",
-                      "description": "Value"
-                    }
-                  },
-                  "required": [
-                    "level2",
-                    "value"
-                  ],
-                  "additionalProperties": false
+                  "$ref": "#/$defs/kotlinx.schema.generator.json.Level1"
                 }
               },
               "required": [
                 "level1"
               ],
-              "additionalProperties": false
+              "additionalProperties": false,
+              "$defs": {
+                "kotlinx.schema.generator.json.Level3": {
+                  "type": "object",
+                  "description": "Level 3",
+                  "properties": {
+                    "value": { "type": "string", "description": "Value" }
+                  },
+                  "required": ["value"],
+                  "additionalProperties": false
+                },
+                "kotlinx.schema.generator.json.Level2": {
+                  "type": "object",
+                  "description": "Level 2",
+                  "properties": {
+                    "value": { "type": "integer", "description": "Value" },
+                    "level3": { "$ref": "#/$defs/kotlinx.schema.generator.json.Level3" },
+                    "optional": { "type": ["string", "null"], "description": "Optional value" }
+                  },
+                  "required": ["value", "level3"],
+                  "additionalProperties": false
+                },
+                "kotlinx.schema.generator.json.Level1": {
+                  "type": "object",
+                  "description": "Level 1",
+                  "properties": {
+                    "level2": { "$ref": "#/$defs/kotlinx.schema.generator.json.Level2" },
+                    "value": { "type": "string", "description": "Value" }
+                  },
+                  "required": ["level2", "value"],
+                  "additionalProperties": false
+                }
+              }
             }
             """
     }

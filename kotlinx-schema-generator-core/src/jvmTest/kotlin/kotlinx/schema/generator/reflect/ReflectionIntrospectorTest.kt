@@ -49,6 +49,16 @@ class ReflectionIntrospectorTest {
         ) : Shape()
     }
 
+    @Suppress("unused")
+    sealed class Vehicle {
+        sealed class Motorized : Vehicle() {
+            data class Car(val doors: Int) : Motorized()
+            data class Truck(val payload: Double) : Motorized()
+        }
+
+        data class Bicycle(val gears: Int) : Vehicle()
+    }
+
     private val introspector = ReflectionClassIntrospector
 
     @Test

@@ -130,90 +130,30 @@ class JsonSchemaGeneratorTest {
                   }
                 },
                 "nestedProperty": {
-                  "type": "object",
-                  "description": "Nested property class",
-                  "properties": {
-                    "foo": {
-                      "type": "string",
-                      "description": "Nested foo property"
-                    },
-                    "bar": {
-                      "type": "integer"
-                    }
-                  },
-                  "required": [
-                    "foo",
-                    "bar"
-                  ],
-                  "additionalProperties": false
+                  "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaGeneratorTest.NestedProperty"
                 },
                 "nestedListProperty": {
                   "type": "array",
                   "default": [],
                   "items": {
-                    "type": "object",
-                    "description": "Nested property class",
-                    "properties": {
-                      "foo": {
-                        "type": "string",
-                        "description": "Nested foo property"
-                      },
-                      "bar": {
-                        "type": "integer"
-                      }
-                    },
-                    "required": [
-                      "foo",
-                      "bar"
-                    ],
-                    "additionalProperties": false
+                    "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaGeneratorTest.NestedProperty"
                   }
                 },
                 "nestedMapProperty": {
                   "type": "object",
                   "default": {},
                   "additionalProperties": {
-                    "type": "object",
-                    "description": "Nested property class",
-                    "properties": {
-                      "foo": {
-                        "type": "string",
-                        "description": "Nested foo property"
-                      },
-                      "bar": {
-                        "type": "integer"
-                      }
-                    },
-                    "required": [
-                      "foo",
-                      "bar"
-                    ],
-                    "additionalProperties": false
+                    "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaGeneratorTest.NestedProperty"
                   }
                 },
                 "polymorphicProperty": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass1"
-                    },
-                    {
-                      "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass2"
-                    }
-                  ]
+                  "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaGeneratorTest.TestClosedPolymorphism"
                 },
                 "enumProperty": {
-                  "type": "string",
-                  "default": "One",
-                  "enum": [
-                    "One",
-                    "Two"
-                  ]
+                  "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaGeneratorTest.TestEnum"
                 },
                 "objectProperty": {
-                  "type": "object",
-                  "properties": {},
-                  "required": [],
-                  "additionalProperties": false
+                  "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaGeneratorTest.TestObject"
                 }
               },
               "additionalProperties": false,
@@ -227,6 +167,22 @@ class JsonSchemaGeneratorTest {
                 "nullableProperty"
               ],
               "$defs": {
+                "kotlinx.schema.generator.json.JsonSchemaGeneratorTest.NestedProperty": {
+                  "type": "object",
+                  "description": "Nested property class",
+                  "properties": {
+                    "foo": { "type": "string", "description": "Nested foo property" },
+                    "bar": { "type": "integer" }
+                  },
+                  "required": ["foo", "bar"],
+                  "additionalProperties": false
+                },
+                "kotlinx.schema.generator.json.JsonSchemaGeneratorTest.TestClosedPolymorphism": {
+                  "oneOf": [
+                    { "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass1" },
+                    { "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass2" }
+                  ]
+                },
                 "kotlinx.schema.generator.json.JsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass1": {
                   "type": "object",
                   "properties": {
@@ -234,18 +190,10 @@ class JsonSchemaGeneratorTest {
                       "type": "string",
                       "const": "kotlinx.schema.generator.json.JsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass1"
                     },
-                    "id": {
-                      "type": "string"
-                    },
-                    "property1": {
-                      "type": "string"
-                    }
+                    "id": { "type": "string" },
+                    "property1": { "type": "string" }
                   },
-                  "required": [
-                    "type",
-                    "id",
-                    "property1"
-                  ],
+                  "required": ["type", "id", "property1"],
                   "additionalProperties": false
                 },
                 "kotlinx.schema.generator.json.JsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass2": {
@@ -255,22 +203,24 @@ class JsonSchemaGeneratorTest {
                       "type": "string",
                       "const": "kotlinx.schema.generator.json.JsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass2"
                     },
-                    "id": {
-                      "type": "string"
-                    },
-                    "property2": {
-                      "type": "integer"
-                    }
+                    "id": { "type": "string" },
+                    "property2": { "type": "integer" }
                   },
-                  "required": [
-                    "type",
-                    "id",
-                    "property2"
-                  ],
+                  "required": ["type", "id", "property2"],
+                  "additionalProperties": false
+                },
+                "kotlinx.schema.generator.json.JsonSchemaGeneratorTest.TestEnum": {
+                  "type": "string",
+                  "enum": ["One", "Two"]
+                },
+                "kotlinx.schema.generator.json.JsonSchemaGeneratorTest.TestObject": {
+                  "type": "object",
+                  "properties": {},
+                  "required": [],
                   "additionalProperties": false
                 }
               }
-            } 
+            }
             """.trimIndent()
     }
 }

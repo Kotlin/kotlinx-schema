@@ -83,26 +83,10 @@ class SealedClassNameCollisionTest {
               "type": "object",
               "properties": {
                 "resultA": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/$defs/kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultA.Success"
-                    },
-                    {
-                      "$ref": "#/$defs/kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultA.Unknown"
-                    }
-                  ],
-                  "description": "Result type A"
+                  "$ref": "#/$defs/kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultA"
                 },
                 "resultB": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/$defs/kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultB.Success"
-                    },
-                    {
-                      "$ref": "#/$defs/kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultB.Unknown"
-                    }
-                  ],
-                  "description": "Result type B"
+                  "$ref": "#/$defs/kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultB"
                 }
               },
               "additionalProperties": false,
@@ -111,6 +95,13 @@ class SealedClassNameCollisionTest {
                 "resultB"
               ],
               "$defs": {
+                "kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultA": {
+                  "oneOf": [
+                    { "$ref": "#/$defs/kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultA.Success" },
+                    { "$ref": "#/$defs/kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultA.Unknown" }
+                  ],
+                  "description": "Result type A"
+                },
                 "kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultA.Success": {
                   "type": "object",
                   "description": "Success result for A",
@@ -143,6 +134,13 @@ class SealedClassNameCollisionTest {
                     "code"
                   ],
                   "additionalProperties": false
+                },
+                "kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultB": {
+                  "oneOf": [
+                    { "$ref": "#/$defs/kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultB.Success" },
+                    { "$ref": "#/$defs/kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultB.Unknown" }
+                  ],
+                  "description": "Result type B"
                 },
                 "kotlinx.schema.generator.json.SealedClassNameCollisionTest.ResultB.Success": {
                   "type": "object",

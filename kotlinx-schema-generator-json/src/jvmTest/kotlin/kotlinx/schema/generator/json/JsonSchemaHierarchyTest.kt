@@ -150,56 +150,36 @@ class JsonSchemaHierarchyTest {
           "type": "object",
           "properties": {
             "animal": {
-              "anyOf": [
-                {
-                  "oneOf": [
-                    {
-                      "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Cat"
-                    },
-                    {
-                      "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Dog"
-                    }
-                  ]
-                },
-                {
-                  "type": "null"
-                }
+              "oneOf": [
+                { "type": "null" },
+                { "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal" }
               ],
               "description": "Optional animal"
             }
           },
           "additionalProperties": false,
-          "required": [
-            "animal"
-          ],
+          "required": [ "animal" ],
           "$defs": {
+            "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal": {
+              "oneOf": [
+                { "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Cat" },
+                { "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Dog" }
+              ],
+              "description": "Represents an animal"
+            },
             "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Cat": {
               "type": "object",
               "description": "Represents a cat",
               "properties": {
                 "type": {
-                      "type": "string",
-                      "const": "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Cat"
-                 },
-                "name": {
                   "type": "string",
-                  "description": "Animal's name"
+                  "const": "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Cat"
                 },
-                "color": {
-                  "type": "string",
-                  "description": "Cat's color"
-                },
-                "lives": {
-                  "type": "integer",
-                  "description": "Lives left"
-                }
+                "name": { "type": "string", "description": "Animal's name" },
+                "color": { "type": "string", "description": "Cat's color" },
+                "lives": { "type": "integer", "description": "Lives left" }
               },
-              "required": [
-                "type",
-                "name",
-                "color",
-                "lives"
-              ],
+              "required": [ "type", "name", "color", "lives" ],
               "additionalProperties": false
             },
             "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Dog": {
@@ -210,25 +190,11 @@ class JsonSchemaHierarchyTest {
                   "type": "string",
                   "const": "kotlinx.schema.generator.json.JsonSchemaHierarchyTest.Animal.Dog"
                 },
-                "name": {
-                  "type": "string",
-                  "description": "Animal's name"
-                },
-                "breed": {
-                  "type": "string",
-                  "description": "Dog's breed"
-                },
-                "isTrained": {
-                  "type": "boolean",
-                  "description": "Trained or not"
-                }
+                "name": { "type": "string", "description": "Animal's name" },
+                "breed": { "type": "string", "description": "Dog's breed" },
+                "isTrained": { "type": "boolean", "description": "Trained or not" }
               },
-              "required": [
-                "type",
-                "name",
-                "breed",
-                "isTrained"
-              ],
+              "required": [ "type", "name", "breed", "isTrained" ],
               "additionalProperties": false
             }
           }

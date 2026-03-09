@@ -193,7 +193,7 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
             val polymorphicNode = createPolymorphicNode(klass)
 
             klass.sealedSubclasses.forEach { subclass ->
-                handleObjectType(type = subclass.createType())
+                toRef(subclass.createType())
             }
 
             polymorphicNode

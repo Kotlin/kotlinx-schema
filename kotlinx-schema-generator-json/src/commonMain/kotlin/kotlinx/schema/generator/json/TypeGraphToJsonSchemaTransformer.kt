@@ -9,10 +9,10 @@ import kotlinx.schema.generator.core.ir.PolymorphicNode
 import kotlinx.schema.generator.core.ir.PrimitiveKind
 import kotlinx.schema.generator.core.ir.PrimitiveNode
 import kotlinx.schema.generator.core.ir.TypeGraph
+import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeNode
 import kotlinx.schema.generator.core.ir.TypeRef
 import kotlinx.schema.json.AdditionalPropertiesSchema
-import kotlinx.schema.json.AnyOfPropertyDefinition
 import kotlinx.schema.json.ArrayPropertyDefinition
 import kotlinx.schema.json.BooleanPropertyDefinition
 import kotlinx.schema.json.DenyAdditionalProperties
@@ -47,7 +47,9 @@ import kotlin.jvm.JvmOverloads
  *
  * Converts type graphs from introspectors (reflection, KSP) into JSON Schema definitions.
  * Supports primitives, collections, objects, enums, and sealed hierarchies with discriminators.
- * Nullable sealed types use `anyOf` with null option.
+ * All named types (objects, enums, sealed hierarchies) are emitted as `$ref` with definitions
+ * registered in `$defs` exactly once, regardless of nullability. Nullable named types use
+ * `oneOf: [{type: null}, {$ref}]`.
  *
  * @param json JSON encoder for schema elements
  */
@@ -72,8 +74,17 @@ public class TypeGraphToJsonSchemaTransformer
             rootName: String,
         ): JsonSchema {
             val definitions = mutableMapOf<String, PropertyDefinition>()
+            // Resolve the root node directly to avoid the root becoming a bare $ref
+            val rootNode =
+                when (val root = graph.root) {
+                    is TypeRef.Inline -> root.node
+                    is TypeRef.Ref ->
+                        checkNotNull(graph.nodes[root.id]) {
+                            "Root type '${root.id.value}' not found in type graph"
+                        }
+                }
             val schemaDefinition =
-                when (val rootDefinition = convertTypeRef(graph.root, graph, definitions)) {
+                when (val rootDefinition = convertNode(rootNode, nullable = false, graph, definitions)) {
                     is ObjectPropertyDefinition -> {
                         createObjectSchemaDefinition(rootName, rootDefinition, definitions)
                     }
@@ -254,11 +265,12 @@ public class TypeGraphToJsonSchemaTransformer
          */
         private fun formatSchemaId(qualifiedName: String): String = qualifiedName
 
-        // FIXME correctly handle recursive polymorphism, it throws StackOverflowError now
-
         /**
          * Converts a type reference to a property definition.
-         * Handles both inline types and named type references.
+         *
+         * Named types ([TypeRef.Ref]) are always emitted as `$ref` with the definition registered
+         * in `$defs` exactly once. Nullable named types use `oneOf: [{type: null}, {$ref}]`.
+         * Inline types (primitives, lists, maps) are expanded directly.
          */
         private fun convertTypeRef(
             typeRef: TypeRef,
@@ -271,15 +283,44 @@ public class TypeGraphToJsonSchemaTransformer
                 }
 
                 is TypeRef.Ref -> {
+                    val id = typeRef.id
                     val node =
-                        checkNotNull(graph.nodes[typeRef.id]) {
-                            "Type reference '${typeRef.id.value}' not found in type graph. " +
+                        checkNotNull(graph.nodes[id]) {
+                            "Type reference '${id.value}' not found in type graph. " +
                                 "This indicates a bug in the introspector - all referenced types " +
                                 "should be present in the graph's nodes map."
                         }
-                    convertNode(node, typeRef.nullable, graph, definitions)
+                    ensureNodeInDefinitions(id, node, graph, definitions)
+                    val refDef = ReferencePropertyDefinition(ref = $$"#/$defs/$${id.value}")
+                    if (typeRef.nullable) {
+                        OneOfPropertyDefinition(
+                            oneOf =
+                                listOf(
+                                    StringPropertyDefinition(type = NULL_TYPE, description = null, nullable = null),
+                                    refDef,
+                                ),
+                            description = null,
+                        )
+                    } else {
+                        refDef
+                    }
                 }
             }
+
+        /**
+         * Ensures [node] is registered in [definitions] under [id].
+         * A placeholder is inserted first to safely handle circular type references.
+         */
+        private fun ensureNodeInDefinitions(
+            id: TypeId,
+            node: TypeNode,
+            graph: TypeGraph,
+            definitions: MutableMap<String, PropertyDefinition>,
+        ) {
+            if (id.value in definitions) return
+            definitions[id.value] = ReferencePropertyDefinition() // placeholder to break cycles
+            definitions[id.value] = convertNode(node, nullable = false, graph, definitions)
+        }
 
         /**
          * Converts inline type nodes (primitives, lists, maps) to property definitions.
@@ -393,11 +434,18 @@ public class TypeGraphToJsonSchemaTransformer
                     .filter { property ->
                         property.isConstant ||
                             when {
-                                config.respectDefaultPresence ->
+                                config.respectDefaultPresence -> {
                                     !property.hasDefaultValue ||
                                         (config.requireNullableFields && property.type.nullable)
-                                config.requireNullableFields -> true
-                                else -> !property.type.nullable
+                                }
+
+                                config.requireNullableFields -> {
+                                    true
+                                }
+
+                                else -> {
+                                    !property.type.nullable
+                                }
                             }
                     }.map { it.name }
                     .toSet()
@@ -420,11 +468,17 @@ public class TypeGraphToJsonSchemaTransformer
 
                     val withDefaultOrConst =
                         when {
-                            property.isConstant ->
+                            property.isConstant -> {
                                 setConstValue(withoutNullableIfRequired, property.defaultValue)
-                            !isRequired && property.defaultValue != null ->
+                            }
+
+                            !isRequired && property.defaultValue != null -> {
                                 setDefaultValue(withoutNullableIfRequired, property.defaultValue)
-                            else -> withoutNullableIfRequired
+                            }
+
+                            else -> {
+                                withoutNullableIfRequired
+                            }
                         }
 
                     // Add description if available
@@ -492,17 +546,16 @@ public class TypeGraphToJsonSchemaTransformer
         /**
          * Converts sealed class hierarchies to JSON Schema oneOf with $ref and $defs.
          *
-         * Generates $defs entries for each subtype and uses $ref in oneOf array.
-         * Discriminator mapping references proper $ref paths. Nullable types are
-         * wrapped in anyOf with `null` option.
+         * Resolves each subtype node directly (bypassing `convertTypeRef`) so the full definition
+         * is available for discriminator injection before registration in `$defs`.
          *
          * @param node Polymorphic node with subtypes and discriminator
-         * @param nullable Whether type reference is nullable
+         * @param nullable Unused — nullable wrapping is handled by [convertTypeRef]
          * @param graph Type graph with all definitions
          * @param definitions Map to collect type definitions for $defs
-         * @return OneOfPropertyDefinition, or AnyOfPropertyDefinition if nullable
+         * @return [OneOfPropertyDefinition] with `$ref` entries for each subtype
          */
-        @Suppress("LongMethod")
+        @Suppress("LongMethod", "UnusedParameter")
         private fun convertPolymorphic(
             node: PolymorphicNode,
             nullable: Boolean,
@@ -513,17 +566,14 @@ public class TypeGraphToJsonSchemaTransformer
             val subtypeRefs =
                 node.subtypes.map { subtypeRef ->
                     val typeName = subtypeRef.id.value
+                    val subtypeNode =
+                        checkNotNull(graph.nodes[subtypeRef.id]) {
+                            "Subtype '$typeName' not found in type graph"
+                        }
 
                     val subtypeDefinition =
-                        convertTypeRef(subtypeRef.ref, graph, definitions)
-                            .let { definition ->
-                                @Suppress("UseCheckOrError")
-                                definition as? ObjectPropertyDefinition
-                                    ?: throw IllegalStateException(
-                                        "All subtypes of a polymorphic type must be objects. " +
-                                            "Found subtype '$typeName' with type '${definition::class.simpleName}'.",
-                                    )
-                            }.let { definition ->
+                        when (val definition = convertNode(subtypeNode, nullable = false, graph, definitions)) {
+                            is ObjectPropertyDefinition -> {
                                 // Append discriminator property to the definition if enabled
                                 if (config.includePolymorphicDiscriminator) {
                                     val discriminatorProperty =
@@ -541,6 +591,20 @@ public class TypeGraphToJsonSchemaTransformer
                                     definition
                                 }
                             }
+
+                            // Nested sealed hierarchy: intermediate sealed subtype is itself polymorphic.
+                            // No discriminator injection — the leaf subtypes carry the const.
+                            is OneOfPropertyDefinition -> {
+                                definition
+                            }
+
+                            else -> {
+                                error(
+                                    "All subtypes of a polymorphic type must be objects or sealed hierarchies. " +
+                                        "Found subtype '$typeName' with type '${definition::class.simpleName}'.",
+                                )
+                            }
+                        }
 
                     // Add to definitions map for $defs section
                     definitions[typeName] = subtypeDefinition
@@ -569,29 +633,10 @@ public class TypeGraphToJsonSchemaTransformer
                     null
                 }
 
-            val oneOfDef =
-                OneOfPropertyDefinition(
-                    oneOf = subtypeRefs,
-                    discriminator = discriminator,
-                    description = if (nullable) null else node.description,
-                )
-
-            // If nullable, wrap in anyOf with the 'null' option
-            return if (nullable) {
-                AnyOfPropertyDefinition(
-                    anyOf =
-                        listOf(
-                            oneOfDef,
-                            StringPropertyDefinition(
-                                type = NULL_TYPE,
-                                description = null,
-                                nullable = null,
-                            ),
-                        ),
-                    description = null, // Description set by setDescription in convertObject
-                )
-            } else {
-                oneOfDef
-            }
+            return OneOfPropertyDefinition(
+                oneOf = subtypeRefs,
+                discriminator = discriminator,
+                description = node.description,
+            )
         }
     }

@@ -62,71 +62,22 @@ class JavaClassJsonSchemaGeneratorTest {
                   }
                 },
                 "nestedProperty": {
-                  "type": "object",
-                  "description": "Nested property class",
-                  "properties": {
-                    "foo": {
-                      "type": "string",
-                      "description": "Nested foo property"
-                    },
-                    "bar": {
-                      "type": "integer"
-                    }
-                  },
-                  "required": [
-                    "foo",
-                    "bar"
-                  ],
-                  "additionalProperties": false
+                  "$ref": "#/$defs/kotlinx.schema.generator.test.JavaTestClass.NestedProperty"
                 },
                 "nestedListProperty": {
                   "type": "array",
                   "items": {
-                    "type": "object",
-                    "description": "Nested property class",
-                    "properties": {
-                      "foo": {
-                        "type": "string",
-                        "description": "Nested foo property"
-                      },
-                      "bar": {
-                        "type": "integer"
-                      }
-                    },
-                    "required": [
-                      "foo",
-                      "bar"
-                    ],
-                    "additionalProperties": false
+                    "$ref": "#/$defs/kotlinx.schema.generator.test.JavaTestClass.NestedProperty"
                   }
                 },
                 "nestedMapProperty": {
                   "type": "object",
                   "additionalProperties": {
-                    "type": "object",
-                    "description": "Nested property class",
-                    "properties": {
-                      "foo": {
-                        "type": "string",
-                        "description": "Nested foo property"
-                      },
-                      "bar": {
-                        "type": "integer"
-                      }
-                    },
-                    "required": [
-                      "foo",
-                      "bar"
-                    ],
-                    "additionalProperties": false
+                    "$ref": "#/$defs/kotlinx.schema.generator.test.JavaTestClass.NestedProperty"
                   }
                 },
                 "enumProperty": {
-                  "type": "string",
-                  "enum": [
-                    "One",
-                    "Two"
-                  ]
+                  "$ref": "#/$defs/kotlinx.schema.generator.test.JavaTestClass.TestEnum"
                 }
               },
               "additionalProperties": false,
@@ -144,8 +95,24 @@ class JavaClassJsonSchemaGeneratorTest {
                 "nestedListProperty",
                 "nestedMapProperty",
                 "enumProperty"
-              ]
-            } 
+              ],
+              "$defs": {
+                "kotlinx.schema.generator.test.JavaTestClass.NestedProperty": {
+                  "type": "object",
+                  "description": "Nested property class",
+                  "properties": {
+                    "foo": { "type": "string", "description": "Nested foo property" },
+                    "bar": { "type": "integer" }
+                  },
+                  "required": ["foo", "bar"],
+                  "additionalProperties": false
+                },
+                "kotlinx.schema.generator.test.JavaTestClass.TestEnum": {
+                  "type": "string",
+                  "enum": ["One", "Two"]
+                }
+              }
+            }
             """.trimIndent()
 
         actualSchema shouldEqualJson expectedSchema

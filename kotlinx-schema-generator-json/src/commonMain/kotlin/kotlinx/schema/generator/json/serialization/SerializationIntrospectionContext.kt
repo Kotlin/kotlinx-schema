@@ -337,7 +337,7 @@ internal class SerializationIntrospectionContext(
     /**
      * Creates a [TypeId] from a [SerialDescriptor] using its serialName.
      */
-    private fun descriptorId(descriptor: SerialDescriptor): TypeId = TypeId(descriptor.serialName)
+    private fun descriptorId(descriptor: SerialDescriptor): TypeId = TypeId(descriptor.serialName.removeSuffix("?"))
 
     /**
      * Extracts description from a list of type annotations.
