@@ -1,57 +1,261 @@
 package kotlinx.schema.generator.json.serialization
 
 import io.kotest.assertions.json.shouldEqualJson
-import kotlinx.schema.json.encodeToString
 import kotlinx.serialization.SerialInfo
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import kotlin.test.Test
 
 class SerializationClassJsonSchemaGeneratorTest {
     @SerialInfo
-    annotation class CustomDescription(val value: String)
+    annotation class CustomDescription(
+        val value: String,
+    )
 
     @Serializable
-    data class Person(
-        @property:CustomDescription("First name")
-        val firstName: String,
+    @CustomDescription("A test class")
+    data class TestClass(
+        @property:CustomDescription("A string property")
+        val stringProperty: String,
+        val intProperty: Int,
+        val longProperty: Long,
+        val doubleProperty: Double,
+        val floatProperty: Float,
+        val booleanNullableProperty: Boolean?,
+        val nullableProperty: String? = null,
+        val listProperty: List<String> = emptyList(),
+        val mapProperty: Map<String, Int> = emptyMap(),
+        @property:CustomDescription("A custom nested property")
+        val nestedProperty: NestedProperty = NestedProperty("foo", 1),
+        val nestedListProperty: List<NestedProperty> = emptyList(),
+        val nestedMapProperty: Map<String, NestedProperty> = emptyMap(),
+        @property:CustomDescription("A custom polymorphic property")
+        val polymorphicProperty: TestClosedPolymorphism = TestClosedPolymorphism.SubClass1("id1", "property1"),
+        val enumProperty: TestEnum = TestEnum.One,
+        val objectProperty: TestObject = TestObject,
     )
 
-    private val expectedPersonSchemaString =
-        // language=json
-        $$"""
-          {
-         "$schema": "https://json-schema.org/draft/2020-12/schema",
-         "$id": "kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.Person",
-         "required": [ "firstName" ],
-          "type": "object",
-          "properties": {
-            "firstName": {
-              "type": "string",
-              "description": "First name"
-            }
-          },
-          "additionalProperties": false
-        }
-        """
-
-    val generator = SerializationClassJsonSchemaGenerator(
-        introspectorConfig = SerializationClassSchemaIntrospector.Config(
-            descriptionExtractor = { annotations ->
-                annotations.filterIsInstance<CustomDescription>().firstOrNull()?.value
-            },
-        ),
+    @Serializable
+    @CustomDescription("Nested property class")
+    data class NestedProperty(
+        @property:CustomDescription("Nested foo property")
+        val foo: String,
+        val bar: Int,
     )
+
+    @Serializable
+    sealed class TestClosedPolymorphism {
+        abstract val id: String
+
+        @Serializable
+        @Suppress("unused")
+        data class SubClass1(
+            override val id: String,
+            val property1: String,
+        ) : TestClosedPolymorphism()
+
+        @Serializable
+        @Suppress("unused")
+        data class SubClass2(
+            override val id: String,
+            val property2: Int,
+        ) : TestClosedPolymorphism()
+    }
+
+    @Serializable
+    @Suppress("unused")
+    enum class TestEnum {
+        One,
+        Two,
+    }
+
+    @Serializable
+    data object TestObject
+
+    val generator =
+        SerializationClassJsonSchemaGenerator(
+            introspectorConfig =
+                SerializationClassSchemaIntrospector.Config(
+                    descriptionExtractor = { annotations ->
+                        annotations.filterIsInstance<CustomDescription>().firstOrNull()?.value
+                    },
+                ),
+        )
 
     @Test
-    fun `Should generate JsonSchema from SerialDescriptor`() {
-        val schema =
-            generator.generateSchema(
-                Person.serializer().descriptor,
-            )
+    fun `Should generate JsonSchema for complex class`() {
+        val schema = generator.generateSchemaString(TestClass.serializer().descriptor)
 
-        val actualSchemaJson = schema.encodeToString(Json)
-
-        actualSchemaJson shouldEqualJson expectedPersonSchemaString
+        schema shouldEqualJson
+            // language=JSON
+            $$"""
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestClass",
+              "description": "A test class",
+              "type": "object",
+              "properties": {
+                "stringProperty": {
+                  "type": "string",
+                  "description": "A string property"
+                },
+                "intProperty": {
+                  "type": "integer"
+                },
+                "longProperty": {
+                  "type": "integer"
+                },
+                "doubleProperty": {
+                  "type": "number"
+                },
+                "floatProperty": {
+                  "type": "number"
+                },
+                "booleanNullableProperty": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "nullableProperty": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "listProperty": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "mapProperty": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "integer"
+                  }
+                },
+                "nestedProperty": {
+                  "description": "A custom nested property",
+                  "$ref": "#/$defs/kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.NestedProperty"
+                },
+                "nestedListProperty": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.NestedProperty"
+                  }
+                },
+                "nestedMapProperty": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "$ref": "#/$defs/kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.NestedProperty"
+                  }
+                },
+                "polymorphicProperty": {
+                  "description": "A custom polymorphic property",
+                  "$ref": "#/$defs/kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestClosedPolymorphism"
+                },
+                "enumProperty": {
+                  "$ref": "#/$defs/kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestEnum"
+                },
+                "objectProperty": {
+                  "$ref": "#/$defs/kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestObject"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "stringProperty",
+                "intProperty",
+                "longProperty",
+                "doubleProperty",
+                "floatProperty",
+                "booleanNullableProperty"
+              ],
+              "$defs": {
+                "kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.NestedProperty": {
+                  "type": "object",
+                  "description": "Nested property class",
+                  "properties": {
+                    "foo": {
+                      "type": "string",
+                      "description": "Nested foo property"
+                    },
+                    "bar": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "foo",
+                    "bar"
+                  ],
+                  "additionalProperties": false
+                },
+                "kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestClosedPolymorphism": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/$defs/kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass1"
+                    },
+                    {
+                      "$ref": "#/$defs/kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass2"
+                    }
+                  ]
+                },
+                "kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass1": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass1"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "property1": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "id",
+                    "property1"
+                  ],
+                  "additionalProperties": false
+                },
+                "kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass2": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass2"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "property2": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "id",
+                    "property2"
+                  ],
+                  "additionalProperties": false
+                },
+                "kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestEnum": {
+                  "type": "string",
+                  "enum": [
+                    "One",
+                    "Two"
+                  ]
+                },
+                "kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestObject": {
+                  "type": "object",
+                  "properties": {},
+                  "required": [],
+                  "additionalProperties": false
+                }
+              }
+            }
+            """.trimIndent()
     }
 }

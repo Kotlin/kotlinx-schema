@@ -1,13 +1,17 @@
 package kotlinx.schema.generator.json
 
+import kotlinx.schema.json.AllOfPropertyDefinition
 import kotlinx.schema.json.AnyOfPropertyDefinition
 import kotlinx.schema.json.ArrayPropertyDefinition
 import kotlinx.schema.json.BooleanPropertyDefinition
+import kotlinx.schema.json.BooleanSchemaDefinition
 import kotlinx.schema.json.GenericPropertyDefinition
+import kotlinx.schema.json.JsonSchema
 import kotlinx.schema.json.NumericPropertyDefinition
 import kotlinx.schema.json.ObjectPropertyDefinition
 import kotlinx.schema.json.OneOfPropertyDefinition
 import kotlinx.schema.json.PropertyDefinition
+import kotlinx.schema.json.ReferencePropertyDefinition
 import kotlinx.schema.json.StringPropertyDefinition
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -68,7 +72,10 @@ internal fun setDescription(
         is AnyOfPropertyDefinition -> propertyDef.copy(description = description)
         is OneOfPropertyDefinition -> propertyDef.copy(description = description)
         is GenericPropertyDefinition -> propertyDef.copy(description = description)
-        else -> propertyDef
+        is AllOfPropertyDefinition -> propertyDef.copy(description = description)
+        is ReferencePropertyDefinition -> propertyDef.copy(description = description)
+        is JsonSchema -> propertyDef.copy(description = description)
+        is BooleanSchemaDefinition -> error("Cannot set description on BooleanSchemaDefinition")
     }
 
 /**

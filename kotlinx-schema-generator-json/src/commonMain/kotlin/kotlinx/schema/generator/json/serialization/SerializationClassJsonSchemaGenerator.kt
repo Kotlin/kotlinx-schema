@@ -22,12 +22,7 @@ import kotlin.reflect.KClass
  * and handling of optional nullable properties. Defaults to [JsonSchemaConfig.Default].
  */
 public class SerializationClassJsonSchemaGenerator(
-    private val json: Json =
-        Json {
-            encodeDefaults = false
-            classDiscriminator = "type"
-            classDiscriminatorMode = kotlinx.serialization.json.ClassDiscriminatorMode.ALL_JSON_OBJECTS
-        },
+    private val json: Json = Json.Default,
     introspectorConfig: SerializationClassSchemaIntrospector.Config = SerializationClassSchemaIntrospector.Config(),
     jsonSchemaConfig: JsonSchemaConfig = JsonSchemaConfig.Default,
 ) : AbstractSchemaGenerator<SerialDescriptor, JsonSchema, SerializationClassSchemaIntrospector.Config>(

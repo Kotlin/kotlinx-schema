@@ -20,9 +20,11 @@ class JsonSchemaGeneratorTest {
         val nullableProperty: String? = null,
         val listProperty: List<String> = emptyList(),
         val mapProperty: Map<String, Int> = emptyMap(),
+        @property:Description("A custom nested property")
         val nestedProperty: NestedProperty = NestedProperty("foo", 1),
         val nestedListProperty: List<NestedProperty> = emptyList(),
         val nestedMapProperty: Map<String, NestedProperty> = emptyMap(),
+        @property:Description("A custom polymorphic property")
         val polymorphicProperty: TestClosedPolymorphism = TestClosedPolymorphism.SubClass1("id1", "property1"),
         val enumProperty: TestEnum = TestEnum.One,
         val objectProperty: TestObject = TestObject,
@@ -62,16 +64,7 @@ class JsonSchemaGeneratorTest {
     private val generator =
         ReflectionClassJsonSchemaGenerator(
             json = Json { prettyPrint = true },
-            // Default, but with includePolymorphicDiscriminator enabled
-            config =
-                JsonSchemaConfig(
-                    respectDefaultPresence = true,
-                    requireNullableFields = true,
-                    useUnionTypes = true,
-                    useNullableField = false,
-                    includePolymorphicDiscriminator = true,
-                    includeOpenAPIPolymorphicDiscriminator = false,
-                ),
+            config = JsonSchemaConfig.Default,
         )
 
     @Test
@@ -130,7 +123,8 @@ class JsonSchemaGeneratorTest {
                   }
                 },
                 "nestedProperty": {
-                  "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaGeneratorTest.NestedProperty"
+                  "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaGeneratorTest.NestedProperty",
+                  "description": "A custom nested property"
                 },
                 "nestedListProperty": {
                   "type": "array",
@@ -147,7 +141,8 @@ class JsonSchemaGeneratorTest {
                   }
                 },
                 "polymorphicProperty": {
-                  "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaGeneratorTest.TestClosedPolymorphism"
+                  "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaGeneratorTest.TestClosedPolymorphism",
+                  "description": "A custom polymorphic property"
                 },
                 "enumProperty": {
                   "$ref": "#/$defs/kotlinx.schema.generator.json.JsonSchemaGeneratorTest.TestEnum"
@@ -163,8 +158,7 @@ class JsonSchemaGeneratorTest {
                 "longProperty",
                 "doubleProperty",
                 "floatProperty",
-                "booleanNullableProperty",
-                "nullableProperty"
+                "booleanNullableProperty"
               ],
               "$defs": {
                 "kotlinx.schema.generator.json.JsonSchemaGeneratorTest.NestedProperty": {
