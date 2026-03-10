@@ -1,15 +1,15 @@
 .SHELLFLAGS := -e -c
 
 .PHONY: all
-all:clean build integration-test examples
+all:clean lint build integration-test examples knit
 
 .PHONY: build
 build:clean
-	@echo "🔨 Coverage reports..."
-	@./gradlew --rerun-tasks detekt checkLegacyAbi
+	@echo "🔨 Building..."
 	@./gradlew --rerun-tasks  \
-		kotlinUpgradePackageLock build \
-		koverLog koverXmlReport koverHtmlReport
+		kotlinUpgradePackageLock kotlinWasmUpgradePackageLock build
+	@echo "🔨 Coverage reports..."
+	@./gradlew koverLog koverXmlReport koverHtmlReport
 	@echo "✅ Build complete!"
 
 .PHONY: test
@@ -48,7 +48,7 @@ clean:
 .PHONY: lint
 lint:
 	@echo "🕵️‍♀️ Inspecting code..."
-	@./gradlew detekt --rerun-tasks
+	@./gradlew detekt checkLegacyAbi
 	@echo "✅ Code inspection complete!"
 
 .PHONY: publish
@@ -56,7 +56,7 @@ publish:
 	@echo "📦 Publishing to project repository (build/project-repo)..."
 	@rm -rf build/project-repo
 	@./gradlew publishAllPublicationsToProjectRepository -Pversion=1-SNAPSHOT --rerun-tasks
-	@echo "✅ Published to build/project-repo!"
+	@echo "✅ Version '1-SNAPSHOT' was published to build/project-repo! (1-SNAPSHOT)"
 
 .PHONY: sync
 sync:

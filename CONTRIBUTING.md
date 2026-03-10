@@ -84,9 +84,16 @@ so do familiarize yourself with the following guidelines.
 ```bash
 make sync # fetch submodules
 
-make build             # Build + verify + docs
-make build             # Build + verify + docs
+make all                # Build and verify everything. Run before commit!
+
+make lint               # Run code analysis
+make build              # Build + verify + docs
+make integration-tests  # Build and verify integration tests
+make examples           # Build and verify examples
+make knit               # Verify documentaiton
 ```
+
+Make sure you have run `make all` before commit
 
 ### Testing Specific Modules
 
