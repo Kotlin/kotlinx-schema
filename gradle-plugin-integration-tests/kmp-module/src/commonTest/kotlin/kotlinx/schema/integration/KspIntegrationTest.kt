@@ -241,10 +241,12 @@ class KspIntegrationTest {
                   "description": "Unique order identifier"
                 },
                 "customer": {
-                  "$ref": "#/$defs/kotlinx.schema.integration.Person"
+                  "$ref": "#/$defs/kotlinx.schema.integration.Person",
+                  "description": "The customer who placed the order"
                 },
                 "shippingAddress": {
-                  "$ref": "#/$defs/kotlinx.schema.integration.Address"
+                  "$ref": "#/$defs/kotlinx.schema.integration.Address",
+                  "description": "Destination address for shipment"
                 },
                 "items": {
                   "type": "array",
@@ -254,7 +256,8 @@ class KspIntegrationTest {
                   }
                 },
                 "status": {
-                  "$ref": "#/$defs/kotlinx.schema.integration.Status"
+                  "$ref": "#/$defs/kotlinx.schema.integration.Status",
+                  "description": "Current status of the order"
                 }
               },
               "additionalProperties": false,
@@ -377,7 +380,7 @@ class KspIntegrationTest {
                   ]
                 }
               }
-            }
+            } 
             """.trimIndent()
     }
 
