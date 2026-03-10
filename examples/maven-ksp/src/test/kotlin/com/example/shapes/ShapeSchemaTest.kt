@@ -59,6 +59,10 @@ class ShapeSchemaTest {
                     "type": "object",
                     "description": "A circle defined by its radius.",
                     "properties": {
+                        "type": {
+                            "type": "string",
+                            "const": "com.example.shapes.Circle"
+                        },
                         "name": {
                             "type": "string"
                         },
@@ -71,6 +75,7 @@ class ShapeSchemaTest {
                         }
                     },
                     "required": [
+                        "type",
                         "name",
                         "radius",
                         "color"
@@ -81,6 +86,10 @@ class ShapeSchemaTest {
                     "type": "object",
                     "description": "A rectangle with width and height.",
                     "properties": {
+                        "type": {
+                            "type": "string",
+                            "const": "com.example.shapes.Rectangle"
+                        },
                         "name": {
                             "type": "string"
                         },
@@ -96,6 +105,7 @@ class ShapeSchemaTest {
                         }
                     },
                     "required": [
+                        "type",
                         "name",
                         "width",
                         "height",
@@ -113,87 +123,100 @@ class ShapeSchemaTest {
 
         jsonSchemaString shouldEqualSpecifiedJson
             $$"""
-           {
-            "$schema": "https://json-schema.org/draft/2020-12/schema",
-            "$id": "com.example.shapes.Drawing",
-            "description": "Container for multiple shapes.",
-            "type": "object",
-            "properties": {
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "com.example.shapes.Drawing",
+              "description": "Container for multiple shapes.",
+              "type": "object",
+              "properties": {
                 "name": {
-                    "type": "string",
-                    "description": "Name of this drawing"
+                  "type": "string",
+                  "description": "Name of this drawing"
                 },
                 "shapes": {
-                    "type": "array",
-                    "items": {
-                        "oneOf": [
-                            {
-                                "$ref": "#/$defs/com.example.shapes.Circle"
-                            },
-                            {
-                                "$ref": "#/$defs/com.example.shapes.Rectangle"
-                            }
-                        ],
-                        "description": "A geometric shape. This sealed class demonstrates polymorphic schema generation."
-                    }
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/com.example.shapes.Shape"
+                  }
                 }
-            },
-            "required": [
+              },
+              "additionalProperties": false,
+              "required": [
                 "name",
                 "shapes"
-            ],
-            "additionalProperties": false,
-            "$defs": {
-                "com.example.shapes.Circle": {
-                    "type": "object",
-                    "description": "A circle defined by its radius.",
-                    "properties": {
-                        "name": {
-                            "type": "string"
-                        },
-                        "radius": {
-                            "type": "number",
-                            "description": "Radius in units (must be positive)"
-                        },
-                        "color": {
-                            "type": "string"
-                        }
+              ],
+              "$defs": {
+                "com.example.shapes.Shape": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/$defs/com.example.shapes.Circle"
                     },
-                    "required": [
-                        "name",
-                        "radius",
-                        "color"
-                    ],
-                    "additionalProperties": false
+                    {
+                      "$ref": "#/$defs/com.example.shapes.Rectangle"
+                    }
+                  ],
+                  "description": "A geometric shape. This sealed class demonstrates polymorphic schema generation."
+                },
+                "com.example.shapes.Circle": {
+                  "type": "object",
+                  "description": "A circle defined by its radius.",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "com.example.shapes.Circle"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "radius": {
+                      "type": "number",
+                      "description": "Radius in units (must be positive)"
+                    },
+                    "color": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "name",
+                    "radius",
+                    "color"
+                  ],
+                  "additionalProperties": false
                 },
                 "com.example.shapes.Rectangle": {
-                    "type": "object",
-                    "description": "A rectangle with width and height.",
-                    "properties": {
-                        "name": {
-                            "type": "string"
-                        },
-                        "width": {
-                            "type": "number"
-                        },
-                        "height": {
-                            "type": "number",
-                            "description": "Height in units"
-                        },
-                        "color": {
-                            "type": "string"
-                        }
+                  "type": "object",
+                  "description": "A rectangle with width and height.",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "com.example.shapes.Rectangle"
                     },
-                    "required": [
-                        "name",
-                        "width",
-                        "height",
-                        "color"
-                    ],
-                    "additionalProperties": false
+                    "name": {
+                      "type": "string"
+                    },
+                    "width": {
+                      "type": "number"
+                    },
+                    "height": {
+                      "type": "number",
+                      "description": "Height in units"
+                    },
+                    "color": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "name",
+                    "width",
+                    "height",
+                    "color"
+                  ],
+                  "additionalProperties": false
                 }
+              }
             }
-        }
             """.trimMargin()
     }
 }
