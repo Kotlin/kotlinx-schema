@@ -100,28 +100,37 @@ class JsonSchemaTypesTest {
               "type": "object",
               "properties": {
                 "status": {
-                  "$ref": "#/$defs/kotlinx.schema.generator.json.Status"
+                  "$ref": "#/$defs/kotlinx.schema.generator.json.Status",
+                  "description": "Status"
                 },
                 "optStatus": {
                   "oneOf": [
-                    { "type": "null" },
-                    { "$ref": "#/$defs/kotlinx.schema.generator.json.Status" }
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/$defs/kotlinx.schema.generator.json.Status"
+                    }
                   ],
                   "description": "Optional status"
                 }
               },
+              "additionalProperties": false,
               "required": [
                 "status"
               ],
-              "additionalProperties": false,
               "$defs": {
                 "kotlinx.schema.generator.json.Status": {
                   "type": "string",
-                  "enum": ["ACTIVE", "INACTIVE", "PENDING"]
+                  "enum": [
+                    "ACTIVE",
+                    "INACTIVE",
+                    "PENDING"
+                  ]
                 }
               }
-            }
-            """
+            } 
+            """.trimIndent()
     }
 
     // Collection Types Tests
@@ -300,21 +309,26 @@ class JsonSchemaTypesTest {
                   "description": "Name"
                 },
                 "address": {
-                  "$ref": "#/$defs/kotlinx.schema.generator.json.Address"
+                  "$ref": "#/$defs/kotlinx.schema.generator.json.Address",
+                  "description": "Address"
                 },
                 "optAddress": {
                   "oneOf": [
-                    { "type": "null" },
-                    { "$ref": "#/$defs/kotlinx.schema.generator.json.Address" }
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/$defs/kotlinx.schema.generator.json.Address"
+                    }
                   ],
                   "description": "Optional address"
                 }
               },
+              "additionalProperties": false,
               "required": [
                 "name",
                 "address"
               ],
-              "additionalProperties": false,
               "$defs": {
                 "kotlinx.schema.generator.json.Address": {
                   "type": "object",
@@ -336,8 +350,8 @@ class JsonSchemaTypesTest {
                   "additionalProperties": false
                 }
               }
-            }
-            """
+            }            
+            """.trimIndent()
     }
 
     @Test
@@ -354,47 +368,77 @@ class JsonSchemaTypesTest {
               "type": "object",
               "properties": {
                 "level1": {
-                  "$ref": "#/$defs/kotlinx.schema.generator.json.Level1"
+                  "$ref": "#/$defs/kotlinx.schema.generator.json.Level1",
+                  "description": "Level 1"
                 }
               },
+              "additionalProperties": false,
               "required": [
                 "level1"
               ],
-              "additionalProperties": false,
               "$defs": {
-                "kotlinx.schema.generator.json.Level3": {
+                "kotlinx.schema.generator.json.Level1": {
                   "type": "object",
-                  "description": "Level 3",
+                  "description": "Level 1",
                   "properties": {
-                    "value": { "type": "string", "description": "Value" }
+                    "level2": {
+                      "$ref": "#/$defs/kotlinx.schema.generator.json.Level2",
+                      "description": "Level 2"
+                    },
+                    "value": {
+                      "type": "string",
+                      "description": "Value"
+                    }
                   },
-                  "required": ["value"],
+                  "required": [
+                    "level2",
+                    "value"
+                  ],
                   "additionalProperties": false
                 },
                 "kotlinx.schema.generator.json.Level2": {
                   "type": "object",
                   "description": "Level 2",
                   "properties": {
-                    "value": { "type": "integer", "description": "Value" },
-                    "level3": { "$ref": "#/$defs/kotlinx.schema.generator.json.Level3" },
-                    "optional": { "type": ["string", "null"], "description": "Optional value" }
+                    "value": {
+                      "type": "integer",
+                      "description": "Value"
+                    },
+                    "level3": {
+                      "$ref": "#/$defs/kotlinx.schema.generator.json.Level3",
+                      "description": "Level 3"
+                    },
+                    "optional": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "Optional value"
+                    }
                   },
-                  "required": ["value", "level3"],
+                  "required": [
+                    "value",
+                    "level3"
+                  ],
                   "additionalProperties": false
                 },
-                "kotlinx.schema.generator.json.Level1": {
+                "kotlinx.schema.generator.json.Level3": {
                   "type": "object",
-                  "description": "Level 1",
+                  "description": "Level 3",
                   "properties": {
-                    "level2": { "$ref": "#/$defs/kotlinx.schema.generator.json.Level2" },
-                    "value": { "type": "string", "description": "Value" }
+                    "value": {
+                      "type": "string",
+                      "description": "Value"
+                    }
                   },
-                  "required": ["level2", "value"],
+                  "required": [
+                    "value"
+                  ],
                   "additionalProperties": false
                 }
               }
-            }
-            """
+            } 
+            """.trimIndent()
     }
 
     // Required Fields Tests

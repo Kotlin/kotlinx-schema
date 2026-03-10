@@ -205,9 +205,11 @@ class FunctionCallingSchemaGeneratorTest {
         val nullableProperty: String? = null,
         val listProperty: List<String> = emptyList(),
         val mapProperty: Map<String, Int> = emptyMap(),
+        @property:Description("A custom nested property")
         val nestedProperty: NestedProperty = NestedProperty("foo", 1),
         val nestedListProperty: List<NestedProperty> = emptyList(),
         val nestedMapProperty: Map<String, NestedProperty> = emptyMap(),
+        @property:Description("A custom polymorphic property")
         val polymorphicProperty: TestClosedPolymorphism = TestClosedPolymorphism.SubClass1("id1", "property1"),
         val enumProperty: TestEnum = TestEnum.One,
         val objectProperty: TestObject = TestObject,
@@ -324,7 +326,7 @@ class FunctionCallingSchemaGeneratorTest {
                       },
                       "nestedProperty": {
                         "type": "object",
-                        "description": "Nested property class",
+                        "description": "A custom nested property",
                         "properties": {
                           "foo": {
                             "type": "string",
@@ -426,7 +428,8 @@ class FunctionCallingSchemaGeneratorTest {
                             ],
                             "additionalProperties": false
                           }
-                        ]
+                        ],
+                        "description": "A custom polymorphic property"
                       },
                       "enumProperty": {
                         "type": "string",
