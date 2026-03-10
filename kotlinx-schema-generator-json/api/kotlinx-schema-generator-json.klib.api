@@ -108,6 +108,10 @@ open class kotlinx.schema.generator.json/JsonSchemaConfig { // kotlinx.schema.ge
     final val useUnionTypes // kotlinx.schema.generator.json/JsonSchemaConfig.useUnionTypes|{}useUnionTypes[0]
         final fun <get-useUnionTypes>(): kotlin/Boolean // kotlinx.schema.generator.json/JsonSchemaConfig.useUnionTypes.<get-useUnionTypes>|<get-useUnionTypes>(){}[0]
 
+    open fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.schema.generator.json/JsonSchemaConfig.equals|equals(kotlin.Any?){}[0]
+    open fun hashCode(): kotlin/Int // kotlinx.schema.generator.json/JsonSchemaConfig.hashCode|hashCode(){}[0]
+    open fun toString(): kotlin/String // kotlinx.schema.generator.json/JsonSchemaConfig.toString|toString(){}[0]
+
     final object Companion { // kotlinx.schema.generator.json/JsonSchemaConfig.Companion|null[0]
         final val Default // kotlinx.schema.generator.json/JsonSchemaConfig.Companion.Default|{}Default[0]
             final fun <get-Default>(): kotlinx.schema.generator.json/JsonSchemaConfig // kotlinx.schema.generator.json/JsonSchemaConfig.Companion.Default.<get-Default>|<get-Default>(){}[0]

@@ -191,4 +191,38 @@ public open class JsonSchemaConfig(
                 includeOpenAPIPolymorphicDiscriminator = true,
             )
     }
+
+    override fun toString(): String =
+        "JsonSchemaConfig(" +
+            "respectDefaultPresence=$respectDefaultPresence, " +
+            "requireNullableFields=$requireNullableFields, " +
+            "useUnionTypes=$useUnionTypes, " +
+            "useNullableField=$useNullableField, " +
+            "includePolymorphicDiscriminator=$includePolymorphicDiscriminator, " +
+            "includeOpenAPIPolymorphicDiscriminator=$includeOpenAPIPolymorphicDiscriminator" +
+            ")"
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is JsonSchemaConfig) return false
+
+        if (respectDefaultPresence != other.respectDefaultPresence) return false
+        if (requireNullableFields != other.requireNullableFields) return false
+        if (useUnionTypes != other.useUnionTypes) return false
+        if (useNullableField != other.useNullableField) return false
+        if (includePolymorphicDiscriminator != other.includePolymorphicDiscriminator) return false
+        if (includeOpenAPIPolymorphicDiscriminator != other.includeOpenAPIPolymorphicDiscriminator) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = respectDefaultPresence.hashCode()
+        result = 31 * result + requireNullableFields.hashCode()
+        result = 31 * result + useUnionTypes.hashCode()
+        result = 31 * result + useNullableField.hashCode()
+        result = 31 * result + includePolymorphicDiscriminator.hashCode()
+        result = 31 * result + includeOpenAPIPolymorphicDiscriminator.hashCode()
+        return result
+    }
 }

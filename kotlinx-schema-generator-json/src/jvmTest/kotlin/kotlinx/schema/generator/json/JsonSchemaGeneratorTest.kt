@@ -37,16 +37,15 @@ class JsonSchemaGeneratorTest {
         val bar: Int,
     )
 
+    @Suppress("unused")
     sealed class TestClosedPolymorphism {
         abstract val id: String
 
-        @Suppress("unused")
         data class SubClass1(
             override val id: String,
             val property1: String,
         ) : TestClosedPolymorphism()
 
-        @Suppress("unused")
         data class SubClass2(
             override val id: String,
             val property2: Int,
@@ -69,10 +68,11 @@ class JsonSchemaGeneratorTest {
 
     @Test
     fun `Should generate JsonSchema for complex class`() {
+        println("Generating schema for TestClass with generator config: ${JsonSchemaConfig.Default}")
+
         val schema = generator.generateSchemaString(TestClass::class)
 
         schema shouldEqualJson
-            // language=JSON
             $$"""
             {
               "$schema": "https://json-schema.org/draft/2020-12/schema",

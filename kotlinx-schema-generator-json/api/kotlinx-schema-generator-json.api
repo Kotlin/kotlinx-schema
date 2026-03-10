@@ -17,12 +17,15 @@ public class kotlinx/schema/generator/json/JsonSchemaConfig {
 	public fun <init> ()V
 	public fun <init> (ZZZZZZ)V
 	public synthetic fun <init> (ZZZZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
 	public final fun getIncludeOpenAPIPolymorphicDiscriminator ()Z
 	public final fun getIncludePolymorphicDiscriminator ()Z
 	public final fun getRequireNullableFields ()Z
 	public final fun getRespectDefaultPresence ()Z
 	public final fun getUseNullableField ()Z
 	public final fun getUseUnionTypes ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class kotlinx/schema/generator/json/JsonSchemaConfig$Companion {
