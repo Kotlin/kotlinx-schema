@@ -32,6 +32,7 @@ kotlin {
         jvmTest {
             dependencies {
                 implementation(libs.junit.pioneer)
+                implementation(libs.junit.jupiter.params)
                 implementation(libs.mockk)
                 runtimeOnly(libs.slf4j.simple)
             }

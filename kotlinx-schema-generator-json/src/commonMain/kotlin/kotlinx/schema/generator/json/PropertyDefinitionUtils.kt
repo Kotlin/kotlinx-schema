@@ -1,3 +1,5 @@
+@file:JvmName("PropertyDefinitionUtils")
+
 package kotlinx.schema.generator.json
 
 import kotlinx.schema.json.AllOfPropertyDefinition
@@ -18,6 +20,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlin.jvm.JvmName
 
 /**
  * Sets the const value on a property definition.
@@ -57,7 +60,7 @@ internal fun setDefaultValue(
 }
 
 /**
- * Sets the description on a property definition.
+ * Sets the description on a property definition, if [PropertyDefinition] supports it.
  */
 internal fun setDescription(
     propertyDef: PropertyDefinition,
@@ -75,7 +78,7 @@ internal fun setDescription(
         is AllOfPropertyDefinition -> propertyDef.copy(description = description)
         is ReferencePropertyDefinition -> propertyDef.copy(description = description)
         is JsonSchema -> propertyDef.copy(description = description)
-        is BooleanSchemaDefinition -> error("Cannot set description on BooleanSchemaDefinition")
+        is BooleanSchemaDefinition -> propertyDef // no description field
     }
 
 /**
