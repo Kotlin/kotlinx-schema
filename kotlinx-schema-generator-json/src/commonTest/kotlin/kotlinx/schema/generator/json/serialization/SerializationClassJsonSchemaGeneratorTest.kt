@@ -26,7 +26,11 @@ class SerializationClassJsonSchemaGeneratorTest {
         val mapProperty: Map<String, Int> = emptyMap(),
         @property:CustomDescription("A custom nested property")
         val nestedProperty: NestedProperty = NestedProperty("foo", 1),
+        @property:CustomDescription("A custom nested nullable property")
+        val nestedNullableProperty: NestedProperty? = null,
         val nestedListProperty: List<NestedProperty> = emptyList(),
+        @property:CustomDescription("A custom nested nullable list property")
+        val nestedNullableListProperty: List<NestedProperty>? = null,
         val nestedMapProperty: Map<String, NestedProperty> = emptyMap(),
         @property:CustomDescription("A custom polymorphic property")
         val polymorphicProperty: TestClosedPolymorphism = TestClosedPolymorphism.SubClass1("id1", "property1"),
@@ -138,8 +142,29 @@ class SerializationClassJsonSchemaGeneratorTest {
                   "description": "A custom nested property",
                   "$ref": "#/$defs/kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.NestedProperty"
                 },
+                "nestedNullableProperty": {
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/$defs/kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.NestedProperty"
+                    }
+                  ],
+                  "description": "A custom nested nullable property"
+                },
                 "nestedListProperty": {
                   "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.NestedProperty"
+                  }
+                },
+                "nestedNullableListProperty": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "description": "A custom nested nullable list property",
                   "items": {
                     "$ref": "#/$defs/kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.NestedProperty"
                   }
