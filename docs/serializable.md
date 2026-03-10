@@ -105,11 +105,11 @@ For custom behavior, construct the generator directly with explicit `introspecto
 
 `SerializationClassJsonSchemaGenerator` accepts three optional constructor parameters:
 
-| Parameter            | Type                                          | Default                                | Description                                     |
-|:---------------------|:----------------------------------------------|:---------------------------------------|:------------------------------------------------|
-| `json`               | `Json`                                        | `Json { encodeDefaults = false; ... }` | JSON configuration, controls discriminator.     |
-| `introspectorConfig` | `SerializationClassSchemaIntrospector.Config` | `Config()`                             | Controls how descriptors are introspected.      |
-| `jsonSchemaConfig`   | `JsonSchemaConfig`                            | `JsonSchemaConfig.Default`             | Controls schema output (nullability, required). |
+| Parameter            | Type                                          | Default                    | Description                                               |
+|:---------------------|:----------------------------------------------|:---------------------------|:----------------------------------------------------------|
+| `json`               | `Json`                                        | `Json.Default`             | JSON configuration; controls discriminator name and mode. |
+| `introspectorConfig` | `SerializationClassSchemaIntrospector.Config` | `Config()`                 | Controls how descriptors are introspected.                |
+| `jsonSchemaConfig`   | `JsonSchemaConfig`                            | `JsonSchemaConfig.Default` | Controls schema output (nullability, required).           |
 
 ### Introspector configuration
 
@@ -212,6 +212,11 @@ This code prints:
 
 > [!TIP]
 > The extractor receives the full annotation list for each property or class. You can combine multiple annotation sources or apply fallback logic inside the lambda.
+
+> [!TIP]
+> Descriptions are propagated for all property types — including nested objects, sealed classes,
+> and collections. A description annotation on a property whose type is another class will appear
+> in the schema alongside the `$ref` for that class.
 
 The built-in `@Description` annotation from `kotlinx-schema-annotations` is always recognized without a custom extractor. See [Annotation Reference](../README.md#using-schema-and-description-annotations).
 
