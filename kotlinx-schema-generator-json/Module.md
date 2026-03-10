@@ -12,12 +12,12 @@ Concrete implementations of schema generators using Kotlin reflection (JVM) and 
 
 ### Reflection-Based (JVM Only)
 
-- [ReflectionClassJsonSchemaGenerator] - generates schemas from any KClass via reflection
-- [ReflectionFunctionCallingSchemaGenerator] - generates function calling schemas from KCallable
+- [ReflectionClassJsonSchemaGenerator][kotlinx.schema.generator.json.ReflectionClassJsonSchemaGenerator] - generates schemas from any KClass via reflection
+- [ReflectionFunctionCallingSchemaGenerator][kotlinx.schema.generator.json.ReflectionFunctionCallingSchemaGenerator] - generates function calling schemas from KCallable
 
 ### Serialization-Based (Multiplatform)
 
-- [SerializationClassJsonSchemaGenerator] - generates schemas from @Serializable classes (works on JVM, Native, JS, Wasm)
+- [SerializationClassJsonSchemaGenerator][kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGenerator] - generates schemas from @Serializable classes (works on JVM, Native, JS, Wasm)
 
 ## Examples
 
@@ -66,9 +66,9 @@ val schema = generator.generateSchema(User.serializer().descriptor)
 - JVM only
 
 **Serialization Generators:**
-- Requires `@Serializable` annotation
+- Requires [`@Serializable`][kotlinx.serialization.Serializable] annotation
 - Cannot extract actual default values (only detects presence)
-- Cannot extract descriptions, because of the `SerialDescriptor` limitation 
+- Cannot extract descriptions, because of the [`SerialDescriptor`][kotlinx.serialization.descriptors.SerialDescriptor] limitation 
 
 # Package kotlinx.schema.generator.json
 

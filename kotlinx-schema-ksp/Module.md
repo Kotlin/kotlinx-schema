@@ -2,7 +2,7 @@
 
 Compile-time JSON Schema generation via Kotlin Symbol Processing (KSP).
 
-KSP symbol processor that analyzes [@Schema]-annotated declarations at compile time, generating extension properties with zero runtime overhead.
+KSP symbol processor that analyzes `@Schema`-annotated declarations at compile time, generating extension properties with zero runtime overhead.
 
 **Platform Support:** Multiplatform (generates platform-agnostic code) • Build-time only • Kotlin 2.2+ • KSP 2.0+
 
@@ -34,7 +34,11 @@ fun greetJsonSchema(): FunctionCallingSchema // if withSchemaObject = true
 
 KSP processor options:
 - `kotlinx.schema.rootPackage` - filter generation to specific package
-- `kotlinx.schema.generator.strictMode` - enable strict JSON Schema validation
+- `kotlinx.schema.withSchemaObject` - generate typed json schema object as extension property
+- `kotlinx.schema.enabled` - allows to disable the processor
+- `kotlinx.schema.include` - specify classes to include
+- `kotlinx.schema.exclude` - specify classes to exclude from processing
+- `kotlinx.schema.visibility` - specify visibility for generated extension properties
 
 See [KSP Configuration Guide](https://github.com/Kotlin/kotlinx-schema/blob/main/docs/ksp.md).
 
@@ -48,8 +52,8 @@ See [KSP Configuration Guide](https://github.com/Kotlin/kotlinx-schema/blob/main
 
 ## Limitations
 
-- Requires [@Schema] annotation
-- Default values tracked but not extracted ([KSP limitation](https://github.com/google/ksp/issues/1868))
+- Requires [`@Schema`][kotlinx.schema.Schema] annotation
+- Default values are tracked but not extracted ([KSP limitation](https://github.com/google/ksp/issues/1868))
 - Only processes source code you own
 
 # Package kotlinx.schema.ksp

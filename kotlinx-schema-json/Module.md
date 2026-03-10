@@ -8,8 +8,8 @@ Provides Kotlin models for programmatic JSON Schema construction with full kotli
 
 ## Key Classes
 
-- [JsonSchema] - root schema model with type-safe property definitions
-- [FunctionCallingSchema] - OpenAI/Anthropic function calling format
+- [JsonSchema][kotlinx.schema.json.JsonSchema] - root schema model with type-safe property definitions
+- [FunctionCallingSchema][kotlinx.schema.json.FunctionCallingSchema] - OpenAI/Anthropic function calling format
 - DSL builders - fluent API for schema construction
 
 ## Example

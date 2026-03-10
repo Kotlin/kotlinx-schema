@@ -2,14 +2,12 @@
 
 Core annotations for marking classes and functions for schema generation.
 
-Provides [@Schema] and [@Description] annotations recognized by both compile-time (KSP) and runtime (reflection) generators.
-
 **Platform Support:** Multiplatform (Common, JVM, JS, Native, Wasm) • Kotlin 2.2+
 
 ## Annotations
 
-- [@Schema] - marks declarations for schema generation
-- [@Description] - adds human-readable descriptions to schemas
+- [@Schema][kotlinx.schema.Schema] - marks declarations for schema generation. Recognized by compile-time KSP generator.
+- [@Description][kotlinx.schema.Description] - adds human-readable descriptions to schemas
 
 ## Example
 

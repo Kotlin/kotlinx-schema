@@ -13,8 +13,14 @@ dokka {
             remoteUrl("https://github.com/Kotlin/kotlinx-schema/blob/main")
             localDirectory.set(rootDir)
         }
-        externalDocumentationLinks.register("ktor-client") {
-            url("https://api.ktor.io/ktor-client/")
+
+        externalDocumentationLinks.register("kotlinx-schema") {
+            url("https://kotlin.github.io/kotlinx-schema/")
+            packageListUrl("https://kotlin.github.io/kotlinx-schema/package-list")
+        }
+
+        externalDocumentationLinks.register("ktor") {
+            url("https://api.ktor.io")
             packageListUrl("https://api.ktor.io/package-list")
         }
         externalDocumentationLinks.register("kotlinx-coroutines") {
