@@ -391,12 +391,14 @@ public class TypeGraphToJsonSchemaTransformer
         private fun convertPrimitive(
             node: PrimitiveNode,
             nullable: Boolean,
-        ): PropertyDefinition =
-            when (node.kind) {
+        ): PropertyDefinition {
+            val minimum = node.minimumOrNull()
+
+            return when (node.kind) {
                 PrimitiveKind.STRING -> {
                     StringPropertyDefinition(
                         type = if (nullable && config.useUnionTypes) STRING_OR_NULL_TYPE else STRING_TYPE,
-                        description = null,
+                        description = node.description,
                         nullable = getNullableFlag(nullable),
                     )
                 }
@@ -404,27 +406,31 @@ public class TypeGraphToJsonSchemaTransformer
                 PrimitiveKind.BOOLEAN -> {
                     BooleanPropertyDefinition(
                         type = if (nullable && config.useUnionTypes) BOOLEAN_OR_NULL_TYPE else BOOLEAN_TYPE,
-                        description = null,
+                        description = node.description,
                         nullable = getNullableFlag(nullable),
                     )
                 }
 
-                PrimitiveKind.INT, PrimitiveKind.LONG -> {
+                PrimitiveKind.INT,
+                PrimitiveKind.LONG,
+                -> {
                     NumericPropertyDefinition(
                         type = if (nullable && config.useUnionTypes) INTEGER_OR_NULL_TYPE else INTEGER_TYPE,
-                        description = null,
+                        description = node.description,
                         nullable = getNullableFlag(nullable),
+                        minimum = minimum,
                     )
                 }
 
                 PrimitiveKind.FLOAT, PrimitiveKind.DOUBLE -> {
                     NumericPropertyDefinition(
                         type = if (nullable && config.useUnionTypes) NUMBER_OR_NULL_TYPE else NUMBER_TYPE,
-                        description = null,
+                        description = node.description,
                         nullable = getNullableFlag(nullable),
                     )
                 }
             }
+        }
 
         /**
          * Converts object nodes (classes, data classes) to object property definitions.

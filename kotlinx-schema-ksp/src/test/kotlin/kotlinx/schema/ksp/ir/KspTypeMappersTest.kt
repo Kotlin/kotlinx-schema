@@ -25,20 +25,25 @@ import org.junit.jupiter.params.provider.ValueSource
  * Unit tests for KspTypeMappers utility functions.
  */
 class KspTypeMappersTest {
-    @ParameterizedTest(name = "{0} should map to {1}")
+    @ParameterizedTest(name = "{0} should map to {1} (unsigned={2})")
     @CsvSource(
-        "kotlin.String, STRING",
-        "kotlin.Boolean, BOOLEAN",
-        "kotlin.Int, INT",
-        "kotlin.Byte, INT",
-        "kotlin.Short, INT",
-        "kotlin.Long, LONG",
-        "kotlin.Float, FLOAT",
-        "kotlin.Double, DOUBLE",
+        "kotlin.String, STRING, false",
+        "kotlin.Boolean, BOOLEAN, false",
+        "kotlin.Int, INT, false",
+        "kotlin.Byte, INT, false",
+        "kotlin.Short, INT, false",
+        "kotlin.UByte, INT, true",
+        "kotlin.UShort, INT, true",
+        "kotlin.UInt, INT, true",
+        "kotlin.Long, LONG, false",
+        "kotlin.ULong, LONG, true",
+        "kotlin.Float, FLOAT, false",
+        "kotlin.Double, DOUBLE, false",
     )
     fun `primitiveFor maps Kotlin primitives to PrimitiveKind`(
         qualifiedName: String,
         expectedKind: String,
+        expectedUnsigned: Boolean,
     ) {
         // Given
         val type = mockKSType(qualifiedName, Nullability.NOT_NULL)
@@ -49,6 +54,7 @@ class KspTypeMappersTest {
         // Then
         result.shouldBeInstanceOf<PrimitiveNode>()
         result.kind shouldBe PrimitiveKind.valueOf(expectedKind)
+        result.unsigned shouldBe expectedUnsigned
     }
 
     @Test
@@ -94,7 +100,11 @@ class KspTypeMappersTest {
             "kotlin.ByteArray",
             "kotlin.ShortArray",
             "kotlin.IntArray",
+            "kotlin.UByteArray",
+            "kotlin.UShortArray",
+            "kotlin.UIntArray",
             "kotlin.LongArray",
+            "kotlin.ULongArray",
             "kotlin.FloatArray",
             "kotlin.DoubleArray",
             "kotlin.CharArray",
@@ -120,6 +130,33 @@ class KspTypeMappersTest {
         val listNode = result.node as ListNode
         listNode.element.shouldBeInstanceOf<TypeRef.Inline>()
         (listNode.element as TypeRef.Inline).node.shouldBeInstanceOf<PrimitiveNode>()
+    }
+
+    @ParameterizedTest(name = "{0} should expose {1} element kind (unsigned={2})")
+    @CsvSource(
+        "kotlin.UByteArray, INT, true",
+        "kotlin.UShortArray, INT, true",
+        "kotlin.UIntArray, INT, true",
+        "kotlin.ULongArray, LONG, true",
+    )
+    fun `collectionTypeRefOrNull maps unsigned primitive arrays to matching element kind`(
+        qualifiedName: String,
+        expectedKind: String,
+        expectedUnsigned: Boolean,
+    ) {
+        val arrayType = mockKSType(qualifiedName, Nullability.NOT_NULL)
+
+        val result =
+            KspTypeMappers.collectionTypeRefOrNull(arrayType) { type ->
+                TypeRef.Inline(KspTypeMappers.primitiveFor(type)!!)
+            }
+
+        result.shouldBeInstanceOf<TypeRef.Inline>()
+        val listNode = result.node.shouldBeInstanceOf<ListNode>()
+        val elementNode = (listNode.element as TypeRef.Inline).node.shouldBeInstanceOf<PrimitiveNode>()
+
+        elementNode.kind shouldBe PrimitiveKind.valueOf(expectedKind)
+        elementNode.unsigned shouldBe expectedUnsigned
     }
 
     @ParameterizedTest(name = "{0} should map to MapNode")

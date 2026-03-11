@@ -39,6 +39,15 @@ class SerializationIntrospectorTest {
     )
 
     @Serializable
+    data class WithUnsignedNumbers(
+        val uByte: UByte,
+        val uShort: UShort,
+        val uInt: UInt,
+        val uLong: ULong,
+        val nullableUInt: UInt?,
+    )
+
+    @Serializable
     sealed class Shape {
         @Serializable
         data class Circle(
@@ -158,6 +167,55 @@ class SerializationIntrospectorTest {
         val colorRef = colorProp.type.shouldBeInstanceOf<TypeRef.Ref>()
         val enumNode = graph.nodes[colorRef.id].shouldNotBeNull().shouldBeInstanceOf<EnumNode>()
         enumNode.entries.shouldContainExactlyInAnyOrder(listOf("RED", "GREEN", "BLUE"))
+    }
+
+    @Test
+    fun `introspects unsigned primitives as primitive nodes with unsigned flag`() {
+        val graph = introspector.introspect(WithUnsignedNumbers.serializer().descriptor)
+
+        val rootRef = graph.root.shouldBeInstanceOf<TypeRef.Ref>()
+        val unsignedNode = graph.nodes[rootRef.id].shouldNotBeNull().shouldBeInstanceOf<ObjectNode>()
+        val properties = unsignedNode.properties.associateBy { it.name }
+
+        properties.getValue("uByte").type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
+            inline.node.shouldBeInstanceOf<PrimitiveNode> { prim ->
+                prim.kind shouldBe PrimitiveKind.INT
+                prim.unsigned shouldBe true
+            }
+            inline.nullable shouldBe false
+        }
+
+        properties.getValue("uShort").type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
+            inline.node.shouldBeInstanceOf<PrimitiveNode> { prim ->
+                prim.kind shouldBe PrimitiveKind.INT
+                prim.unsigned shouldBe true
+            }
+            inline.nullable shouldBe false
+        }
+
+        properties.getValue("uInt").type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
+            inline.node.shouldBeInstanceOf<PrimitiveNode> { prim ->
+                prim.kind shouldBe PrimitiveKind.INT
+                prim.unsigned shouldBe true
+            }
+            inline.nullable shouldBe false
+        }
+
+        properties.getValue("uLong").type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
+            inline.node.shouldBeInstanceOf<PrimitiveNode> { prim ->
+                prim.kind shouldBe PrimitiveKind.LONG
+                prim.unsigned shouldBe true
+            }
+            inline.nullable shouldBe false
+        }
+
+        properties.getValue("nullableUInt").type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
+            inline.node.shouldBeInstanceOf<PrimitiveNode> { prim ->
+                prim.kind shouldBe PrimitiveKind.INT
+                prim.unsigned shouldBe true
+            }
+            inline.nullable shouldBe true
+        }
     }
 
     @Test

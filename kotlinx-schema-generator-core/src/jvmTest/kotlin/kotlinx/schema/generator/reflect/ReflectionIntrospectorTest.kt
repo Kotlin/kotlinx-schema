@@ -66,6 +66,14 @@ class ReflectionIntrospectorTest {
         val metadata: Map<String, Any>,
     )
 
+    data class WithUnsignedNumbers(
+        val uByte: UByte,
+        val uShort: UShort,
+        val uInt: UInt,
+        val uLong: ULong,
+        val nullableUInt: UInt?,
+    )
+
     private val introspector = ReflectionClassIntrospector
 
     @Test
@@ -174,6 +182,55 @@ class ReflectionIntrospectorTest {
         // Verify enum entries and description
         enumNode.entries.shouldContainExactlyInAnyOrder(listOf("RED", "GREEN", "BLUE"))
         enumNode.description shouldBe "Available colors"
+    }
+
+    @Test
+    fun `introspects unsigned primitives as primitive nodes with unsigned flag`() {
+        val graph = introspector.introspect(WithUnsignedNumbers::class)
+
+        val rootRef = graph.root.shouldBeInstanceOf<TypeRef.Ref>()
+        val unsignedNode = graph.nodes[rootRef.id].shouldBeInstanceOf<ObjectNode>()
+        val properties = unsignedNode.properties.associateBy { it.name }
+
+        properties.getValue("uByte").type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
+            inline.node.shouldBeInstanceOf<PrimitiveNode> { prim ->
+                prim.kind shouldBe PrimitiveKind.INT
+                prim.unsigned shouldBe true
+            }
+            inline.nullable shouldBe false
+        }
+
+        properties.getValue("uShort").type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
+            inline.node.shouldBeInstanceOf<PrimitiveNode> { prim ->
+                prim.kind shouldBe PrimitiveKind.INT
+                prim.unsigned shouldBe true
+            }
+            inline.nullable shouldBe false
+        }
+
+        properties.getValue("uInt").type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
+            inline.node.shouldBeInstanceOf<PrimitiveNode> { prim ->
+                prim.kind shouldBe PrimitiveKind.INT
+                prim.unsigned shouldBe true
+            }
+            inline.nullable shouldBe false
+        }
+
+        properties.getValue("uLong").type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
+            inline.node.shouldBeInstanceOf<PrimitiveNode> { prim ->
+                prim.kind shouldBe PrimitiveKind.LONG
+                prim.unsigned shouldBe true
+            }
+            inline.nullable shouldBe false
+        }
+
+        properties.getValue("nullableUInt").type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
+            inline.node.shouldBeInstanceOf<PrimitiveNode> { prim ->
+                prim.kind shouldBe PrimitiveKind.INT
+                prim.unsigned shouldBe true
+            }
+            inline.nullable shouldBe true
+        }
     }
 
     @Test
