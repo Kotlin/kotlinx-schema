@@ -9,7 +9,7 @@ on:
       DRY_RUN:
         type: boolean
         description: 'Run in dry run mode'
-        default: true
+        default: false
 
 permissions:
   actions: write
