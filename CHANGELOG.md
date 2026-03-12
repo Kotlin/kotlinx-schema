@@ -1,3 +1,52 @@
+## 0.4.1
+> Published 2026-03-10
+
+### Fixed
+- **Missing property descriptions for class types**: class-level `@Description` annotations are now correctly propagated
+  to nested object schemas (#238)
+
+### Documentation
+- Improved `Module.md` annotation descriptions and updated Dokka links (#241)
+
+---
+
+## 0.4.0
+> Published 2026-03-09
+
+### Breaking Changes
+- **`$defs` for all named types**: all named types now always register in `$defs` and use `$ref` at every call site;
+  previously only nullable named types were emitted as `$ref` (#194)
+- **`kotlin.Any` maps to `{}`**: the previous output `{"type":"object","additionalProperties":false}` was incorrect;
+  the unconstrained schema `{}` is now used per JSON Schema Draft 2020-12 (#194)
+- **Polymorphic discriminator on by default**: `includePolymorphicDiscriminator` defaults to `true` — sealed subtype
+  schemas now include a `const` discriminator property unless explicitly disabled (#212)
+- **Fully-qualified subclass names**: sealed subclass names in `$defs`, `$ref`, and discriminator `const` values now
+  use fully-qualified names (e.g. `com.example.Animal.Cat`) instead of simple names (#212)
+- **`JsonSchemaConfig.Strict` and `FunctionCallingSchemaConfig.Strict`**: `respectDefaultPresence` set to `false` —
+  all fields are required regardless of Kotlin default values (#212)
+
+### Added
+- **Polymorphic types**: sealed class hierarchies generate `oneOf` (JSON Schema) or `anyOf` (function calling) with a
+  `const` discriminator per subtype, supported across KSP, reflection, and serialization backends (#212)
+- **KSP class/function filtering**: `include` and `exclude` processor options accept glob patterns to filter which
+  classes and functions receive generated extensions (#181)
+- **Constructor parameter annotations for descriptions**: reflection generator now also searches constructor parameter
+  annotations when resolving property descriptions (#203)
+- **`suspend fun` support**: `ReflectionFunctionIntrospector` now correctly introspects suspendable functions (#212)
+
+### Changed
+- `ReflectionClassIntrospectionContext` and `ReflectionFunctionIntrospectionContext` merged into a single
+  `ReflectionIntrospectionContext`, eliminating duplication (#212)
+- `TDecl` type parameter removed from `BaseIntrospectionContext` (#212)
+
+### Dependencies
+- Bump `kotest` from 6.1.3 to 6.1.5
+- Bump `ai.koog:agents-tools` from 0.6.2 to 0.6.4
+- Bump `dev.langchain4j:langchain4j-core` from 1.11.0 to 1.12.2
+- Bump `gradle` wrapper from 9.3.1 to 9.4.0
+
+---
+
 ## 0.3.2
 > Published 2026-02-20
 
