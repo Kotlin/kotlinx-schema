@@ -4,9 +4,6 @@ on:
   merge_group:
   push:
     branches: [ "main" ]
-    paths-ignore:
-      - "**/README.md"
-      - "AGENTS.md"
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
