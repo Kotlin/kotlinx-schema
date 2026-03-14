@@ -87,6 +87,59 @@ class JsonSchemaTypesTest {
     }
 
     @Test
+    fun `Should handle unsigned numeric types correctly`() {
+        val schema = generator.generateSchemaString(WithUnsignedTypes::class)
+
+        schema shouldEqualJson
+            // language=JSON
+            $$"""
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.generator.json.WithUnsignedTypes",
+              "description": "Class with unsigned numeric types",
+              "type": "object",
+              "properties": {
+                "uByteVal": {
+                  "type": "integer",
+                  "description": "UByte value",
+                  "minimum": 0
+                },
+                "uShortVal": {
+                  "type": "integer",
+                  "description": "UShort value",
+                  "minimum": 0
+                },
+                "uIntVal": {
+                  "type": "integer",
+                  "description": "UInt value",
+                  "minimum": 0
+                },
+                "uLongVal": {
+                  "type": "integer",
+                  "description": "ULong value",
+                  "minimum": 0
+                },
+                "nullableUInt": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "description": "Nullable UInt",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "uByteVal",
+                "uShortVal",
+                "uIntVal",
+                "uLongVal"
+              ],
+              "additionalProperties": false
+            }
+            """
+    }
+
+    @Test
     fun `Should handle enum types`() {
         val schema = generator.generateSchemaString(WithEnum::class)
 

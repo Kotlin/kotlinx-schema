@@ -28,6 +28,9 @@ It works with any `@Serializable` class across all supported platforms: JVM, JS/
 Use this approach when you need schema generation at runtime without a compile-time processing step,
 or when integrating with existing kotlinx.serialization descriptors directly.
 
+Unsigned numeric types (`UByte`, `UShort`, `UInt`, `ULong`) are emitted as `type: "integer"` with a non-negative
+`minimum: 0` constraint.
+
 > [!NOTE]
 > If you own the classes and target multiplatform, consider the [KSP processor](ksp.md) for zero-runtime-overhead compile-time generation.
 

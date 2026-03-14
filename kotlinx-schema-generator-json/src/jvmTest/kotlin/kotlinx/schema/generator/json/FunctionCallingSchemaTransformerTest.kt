@@ -125,6 +125,51 @@ class FunctionCallingSchemaTransformerTest {
         boolean.nullable.shouldBeNull()
     }
 
+    object UnsignedPrimitives {
+        @Description("Test unsigned primitives")
+        fun testUnsigned(
+            uByte: UByte,
+            uShort: UShort,
+            uInt: UInt,
+            uLong: ULong,
+            nullableUInt: UInt?,
+        ) {
+            // No-op
+        }
+    }
+
+    @Test
+    fun `Should apply unsigned numeric bounds to function parameters`() {
+        val schema = generator.generateSchema(UnsignedPrimitives::testUnsigned)
+
+        val properties = schema.parameters.properties.shouldNotBeNull()
+
+        val uByte = properties["uByte"] as NumericPropertyDefinition
+        uByte.type shouldBe listOf("integer")
+        uByte.minimum shouldBe 0.0
+        uByte.maximum.shouldBeNull()
+
+        val uShort = properties["uShort"] as NumericPropertyDefinition
+        uShort.type shouldBe listOf("integer")
+        uShort.minimum shouldBe 0.0
+        uShort.maximum.shouldBeNull()
+
+        val uInt = properties["uInt"] as NumericPropertyDefinition
+        uInt.type shouldBe listOf("integer")
+        uInt.minimum shouldBe 0.0
+        uInt.maximum.shouldBeNull()
+
+        val uLong = properties["uLong"] as NumericPropertyDefinition
+        uLong.type shouldBe listOf("integer")
+        uLong.minimum shouldBe 0.0
+        uLong.maximum.shouldBeNull()
+
+        val nullableUInt = properties["nullableUInt"] as NumericPropertyDefinition
+        nullableUInt.type shouldBe listOf("integer", "null")
+        nullableUInt.minimum shouldBe 0.0
+        nullableUInt.maximum.shouldBeNull()
+    }
+
     // Nullable Complex Types Tests
 
     object NullableComplexTypes {
