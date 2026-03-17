@@ -37,8 +37,11 @@ public class JavaTestClass {
         @Description("A map of nested properties")
         Map<String, NestedProperty> nestedMapProperty,
         @Description("An enum property")
-        TestEnum enumProperty
-    ) {}
+        TestEnum enumProperty,
+        @Description("Simple record property")
+        ProblemDescription recordProperty
+    ) {
+    }
 
     @Description("Nested property class")
     public static class NestedProperty {
@@ -46,7 +49,8 @@ public class JavaTestClass {
             @Description("Nested foo property")
             String foo,
             int bar
-        ) {}
+        ) {
+        }
     }
 
     public enum TestEnum {
@@ -54,9 +58,8 @@ public class JavaTestClass {
         Two
     }
 
-    /**
-     * Java reflection class representing this class.
-     * Used for schema generation.
-     */
-    public static final Class<JavaTestClass> CLASS = JavaTestClass.class;
+    @Description("Record description")
+    public record ProblemDescription(
+        @Description("String property") String description) {
+    }
 }

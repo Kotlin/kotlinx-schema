@@ -2,7 +2,6 @@ package kotlinx.schema.generator.reflect
 
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
-import kotlin.test.assertFailsWith
 
 class DefaultValueExtractorTest {
     data class ClassWithDefault(
@@ -19,18 +18,11 @@ class DefaultValueExtractorTest {
         }
     }
 
-    @Test
-    fun `extracts default value`() {
-        val defaults = DefaultValueExtractor.extractDefaultValues(ClassWithDefault::class)
-        defaults shouldBe mapOf("name" to "John Doe")
-    }
-
-    @Test
-    fun `fails with exception when constructor fails`() {
-        assertFailsWith<IllegalArgumentException> {
-            DefaultValueExtractor.extractDefaultValues(ClassWithFailingConstructor::class)
-        }
-    }
+    // Nullable required param (no default) + optional param with default
+    data class ClassWithNullableRequiredParam(
+        val tag: String?,
+        val count: Int = 5,
+    )
 
     class UnknownType
 
@@ -38,6 +30,24 @@ class DefaultValueExtractorTest {
         val unknown: UnknownType,
         val name: String = "John",
     )
+
+    @Test
+    fun `extracts default value`() {
+        val defaults = DefaultValueExtractor.extractDefaultValues(ClassWithDefault::class)
+        defaults shouldBe mapOf("name" to "John Doe")
+    }
+
+    @Test
+    fun `returns empty map when constructor fails`() {
+        val defaults = DefaultValueExtractor.extractDefaultValues(ClassWithFailingConstructor::class)
+        defaults shouldBe emptyMap()
+    }
+
+    @Test
+    fun `extracts optional defaults when a required parameter is nullable`() {
+        val defaults = DefaultValueExtractor.extractDefaultValues(ClassWithNullableRequiredParam::class)
+        defaults shouldBe mapOf("count" to 5)
+    }
 
     @Test
     fun `returns empty map when unknown non-nullable type is encountered`() {

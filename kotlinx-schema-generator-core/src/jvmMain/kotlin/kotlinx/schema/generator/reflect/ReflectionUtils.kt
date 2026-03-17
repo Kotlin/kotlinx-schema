@@ -7,6 +7,7 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
+import kotlin.reflect.KVisibility
 import kotlin.reflect.full.allSuperclasses
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.javaMethod
@@ -83,12 +84,15 @@ internal fun findPrimaryConstructor(klass: KClass<*>): KFunction<Any>? {
 
     val constructor =
         klass.primaryConstructor
-            ?: klass.constructors.firstOrNull() // If no primary defined, fallback to the first one
+            ?: klass.constructors
+                .filterNot { it.visibility == KVisibility.PRIVATE }
+                .firstOrNull() // If no primary defined, fallback to the first one
             ?: return null
 
     return if (constructor.isSyntheticSerializationConstructor()) {
         // Find the real constructor without the SerializationConstructorMarker param
         klass.constructors
+            .filterNot { it.visibility == KVisibility.PRIVATE }
             .firstOrNull { ctor -> ctor != constructor && !ctor.isSyntheticSerializationConstructor() }
     } else {
         constructor

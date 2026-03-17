@@ -1,6 +1,5 @@
 package kotlinx.schema.generator.reflect
 
-import java.lang.reflect.InvocationTargetException
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
@@ -32,12 +31,12 @@ internal object DefaultValueExtractor {
                 prop.name to
                     try {
                         prop.get(instance)
-                    } catch (e: InvocationTargetException) {
-                        throw e.cause ?: e
+                    } catch (_: Exception) {
+                        null
                     }
             }.filterValues { it != null }
 
-    @Suppress("CyclomaticComplexMethod", "ReturnCount")
+    @Suppress("ReturnCount")
     private fun doExtractDefaultValues(klass: KClass<*>): Map<String, Any?> {
         // For object instances (singletons), get the instance directly
         klass.objectInstance?.let { return klass.extractInstanceProperties(it) }
@@ -49,53 +48,62 @@ internal object DefaultValueExtractor {
         // Build map of required parameters with mock values
         val paramMap = mutableMapOf<KParameter, Any?>()
         for (param in requiredParams) {
-            val classifier = param.type.classifier
-            val mockValue =
-                when {
-                    param.type.isMarkedNullable -> null
-
-                    classifier == String::class -> ""
-
-                    classifier == Int::class -> 0
-
-                    classifier == Long::class -> 0L
-
-                    classifier == Double::class -> 0.0
-
-                    classifier == Float::class -> 0.0f
-
-                    classifier == Boolean::class -> false
-
-                    classifier is KClass<*> && classifier.java.isEnum -> classifier.java.enumConstants.firstOrNull()
-
-                    classifier is KClass<*> && Set::class.java.isAssignableFrom(classifier.java) -> emptySet<Any>()
-
-                    classifier is KClass<*> &&
-                        Iterable::class.java.isAssignableFrom(
-                            classifier.java,
-                        )
-                    -> emptyList<Any>()
-
-                    classifier is KClass<*> &&
-                        Map::class.java.isAssignableFrom(
-                            classifier.java,
-                        )
-                    -> emptyMap<Any, Any>()
-
-                    else -> return emptyMap() // Can't provide mock value for an unknown non-nullable type
+            if (param.type.isMarkedNullable) {
+                paramMap[param] = null
+            } else {
+                getDefaultValueForParameter(param)?.let { defaultValue ->
+                    paramMap[param] = defaultValue
                 }
-            paramMap[param] = mockValue
+            }
         }
 
         // Create an instance with only required parameters to get defaults
         val instance =
             try {
                 constructor.callBy(paramMap)
-            } catch (e: InvocationTargetException) {
-                throw e.cause ?: e
+            } catch (_: Exception) {
+                return emptyMap()
             }
 
         // Extract property values from the instance
         return klass.extractInstanceProperties(instance)
+    }
+
+    @Suppress("CyclomaticComplexMethod")
+    private fun getDefaultValueForParameter(param: KParameter): Any? {
+        val classifier = param.type.classifier
+        return when {
+            param.type.isMarkedNullable -> null
+
+            classifier == String::class -> ""
+
+            classifier == Int::class -> 0
+
+            classifier == Long::class -> 0L
+
+            classifier == Double::class -> 0.0
+
+            classifier == Float::class -> 0.0f
+
+            classifier == Boolean::class -> false
+
+            classifier is KClass<*> && classifier.java.isEnum -> classifier.java.enumConstants.firstOrNull()
+
+            classifier is KClass<*> && Set::class.java.isAssignableFrom(classifier.java) -> emptySet<Any>()
+
+            classifier is KClass<*> &&
+                Iterable::class.java.isAssignableFrom(
+                    classifier.java,
+                )
+            -> emptyList<Any>()
+
+            classifier is KClass<*> &&
+                Map::class.java.isAssignableFrom(
+                    classifier.java,
+                )
+            -> emptyMap<Any, Any>()
+
+            else -> null // Can't provide mock value for an unknown non-nullable type
+        }
     }
 }
