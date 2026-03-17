@@ -17,7 +17,7 @@ class JavaClassJsonSchemaGeneratorTest {
     @Test
     fun `Should generate JsonSchema from Java class`() {
         // External Java class
-        val actualSchema = generator.generateSchemaString(JavaTestClass.CLASS.kotlin)
+        val actualSchema = generator.generateSchemaString(JavaTestClass::class)
 
         // language=JSON
         val expectedSchema =
@@ -91,6 +91,10 @@ class JavaClassJsonSchemaGeneratorTest {
                 "enumProperty": {
                   "$ref": "#/$defs/kotlinx.schema.generator.test.JavaTestClass.TestEnum",
                   "description": "An enum property"
+                },
+                "recordProperty": {
+                  "$ref": "#/$defs/kotlinx.schema.generator.test.JavaTestClass.ProblemDescription",
+                  "description": "Simple record property"
                 }
               },
               "additionalProperties": false,
@@ -107,7 +111,8 @@ class JavaClassJsonSchemaGeneratorTest {
                 "nestedProperty",
                 "nestedListProperty",
                 "nestedMapProperty",
-                "enumProperty"
+                "enumProperty",
+                "recordProperty"
               ],
               "$defs": {
                 "kotlinx.schema.generator.test.JavaTestClass.NestedProperty": {
@@ -123,6 +128,20 @@ class JavaClassJsonSchemaGeneratorTest {
                 "kotlinx.schema.generator.test.JavaTestClass.TestEnum": {
                   "type": "string",
                   "enum": ["One", "Two"]
+                },
+                "kotlinx.schema.generator.test.JavaTestClass.ProblemDescription": {
+                  "type": "object",
+                  "description": "Record description",
+                  "properties": {
+                    "description": {
+                      "type": "string",
+                      "description": "String property"
+                    }
+                  },
+                  "required": [
+                    "description"
+                  ],
+                  "additionalProperties": false
                 }
               }
             }
