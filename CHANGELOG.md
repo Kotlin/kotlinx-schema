@@ -1,3 +1,19 @@
+## 0.4.3
+> Published 2026-03-17
+
+### Fixed
+- **Java record class support**: reflection schema generator now correctly introspects Java `record` types (#263)
+- **Nullable required constructor parameters**: default value extraction no longer silently skips nullable required
+  parameters when building mock constructor arguments, restoring correct defaults detection for classes with
+  patterns such as `data class Foo(val tag: String? = "abc", val count: Int? = 5)` (#263)
+- **Private constructor filtering**: fallback constructor lookup now skips `private` constructors, preventing
+  accidental invocation of synthetic or internal-only constructors (#263)
+
+### Dependencies
+- Bump `kotest` from 6.1.6 to 6.1.7
+
+---
+
 ## 0.4.2
 > Published 2026-03-13
 
