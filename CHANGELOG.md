@@ -1,3 +1,15 @@
+## 0.4.2
+> Published 2026-03-13
+
+### Fixed
+- **Missing descriptions for inline primitive, list, and map nodes**: `node.description` is now correctly propagated
+  for inline `PrimitiveNode`, `ListNode`, and `MapNode` schemas (#251)
+
+### Dependencies
+- Bump `kotest` from 6.1.5 to 6.1.6
+
+---
+
 ## 0.4.1
 > Published 2026-03-10
 
