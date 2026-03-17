@@ -149,4 +149,39 @@ class JavaClassJsonSchemaGeneratorTest {
 
         actualSchema shouldEqualJson expectedSchema
     }
+
+    @Test
+    fun `Should generate JsonSchema from nullable defaults`() {
+        data class Foo(
+            val tag: String? = "abc",
+            val count: Int? = 5,
+        )
+        // External Java class
+        val actualSchema = generator.generateSchemaString(Foo::class)
+        actualSchema shouldEqualJson
+            $$"""
+            {
+             "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "Foo",
+              "type": "object",
+              "properties": {
+                "tag": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": "abc"
+                },
+                "count": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "default": 5
+                }
+              },
+              "additionalProperties": false
+            }
+            """.trimIndent()
+    }
 }
