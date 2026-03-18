@@ -24,6 +24,11 @@ scan:
 	@./gradlew clean kotlinWasmUpgradePackageLock kotlinUpgradePackageLock build --scan --rerun-tasks
 	@echo "✅ Build with scan is complete!"
 
+.PHONY: apidump
+apidump:
+	@echo "🪏 API dump..."
+	@./gradlew updateLegacyAbi
+
 .PHONY: apidocs
 apidocs:
 	@echo "📚 Generating API documentation..."
