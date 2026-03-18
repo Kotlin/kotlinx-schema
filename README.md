@@ -7,6 +7,7 @@
 [![Docs](https://img.shields.io/badge/Docs-Live-blue?logo=kotlin)](https://kotlin.github.io/kotlinx-schema/)
 [![Examples](https://img.shields.io/badge/Examples-blue?logo=github)](https://github.com/Kotlin/kotlinx-schema/tree/main/examples)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Kotlin/kotlinx-schema)
+[![Slack channel](https://img.shields.io/badge/chat-slack-blue.svg?logo=slack)](https://kotlinlang.slack.com/messages/kotlinx-schema/)
 
 [![Kotlin](https://img.shields.io/badge/kotlin-2.2+-blueviolet.svg?logo=kotlin)](http://kotlinlang.org)
 [![Kotlin Multiplatform](https://img.shields.io/badge/Platforms-%20JVM%20%7C%20Wasm%2FJS%20%7C%20Native%20-blueviolet?logo=kotlin)](https://kotlinlang.org/docs/multiplatform.html)

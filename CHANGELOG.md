@@ -1,3 +1,13 @@
+## 0.4.4
+> Published 2026-03-18
+
+### Fixed
+
+* fix: returning empty description for multi-element annotations (#269)
+* fix: description is not extracted from non-public annotation interfaces (#269)
+
+---
+
 ## 0.4.3
 > Published 2026-03-17
 
