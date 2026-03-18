@@ -93,6 +93,16 @@ public object Introspections {
      * // description == "User's email address"
      * ```
      *
+     * ## Attribute ordering
+     *
+     * When multiple parameters of the annotation match [descriptionValueAttributes] (e.g., an
+     * annotation with both `value` and `description` fields), the **first non-empty string value**
+     * in the provided `annotationArguments` list is returned. The ordering of
+     * `annotationArguments` is determined by the caller (typically the order in which
+     * `annotationClass.members` enumerates properties via Kotlin reflection, which is not
+     * specified by the Kotlin language and may vary across JVM implementations). In practice this
+     * is only relevant when both fields are non-empty simultaneously, which is an unusual usage.
+     *
      * @param annotationName The simple name of the annotation to inspect (e.g., "Description", "P")
      * @param annotationArguments List of key-value pairs representing the annotation's parameters
      * @return The description text if found, or null if the annotation is not recognized or
@@ -106,10 +116,7 @@ public object Introspections {
         if (annotationName.lowercase() in descriptionAnnotationNames) {
             annotationArguments
                 .filter { it.first.lowercase() in descriptionValueAttributes }
-                .firstNotNullOfOrNull {
-                    val value = it.second
-                    return (value as? String)
-                }
+                .firstNotNullOfOrNull { (_, value) -> (value as? String)?.takeIf { it.isNotEmpty() } }
         } else {
             null
         }

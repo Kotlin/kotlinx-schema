@@ -11,6 +11,19 @@ import kotlinx.serialization.json.Json
 import kotlin.reflect.KCallable
 import kotlin.test.Test
 
+/**
+ * Local test annotation mirroring the shape of [ai.koog.agents.core.tools.annotations.LLMDescription]:
+ * two String elements — [value] (shorthand) and [description] (verbose).
+ *
+ * Matched by simple name "LLMDescription" via [kotlinx.schema.generator.core.ir.Introspections].
+ */
+@Target(AnnotationTarget.FUNCTION, AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+internal annotation class LLMDescription(
+    val value: String = "",
+    val description: String = "",
+)
+
 class FunctionCallingSchemaGeneratorTest {
     private val generator =
         ReflectionFunctionCallingSchemaGenerator(
@@ -677,4 +690,52 @@ class FunctionCallingSchemaGeneratorTest {
             }
             """.trimIndent()
     }
+
+    //region LLMDescription regression tests
+    object LLMDescriptionTool {
+        // Regression: @LLMDescription has two elements (value, description).
+        // Using the verbose description= style leaves value="" — the extractor must not return ""
+        // and instead find the non-empty description field.
+        @LLMDescription(description = "Search for products in the catalog")
+        fun search(
+            @LLMDescription(description = "Search query string")
+            query: String,
+            @LLMDescription("Maximum number of results")
+            limit: Int = 10,
+        ): String = ""
+    }
+
+    @Test
+    fun `extracts descriptions from LLMDescription verbose style on function and parameters`() {
+        // Regression: @LLMDescription(description = "text") must not produce empty description.
+        // Previously getDescriptionFromAnnotation returned "" because value="" was the first match.
+        val schemaString = generator.generateSchemaString(LLMDescriptionTool::search)
+
+        schemaString shouldEqualJson
+            // language=json
+            """
+            {
+                "type": "function",
+                "name": "search",
+                "description": "Search for products in the catalog",
+                "strict": true,
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "Search query string"
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "description": "Maximum number of results"
+                        }
+                    },
+                    "required": ["query", "limit"],
+                    "additionalProperties": false
+                }
+            }
+            """.trimIndent()
+    }
+    //endregion
 }

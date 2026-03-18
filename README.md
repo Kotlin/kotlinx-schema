@@ -89,7 +89,7 @@ Quick Links:
 
 ## Key Features
 
-**Dual Generation Modes:**
+**Generation Modes:**
 
 - **Compile-time (KSP)**: Zero runtime overhead, multiplatform, for your annotated classes
 - **Runtime (Reflection)**: JVM-only, for any class including third-party libraries
@@ -104,7 +104,7 @@ Quick Links:
 **Flexible Annotation Support:**
 
 - Recognizes `@Description`, `@LLMDescription`, `@JsonPropertyDescription`, `@P`, and more
-- Recognizes KDoc
+- Recognizes KDoc (KSP compile-time only)
 - Works with annotations from Jackson, LangChain4j, Koog without code changes
 
 **Comprehensive Type Support:**
@@ -112,14 +112,14 @@ Quick Links:
 - **Enums, collections, maps, nested objects, nullability, generics** (with star-projection)
 - **Sealed class hierarchies** with automatic `oneOf` generation and discriminator field
 - **Union types** for nullable parameters (`["string", "null"]`)
-- **Type constraints** (min/max, patterns, formats)
+- **Type constraints** (min/max, patterns, formats) via the JSON Schema DSL
 - **Default values** (compile-time: tracked but not extracted; runtime: fully extracted)
 - **`$ref`/`$defs` deduplication**: named types appear once in `$defs` and are referenced everywhere via `$ref`
 - **`kotlin.Any`**: maps to the empty schema `{}` (accepts any JSON value)
 
 **Developer Experience:**
 
-- Gradle plugin for one-line setup
+- Gradle plugin for one-line setup (experimental)
 - Type-safe Kotlin DSL for programmatic schema construction
 - Works everywhere: JVM, JS, iOS, macOS, Wasm
 
@@ -157,7 +157,7 @@ This library solves three key challenges:
 | **Class must be `@Serializable`** |               No                |                      Yes                       |                         No                          |
 | **Annotate class with `@Schema`** |            Required             |                  Not required                  |                    Not required                     |
 | **KDoc extracted to description** |                ✅                |                       ❌                        |                          ❌                          |
-| **Extract data class defaults**   |                ❌                |                       ❌                        |                          ✅                          |
+| **Extract default values**        |                ❌                |                       ❌                        |                          ✅                          |
 | **Third-party classes**           |                ❌                |            ✅ (only `@Serializable`)            |                   ✅ any JVM class                   |
 
 - **[Pick KSP](docs/ksp.md)** when you own the classes, want zero runtime overhead, and target Multiplatform or need KDoc
@@ -1297,13 +1297,12 @@ data class Product(
 
 ### Precedence Rules
 
-If multiple description annotations are present on the same element, the library uses this precedence order:
+If multiple description annotations are present on the same element, the **first matching annotation in source-code
+order** wins. There is no special priority for `@Description` over other recognized annotations — whichever recognized
+annotation appears first on the declaration is used.
 
-1. `@Description` (kotlinx-schema's own annotation)
-2. Other annotations in alphabetical order by simple name
-
-**Tip**: For best compatibility, prefer `@Description` from kotlinx-schema when writing new code, but existing
-annotations from other libraries work seamlessly.
+**Tip**: For predictability, place only one description annotation per element. If you use `@Description` from
+kotlinx-schema alongside another recognized annotation, put `@Description` first in source order to ensure it wins.
 
 ## JSON Schema DSL
 
