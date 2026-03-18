@@ -14,6 +14,7 @@ dependencies {
     implementation(project(":kotlinx-schema-annotations"))
     implementation(project(":kotlinx-schema-generator-json"))
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotest.assertions.json)
 
     dokka(project(":kotlinx-schema-annotations"))
     dokka(project(":kotlinx-schema-generator-core"))

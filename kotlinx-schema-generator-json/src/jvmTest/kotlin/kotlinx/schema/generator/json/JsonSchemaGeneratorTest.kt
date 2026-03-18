@@ -4,7 +4,10 @@ package kotlinx.schema.generator.json
 
 import io.kotest.assertions.json.shouldEqualJson
 import kotlinx.schema.Description
+import kotlinx.schema.generator.core.SchemaGeneratorService
+import kotlinx.schema.json.JsonSchema
 import kotlinx.serialization.json.Json
+import kotlin.reflect.KClass
 import kotlin.test.Test
 
 class JsonSchemaGeneratorTest {

@@ -8,6 +8,7 @@ import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
 import kotlin.reflect.KVisibility
+import kotlin.reflect.full.IllegalCallableAccessException
 import kotlin.reflect.full.allSuperclasses
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.javaMethod
@@ -16,13 +17,14 @@ import kotlin.reflect.jvm.kotlinFunction
 /**
  * Gets the [KType.classifier], ensuring it is a [KClass].
  */
-internal val KType.klass: KClass<*> get() {
-    return requireNotNull(classifier as? KClass<*>) {
-        "Unsupported classifier: $classifier. " +
-            "Only KClass classifiers are supported. Type parameters and other classifiers " +
-            "cannot be introspected using reflection."
+internal val KType.klass: KClass<*>
+    get() {
+        return requireNotNull(classifier as? KClass<*>) {
+            "Unsupported classifier: $classifier. " +
+                "Only KClass classifiers are supported. Type parameters and other classifiers " +
+                "cannot be introspected using reflection."
+        }
     }
-}
 
 /**
  * Finds a property in a class by name.
@@ -53,10 +55,41 @@ internal fun extractDescription(annotations: List<Annotation>): String? =
                 annotation.annotationClass.members
                     .filterIsInstance<KProperty1<Annotation, *>>()
                     .forEach { property ->
-                        add(property.name to property.get(annotation))
+                        val value =
+                            try {
+                                property.get(annotation)
+                            } catch (_: IllegalCallableAccessException) {
+                                fallbackViaJavaReflection(annotation, property) ?: return@forEach
+                            } catch (_: IllegalAccessException) {
+                                fallbackViaJavaReflection(annotation, property) ?: return@forEach
+                            }
+                        add(property.name to value)
                     }
             }
         Introspections.getDescriptionFromAnnotation(annotationName, annotationArguments)
+    }
+
+/**
+ * KProperty1.get() wraps java.lang.IllegalAccessException in
+ * kotlin.reflect.full.IllegalCallableAccessException when the annotation
+ * interface is non-public (e.g. package-private for Kotlin `internal`
+ * annotations from external modules). Fall back to Java reflection on
+ * the proxy class, which is always accessible.
+ * Returns null when the fallback itself fails; null is safe here because
+ * Java annotation elements cannot return null values.
+ */
+private fun fallbackViaJavaReflection(
+    annotation: Annotation,
+    property: KProperty1<Annotation, *>,
+): Any? =
+    try {
+        val javaMethod = annotation.javaClass.getDeclaredMethod(property.name)
+        javaMethod.isAccessible = true
+        javaMethod.invoke(annotation)
+    } catch (_: ReflectiveOperationException) {
+        null
+    } catch (_: SecurityException) {
+        null
     }
 
 /**
