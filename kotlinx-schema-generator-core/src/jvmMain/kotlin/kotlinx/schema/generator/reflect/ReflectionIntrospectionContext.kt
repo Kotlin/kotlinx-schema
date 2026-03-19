@@ -65,8 +65,8 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
         }
 
         // Try to convert to primitive type
-        primitiveKindFor(klass)?.let { primitiveKind ->
-            val ref = TypeRef.Inline(PrimitiveNode(primitiveKind), nullable)
+        primitiveNodeFor(klass)?.let { primitiveNode ->
+            val ref = TypeRef.Inline(primitiveNode, nullable)
             if (!nullable) typeRefCache[type] = ref
             return ref
         }
@@ -87,15 +87,17 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
      * Checks and maps a Kotlin primitive class to its corresponding [PrimitiveKind].
      * Returns null if the class is not a supported primitive type.
      */
-    private fun primitiveKindFor(klass: KClass<*>): PrimitiveKind? =
+    private fun primitiveNodeFor(klass: KClass<*>): PrimitiveNode? =
         when (klass) {
-            String::class -> PrimitiveKind.STRING
-            Boolean::class -> PrimitiveKind.BOOLEAN
-            Byte::class, Short::class, Int::class -> PrimitiveKind.INT
-            Long::class -> PrimitiveKind.LONG
-            Float::class -> PrimitiveKind.FLOAT
-            Double::class -> PrimitiveKind.DOUBLE
-            Char::class -> PrimitiveKind.STRING
+            String::class -> PrimitiveNode(PrimitiveKind.STRING)
+            Boolean::class -> PrimitiveNode(PrimitiveKind.BOOLEAN)
+            Byte::class, Short::class, Int::class -> PrimitiveNode(PrimitiveKind.INT)
+            Long::class -> PrimitiveNode(PrimitiveKind.LONG)
+            UByte::class, UShort::class, UInt::class -> PrimitiveNode(PrimitiveKind.INT, unsigned = true)
+            ULong::class -> PrimitiveNode(PrimitiveKind.LONG, unsigned = true)
+            Float::class -> PrimitiveNode(PrimitiveKind.FLOAT)
+            Double::class -> PrimitiveNode(PrimitiveKind.DOUBLE)
+            Char::class -> PrimitiveNode(PrimitiveKind.STRING)
             else -> null
         }
 

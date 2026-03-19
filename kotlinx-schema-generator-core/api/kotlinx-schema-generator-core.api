@@ -170,15 +170,17 @@ public final class kotlinx/schema/generator/core/ir/PrimitiveKind : java/lang/En
 }
 
 public final class kotlinx/schema/generator/core/ir/PrimitiveNode : kotlinx/schema/generator/core/ir/TypeNode {
-	public fun <init> (Lkotlinx/schema/generator/core/ir/PrimitiveKind;Ljava/lang/String;)V
-	public synthetic fun <init> (Lkotlinx/schema/generator/core/ir/PrimitiveKind;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lkotlinx/schema/generator/core/ir/PrimitiveKind;Ljava/lang/String;Z)V
+	public synthetic fun <init> (Lkotlinx/schema/generator/core/ir/PrimitiveKind;Ljava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Lkotlinx/schema/generator/core/ir/PrimitiveKind;
 	public final fun component2 ()Ljava/lang/String;
-	public final fun copy (Lkotlinx/schema/generator/core/ir/PrimitiveKind;Ljava/lang/String;)Lkotlinx/schema/generator/core/ir/PrimitiveNode;
-	public static synthetic fun copy$default (Lkotlinx/schema/generator/core/ir/PrimitiveNode;Lkotlinx/schema/generator/core/ir/PrimitiveKind;Ljava/lang/String;ILjava/lang/Object;)Lkotlinx/schema/generator/core/ir/PrimitiveNode;
+	public final fun component3 ()Z
+	public final fun copy (Lkotlinx/schema/generator/core/ir/PrimitiveKind;Ljava/lang/String;Z)Lkotlinx/schema/generator/core/ir/PrimitiveNode;
+	public static synthetic fun copy$default (Lkotlinx/schema/generator/core/ir/PrimitiveNode;Lkotlinx/schema/generator/core/ir/PrimitiveKind;Ljava/lang/String;ZILjava/lang/Object;)Lkotlinx/schema/generator/core/ir/PrimitiveNode;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getDescription ()Ljava/lang/String;
 	public final fun getKind ()Lkotlinx/schema/generator/core/ir/PrimitiveKind;
+	public final fun getUnsigned ()Z
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -308,4 +310,3 @@ public final class kotlinx/schema/generator/reflect/ReflectionFunctionIntrospect
 	public synthetic fun introspect (Ljava/lang/Object;)Lkotlinx/schema/generator/core/ir/TypeGraph;
 	public fun introspect (Lkotlin/reflect/KCallable;)Lkotlinx/schema/generator/core/ir/TypeGraph;
 }
-
