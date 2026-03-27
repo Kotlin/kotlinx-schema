@@ -326,6 +326,8 @@ Schemas follow JSON Schema Draft 2020-12 format. Example (pretty-printed):
 - Nullable properties are emitted as a union including `null`.
 - Collections: `List<T>`/`Set<T>` → `{ "type":"array", "items": T }`; `Map<String, V>` →
   `{ "type":"object", "additionalProperties": V }`.
+- Unsigned numeric types (`UByte`, `UShort`, `UInt`, `ULong`) emit `type: "integer"` with a non-negative
+  `minimum: 0` constraint.
 - `kotlin.Any` / unbound generic type parameters (e.g., `T`) map to the empty schema `{}`, which accepts any JSON value.
 - Named types (nested objects, enums, sealed classes) are deduplicated in a `$defs` section and referenced via `$ref` at every usage site.
 

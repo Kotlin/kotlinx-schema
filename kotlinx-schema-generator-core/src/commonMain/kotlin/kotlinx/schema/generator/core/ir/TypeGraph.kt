@@ -42,6 +42,7 @@ public enum class PrimitiveKind { STRING, BOOLEAN, INT, LONG, FLOAT, DOUBLE }
 public data class PrimitiveNode(
     val kind: PrimitiveKind,
     override val description: String? = null,
+    val unsigned: Boolean = false,
 ) : TypeNode
 
 /** Enum node with symbolic entries. */
