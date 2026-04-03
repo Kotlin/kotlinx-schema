@@ -16,6 +16,7 @@ import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeRef
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
+import kotlin.jvm.JvmInline
 import kotlin.test.Test
 import kotlinx.schema.generator.json.serialization.SerializationClassSchemaIntrospector as SerializationIntrospector
 
@@ -36,6 +37,16 @@ class SerializationIntrospectorTest {
     @Serializable
     data class WithEnum(
         val color: Color,
+    )
+
+    @JvmInline
+    @Serializable
+    value class Meters(val value: Double)
+
+    @Serializable
+    data class WithInlineValueClass(
+        val distance: Meters,
+        val optionalDistance: Meters?,
     )
 
     @Serializable
@@ -187,6 +198,35 @@ class SerializationIntrospectorTest {
 
         subtypeIds.forEach { id ->
             graph.nodes[TypeId(id)].shouldNotBeNull().shouldBeInstanceOf<ObjectNode>()
+        }
+    }
+
+    @Test
+    fun `introspects inline value class as its inner primitive type`() {
+        val graph = introspector.introspect(WithInlineValueClass.serializer().descriptor)
+
+        val rootRef = graph.root.shouldBeInstanceOf<TypeRef.Ref>()
+        val objNode = graph.nodes[rootRef.id].shouldNotBeNull().shouldBeInstanceOf<ObjectNode>()
+        val props = objNode.properties.associateBy { it.name }
+
+        // Non-nullable inline value class should resolve to an inline primitive
+        props.getValue("distance") shouldNotBeNull {
+            type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
+                inline.node.shouldBeInstanceOf<PrimitiveNode> { prim ->
+                    prim.kind shouldBe PrimitiveKind.DOUBLE
+                }
+                inline.nullable shouldBe false
+            }
+        }
+
+        // Nullable inline value class should resolve to a nullable inline primitive
+        props.getValue("optionalDistance") shouldNotBeNull {
+            type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
+                inline.node.shouldBeInstanceOf<PrimitiveNode> { prim ->
+                    prim.kind shouldBe PrimitiveKind.DOUBLE
+                }
+                inline.nullable shouldBe true
+            }
         }
     }
 

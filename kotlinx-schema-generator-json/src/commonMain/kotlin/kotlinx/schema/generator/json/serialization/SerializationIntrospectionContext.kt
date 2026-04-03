@@ -80,6 +80,7 @@ internal class SerializationIntrospectionContext(
             }
 
             is StructureKind.CLASS, StructureKind.OBJECT -> {
+                if (type.isInline) return handleInlineValueClass(type, nullable)
                 handleObjectType(type, nullable)
             }
 
@@ -162,6 +163,20 @@ internal class SerializationIntrospectionContext(
         val ref = TypeRef.Ref(id, nullable)
         if (!nullable) typeRefCache[descriptor] = ref
         return ref
+    }
+
+    /**
+     * Handles inline value classes by delegating to the inner element's type.
+     *
+     * Inline value classes serialize as their inner value (e.g. `14.5` instead of
+     * `{"gramsPerDeciliter": 14.5}`), so the schema must reflect the inner type.
+     */
+    private fun handleInlineValueClass(
+        descriptor: SerialDescriptor,
+        nullable: Boolean,
+    ): TypeRef {
+        val innerRef = toRef(descriptor.getElementDescriptor(0))
+        return if (nullable && !innerRef.nullable) innerRef.withNullable(true) else innerRef
     }
 
     /**
