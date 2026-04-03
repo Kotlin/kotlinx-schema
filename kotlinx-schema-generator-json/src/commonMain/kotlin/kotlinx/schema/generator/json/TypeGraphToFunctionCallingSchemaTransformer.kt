@@ -259,8 +259,10 @@ public class TypeGraphToFunctionCallingSchemaTransformer
         private fun convertPrimitive(
             node: PrimitiveNode,
             nullable: Boolean,
-        ): PropertyDefinition =
-            when (node.kind) {
+        ): PropertyDefinition {
+            val minimum = node.minimumOrNull()
+
+            return when (node.kind) {
                 PrimitiveKind.STRING -> {
                     StringPropertyDefinition(
                         type = if (nullable) STRING_OR_NULL_TYPE else STRING_TYPE,
@@ -277,11 +279,14 @@ public class TypeGraphToFunctionCallingSchemaTransformer
                     )
                 }
 
-                PrimitiveKind.INT, PrimitiveKind.LONG -> {
+                PrimitiveKind.INT,
+                PrimitiveKind.LONG,
+                -> {
                     NumericPropertyDefinition(
                         type = if (nullable) INTEGER_OR_NULL_TYPE else INTEGER_TYPE,
                         description = node.description,
                         nullable = null,
+                        minimum = minimum,
                     )
                 }
 
@@ -293,6 +298,7 @@ public class TypeGraphToFunctionCallingSchemaTransformer
                     )
                 }
             }
+        }
 
         @Suppress("CyclomaticComplexMethod")
         private fun convertObject(

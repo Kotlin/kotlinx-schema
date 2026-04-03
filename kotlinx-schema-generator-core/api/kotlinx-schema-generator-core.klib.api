@@ -255,16 +255,19 @@ final class kotlinx.schema.generator.core.ir/PolymorphicNode : kotlinx.schema.ge
 }
 
 final class kotlinx.schema.generator.core.ir/PrimitiveNode : kotlinx.schema.generator.core.ir/TypeNode { // kotlinx.schema.generator.core.ir/PrimitiveNode|null[0]
-    constructor <init>(kotlinx.schema.generator.core.ir/PrimitiveKind, kotlin/String? = ...) // kotlinx.schema.generator.core.ir/PrimitiveNode.<init>|<init>(kotlinx.schema.generator.core.ir.PrimitiveKind;kotlin.String?){}[0]
+    constructor <init>(kotlinx.schema.generator.core.ir/PrimitiveKind, kotlin/String? = ..., kotlin/Boolean = ...) // kotlinx.schema.generator.core.ir/PrimitiveNode.<init>|<init>(kotlinx.schema.generator.core.ir.PrimitiveKind;kotlin.String?;kotlin.Boolean){}[0]
 
     final val description // kotlinx.schema.generator.core.ir/PrimitiveNode.description|{}description[0]
         final fun <get-description>(): kotlin/String? // kotlinx.schema.generator.core.ir/PrimitiveNode.description.<get-description>|<get-description>(){}[0]
     final val kind // kotlinx.schema.generator.core.ir/PrimitiveNode.kind|{}kind[0]
         final fun <get-kind>(): kotlinx.schema.generator.core.ir/PrimitiveKind // kotlinx.schema.generator.core.ir/PrimitiveNode.kind.<get-kind>|<get-kind>(){}[0]
+    final val unsigned // kotlinx.schema.generator.core.ir/PrimitiveNode.unsigned|{}unsigned[0]
+        final fun <get-unsigned>(): kotlin/Boolean // kotlinx.schema.generator.core.ir/PrimitiveNode.unsigned.<get-unsigned>|<get-unsigned>(){}[0]
 
     final fun component1(): kotlinx.schema.generator.core.ir/PrimitiveKind // kotlinx.schema.generator.core.ir/PrimitiveNode.component1|component1(){}[0]
     final fun component2(): kotlin/String? // kotlinx.schema.generator.core.ir/PrimitiveNode.component2|component2(){}[0]
-    final fun copy(kotlinx.schema.generator.core.ir/PrimitiveKind = ..., kotlin/String? = ...): kotlinx.schema.generator.core.ir/PrimitiveNode // kotlinx.schema.generator.core.ir/PrimitiveNode.copy|copy(kotlinx.schema.generator.core.ir.PrimitiveKind;kotlin.String?){}[0]
+    final fun component3(): kotlin/Boolean // kotlinx.schema.generator.core.ir/PrimitiveNode.component3|component3(){}[0]
+    final fun copy(kotlinx.schema.generator.core.ir/PrimitiveKind = ..., kotlin/String? = ..., kotlin/Boolean = ...): kotlinx.schema.generator.core.ir/PrimitiveNode // kotlinx.schema.generator.core.ir/PrimitiveNode.copy|copy(kotlinx.schema.generator.core.ir.PrimitiveKind;kotlin.String?;kotlin.Boolean){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // kotlinx.schema.generator.core.ir/PrimitiveNode.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // kotlinx.schema.generator.core.ir/PrimitiveNode.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // kotlinx.schema.generator.core.ir/PrimitiveNode.toString|toString(){}[0]

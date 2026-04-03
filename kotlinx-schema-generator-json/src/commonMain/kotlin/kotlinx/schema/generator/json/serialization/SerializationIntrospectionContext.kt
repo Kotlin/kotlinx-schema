@@ -107,38 +107,46 @@ internal class SerializationIntrospectionContext(
      * Returns null if the descriptor is not a primitive.
      */
     private fun primitiveFor(descriptor: SerialDescriptor): PrimitiveNode? =
-        when (descriptor.kind) {
-            SerialPrimitiveKind.STRING -> {
-                PrimitiveNode(PrimitiveKind.STRING)
+        unsignedPrimitiveFor(descriptor.serialName.removeSuffix("?"))
+            ?: when (descriptor.kind) {
+                SerialPrimitiveKind.STRING -> {
+                    PrimitiveNode(PrimitiveKind.STRING)
+                }
+
+                SerialPrimitiveKind.BOOLEAN -> {
+                    PrimitiveNode(PrimitiveKind.BOOLEAN)
+                }
+
+                SerialPrimitiveKind.BYTE, SerialPrimitiveKind.SHORT, SerialPrimitiveKind.INT -> {
+                    PrimitiveNode(PrimitiveKind.INT)
+                }
+
+                SerialPrimitiveKind.LONG -> {
+                    PrimitiveNode(PrimitiveKind.LONG)
+                }
+
+                SerialPrimitiveKind.FLOAT -> {
+                    PrimitiveNode(PrimitiveKind.FLOAT)
+                }
+
+                SerialPrimitiveKind.DOUBLE -> {
+                    PrimitiveNode(PrimitiveKind.DOUBLE)
+                }
+
+                SerialPrimitiveKind.CHAR -> {
+                    PrimitiveNode(PrimitiveKind.STRING)
+                }
+
+                else -> {
+                    null
+                }
             }
 
-            SerialPrimitiveKind.BOOLEAN -> {
-                PrimitiveNode(PrimitiveKind.BOOLEAN)
-            }
-
-            SerialPrimitiveKind.BYTE, SerialPrimitiveKind.SHORT, SerialPrimitiveKind.INT -> {
-                PrimitiveNode(PrimitiveKind.INT)
-            }
-
-            SerialPrimitiveKind.LONG -> {
-                PrimitiveNode(PrimitiveKind.LONG)
-            }
-
-            SerialPrimitiveKind.FLOAT -> {
-                PrimitiveNode(PrimitiveKind.FLOAT)
-            }
-
-            SerialPrimitiveKind.DOUBLE -> {
-                PrimitiveNode(PrimitiveKind.DOUBLE)
-            }
-
-            SerialPrimitiveKind.CHAR -> {
-                PrimitiveNode(PrimitiveKind.STRING)
-            }
-
-            else -> {
-                null
-            }
+    private fun unsignedPrimitiveFor(serialName: String): PrimitiveNode? =
+        when (serialName) {
+            "kotlin.UByte", "kotlin.UShort", "kotlin.UInt" -> PrimitiveNode(PrimitiveKind.INT, unsigned = true)
+            "kotlin.ULong" -> PrimitiveNode(PrimitiveKind.LONG, unsigned = true)
+            else -> null
         }
 
     /**
