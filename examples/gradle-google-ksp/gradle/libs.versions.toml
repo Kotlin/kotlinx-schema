@@ -1,6 +1,6 @@
 [versions]
 koog = "0.7.3"
-kotest = "6.1.9"
+kotest = "6.1.11"
 kotlin = "2.3.0"
 kotlinxSerialization = "1.10.0"
 ksp = "2.3.6"
