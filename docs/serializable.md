@@ -121,7 +121,7 @@ public data class Config(
 )
 ```
 
-By default, no descriptions are extracted unless annotations are recognized by the built-in `Introspections` utility or a custom extractor is provided.
+By default, no descriptions are extracted. To add them, provide a custom `DescriptionExtractor` as shown below.
 
 ### Custom description extraction
 
@@ -156,7 +156,7 @@ import kotlinx.serialization.json.Json
 -->
 ```kotlin
 @OptIn(ExperimentalSerializationApi::class)
-@SerialInfo
+@SerialInfo // Required: only @SerialInfo annotations are preserved in SerialDescriptor
 annotation class CustomDescription(val value: String)
 
 @Serializable
@@ -218,7 +218,12 @@ This code prints:
 > and collections. A description annotation on a property whose type is another class will appear
 > in the schema alongside the `$ref` for that class.
 
-The built-in `@Description` annotation from `kotlinx-schema-annotations` is always recognized without a custom extractor. See [Annotation Reference](../README.md#using-schema-and-description-annotations).
+> [!IMPORTANT]
+> `SerialDescriptor` only carries annotations marked with
+> [`@SerialInfo`](https://kotlinlang.org/api/kotlinx.serialization/kotlinx-serialization-core/kotlinx.serialization/-serial-info/).
+> The built-in `@Description` from `kotlinx-schema-annotations` lacks `@SerialInfo` and is therefore **not** visible here.
+> For automatic `@Description` recognition, use the [KSP processor](ksp.md) or
+> the [reflection-based generator](../README.md#runtime-schema-generation) instead.
 
 ### JSON Schema output configuration
 

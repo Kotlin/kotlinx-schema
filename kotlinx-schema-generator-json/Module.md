@@ -68,7 +68,10 @@ val schema = generator.generateSchema(User.serializer().descriptor)
 **Serialization Generators:**
 - Requires [`@Serializable`][kotlinx.serialization.Serializable] annotation
 - Cannot extract actual default values (only detects presence)
-- Cannot extract descriptions, because of the [`SerialDescriptor`][kotlinx.serialization.descriptors.SerialDescriptor] limitation 
+- Cannot extract descriptions from standard annotations (e.g., `@Description`)
+  because [`SerialDescriptor`][kotlinx.serialization.descriptors.SerialDescriptor] 
+  only carries `@SerialInfo`-annotated annotations. Use a custom `DescriptionExtractor` 
+  with `@SerialInfo` annotations as a workaround.
 
 # Package kotlinx.schema.generator.json
 

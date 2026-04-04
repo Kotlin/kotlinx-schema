@@ -1151,6 +1151,11 @@ The introspector matches annotations by their **simple name only**, not the full
 - ✅ Generate schemas for third-party code that uses different annotations
 - ✅ Use your preferred annotation library while still getting schema generation
 
+> [!NOTE]
+> Multi-framework annotation recognition applies to the **KSP processor** and **reflection-based generators**.
+> The serialization-based generator (`SerializationClassJsonSchemaGenerator`) can only access annotations marked
+> with `@SerialInfo` — see [Custom description extraction](docs/serializable.md#custom-description-extraction) for details.
+
 ### Customizing Annotation Detection
 
 Annotation detection is configurable via `kotlinx-schema.properties` loaded from the classpath.
