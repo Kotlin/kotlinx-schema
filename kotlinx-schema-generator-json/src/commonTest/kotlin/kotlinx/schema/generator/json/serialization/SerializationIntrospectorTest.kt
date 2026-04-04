@@ -39,14 +39,10 @@ class SerializationIntrospectorTest {
         val color: Color,
     )
 
-    @JvmInline
-    @Serializable
-    value class Meters(val value: Double)
-
     @Serializable
     data class WithInlineValueClass(
-        val distance: Meters,
-        val optionalDistance: Meters?,
+        val distance: InlineValueClass,
+        val optionalDistance: InlineValueClass?,
     )
 
     @Serializable

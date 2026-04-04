@@ -80,8 +80,11 @@ internal class SerializationIntrospectionContext(
             }
 
             is StructureKind.CLASS, StructureKind.OBJECT -> {
-                if (type.isInline) return handleInlineValueClass(type, nullable)
-                handleObjectType(type, nullable)
+                if (type.isInline) {
+                    handleInlineValueClass(type, nullable)
+                } else {
+                    handleObjectType(type, nullable)
+                }
             }
 
             is StructureKind.MAP -> {
@@ -175,6 +178,7 @@ internal class SerializationIntrospectionContext(
         descriptor: SerialDescriptor,
         nullable: Boolean,
     ): TypeRef {
+        require(descriptor.elementsCount == 1) { "Inline value class descriptor must have exactly one element" }
         val innerRef = toRef(descriptor.getElementDescriptor(0))
         return if (nullable && !innerRef.nullable) innerRef.withNullable(true) else innerRef
     }

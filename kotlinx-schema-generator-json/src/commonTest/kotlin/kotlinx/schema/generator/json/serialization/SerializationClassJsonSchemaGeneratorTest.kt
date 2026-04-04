@@ -3,6 +3,7 @@ package kotlinx.schema.generator.json.serialization
 import io.kotest.assertions.json.shouldEqualJson
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlin.jvm.JvmInline
 import kotlin.test.Test
 
 class SerializationClassJsonSchemaGeneratorTest {
@@ -175,6 +176,17 @@ class SerializationClassJsonSchemaGeneratorTest {
                 "objectProperty": {
                   "$ref": "#/$defs/kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestObject",
                   "description": "A test object property"
+                },
+                "inlineValueClass": {
+                  "type": "number",
+                  "description": "A custom inline value class"
+                },
+                "inlineValueClassNullable": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "description": "A custom inline value class nullable"
                 }
               },
               "additionalProperties": false,

@@ -6,6 +6,7 @@ import kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaG
 import kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestObject
 import kotlinx.serialization.SerialInfo
 import kotlinx.serialization.Serializable
+import kotlin.jvm.JvmInline
 
 @SerialInfo
 annotation class CustomDescription(
@@ -49,4 +50,14 @@ data class TestClass(
     val enumProperty: TestEnum = TestEnum.One,
     @property:CustomDescription("A test object property")
     val objectProperty: TestObject = TestObject,
+    @property:CustomDescription("A custom inline value class")
+    val inlineValueClass: InlineValueClass = InlineValueClass(10.0),
+    @property:CustomDescription("A custom inline value class nullable")
+    val inlineValueClassNullable: InlineValueClass? = null,
+)
+
+@JvmInline
+@Serializable
+value class InlineValueClass(
+    val value: Double,
 )
