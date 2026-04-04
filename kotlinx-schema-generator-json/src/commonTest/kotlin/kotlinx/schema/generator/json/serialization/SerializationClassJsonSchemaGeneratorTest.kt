@@ -1,6 +1,7 @@
 package kotlinx.schema.generator.json.serialization
 
 import io.kotest.assertions.json.shouldEqualJson
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
 
@@ -10,29 +11,39 @@ class SerializationClassJsonSchemaGeneratorTest {
     data class NestedProperty(
         @property:CustomDescription("Nested foo property")
         val foo: String,
+        @property:CustomDescription("Nested bar property")
         val bar: Int,
     )
 
     @Serializable
+    @SerialName("TestClosedPolymorphism")
+    @CustomDescription("A closed polymorphism")
     sealed class TestClosedPolymorphism {
         abstract val id: String
 
         @Serializable
+        @CustomDescription("First subclass")
         @Suppress("unused")
         data class SubClass1(
+            @property:CustomDescription("Subclass identifier")
             override val id: String,
+            @property:CustomDescription("First property")
             val property1: String,
         ) : TestClosedPolymorphism()
 
         @Serializable
+        @CustomDescription("Second subclass")
         @Suppress("unused")
         data class SubClass2(
+            @property:CustomDescription("Subclass identifier")
             override val id: String,
+            @property:CustomDescription("Second property")
             val property2: Int,
         ) : TestClosedPolymorphism()
     }
 
     @Serializable
+    @CustomDescription("A test enum")
     @Suppress("unused")
     enum class TestEnum {
         One,
@@ -40,6 +51,7 @@ class SerializationClassJsonSchemaGeneratorTest {
     }
 
     @Serializable
+    @CustomDescription("A test data object")
     data object TestObject
 
     val generator =
@@ -154,7 +166,7 @@ class SerializationClassJsonSchemaGeneratorTest {
                 },
                 "polymorphicProperty": {
                   "description": "A custom polymorphic property",
-                  "$ref": "#/$defs/kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestClosedPolymorphism"
+                  "$ref": "#/$defs/TestClosedPolymorphism"
                 },
                 "enumProperty": {
                   "$ref": "#/$defs/kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestEnum",
@@ -184,7 +196,8 @@ class SerializationClassJsonSchemaGeneratorTest {
                       "description": "Nested foo property"
                     },
                     "bar": {
-                      "type": "integer"
+                      "type": "integer",
+                      "description": "Nested bar property"
                     }
                   },
                   "required": [
@@ -193,7 +206,8 @@ class SerializationClassJsonSchemaGeneratorTest {
                   ],
                   "additionalProperties": false
                 },
-                "kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestClosedPolymorphism": {
+                "TestClosedPolymorphism": {
+                  "description": "A closed polymorphism",
                   "oneOf": [
                     {
                       "$ref": "#/$defs/kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass1"
@@ -205,16 +219,19 @@ class SerializationClassJsonSchemaGeneratorTest {
                 },
                 "kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass1": {
                   "type": "object",
+                  "description": "First subclass",
                   "properties": {
                     "type": {
                       "type": "string",
                       "const": "kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass1"
                     },
                     "id": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "Subclass identifier"
                     },
                     "property1": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "First property"
                     }
                   },
                   "required": [
@@ -226,16 +243,19 @@ class SerializationClassJsonSchemaGeneratorTest {
                 },
                 "kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass2": {
                   "type": "object",
+                  "description": "Second subclass",
                   "properties": {
                     "type": {
                       "type": "string",
                       "const": "kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestClosedPolymorphism.SubClass2"
                     },
                     "id": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "Subclass identifier"
                     },
                     "property2": {
-                      "type": "integer"
+                      "type": "integer",
+                      "description": "Second property"
                     }
                   },
                   "required": [
@@ -247,6 +267,7 @@ class SerializationClassJsonSchemaGeneratorTest {
                 },
                 "kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestEnum": {
                   "type": "string",
+                  "description": "A test enum",
                   "enum": [
                     "One",
                     "Two"
@@ -254,6 +275,7 @@ class SerializationClassJsonSchemaGeneratorTest {
                 },
                 "kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestObject": {
                   "type": "object",
+                  "description": "A test data object",
                   "properties": {},
                   "required": [],
                   "additionalProperties": false
