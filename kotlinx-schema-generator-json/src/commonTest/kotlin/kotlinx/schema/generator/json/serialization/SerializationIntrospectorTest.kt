@@ -46,6 +46,11 @@ class SerializationIntrospectorTest {
     )
 
     @Serializable
+    data class WithDescribedInlineValueClass(
+        val distance: DescribedInlineValueClass,
+    )
+
+    @Serializable
     sealed class Shape {
         @Serializable
         data class Circle(
@@ -222,6 +227,31 @@ class SerializationIntrospectorTest {
                     prim.kind shouldBe PrimitiveKind.DOUBLE
                 }
                 inline.nullable shouldBe true
+            }
+        }
+    }
+
+    @Test
+    fun `inline value class description propagates to flattened primitive`() {
+        val introspectorWithDescriptions = SerializationIntrospector(
+            config = SerializationIntrospector.Config(
+                descriptionExtractor = { annotations ->
+                    annotations.filterIsInstance<CustomDescription>().firstOrNull()?.value
+                },
+            ),
+        )
+        val graph = introspectorWithDescriptions.introspect(
+            WithDescribedInlineValueClass.serializer().descriptor,
+        )
+
+        val rootRef = graph.root.shouldBeInstanceOf<TypeRef.Ref>()
+        val objNode = graph.nodes[rootRef.id].shouldNotBeNull().shouldBeInstanceOf<ObjectNode>()
+        val distanceProp = objNode.properties.first { it.name == "distance" }
+
+        distanceProp.type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
+            inline.node.shouldBeInstanceOf<PrimitiveNode> { prim ->
+                prim.kind shouldBe PrimitiveKind.DOUBLE
+                prim.description shouldBe "Distance in meters"
             }
         }
     }

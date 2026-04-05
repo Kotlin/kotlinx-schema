@@ -61,3 +61,10 @@ data class TestClass(
 value class InlineValueClass(
     val value: Double,
 )
+
+@CustomDescription("Distance in meters")
+@JvmInline
+@Serializable
+value class DescribedInlineValueClass(
+    val value: Double,
+)

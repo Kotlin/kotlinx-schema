@@ -55,6 +55,12 @@ class SerializationClassJsonSchemaGeneratorTest {
     @CustomDescription("A test data object")
     data object TestObject
 
+    @Serializable
+    data class WithDescribedInlineValueClass(
+        val distance: DescribedInlineValueClass,
+        val optionalDistance: DescribedInlineValueClass?,
+    )
+
     val generator =
         SerializationClassJsonSchemaGenerator(
             introspectorConfig =
@@ -293,6 +299,39 @@ class SerializationClassJsonSchemaGeneratorTest {
                   "additionalProperties": false
                 }
               }
+            }
+            """.trimIndent()
+    }
+
+    @Test
+    fun `Should propagate inline value class description to flattened primitive in schema`() {
+        val schema = generator.generateSchemaString(WithDescribedInlineValueClass.serializer().descriptor)
+
+        schema shouldEqualJson
+            // language=JSON
+            $$"""
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.WithDescribedInlineValueClass",
+              "type": "object",
+              "properties": {
+                "distance": {
+                  "type": "number",
+                  "description": "Distance in meters"
+                },
+                "optionalDistance": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "description": "Distance in meters"
+                }
+              },
+              "required": [
+                "distance",
+                "optionalDistance"
+              ],
+              "additionalProperties": false
             }
             """.trimIndent()
     }
