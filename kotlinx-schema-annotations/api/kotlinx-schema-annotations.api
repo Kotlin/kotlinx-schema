@@ -7,3 +7,7 @@ public abstract interface annotation class kotlinx/schema/Schema : java/lang/ann
 	public abstract fun withSchemaObject ()Z
 }
 
+public abstract interface annotation class kotlinx/schema/SerialDescription : java/lang/annotation/Annotation {
+	public abstract fun value ()Ljava/lang/String;
+}
+

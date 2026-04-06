@@ -4,10 +4,8 @@ package kotlinx.schema.generator.json
 
 import io.kotest.assertions.json.shouldEqualJson
 import kotlinx.schema.Description
-import kotlinx.schema.generator.core.SchemaGeneratorService
-import kotlinx.schema.json.JsonSchema
+import kotlinx.schema.SerialDescription
 import kotlinx.serialization.json.Json
-import kotlin.reflect.KClass
 import kotlin.test.Test
 
 class JsonSchemaGeneratorTest {
@@ -62,6 +60,13 @@ class JsonSchemaGeneratorTest {
     }
 
     data object TestObject
+
+    @SerialDescription("Reflection-discovered class described via @SerialDescription")
+    data class SerialDescribedClass(
+        @property:SerialDescription("Described property")
+        val name: String,
+        val count: Int,
+    )
 
     private val generator =
         ReflectionClassJsonSchemaGenerator(
@@ -217,6 +222,28 @@ class JsonSchemaGeneratorTest {
                   "additionalProperties": false
                 }
               }
+            }
+            """.trimIndent()
+    }
+
+    @Test
+    fun `reflection generator recognizes SerialDescription on class and property`() {
+        val schema = generator.generateSchemaString(SerialDescribedClass::class)
+
+        schema shouldEqualJson
+            // language=JSON
+            $$"""
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.generator.json.JsonSchemaGeneratorTest.SerialDescribedClass",
+              "description": "Reflection-discovered class described via @SerialDescription",
+              "type": "object",
+              "properties": {
+                "name": { "type": "string", "description": "Described property" },
+                "count": { "type": "integer" }
+              },
+              "required": ["name", "count"],
+              "additionalProperties": false
             }
             """.trimIndent()
     }

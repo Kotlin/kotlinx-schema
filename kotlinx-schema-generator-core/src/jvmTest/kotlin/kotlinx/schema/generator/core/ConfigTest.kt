@@ -12,7 +12,10 @@ class ConfigTest {
 
         // Should include default annotations (lowercase)
         Config.descriptionAnnotationNames shouldContain "description"
+        Config.descriptionAnnotationNames shouldContain "serialdescription"
         Config.descriptionAnnotationNames shouldContain "llmdescription"
+        Config.descriptionAnnotationNames shouldContain "jsonpropertydescription"
+        Config.descriptionAnnotationNames shouldContain "jsonclassdescription"
         Config.descriptionAnnotationNames shouldContain "p"
     }
 

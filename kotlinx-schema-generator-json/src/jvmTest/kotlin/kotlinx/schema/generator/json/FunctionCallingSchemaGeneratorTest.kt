@@ -4,6 +4,7 @@ package kotlinx.schema.generator.json
 
 import io.kotest.assertions.json.shouldEqualJson
 import kotlinx.schema.Description
+import kotlinx.schema.SerialDescription
 import kotlinx.schema.generator.core.SchemaGeneratorService
 import kotlinx.schema.json.FunctionCallingSchema
 import kotlinx.serialization.Serializable
@@ -734,6 +735,47 @@ class FunctionCallingSchemaGeneratorTest {
                     "required": ["query", "limit"],
                     "additionalProperties": false
                 }
+            }
+            """.trimIndent()
+    }
+    //endregion
+
+    //region @SerialDescription
+    object SerialDescribed {
+        @SerialDescription("Looks up a product by identifier")
+        fun findProduct(
+            @SerialDescription("The product id to look up")
+            id: Long,
+            includeArchived: Boolean = false,
+        ): String = ""
+    }
+
+    @Test
+    fun `reflection generator recognizes @SerialDescription on function and parameter`() {
+        val schema = generator.generateSchemaString(SerialDescribed::findProduct)
+
+        schema shouldEqualJson
+            // language=json
+            """
+            {
+              "type": "function",
+              "name": "findProduct",
+              "description": "Looks up a product by identifier",
+              "strict": true,
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "description": "The product id to look up"
+                  },
+                  "includeArchived": {
+                    "type": "boolean"
+                  }
+                },
+                "required": ["id", "includeArchived"],
+                "additionalProperties": false
+              }
             }
             """.trimIndent()
     }

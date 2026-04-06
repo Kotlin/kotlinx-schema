@@ -1,7 +1,6 @@
 package kotlinx.schema.generator.core.ir
 
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -11,7 +10,10 @@ class IntrospectionsTest {
     @ParameterizedTest
     @CsvSource(
         "Description, value",
+        "SerialDescription, value",
         "LLMDescription, value",
+        "JsonPropertyDescription, description",
+        "JsonClassDescription, value",
         "P, description",
     )
     fun `extracts description from single-element annotation`(
