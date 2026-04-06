@@ -8,6 +8,7 @@
 * [Basic Usage](#basic-usage)
 * [Configuration](#configuration)
   * [Introspector configuration](#introspector-configuration)
+  * [@SerialDescription support](#@serialdescription-support)
   * [Custom description extraction](#custom-description-extraction)
   * [JSON Schema output configuration](#json-schema-output-configuration)
   * [JsonSchemaConfig presets](#jsonschemaconfig-presets)
@@ -113,19 +114,82 @@ For custom behavior, construct the generator directly with explicit `introspecto
 
 ### Introspector configuration
 
-`SerializationClassSchemaIntrospector.Config` controls how the generator reads descriptions from annotations on your serializable classes and properties.
+`SerializationClassSchemaIntrospector.Config` controls how the generator reads descriptions from
+annotations on your serializable classes and properties. Its single field is:
 
+| Field | Type | Default |
+|:------|:-----|:--------|
+| `descriptionExtractor` | `DescriptionExtractor` | Reads `@SerialDescription` |
+
+By default, the generator recognizes `@SerialDescription` with no extra setup. To read a
+different annotation, supply a custom `DescriptionExtractor` — see [Custom description extraction](#custom-description-extraction) below.
+
+### @SerialDescription support
+
+`@SerialDescription` is the built-in way to add descriptions to `@Serializable` classes.
+Unlike `@Description`, it carries `@SerialInfo` so the serialization runtime preserves it in
+`SerialDescriptor` — no custom configuration required.
+
+Add it to your class and constructor parameters:
+
+<!--- CLEAR -->
+<!--- INCLUDE
+import io.kotest.assertions.json.shouldEqualJson
+import kotlinx.schema.SerialDescription
+import kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGenerator
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+-->
 ```kotlin
-public data class Config(
-    val descriptionExtractor: DescriptionExtractor = DescriptionExtractor { null }
+@Serializable
+@SerialName("SuperUser")
+@SerialDescription("A registered user account")
+data class User(
+    @property:SerialDescription("The user's display name")
+    val name: String,
+    val age: Int,
 )
 ```
 
-By default, no descriptions are extracted. To add them, provide a custom `DescriptionExtractor` as shown below.
+Generate the schema using `Default` — descriptions appear automatically:
+
+<!--- INCLUDE
+fun main() {
+-->
+```kotlin
+val schema = SerializationClassJsonSchemaGenerator.Default.generateSchemaString(User.serializer().descriptor)
+println(schema)
+```
+<!--- SUFFIX
+}
+-->
+<!--- KNIT example-knit-serializable-02.kt -->
+
+This code prints:
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "SuperUser",
+  "description": "A registered user account",
+  "type": "object",
+  "properties": {
+    "name": { "type": "string", "description": "The user's display name" },
+    "age": { "type": "integer" }
+  },
+  "required": ["name", "age"],
+  "additionalProperties": false
+}
+```
+
+> [!TIP]
+> Use `@property:SerialDescription(...)` on constructor parameters to ensure the annotation
+> reaches the backing property — required for the serialization runtime to include it in
+> `SerialDescriptor.getElementAnnotations()`.
 
 ### Custom description extraction
 
-If your project uses a custom annotation to document properties — for example,
+If your project already uses a different annotation to document properties — for example,
 a framework annotation or your own convention — provide a `DescriptionExtractor` to map it to the schema `description` field.
 
 `DescriptionExtractor` is a functional interface:
@@ -189,7 +253,7 @@ println(schemaString)
 <!--- SUFFIX
 }
 -->
-<!--- KNIT example-knit-serializable-02.kt -->
+<!--- KNIT example-knit-serializable-03.kt -->
 
 This code prints:
 ```json
@@ -227,8 +291,9 @@ This code prints:
 > `SerialDescriptor` only carries annotations marked with
 > [`@SerialInfo`](https://kotlinlang.org/api/kotlinx.serialization/kotlinx-serialization-core/kotlinx.serialization/-serial-info/).
 > The built-in `@Description` from `kotlinx-schema-annotations` lacks `@SerialInfo` and is therefore **not** visible here.
-> For automatic `@Description` recognition, use the [KSP processor](ksp.md) or
-> the [reflection-based generator](../README.md#runtime-schema-generation) instead.
+> Use [`@SerialDescription`](#serialdescription-support) instead — it carries `@SerialInfo` and works with `Default` out of the box.
+> If you're describing classes you don't own, use the [KSP processor](ksp.md) or
+> the [reflection-based generator](../README.md#runtime-schema-generation).
 
 ### JSON Schema output configuration
 
@@ -266,7 +331,7 @@ println(schemaString)
 <!--- SUFFIX
 }
 -->
-<!--- KNIT example-knit-serializable-03.kt -->
+<!--- KNIT example-knit-serializable-04.kt -->
 
 This code generates:
 ```json
@@ -351,7 +416,7 @@ println(schemaString)
 <!--- SUFFIX
 }
 -->
-<!--- KNIT example-knit-serializable-04.kt -->
+<!--- KNIT example-knit-serializable-05.kt -->
 
 The generated schema uses `oneOf` with a `$defs` section for each subtype. 
 Each subtype gets a required `type` property containing the subtype's serial name as a constant (from `@SerialName`), 
@@ -417,7 +482,7 @@ enabling runtime dispatch.
 ## See Also
 
 - [KSP Processor](ksp.md) — Compile-time schema generation with zero runtime overhead
-- [Annotation Reference](../README.md#using-schema-and-description-annotations) — `@Schema` and `@Description` usage
+- [Annotation Reference](../README.md#using-schema-and-description-annotations) — `@Schema`, `@Description`, and `@SerialDescription` usage
 - [Multi-Framework Annotation Support](../README.md#multi-framework-annotation-support) — Recognize Jackson, LangChain4j, and other annotations
 - [Runtime Schema Generation](../README.md#runtime-schema-generation) — Reflection-based alternative for third-party classes
 - [JSON Schema DSL](../kotlinx-schema-json/README.md) — Manual schema construction
