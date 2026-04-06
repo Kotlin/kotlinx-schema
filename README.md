@@ -94,7 +94,7 @@ Quick Links:
 
 - **Compile-time (KSP)**: Zero runtime overhead, multiplatform, for your annotated classes
 - **Runtime (Reflection)**: JVM-only, for any class including third-party libraries
-- **Runtime (SerialDescriptor)**: Kotlin serializable classes
+- **Runtime (SerialDescriptor)**: Kotlin serializable classes, including open polymorphism via `SerializersModule`
 
 **LLM Integration:**
 
@@ -111,7 +111,7 @@ Quick Links:
 **Comprehensive Type Support:**
 
 - **Enums, collections, maps, nested objects, nullability, generics** (with star-projection)
-- **Sealed class hierarchies** with automatic `oneOf` generation and discriminator field
+- **Polymorphic hierarchies** — sealed classes and open polymorphism (via `SerializersModule`) with automatic `oneOf` generation and discriminator field
 - **Union types** for nullable parameters (`["string", "null"]`)
 - **Type constraints** (min/max, patterns, formats) via the JSON Schema DSL
 - **Default values** (compile-time: tracked but not extracted; runtime: fully extracted)

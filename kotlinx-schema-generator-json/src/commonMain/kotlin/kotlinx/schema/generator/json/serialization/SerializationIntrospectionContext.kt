@@ -15,11 +15,14 @@ import kotlinx.schema.generator.core.ir.Property
 import kotlinx.schema.generator.core.ir.SubtypeRef
 import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeRef
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModuleCollector
+import kotlin.reflect.KClass
 import kotlinx.serialization.descriptors.PrimitiveKind as SerialPrimitiveKind
 
 /**
@@ -282,13 +285,11 @@ internal class SerializationIntrospectionContext(
     }
 
     /**
-     * Handles polymorphic types (sealed classes) by creating a [PolymorphicNode].
+     * Handles polymorphic types (sealed and open) by creating a [PolymorphicNode].
      *
-     * For sealed classes, the descriptor structure is:
-     * - descriptor.kind is PolymorphicKind.SEALED
-     * - descriptor.elementDescriptors[0] is the discriminator descriptor (name "klass" or similar)
-     * - descriptor.elementDescriptors[1] is the "value" descriptor containing subtypes
-     * - The "value" descriptor's elementDescriptors are the actual subtype descriptors
+     * For sealed classes, subtypes are extracted from the descriptor structure.
+     * For open polymorphic types, subtypes are resolved from the
+     * [SerializersModule][kotlinx.serialization.modules.SerializersModule] registered in the [Json] instance.
      */
     private fun handlePolymorphicType(
         descriptor: SerialDescriptor,
@@ -299,7 +300,10 @@ internal class SerializationIntrospectionContext(
         withCycleDetection(descriptor, id) {
             // Extract subtypes from the nested structure
             val subtypeDescriptors = extractPolymorphicSubtypes(descriptor)
-            val subtypes = subtypeDescriptors.map { SubtypeRef(TypeId(it.serialName)) }
+            val subtypes =
+                subtypeDescriptors
+                    .sortedBy { it.serialName }
+                    .map { SubtypeRef(TypeId(it.serialName)) }
 
             // Get discriminator configuration from Json
             val discriminatorName = json.configuration.classDiscriminator
@@ -331,21 +335,27 @@ internal class SerializationIntrospectionContext(
     }
 
     /**
-     * Extracts subtype descriptors from a sealed polymorphic descriptor.
+     * Extracts subtype descriptors from a polymorphic descriptor.
      *
-     * The structure of a sealed class descriptor is:
+     * For sealed classes (`PolymorphicKind.SEALED`), subtypes are embedded in the descriptor:
      * ```
      * SerialDescriptor (PolymorphicKind.SEALED)
      *   ├─ element[0] → "klass" discriminator descriptor
      *   └─ element[1] → "value" descriptor containing subtypes
      *        └─ elements → [subtype1, subtype2, ...]
      * ```
+     *
+     * For open polymorphism (`PolymorphicKind.OPEN`), subtypes are resolved from the
+     * [SerializersModule][kotlinx.serialization.modules.SerializersModule] registered in the [Json] instance.
      */
-    private fun extractPolymorphicSubtypes(descriptor: SerialDescriptor): List<SerialDescriptor> {
-        require(descriptor.kind is PolymorphicKind.SEALED) {
-            "Expected sealed polymorphic descriptor, got ${descriptor.kind}"
+    private fun extractPolymorphicSubtypes(descriptor: SerialDescriptor): List<SerialDescriptor> =
+        when (descriptor.kind) {
+            is PolymorphicKind.SEALED -> extractSealedSubtypes(descriptor)
+            is PolymorphicKind.OPEN -> extractOpenSubtypes(descriptor)
+            else -> error("Expected polymorphic descriptor, got ${descriptor.kind}")
         }
 
+    private fun extractSealedSubtypes(descriptor: SerialDescriptor): List<SerialDescriptor> {
         require(descriptor.elementsCount >= 2 && descriptor.getElementName(1) == "value") {
             "Unexpected sealed descriptor structure: expected 'value' element at index 1, " +
                 "but found '${descriptor.getElementName(1)}'"
@@ -353,6 +363,62 @@ internal class SerializationIntrospectionContext(
 
         val valueDescriptor = descriptor.getElementDescriptor(1)
         return (0 until valueDescriptor.elementsCount).map { valueDescriptor.getElementDescriptor(it) }
+    }
+
+    /**
+     * Extracts subtype descriptors for open polymorphic types by querying the
+     * [SerializersModule][kotlinx.serialization.modules.SerializersModule].
+     *
+     * Iterates all polymorphic registrations in the module and collects descriptors
+     * whose base class matches the given [descriptor]'s serial name.
+     *
+     * @throws IllegalStateException if no subtypes are registered for this base type
+     */
+    private fun extractOpenSubtypes(descriptor: SerialDescriptor): List<SerialDescriptor> {
+        val baseSerialName = descriptor.serialName
+        val subtypeDescriptors = mutableListOf<SerialDescriptor>()
+        val baseClassSerialNames = mutableMapOf<KClass<*>, String>()
+
+        json.serializersModule.dumpTo(
+            object : SerializersModuleCollector {
+                override fun <T : Any> contextual(
+                    kClass: KClass<T>,
+                    provider: (typeArgumentsSerializers: List<KSerializer<*>>) -> KSerializer<*>,
+                ) = Unit
+
+                override fun <Base : Any, Sub : Base> polymorphic(
+                    baseClass: KClass<Base>,
+                    actualClass: KClass<Sub>,
+                    actualSerializer: KSerializer<Sub>,
+                ) {
+                    val cachedName = baseClassSerialNames.getOrPut(baseClass) {
+                        kotlinx.serialization.PolymorphicSerializer(baseClass).descriptor.serialName
+                    }
+                    if (cachedName == baseSerialName) {
+                        subtypeDescriptors.add(actualSerializer.descriptor)
+                    }
+                }
+
+                override fun <Base : Any> polymorphicDefaultSerializer(
+                    baseClass: KClass<Base>,
+                    defaultSerializerProvider: (value: Base) -> kotlinx.serialization.SerializationStrategy<Base>?,
+                ) = Unit
+
+                override fun <Base : Any> polymorphicDefaultDeserializer(
+                    baseClass: KClass<Base>,
+                    defaultDeserializerProvider: (
+                        className: String?,
+                    ) -> kotlinx.serialization.DeserializationStrategy<Base>?,
+                ) = Unit
+            },
+        )
+
+        check(subtypeDescriptors.isNotEmpty()) {
+            "No subtypes registered in SerializersModule for open polymorphic type '$baseSerialName'. " +
+                "Register subtypes via polymorphic(Base::class) { subclass(Sub::class) } in the module."
+        }
+
+        return subtypeDescriptors
     }
 
     /**
@@ -380,8 +446,17 @@ internal class SerializationIntrospectionContext(
 
     /**
      * Creates a [TypeId] from a [SerialDescriptor] using its serialName.
+     *
+     * For open polymorphic descriptors, unwraps the `kotlinx.serialization.Polymorphic<Name>`
+     * wrapper to extract the inner type name.
      */
-    private fun descriptorId(descriptor: SerialDescriptor): TypeId = TypeId(descriptor.serialName.removeSuffix("?"))
+    private fun descriptorId(descriptor: SerialDescriptor): TypeId =
+        TypeId(descriptor.unwrapSerialName().removeSuffix("?"))
+
+    private companion object {
+        /** Serial names that represent "any value" — mapped to [AnyNode] (empty schema `{}`). */
+        val ANY_SERIAL_NAMES = setOf("kotlin.Any", "java.lang.Object")
+    }
 
     /**
      * Extracts description from a list of type annotations.
@@ -405,9 +480,4 @@ internal class SerializationIntrospectionContext(
             is TypeRef.Inline -> copy(nullable = nullable)
             is TypeRef.Ref -> copy(nullable = nullable)
         }
-
-    private companion object {
-        /** Serial names that represent "any value" — mapped to [AnyNode] (empty schema `{}`). */
-        val ANY_SERIAL_NAMES = setOf("kotlin.Any", "java.lang.Object")
-    }
 }

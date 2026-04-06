@@ -14,6 +14,8 @@
   * [JsonSchemaConfig presets](#jsonschemaconfig-presets)
   * [JsonSchemaConfig reference](#jsonschemaconfig-reference)
 * [Polymorphic types](#polymorphic-types)
+  * [Sealed polymorphism](#sealed-polymorphism)
+  * [Open polymorphism](#open-polymorphism)
 * [See Also](#see-also)
 
 <!--- END -->
@@ -106,11 +108,11 @@ For custom behavior, construct the generator directly with explicit `introspecto
 
 `SerializationClassJsonSchemaGenerator` accepts three optional constructor parameters:
 
-| Parameter            | Type                                          | Default                    | Description                                               |
-|:---------------------|:----------------------------------------------|:---------------------------|:----------------------------------------------------------|
-| `json`               | `Json`                                        | `Json.Default`             | JSON configuration; controls discriminator name and mode. |
-| `introspectorConfig` | `SerializationClassSchemaIntrospector.Config` | `Config()`                 | Controls how descriptors are introspected.                |
-| `jsonSchemaConfig`   | `JsonSchemaConfig`                            | `JsonSchemaConfig.Default` | Controls schema output (nullability, required).           |
+| Parameter            | Type                                          | Default                    | Description                                     |
+|:---------------------|:----------------------------------------------|:---------------------------|:------------------------------------------------|
+| `json`               | `Json`                                        | `Json.Default`             | Controls JSON configuration.                    |
+| `introspectorConfig` | `SerializationClassSchemaIntrospector.Config` | `Config()`                 | Controls how descriptors are introspected.      |
+| `jsonSchemaConfig`   | `JsonSchemaConfig`                            | `JsonSchemaConfig.Default` | Controls schema output (nullability, required). |
 
 ### Introspector configuration
 
@@ -376,7 +378,12 @@ This code generates:
 
 ## Polymorphic types
 
-Sealed classes are supported. The generator reads the discriminator configuration from the `Json` instance you provide:
+Both sealed and open polymorphic hierarchies are supported. The generator reads the discriminator
+name from `Json.classDiscriminator` and produces `oneOf` schemas with `$defs` for each subtype.
+
+### Sealed polymorphism
+
+For sealed classes, the compiler embeds all subtypes in the `SerialDescriptor` — no `SerializersModule` needed:
 
 <!--- CLEAR -->
 <!--- INCLUDE
@@ -393,11 +400,11 @@ import kotlinx.serialization.json.Json
 @SerialName("com.example.Shape")
 sealed class Shape {
     @Serializable
-    @SerialName("com.example.Shape.Circle") 
+    @SerialName("com.example.Shape.Circle")
     data class Circle(val radius: Double) : Shape()
-    
+
     @Serializable
-    @SerialName("com.example.Shape.Rectangle") 
+    @SerialName("com.example.Shape.Rectangle")
     data class Rectangle(val width: Double, val height: Double) : Shape()
 }
 ```
@@ -419,9 +426,7 @@ println(schemaString)
 -->
 <!--- KNIT example-knit-serializable-05.kt -->
 
-The generated schema uses `oneOf` with a `$defs` section for each subtype. 
-Each subtype gets a required `type` property containing the subtype's serial name as a constant (from `@SerialName`), 
-enabling runtime dispatch.
+Each subtype gets a required discriminator property containing the subtype's serial name as a constant:
 
 ```json
 {
@@ -479,6 +484,72 @@ enabling runtime dispatch.
     }
 }
 ```
+
+### Open polymorphism
+
+For abstract classes and interfaces where subtypes aren't known at compile time, register them
+in a `SerializersModule` and pass it via the `Json` configuration. Only the registered subtypes
+appear in the generated schema:
+
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGenerator
+import kotlinx.serialization.PolymorphicSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
+-->
+```kotlin
+@Serializable
+@SerialName("com.example.Flying")
+abstract class Flying {
+    abstract val name: String
+}
+
+@Serializable
+@SerialName("com.example.Bird")
+data class Bird(override val name: String, val wingspan: Double) : Flying()
+
+@Serializable
+@SerialName("com.example.Kite")
+data class Kite(override val name: String, val material: String) : Flying()
+```
+
+<!--- INCLUDE
+fun main() {
+-->
+```kotlin
+val module = SerializersModule {
+    polymorphic(Flying::class) {
+        subclass(Bird::class)
+        subclass(Kite::class)
+    }
+}
+
+val generator = SerializationClassJsonSchemaGenerator(
+    json = Json { serializersModule = module }
+)
+
+val schema = generator.generateSchemaString(
+    PolymorphicSerializer(Flying::class).descriptor
+)
+
+println(schema)
+```
+<!--- SUFFIX
+}
+-->
+<!--- KNIT example-knit-serializable-06.kt -->
+
+The output follows the same `oneOf` / `$defs` structure as sealed classes. Register only a subset
+of subtypes to produce a schema limited to those types.
+
+> [!NOTE]
+> Use `PolymorphicSerializer(Base::class).descriptor` as the entry point for open polymorphic
+> types — `Base.serializer()` is not available for non-sealed abstract classes.
 
 ## See Also
 

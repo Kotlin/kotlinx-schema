@@ -33,7 +33,7 @@ public class SerializationClassJsonSchemaGenerator(
                 json = json,
             ),
     ) {
-    override fun getRootName(target: SerialDescriptor): String = target.serialName
+    override fun getRootName(target: SerialDescriptor): String = target.unwrapSerialName()
 
     override fun targetType(): KClass<SerialDescriptor> = SerialDescriptor::class
 
