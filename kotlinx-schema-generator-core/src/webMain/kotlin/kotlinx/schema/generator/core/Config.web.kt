@@ -5,4 +5,6 @@ internal actual object Config {
         get() = setOf("Description")
     actual val descriptionValueAttributes: Set<String>
         get() = setOf("value", "description")
+    actual val ignoreAnnotationNames: Set<String>
+        get() = setOf("schemaignore")
 }

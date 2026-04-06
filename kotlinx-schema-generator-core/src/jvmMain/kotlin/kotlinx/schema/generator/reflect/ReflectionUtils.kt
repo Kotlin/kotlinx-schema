@@ -43,6 +43,18 @@ internal fun findPropertyByName(
         .firstOrNull { it.name == propertyName }
 
 /**
+ * Checks whether the given list of annotations contains a recognized ignore marker
+ * (e.g., `@SchemaIgnore`, `@SerialSchemaIgnore`, `@JsonIgnoreType`).
+ *
+ * @see [Introspections.isIgnoreAnnotation]
+ */
+internal fun isSchemaIgnored(annotations: List<Annotation>): Boolean =
+    annotations.any { annotation ->
+        val name = annotation.annotationClass.simpleName ?: return@any false
+        Introspections.isIgnoreAnnotation(name)
+    }
+
+/**
  * Extracts description from annotations.
  *
  * @see [Introspections.getDescriptionFromAnnotation]

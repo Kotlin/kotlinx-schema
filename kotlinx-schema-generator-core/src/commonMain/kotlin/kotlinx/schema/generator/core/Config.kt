@@ -54,4 +54,17 @@ internal expect object Config {
      * - For `@JsonPropertyDescription(description = "User email")`, the "description" parameter contains "User email"
      */
     val descriptionValueAttributes: Set<String>
+
+    /**
+     * Set of lowercase annotation simple names recognized as ignore markers.
+     *
+     * Classes annotated with any of these annotations are excluded from schema generation
+     * (e.g., sealed subtypes omitted from polymorphic `oneOf` schemas).
+     *
+     * Loaded lazily from the `introspector.annotations.ignore.names` property in
+     * `kotlinx-schema.properties`. If loading fails, falls back to built-in defaults.
+     *
+     * Default value: SchemaIgnore, SerialSchemaIgnore, JsonIgnoreType
+     */
+    val ignoreAnnotationNames: Set<String>
 }

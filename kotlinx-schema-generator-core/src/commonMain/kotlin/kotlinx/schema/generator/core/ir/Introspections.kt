@@ -1,9 +1,11 @@
 package kotlinx.schema.generator.core.ir
 
 import kotlinx.schema.generator.core.Config
+import kotlinx.schema.generator.core.InternalSchemaGeneratorApi
 import kotlinx.schema.generator.core.ir.Introspections.descriptionAnnotationNames
 import kotlinx.schema.generator.core.ir.Introspections.descriptionValueAttributes
 import kotlinx.schema.generator.core.ir.Introspections.getDescriptionFromAnnotation
+import kotlinx.schema.generator.core.ir.Introspections.isIgnoreAnnotation
 import kotlin.jvm.JvmStatic
 
 /**
@@ -36,8 +38,10 @@ import kotlin.jvm.JvmStatic
  * Your project's properties file will take precedence over the library's default configuration.
  *
  * @see getDescriptionFromAnnotation
+ * @see isIgnoreAnnotation
  * @see Config
  */
+@InternalSchemaGeneratorApi
 public object Introspections {
     /**
      * Set of lowercase annotation simple names recognized as description providers.
@@ -45,6 +49,13 @@ public object Introspections {
      * @see Config.descriptionAnnotationNames
      */
     private val descriptionAnnotationNames: Set<String> = Config.descriptionAnnotationNames
+
+    /**
+     * Set of lowercase annotation simple names recognized as ignore markers.
+     *
+     * @see Config.ignoreAnnotationNames
+     */
+    private val ignoreAnnotationNames: Set<String> = Config.ignoreAnnotationNames
 
     /**
      * Set of lowercase annotation parameter names that may contain description text.
@@ -120,6 +131,18 @@ public object Introspections {
         } else {
             null
         }
+
+    /**
+     * Checks whether the given annotation simple name is recognized as an ignore marker.
+     *
+     * Matching is case-insensitive by simple name only (not fully qualified name),
+     * following the same convention as [getDescriptionFromAnnotation].
+     *
+     * @param annotationName The simple name of the annotation to check (e.g., "SchemaIgnore", "JsonIgnoreType")
+     * @return `true` if the annotation is recognized as an ignore marker
+     */
+    @JvmStatic
+    public fun isIgnoreAnnotation(annotationName: String): Boolean = annotationName.lowercase() in ignoreAnnotationNames
 }
 
 /**

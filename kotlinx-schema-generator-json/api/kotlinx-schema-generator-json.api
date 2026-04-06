@@ -100,6 +100,13 @@ public final synthetic class kotlinx/schema/generator/json/SerialDescription$Imp
 	public final synthetic fun value ()Ljava/lang/String;
 }
 
+public abstract interface annotation class kotlinx/schema/generator/json/SerialSchemaIgnore : java/lang/annotation/Annotation {
+}
+
+public final synthetic class kotlinx/schema/generator/json/SerialSchemaIgnore$Impl : kotlinx/schema/generator/json/SerialSchemaIgnore {
+	public fun <init> ()V
+}
+
 public final class kotlinx/schema/generator/json/TypeGraphToFunctionCallingSchemaTransformer : kotlinx/schema/generator/core/ir/AbstractTypeGraphTransformer {
 	public fun <init> ()V
 	public fun <init> (Lkotlinx/schema/generator/json/FunctionCallingSchemaConfig;)V

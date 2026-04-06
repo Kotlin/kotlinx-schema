@@ -1,6 +1,5 @@
 package kotlinx.schema.generator.json.serialization
 
-import kotlinx.schema.generator.core.InternalSchemaGeneratorApi
 import kotlinx.schema.generator.core.ir.AnyNode
 import kotlinx.schema.generator.core.ir.BaseIntrospectionContext
 import kotlinx.schema.generator.core.ir.Discriminator
@@ -15,6 +14,7 @@ import kotlinx.schema.generator.core.ir.Property
 import kotlinx.schema.generator.core.ir.SubtypeRef
 import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeRef
+import kotlinx.schema.generator.json.SerialSchemaIgnore
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -34,7 +34,6 @@ import kotlinx.serialization.descriptors.PrimitiveKind as SerialPrimitiveKind
  * @property json The [Json] configuration used to extract discriminator settings for polymorphic types
  */
 @Suppress("TooManyFunctions")
-@OptIn(InternalSchemaGeneratorApi::class)
 internal class SerializationIntrospectionContext(
     private val json: Json,
     private val config: SerializationClassSchemaIntrospector.Config,
@@ -298,8 +297,10 @@ internal class SerializationIntrospectionContext(
         val id = descriptorId(descriptor)
 
         withCycleDetection(descriptor, id) {
-            // Extract subtypes from the nested structure
-            val subtypeDescriptors = extractPolymorphicSubtypes(descriptor)
+            // Extract subtypes from the nested structure, excluding @SerialSchemaIgnore-annotated ones
+            val subtypeDescriptors =
+                extractPolymorphicSubtypes(descriptor)
+                    .filter { subtype -> !subtype.isSchemaIgnored() }
             val subtypes =
                 subtypeDescriptors
                     .sortedBy { it.serialName }
@@ -391,9 +392,12 @@ internal class SerializationIntrospectionContext(
                     actualClass: KClass<Sub>,
                     actualSerializer: KSerializer<Sub>,
                 ) {
-                    val cachedName = baseClassSerialNames.getOrPut(baseClass) {
-                        kotlinx.serialization.PolymorphicSerializer(baseClass).descriptor.serialName
-                    }
+                    val cachedName =
+                        baseClassSerialNames.getOrPut(baseClass) {
+                            kotlinx.serialization
+                                .PolymorphicSerializer(baseClass)
+                                .descriptor.serialName
+                        }
                     if (cachedName == baseSerialName) {
                         subtypeDescriptors.add(actualSerializer.descriptor)
                     }
@@ -457,6 +461,15 @@ internal class SerializationIntrospectionContext(
         /** Serial names that represent "any value" — mapped to [AnyNode] (empty schema `{}`). */
         val ANY_SERIAL_NAMES = setOf("kotlin.Any", "java.lang.Object")
     }
+
+    /**
+     * Checks whether the descriptor's class-level annotations include a recognized ignore marker.
+     *
+     * Note: Only recognizes [SerialSchemaIgnore] directly. Custom ignore annotations
+     * registered via `kotlinx-schema.properties` are not checked here because
+     * `Annotation::class.simpleName` is unreliable in Kotlin common code.
+     */
+    private fun SerialDescriptor.isSchemaIgnored(): Boolean = annotations.any { it is SerialSchemaIgnore }
 
     /**
      * Extracts description from a list of type annotations.

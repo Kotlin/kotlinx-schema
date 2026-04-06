@@ -1,6 +1,5 @@
 package kotlinx.schema.generator.reflect
 
-import kotlinx.schema.generator.core.InternalSchemaGeneratorApi
 import kotlinx.schema.generator.core.ir.AnyNode
 import kotlinx.schema.generator.core.ir.BaseIntrospectionContext
 import kotlinx.schema.generator.core.ir.Discriminator
@@ -26,7 +25,6 @@ import kotlin.reflect.full.createType
  * Only supports [KClass] classifiers for introspection, generics are not supported.
  */
 @Suppress("TooManyFunctions")
-@OptIn(InternalSchemaGeneratorApi::class)
 internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>() {
     /**
      * This is a shared instance, so different schema generation runs would reuse the same class metadata cache.
@@ -196,9 +194,10 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
         val id = createTypeId(klass)
 
         withCycleDetection(type, id) {
-            val polymorphicNode = createPolymorphicNode(klass)
+            val filteredSubclasses = klass.filteredSealedSubclasses()
+            val polymorphicNode = createPolymorphicNode(klass, filteredSubclasses)
 
-            klass.sealedSubclasses.forEach { subclass ->
+            filteredSubclasses.forEach { subclass ->
                 toRef(subclass.createType())
             }
 
@@ -348,20 +347,24 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
     }
 
     /**
-     * Creates a [PolymorphicNode] from a [KClass]
+     * Creates a [PolymorphicNode] from a [KClass] using the given [sealedSubclasses]
+     * (already filtered to exclude `@SchemaIgnore`-annotated subtypes).
      */
-    private fun createPolymorphicNode(klass: KClass<*>): PolymorphicNode {
+    private fun createPolymorphicNode(
+        klass: KClass<*>,
+        sealedSubclasses: List<KClass<*>>,
+    ): PolymorphicNode {
         val baseName = klass.simpleName ?: "UnknownSealed"
 
         val subtypes =
-            klass.sealedSubclasses.map { subclass ->
+            sealedSubclasses.map { subclass ->
                 SubtypeRef(createTypeId(subclass))
             }
 
         // Build discriminator mapping: discriminator value -> TypeId
         // Key must equal the TypeId value so it matches the `const` value the transformer emits
         val discriminatorMapping =
-            klass.sealedSubclasses.associate { subclass ->
+            sealedSubclasses.associate { subclass ->
                 val id = createTypeId(subclass)
                 id.value to id
             }
@@ -378,6 +381,12 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
             description = extractDescription(klass.annotations),
         )
     }
+
+    /**
+     * Returns sealed subclasses excluding those annotated with a recognized ignore annotation.
+     */
+    private fun KClass<*>.filteredSealedSubclasses(): List<KClass<*>> =
+        sealedSubclasses.filter { !isSchemaIgnored(it.annotations) }
 
     //endregion
 

@@ -13,6 +13,10 @@ open annotation class kotlinx.schema.generator.json/SerialDescription : kotlin/A
         final fun <get-value>(): kotlin/String // kotlinx.schema.generator.json/SerialDescription.value.<get-value>|<get-value>(){}[0]
 }
 
+open annotation class kotlinx.schema.generator.json/SerialSchemaIgnore : kotlin/Annotation { // kotlinx.schema.generator.json/SerialSchemaIgnore|null[0]
+    constructor <init>() // kotlinx.schema.generator.json/SerialSchemaIgnore.<init>|<init>(){}[0]
+}
+
 abstract interface <#A: kotlin/Any> kotlinx.schema.generator.json/JsonSchemaGenerator : kotlinx.schema.generator.core/SchemaGenerator<#A, kotlinx.serialization.json/JsonObject> { // kotlinx.schema.generator.json/JsonSchemaGenerator|null[0]
     abstract fun generateSchema(#A): kotlinx.serialization.json/JsonObject // kotlinx.schema.generator.json/JsonSchemaGenerator.generateSchema|generateSchema(1:0){}[0]
     open fun encodeToString(kotlinx.serialization.json/JsonObject): kotlin/String // kotlinx.schema.generator.json/JsonSchemaGenerator.encodeToString|encodeToString(kotlinx.serialization.json.JsonObject){}[0]

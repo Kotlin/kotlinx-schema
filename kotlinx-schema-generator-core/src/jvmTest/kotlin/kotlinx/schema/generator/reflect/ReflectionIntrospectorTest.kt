@@ -5,6 +5,7 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.schema.Description
+import kotlinx.schema.SchemaIgnore
 import kotlinx.schema.generator.core.ir.AnyNode
 import kotlinx.schema.generator.core.ir.EnumNode
 import kotlinx.schema.generator.core.ir.ListNode
@@ -58,6 +59,15 @@ class ReflectionIntrospectorTest {
         }
 
         data class Bicycle(val gears: Int) : Vehicle()
+    }
+
+    @Suppress("unused")
+    sealed class Event {
+        data class Click(val x: Int, val y: Int) : Event()
+        data class PageView(val url: String) : Event()
+
+        @SchemaIgnore
+        data class Internal(val trace: String) : Event()
     }
 
     data class WithAny(
@@ -218,6 +228,25 @@ class ReflectionIntrospectorTest {
             ].shouldNotBeNull()
                 .shouldBeInstanceOf<ObjectNode>()
         rectangleNode.description shouldBe "Rectangle shape"
+    }
+
+    @Test
+    fun `sealed class excludes @SchemaIgnore subtypes from polymorphic node`() {
+        val graph = introspector.introspect(Event::class)
+
+        val rootRef = graph.root.shouldBeInstanceOf<TypeRef.Ref>()
+        val polyNode = graph.nodes[rootRef.id].shouldNotBeNull().shouldBeInstanceOf<PolymorphicNode>()
+
+        val subtypeIds = polyNode.subtypes.map { it.id.value }.toSet()
+        subtypeIds.shouldContainExactlyInAnyOrder(
+            setOf(
+                "kotlinx.schema.generator.reflect.ReflectionIntrospectorTest.Event.Click",
+                "kotlinx.schema.generator.reflect.ReflectionIntrospectorTest.Event.PageView",
+            ),
+        )
+
+        // Internal should not appear in nodes
+        graph.nodes.keys.none { it.value.contains("Internal") } shouldBe true
     }
 
     @Test

@@ -35,6 +35,7 @@
   * [Nested objects](#nested-objects)
   * [Generic types](#generic-types)
   * [Sealed class polymorphism](#sealed-class-polymorphism)
+    * [Excluding subtypes with @SchemaIgnore](#excluding-subtypes-with-@schemaignore)
 * [Using @Schema and @Description annotations](#using-@schema-and-@description-annotations)
   * [@Schema annotation](#@schema-annotation)
   * [@Description annotation](#@description-annotation)
@@ -669,6 +670,44 @@ println(schema.encodeToString(Json { prettyPrint = true }))
 - **Discriminator property**: A `type` field with a `const` value is automatically added to each subtype for runtime dispatch
 - **Property inheritance**: Base class properties are included in each subtype
 - **Type safety**: Each subtype gets its own schema definition
+
+#### Excluding subtypes with @SchemaIgnore
+
+Use `@SchemaIgnore` to exclude specific sealed subtypes from the generated schema.
+The class remains fully functional at runtime — only schema generation is affected:
+
+```kotlin
+@Schema
+sealed class Event {
+    data class Click(val x: Int, val y: Int) : Event()
+
+    @SchemaIgnore
+    data class Internal(val trace: String) : Event()
+}
+```
+
+The `Internal` subtype will not appear in the `oneOf` composition or `$defs`.
+
+For serialization-based generation, use `@SerialSchemaIgnore` (which carries `@SerialInfo`):
+
+```kotlin
+@Serializable
+sealed class Event {
+    @Serializable
+    data class Click(val x: Int, val y: Int) : Event()
+
+    @Serializable
+    @SerialSchemaIgnore
+    data class Internal(val trace: String) : Event()
+}
+```
+
+Jackson's `@JsonIgnoreType` is also recognized automatically. Custom ignore annotations can be
+registered via `kotlinx-schema.properties`:
+
+```properties
+introspector.annotations.ignore.names=SchemaIgnore,SerialSchemaIgnore,JsonIgnoreType,MyCustomIgnore
+```
 
 ## Using @Schema and @Description annotations
 

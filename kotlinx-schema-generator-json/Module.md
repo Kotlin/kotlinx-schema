@@ -58,6 +58,7 @@ val schema = generator.generateSchema(User.serializer().descriptor)
 **Serialization Generators (Multiplatform):**
 - Works on all kotlinx-serialization targets (JVM, Native, JS, Wasm)
 - Consistent with kotlinx-serialization behavior
+- [`@SerialSchemaIgnore`][kotlinx.schema.generator.json.SerialSchemaIgnore] to exclude sealed subtypes from generated schemas
 
 ## Limitations
 

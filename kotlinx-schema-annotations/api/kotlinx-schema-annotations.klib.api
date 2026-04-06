@@ -21,3 +21,7 @@ open annotation class kotlinx.schema/Schema : kotlin/Annotation { // kotlinx.sch
     final val withSchemaObject // kotlinx.schema/Schema.withSchemaObject|{}withSchemaObject[0]
         final fun <get-withSchemaObject>(): kotlin/Boolean // kotlinx.schema/Schema.withSchemaObject.<get-withSchemaObject>|<get-withSchemaObject>(){}[0]
 }
+
+open annotation class kotlinx.schema/SchemaIgnore : kotlin/Annotation { // kotlinx.schema/SchemaIgnore|null[0]
+    constructor <init>() // kotlinx.schema/SchemaIgnore.<init>|<init>(){}[0]
+}

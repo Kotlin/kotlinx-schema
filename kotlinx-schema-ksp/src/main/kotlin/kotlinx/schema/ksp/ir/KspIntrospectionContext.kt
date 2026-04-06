@@ -6,7 +6,7 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.Modifier
 import com.google.devtools.ksp.symbol.Nullability
-import kotlinx.schema.generator.core.InternalSchemaGeneratorApi
+
 import kotlinx.schema.generator.core.ir.AnyNode
 import kotlinx.schema.generator.core.ir.BaseIntrospectionContext
 import kotlinx.schema.generator.core.ir.ObjectNode
@@ -29,7 +29,6 @@ import kotlinx.schema.generator.core.ir.TypeRef
  * 4. Enum classes -> EnumNode via [handleEnum]
  * 5. Regular objects/classes -> ObjectNode via [handleObjectOrClass]
  */
-@OptIn(InternalSchemaGeneratorApi::class)
 internal class KspIntrospectionContext : BaseIntrospectionContext<KSType>() {
     /**
      * Converts a KSType to a TypeRef using the standard resolution strategy.
@@ -115,8 +114,10 @@ internal class KspIntrospectionContext : BaseIntrospectionContext<KSType>() {
         val id = decl.typeId()
 
         withCycleDetection(type, id) {
-            // Find all sealed subclasses
-            val sealedSubclasses = decl.getSealedSubclasses().toList()
+            // Find all sealed subclasses, excluding those annotated with @SchemaIgnore
+            val sealedSubclasses = decl.getSealedSubclasses()
+                .filter { !it.isSchemaIgnored() }
+                .toList()
 
             // Create SubtypeRef for each sealed subclass using their typeId()
             val subtypes =

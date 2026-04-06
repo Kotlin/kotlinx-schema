@@ -351,4 +351,5 @@ final class kotlinx.schema.generator.core.ir/TypeId { // kotlinx.schema.generato
 
 final object kotlinx.schema.generator.core.ir/Introspections { // kotlinx.schema.generator.core.ir/Introspections|null[0]
     final fun getDescriptionFromAnnotation(kotlin/String, kotlin.collections/List<kotlin/Pair<kotlin/String, kotlin/Any?>>): kotlin/String? // kotlinx.schema.generator.core.ir/Introspections.getDescriptionFromAnnotation|getDescriptionFromAnnotation(kotlin.String;kotlin.collections.List<kotlin.Pair<kotlin.String,kotlin.Any?>>){}[0]
+    final fun isIgnoreAnnotation(kotlin/String): kotlin/Boolean // kotlinx.schema.generator.core.ir/Introspections.isIgnoreAnnotation|isIgnoreAnnotation(kotlin.String){}[0]
 }

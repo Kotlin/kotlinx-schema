@@ -9,6 +9,7 @@ import kotlin.use
 private const val CONFIG_FILE_NAME = "kotlinx-schema.properties"
 private const val DESCRIPTION_NAMES_KEY = "introspector.annotations.description.names"
 private const val DESCRIPTION_ATTRIBUTES_KEY = "introspector.annotations.description.attributes"
+private const val IGNORE_NAMES_KEY = "introspector.annotations.ignore.names"
 
 /**
  * Default fallback values if configuration loading fails
@@ -29,6 +30,16 @@ private val DEFAULT_VALUE_ATTRIBUTES =
     setOf(
         "value",
         "description",
+    )
+
+/**
+ * Default fallback values if configuration loading fails
+ */
+private val DEFAULT_IGNORE_NAMES =
+    setOf(
+        "schemaignore",
+        "serialschemaignore",
+        "jsonignoretype",
     )
 
 internal actual object Config {
@@ -70,6 +81,12 @@ internal actual object Config {
         loadConfiguration { properties ->
             parseListProperty(properties, DESCRIPTION_ATTRIBUTES_KEY)
         } ?: DEFAULT_VALUE_ATTRIBUTES
+    }
+
+    actual val ignoreAnnotationNames: Set<String> by lazy {
+        loadConfiguration { properties ->
+            parseListProperty(properties, IGNORE_NAMES_KEY)
+        } ?: DEFAULT_IGNORE_NAMES
     }
 
     private fun <T> loadConfiguration(extractor: (Properties) -> T): T? =

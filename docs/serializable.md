@@ -15,6 +15,7 @@
   * [JsonSchemaConfig reference](#jsonschemaconfig-reference)
 * [Polymorphic types](#polymorphic-types)
   * [Sealed polymorphism](#sealed-polymorphism)
+  * [Excluding subtypes with @SerialSchemaIgnore](#excluding-subtypes-with-@serialschemaignore)
   * [Open polymorphism](#open-polymorphism)
 * [See Also](#see-also)
 
@@ -484,6 +485,34 @@ Each subtype gets a required discriminator property containing the subtype's ser
     }
 }
 ```
+
+### Excluding subtypes with @SerialSchemaIgnore
+
+Sealed hierarchies sometimes contain subtypes that shouldn't appear in the schema — internal sentinels,
+testing stubs, or deprecated variants. Annotate them with `@SerialSchemaIgnore` to exclude them from
+the generated `oneOf` composition and `$defs`:
+
+```kotlin
+@Serializable
+@SerialName("com.example.Event")
+sealed class Event {
+    @Serializable
+    @SerialName("com.example.Event.Click")
+    data class Click(val x: Int, val y: Int) : Event()
+
+    @Serializable
+    @SerialName("com.example.Event.Internal")
+    @SerialSchemaIgnore
+    data class Internal(val trace: String) : Event()
+}
+```
+
+The `Internal` subtype compiles and serializes normally — only schema generation skips it.
+
+> [!NOTE]
+> `@SerialSchemaIgnore` carries `@SerialInfo` so it's preserved in `SerialDescriptor`.
+> The plain `@SchemaIgnore` annotation (from `kotlinx-schema-annotations`) works with KSP and
+> reflection generators but is not visible through `SerialDescriptor`.
 
 ### Open polymorphism
 

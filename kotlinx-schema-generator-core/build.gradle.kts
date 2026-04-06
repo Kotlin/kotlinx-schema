@@ -10,6 +10,14 @@ dokka {
 }
 
 kotlin {
+    compilerOptions {
+        optIn.set(
+            listOf(
+                "kotlinx.schema.generator.core.InternalSchemaGeneratorApi",
+            ),
+        )
+    }
+
     sourceSets {
         commonMain {
             dependencies {

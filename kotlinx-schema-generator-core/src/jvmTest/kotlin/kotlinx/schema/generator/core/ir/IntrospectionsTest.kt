@@ -78,4 +78,42 @@ class IntrospectionsTest {
         ) shouldBe null
     }
     //endregion
+
+    //region Ignore annotation recognition
+
+    @ParameterizedTest
+    @CsvSource(
+        "SchemaIgnore",
+        "SerialSchemaIgnore",
+        "JsonIgnoreType",
+    )
+    fun `recognizes ignore annotations by simple name`(name: String) {
+        Introspections.isIgnoreAnnotation(name) shouldBe true
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "schemaignore",
+        "SCHEMAIGNORE",
+        "SchemaIgnore",
+        "jsonignoretype",
+        "JSONIGNORETYPE",
+    )
+    fun `ignore annotation matching is case-insensitive`(name: String) {
+        Introspections.isIgnoreAnnotation(name) shouldBe true
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "Ignore",
+        "JsonIgnore",
+        "Transient",
+        "Description",
+        "UnknownAnnotation",
+    )
+    fun `does not match unrecognized annotation names as ignore`(name: String) {
+        Introspections.isIgnoreAnnotation(name) shouldBe false
+    }
+
+    //endregion
 }

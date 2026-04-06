@@ -12,6 +12,7 @@ import kotlinx.schema.ksp.functions.CompanionFunctionStrategy
 import kotlinx.schema.ksp.functions.InstanceFunctionStrategy
 import kotlinx.schema.ksp.functions.ObjectFunctionStrategy
 import kotlinx.schema.ksp.functions.TopLevelFunctionStrategy
+import kotlinx.schema.ksp.ir.isSchemaIgnored
 import kotlinx.schema.ksp.strategy.CodeGenerationContext
 import kotlinx.schema.ksp.type.ClassSchemaStrategy
 
@@ -186,6 +187,15 @@ internal class SchemaExtensionProcessor(
         classDeclarations.forEach { classDeclaration ->
             if (!classDeclaration.validate()) {
                 unprocessable.add(classDeclaration)
+                return@forEach
+            }
+
+            if (classDeclaration.isSchemaIgnored()) {
+                logger.error(
+                    "@Schema and @SchemaIgnore are contradictory on " +
+                        "${classDeclaration.qualifiedName?.asString()}. " +
+                        "Remove one of the annotations.",
+                )
                 return@forEach
             }
 

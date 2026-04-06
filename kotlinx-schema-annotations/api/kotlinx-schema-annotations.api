@@ -7,3 +7,6 @@ public abstract interface annotation class kotlinx/schema/Schema : java/lang/ann
 	public abstract fun withSchemaObject ()Z
 }
 
+public abstract interface annotation class kotlinx/schema/SchemaIgnore : java/lang/annotation/Annotation {
+}
+

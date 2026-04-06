@@ -43,6 +43,7 @@ kotlin {
         optIn.set(
             listOf(
                 "kotlinx.serialization.ExperimentalSerializationApi",
+                "kotlinx.schema.generator.core.InternalSchemaGeneratorApi",
             ),
         )
     }

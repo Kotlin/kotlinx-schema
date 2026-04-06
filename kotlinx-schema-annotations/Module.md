@@ -8,6 +8,8 @@ Core annotations for marking classes and functions for schema generation.
 
 - [@Schema][kotlinx.schema.Schema] - marks declarations for schema generation. Recognized by compile-time KSP generator.
 - [@Description][kotlinx.schema.Description] - adds human-readable descriptions to schemas
+- [@SchemaIgnore][kotlinx.schema.SchemaIgnore] - excludes a class (e.g., sealed subtype) from schema generation
+
 ## Example
 
 ```kotlin

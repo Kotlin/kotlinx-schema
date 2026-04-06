@@ -89,6 +89,7 @@ public final class kotlinx/schema/generator/core/ir/EnumNode : kotlinx/schema/ge
 public final class kotlinx/schema/generator/core/ir/Introspections {
 	public static final field INSTANCE Lkotlinx/schema/generator/core/ir/Introspections;
 	public static final fun getDescriptionFromAnnotation (Ljava/lang/String;Ljava/util/List;)Ljava/lang/String;
+	public static final fun isIgnoreAnnotation (Ljava/lang/String;)Z
 }
 
 public final class kotlinx/schema/generator/core/ir/ListNode : kotlinx/schema/generator/core/ir/TypeNode {

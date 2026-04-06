@@ -4,6 +4,7 @@ package kotlinx.schema.generator.json.serialization
 
 import io.kotest.assertions.json.shouldEqualJson
 import kotlinx.schema.generator.json.SerialDescription
+import kotlinx.schema.generator.json.SerialSchemaIgnore
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -146,4 +147,81 @@ class SealedPolymorphismSchemaGeneratorTest {
             }
             """.trimIndent()
     }
+
+    //region @SerialSchemaIgnore
+
+    @Serializable
+    @SerialName("Event")
+    @SerialDescription("An application event")
+    sealed class Event {
+        @Serializable
+        @SerialName("Click")
+        @SerialDescription("User clicked")
+        data class Click(
+            val x: Int,
+            val y: Int,
+        ) : Event()
+
+        @Serializable
+        @SerialName("PageView")
+        @SerialDescription("Page was viewed")
+        data class PageView(
+            val url: String,
+        ) : Event()
+
+        @Serializable
+        @SerialName("Internal")
+        @SerialSchemaIgnore
+        data class Internal(
+            val trace: String,
+        ) : Event()
+    }
+
+    @Test
+    fun `sealed class excludes SerialSchemaIgnore subtypes from oneOf schema`() {
+        val generator = SerializationClassJsonSchemaGenerator(json = Json)
+
+        val schema = generator.generateSchemaString(Event.serializer().descriptor)
+
+        schema shouldEqualJson
+            // language=JSON
+            $$"""
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "Event",
+              "description": "An application event",
+              "type": "object",
+              "additionalProperties": false,
+              "oneOf": [
+                { "$ref": "#/$defs/Click" },
+                { "$ref": "#/$defs/PageView" }
+              ],
+              "$defs": {
+                "Click": {
+                  "type": "object",
+                  "description": "User clicked",
+                  "properties": {
+                    "type": { "type": "string", "const": "Click" },
+                    "x": { "type": "integer" },
+                    "y": { "type": "integer" }
+                  },
+                  "required": ["type", "x", "y"],
+                  "additionalProperties": false
+                },
+                "PageView": {
+                  "type": "object",
+                  "description": "Page was viewed",
+                  "properties": {
+                    "type": { "type": "string", "const": "PageView" },
+                    "url": { "type": "string" }
+                  },
+                  "required": ["type", "url"],
+                  "additionalProperties": false
+                }
+              }
+            }
+            """.trimIndent()
+    }
+
+    //endregion
 }
