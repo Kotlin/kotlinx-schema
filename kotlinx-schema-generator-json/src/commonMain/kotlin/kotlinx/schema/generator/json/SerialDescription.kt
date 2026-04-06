@@ -1,4 +1,4 @@
-package kotlinx.schema
+package kotlinx.schema.generator.json
 
 import kotlinx.serialization.SerialInfo
 
@@ -6,7 +6,7 @@ import kotlinx.serialization.SerialInfo
  * Marks a description for a [@Serializable][kotlinx.serialization.Serializable] class or property
  * to be included in the generated JSON Schema.
  *
- * Unlike [@Description], this annotation carries [@SerialInfo] so it is preserved in
+ * Unlike [@Description][kotlinx.schema.Description], this annotation carries [@SerialInfo] so it is preserved in
  * [SerialDescriptor][kotlinx.serialization.descriptors.SerialDescriptor] and is automatically
  * recognized by the serialization-based schema generator without any extra configuration.
  *
@@ -20,7 +20,7 @@ import kotlinx.serialization.SerialInfo
  * )
  * ```
  *
- * @see Description
+ * @see kotlinx.schema.Description
  */
 @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
 @SerialInfo

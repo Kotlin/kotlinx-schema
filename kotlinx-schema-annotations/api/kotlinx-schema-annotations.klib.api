@@ -21,10 +21,3 @@ open annotation class kotlinx.schema/Schema : kotlin/Annotation { // kotlinx.sch
     final val withSchemaObject // kotlinx.schema/Schema.withSchemaObject|{}withSchemaObject[0]
         final fun <get-withSchemaObject>(): kotlin/Boolean // kotlinx.schema/Schema.withSchemaObject.<get-withSchemaObject>|<get-withSchemaObject>(){}[0]
 }
-
-open annotation class kotlinx.schema/SerialDescription : kotlin/Annotation { // kotlinx.schema/SerialDescription|null[0]
-    constructor <init>(kotlin/String) // kotlinx.schema/SerialDescription.<init>|<init>(kotlin.String){}[0]
-
-    final val value // kotlinx.schema/SerialDescription.value|{}value[0]
-        final fun <get-value>(): kotlin/String // kotlinx.schema/SerialDescription.value.<get-value>|<get-value>(){}[0]
-}

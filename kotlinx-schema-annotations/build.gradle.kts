@@ -12,12 +12,6 @@ dokka {
 kotlin {
     sourceSets {
 
-        commonMain {
-            dependencies {
-                compileOnly(libs.kotlinx.serialization.core)
-            }
-        }
-
         commonTest {
             dependencies {
                 implementation(libs.kotlin.test)

@@ -1,10 +1,11 @@
 package kotlinx.schema.generator.json.serialization
 
 import io.kotest.assertions.json.shouldEqualJson
-import kotlinx.schema.SerialDescription
+import kotlinx.schema.generator.json.SerialDescription
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
 
+@Suppress("RUNTIME_ANNOTATION_NOT_SUPPORTED") // Warning on JS
 class SerialDescriptionAnnotationTest {
     @Serializable
     @SerialDescription("A described class")
@@ -24,7 +25,7 @@ class SerialDescriptionAnnotationTest {
     val generator = SerializationClassJsonSchemaGenerator.Default
 
     @Test
-    fun `@SerialDescription on class and property appears in schema without custom extractor`() {
+    fun `SerialDescription on class and property appears in schema without custom extractor`() {
         val schema = generator.generateSchemaString(DescribedClass.serializer().descriptor)
 
         schema shouldEqualJson
@@ -51,7 +52,7 @@ class SerialDescriptionAnnotationTest {
     }
 
     @Test
-    fun `@SerialDescription propagates to defs entry`() {
+    fun `SerialDescription propagates to defs entry`() {
         val schema = generator.generateSchemaString(OuterClass.serializer().descriptor)
 
         schema shouldEqualJson

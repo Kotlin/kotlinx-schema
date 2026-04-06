@@ -8,10 +8,6 @@ Core annotations for marking classes and functions for schema generation.
 
 - [@Schema][kotlinx.schema.Schema] - marks declarations for schema generation. Recognized by compile-time KSP generator.
 - [@Description][kotlinx.schema.Description] - adds human-readable descriptions to schemas
-- [@SerialDescription][kotlinx.schema.SerialDescription] - like `@Description` but carries `@SerialInfo`, making it
-  visible in [`SerialDescriptor`][kotlinx.serialization.descriptors.SerialDescriptor] for use with
-  serialization-based generators
-
 ## Example
 
 ```kotlin
@@ -20,15 +16,6 @@ Core annotations for marking classes and functions for schema generation.
 data class User(
     @Description("Unique user identifier") val id: Long,
     @Description("User's email address") val email: String
-)
-```
-
-```kotlin
-// For @Serializable classes — description visible in SerialDescriptor
-@Serializable
-@SerialDescription("User account information")
-data class User(
-    @SerialDescription("Unique user identifier") val id: Long,
 )
 ```
 

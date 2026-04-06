@@ -70,7 +70,7 @@ val schema = generator.generateSchema(User.serializer().descriptor)
 - Cannot extract actual default values (only detects presence)
 - [`@Description`][kotlinx.schema.Description] is not visible in
   [`SerialDescriptor`][kotlinx.serialization.descriptors.SerialDescriptor] (it lacks `@SerialInfo`).
-  Use [`@SerialDescription`][kotlinx.schema.SerialDescription] from `kotlinx-schema-annotations` instead,
+  Use [`@SerialDescription`][kotlinx.schema.generator.json.SerialDescription] instead,
   which is recognized automatically without any extra configuration.
 
 # Package kotlinx.schema.generator.json

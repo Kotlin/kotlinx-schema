@@ -1,6 +1,6 @@
 package kotlinx.schema.generator.json.serialization
 
-import kotlinx.schema.SerialDescription
+import kotlinx.schema.generator.json.SerialDescription
 import kotlinx.schema.generator.core.ir.DescriptionExtractor
 import kotlinx.schema.generator.core.ir.SchemaIntrospector
 import kotlinx.schema.generator.core.ir.TypeGraph

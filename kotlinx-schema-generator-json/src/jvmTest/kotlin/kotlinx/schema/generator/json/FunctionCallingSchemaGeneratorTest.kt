@@ -4,7 +4,6 @@ package kotlinx.schema.generator.json
 
 import io.kotest.assertions.json.shouldEqualJson
 import kotlinx.schema.Description
-import kotlinx.schema.SerialDescription
 import kotlinx.schema.generator.core.SchemaGeneratorService
 import kotlinx.schema.json.FunctionCallingSchema
 import kotlinx.serialization.Serializable

@@ -6,6 +6,13 @@
 // - Show declarations: true
 
 // Library unique name: <org.jetbrains.kotlinx:kotlinx-schema-generator-json>
+open annotation class kotlinx.schema.generator.json/SerialDescription : kotlin/Annotation { // kotlinx.schema.generator.json/SerialDescription|null[0]
+    constructor <init>(kotlin/String) // kotlinx.schema.generator.json/SerialDescription.<init>|<init>(kotlin.String){}[0]
+
+    final val value // kotlinx.schema.generator.json/SerialDescription.value|{}value[0]
+        final fun <get-value>(): kotlin/String // kotlinx.schema.generator.json/SerialDescription.value.<get-value>|<get-value>(){}[0]
+}
+
 abstract interface <#A: kotlin/Any> kotlinx.schema.generator.json/JsonSchemaGenerator : kotlinx.schema.generator.core/SchemaGenerator<#A, kotlinx.serialization.json/JsonObject> { // kotlinx.schema.generator.json/JsonSchemaGenerator|null[0]
     abstract fun generateSchema(#A): kotlinx.serialization.json/JsonObject // kotlinx.schema.generator.json/JsonSchemaGenerator.generateSchema|generateSchema(1:0){}[0]
     open fun encodeToString(kotlinx.serialization.json/JsonObject): kotlin/String // kotlinx.schema.generator.json/JsonSchemaGenerator.encodeToString|encodeToString(kotlinx.serialization.json.JsonObject){}[0]

@@ -130,16 +130,17 @@ different annotation, supply a custom `DescriptionExtractor` — see [Custom des
 Unlike `@Description`, it carries `@SerialInfo` so the serialization runtime preserves it in
 `SerialDescriptor` — no custom configuration required.
 
+It ships in the `kotlinx-schema-generator-json` module (`kotlinx.schema.generator.json` package),
+so you already have it when using the serialization-based generator.
+
 Add it to your class and constructor parameters:
 
 <!--- CLEAR -->
 <!--- INCLUDE
-import io.kotest.assertions.json.shouldEqualJson
-import kotlinx.schema.SerialDescription
+import kotlinx.schema.generator.json.SerialDescription
 import kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGenerator
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 -->
 ```kotlin
 @Serializable
@@ -291,7 +292,7 @@ This code prints:
 > `SerialDescriptor` only carries annotations marked with
 > [`@SerialInfo`](https://kotlinlang.org/api/kotlinx.serialization/kotlinx-serialization-core/kotlinx.serialization/-serial-info/).
 > The built-in `@Description` from `kotlinx-schema-annotations` lacks `@SerialInfo` and is therefore **not** visible here.
-> Use [`@SerialDescription`](#serialdescription-support) instead — it carries `@SerialInfo` and works with `Default` out of the box.
+> Use [`@SerialDescription`](#serialdescription-support) from this module instead — it carries `@SerialInfo` and works with `Default` out of the box.
 > If you're describing classes you don't own, use the [KSP processor](ksp.md) or
 > the [reflection-based generator](../README.md#runtime-schema-generation).
 
