@@ -52,4 +52,30 @@ class IntrospectionsTest {
         result shouldBe "Product name"
     }
     //endregion
+
+    //region Negative cases
+    @Test
+    fun `returns null for unrecognized annotation name`() {
+        Introspections.getDescriptionFromAnnotation(
+            annotationName = "UnknownAnnotation",
+            annotationArguments = listOf("value" to "Some text"),
+        ) shouldBe null
+    }
+
+    @Test
+    fun `returns null when no recognized attribute name matches`() {
+        Introspections.getDescriptionFromAnnotation(
+            annotationName = "Description",
+            annotationArguments = listOf("unknownAttr" to "Some text"),
+        ) shouldBe null
+    }
+
+    @Test
+    fun `returns null for empty string description value`() {
+        Introspections.getDescriptionFromAnnotation(
+            annotationName = "Description",
+            annotationArguments = listOf("value" to ""),
+        ) shouldBe null
+    }
+    //endregion
 }
