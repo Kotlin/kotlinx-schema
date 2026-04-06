@@ -1,5 +1,6 @@
 package kotlinx.schema.generator.json.serialization
 
+import kotlinx.schema.generator.json.SerialDescription
 import kotlinx.schema.generator.core.ir.DescriptionExtractor
 import kotlinx.schema.generator.core.ir.SchemaIntrospector
 import kotlinx.schema.generator.core.ir.TypeGraph
@@ -25,7 +26,10 @@ public class SerializationClassSchemaIntrospector(
         },
 ) : SchemaIntrospector<SerialDescriptor, SerializationClassSchemaIntrospector.Config> {
     public data class Config(
-        val descriptionExtractor: DescriptionExtractor = DescriptionExtractor { null },
+        val descriptionExtractor: DescriptionExtractor =
+            DescriptionExtractor { annotations ->
+                annotations.filterIsInstance<SerialDescription>().firstOrNull()?.value
+            },
     )
 
     /**

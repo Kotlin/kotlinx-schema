@@ -1,7 +1,6 @@
 package kotlinx.schema.generator.core.ir
 
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -11,7 +10,10 @@ class IntrospectionsTest {
     @ParameterizedTest
     @CsvSource(
         "Description, value",
+        "SerialDescription, value",
         "LLMDescription, value",
+        "JsonPropertyDescription, description",
+        "JsonClassDescription, value",
         "P, description",
     )
     fun `extracts description from single-element annotation`(
@@ -48,6 +50,32 @@ class IntrospectionsTest {
                 annotationArguments = listOf("value" to "Product name", "description" to ""),
             )
         result shouldBe "Product name"
+    }
+    //endregion
+
+    //region Negative cases
+    @Test
+    fun `returns null for unrecognized annotation name`() {
+        Introspections.getDescriptionFromAnnotation(
+            annotationName = "UnknownAnnotation",
+            annotationArguments = listOf("value" to "Some text"),
+        ) shouldBe null
+    }
+
+    @Test
+    fun `returns null when no recognized attribute name matches`() {
+        Introspections.getDescriptionFromAnnotation(
+            annotationName = "Description",
+            annotationArguments = listOf("unknownAttr" to "Some text"),
+        ) shouldBe null
+    }
+
+    @Test
+    fun `returns null for empty string description value`() {
+        Introspections.getDescriptionFromAnnotation(
+            annotationName = "Description",
+            annotationArguments = listOf("value" to ""),
+        ) shouldBe null
     }
     //endregion
 }

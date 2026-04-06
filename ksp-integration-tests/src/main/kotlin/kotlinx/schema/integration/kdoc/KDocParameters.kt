@@ -2,7 +2,10 @@
 
 package kotlinx.schema.integration.kdoc
 
+import kotlinx.coroutines.delay
+import kotlinx.schema.Description
 import kotlinx.schema.Schema
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Searches for users by name and age.
@@ -89,7 +92,7 @@ suspend fun updateUserSettings(
     userId: String,
     settings: Map<String, String>,
 ): Boolean {
-    kotlinx.coroutines.delay(1)
+    delay(1.milliseconds)
     return true
 }
 
@@ -103,7 +106,7 @@ suspend fun updateUserSettings(
  */
 @Schema
 data class ApiResponse(
-    @kotlinx.schema.Description("Response message from annotation")
+    @Description("Response message from annotation")
     val message: String,
     val statusCode: Int,
     val data: String,
