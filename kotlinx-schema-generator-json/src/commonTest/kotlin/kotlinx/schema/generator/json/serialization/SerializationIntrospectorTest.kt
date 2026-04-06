@@ -16,7 +16,6 @@ import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeRef
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.serializer
-import kotlin.jvm.JvmInline
 import kotlin.test.Test
 import kotlinx.schema.generator.json.serialization.SerializationClassSchemaIntrospector as SerializationIntrospector
 
@@ -47,6 +46,12 @@ class SerializationIntrospectorTest {
 
     @Serializable
     data class WithDescribedInlineValueClass(
+        val distance: DescribedInlineValueClass,
+    )
+
+    @Serializable
+    data class WithPropertyOverridesInlineDescription(
+        @property:CustomDescription("Override description")
         val distance: DescribedInlineValueClass,
     )
 
@@ -233,16 +238,19 @@ class SerializationIntrospectorTest {
 
     @Test
     fun `inline value class description propagates to flattened primitive`() {
-        val introspectorWithDescriptions = SerializationIntrospector(
-            config = SerializationIntrospector.Config(
-                descriptionExtractor = { annotations ->
-                    annotations.filterIsInstance<CustomDescription>().firstOrNull()?.value
-                },
-            ),
-        )
-        val graph = introspectorWithDescriptions.introspect(
-            WithDescribedInlineValueClass.serializer().descriptor,
-        )
+        val introspectorWithDescriptions =
+            SerializationIntrospector(
+                config =
+                    SerializationIntrospector.Config(
+                        descriptionExtractor = { annotations ->
+                            annotations.filterIsInstance<CustomDescription>().firstOrNull()?.value
+                        },
+                    ),
+            )
+        val graph =
+            introspectorWithDescriptions.introspect(
+                WithDescribedInlineValueClass.serializer().descriptor,
+            )
 
         val rootRef = graph.root.shouldBeInstanceOf<TypeRef.Ref>()
         val objNode = graph.nodes[rootRef.id].shouldNotBeNull().shouldBeInstanceOf<ObjectNode>()
@@ -251,6 +259,34 @@ class SerializationIntrospectorTest {
         distanceProp.type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
             inline.node.shouldBeInstanceOf<PrimitiveNode> { prim ->
                 prim.kind shouldBe PrimitiveKind.DOUBLE
+                prim.description shouldBe "Distance in meters"
+            }
+        }
+    }
+
+    @Test
+    fun `property-level description overrides inline value class description in IR`() {
+        val introspectorWithDescriptions =
+            SerializationIntrospector(
+                config =
+                    SerializationIntrospector.Config(
+                        descriptionExtractor = { annotations ->
+                            annotations.filterIsInstance<CustomDescription>().firstOrNull()?.value
+                        },
+                    ),
+            )
+        val graph =
+            introspectorWithDescriptions.introspect(
+                WithPropertyOverridesInlineDescription.serializer().descriptor,
+            )
+
+        val rootRef = graph.root.shouldBeInstanceOf<TypeRef.Ref>()
+        val objNode = graph.nodes[rootRef.id].shouldNotBeNull().shouldBeInstanceOf<ObjectNode>()
+        val distanceProp = objNode.properties.first { it.name == "distance" }
+
+        distanceProp.description shouldBe "Override description"
+        distanceProp.type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
+            inline.node.shouldBeInstanceOf<PrimitiveNode> { prim ->
                 prim.description shouldBe "Distance in meters"
             }
         }

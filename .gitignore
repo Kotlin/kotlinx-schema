@@ -109,4 +109,4 @@ gradle-app.setting
 /test_*.*
 /debug_*.*
 /.junie/
-/.claude/
+**/.claude/

@@ -218,6 +218,11 @@ This code prints:
 > and collections. A description annotation on a property whose type is another class will appear
 > in the schema alongside the `$ref` for that class.
 
+> [!TIP]
+> For inline value classes, the **class-level** description annotation propagates to the flattened
+> primitive property in the schema. If the property itself also has a description annotation,
+> the property-level one takes precedence. Annotations on the inner `value` property are not used.
+
 > [!IMPORTANT]
 > `SerialDescriptor` only carries annotations marked with
 > [`@SerialInfo`](https://kotlinlang.org/api/kotlinx.serialization/kotlinx-serialization-core/kotlinx.serialization/-serial-info/).

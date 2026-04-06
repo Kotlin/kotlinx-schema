@@ -174,8 +174,9 @@ internal class SerializationIntrospectionContext(
      * Inline value classes serialize as their inner value (e.g. `14.5` instead of
      * `{"gramsPerDeciliter": 14.5}`), so the schema must reflect the inner type.
      *
-     * If the inline class has a description (via annotations), it is propagated to the
-     * flattened primitive node so that it appears in the generated schema.
+     * If the inline class has a **class-level** description annotation, it is propagated to the
+     * flattened primitive node so that it appears in the generated schema. Annotations on the
+     * inner `value` property are not used.
      */
     private fun handleInlineValueClass(
         descriptor: SerialDescriptor,
@@ -184,12 +185,20 @@ internal class SerializationIntrospectionContext(
         require(descriptor.elementsCount == 1) { "Inline value class descriptor must have exactly one element" }
         val innerRef = toRef(descriptor.getElementDescriptor(0))
         val description = extractDescription(descriptor)
-        val effectiveRef = if (description != null && innerRef is TypeRef.Inline && innerRef.node is PrimitiveNode) {
-            val annotatedNode = (innerRef.node as PrimitiveNode).copy(description = description)
-            TypeRef.Inline(annotatedNode, innerRef.nullable)
-        } else {
-            innerRef
-        }
+        val effectiveRef =
+            if (innerRef is TypeRef.Inline && innerRef.node is PrimitiveNode) {
+                if (description != null) {
+                    TypeRef.Inline(
+                        (innerRef.node as PrimitiveNode).copy(description = description),
+                        innerRef.nullable,
+                    )
+                } else {
+                    innerRef
+                }
+            } else {
+                innerRef
+            }
+        if (!nullable) typeRefCache[descriptor] = effectiveRef
         return if (nullable && !effectiveRef.nullable) effectiveRef.withNullable(true) else effectiveRef
     }
 

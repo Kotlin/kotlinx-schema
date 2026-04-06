@@ -3,7 +3,6 @@ package kotlinx.schema.generator.json.serialization
 import io.kotest.assertions.json.shouldEqualJson
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlin.jvm.JvmInline
 import kotlin.test.Test
 
 class SerializationClassJsonSchemaGeneratorTest {
@@ -59,6 +58,13 @@ class SerializationClassJsonSchemaGeneratorTest {
     data class WithDescribedInlineValueClass(
         val distance: DescribedInlineValueClass,
         val optionalDistance: DescribedInlineValueClass?,
+    )
+
+    @Serializable
+    @SerialName("WithPropertyOverridesInlineDescription")
+    data class WithPropertyOverridesInlineDescription(
+        @property:CustomDescription("Override description")
+        val distance: DescribedInlineValueClass,
     )
 
     val generator =
@@ -330,6 +336,31 @@ class SerializationClassJsonSchemaGeneratorTest {
               "required": [
                 "distance",
                 "optionalDistance"
+              ],
+              "additionalProperties": false
+            }
+            """.trimIndent()
+    }
+
+    @Test
+    fun `property-level description overrides inline value class description in schema`() {
+        val schema = generator.generateSchemaString(WithPropertyOverridesInlineDescription.serializer().descriptor)
+
+        schema shouldEqualJson
+            // language=JSON
+            $$"""
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "WithPropertyOverridesInlineDescription",
+              "type": "object",
+              "properties": {
+                "distance": {
+                  "type": "number",
+                  "description": "Override description"
+                }
+              },
+              "required": [
+                "distance"
               ],
               "additionalProperties": false
             }
