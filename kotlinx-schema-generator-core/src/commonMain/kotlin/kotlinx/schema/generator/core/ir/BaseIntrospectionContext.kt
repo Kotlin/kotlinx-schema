@@ -24,11 +24,11 @@ public abstract class BaseIntrospectionContext<TType : Any> {
     private val _nodes: MutableMap<TypeId, TypeNode> = linkedMapOf()
 
     /**
-     * Exposes discovered nodes as read-only copy for building TypeGraph.
+     * Exposes discovered nodes as an unmodifiable view for building TypeGraph.
      * Provides a consistent API across all introspector implementations (Reflection, KSP, Serialization).
      */
     public val nodes: Map<TypeId, TypeNode>
-        get() = _nodes.toMap()
+        get(): Map<TypeId, TypeNode> = _nodes
 
     /**
      * Set of types currently being visited (for cycle detection).
