@@ -1,3 +1,30 @@
+## 0.5.0
+> Published 2026-04-07
+
+### Added
+- **Open polymorphism support**: abstract classes and interfaces generate JSON Schema when subtypes are registered via          
+  `SerializersModule`; deterministic `oneOf`/`anyOf` output with descriptive errors for missing registrations
+- **`@SerialDescription` annotation**: `@SerialInfo`-compatible description annotation read automatically by the
+  serialization-based generator — no custom `DescriptionExtractor` needed (#303, #304)
+- **`@SchemaIgnore` / `@SerialSchemaIgnore`**: exclude sealed subtypes from schema generation; Jackson `@JsonIgnoreType`      
+  recognized by default; KSP fails fast on contradictory `@Schema` + `@SchemaIgnore` (#277)
+- **`@SerialName` support in reflection and KSP**: class names, property names, enum entries, sealed subtypes, and            
+  `$id`/`$defs`/`$ref` now honor `@SerialName` via FQN-aware annotation matching (#204, #308)
+
+### Fixed
+- **Recursive types**: schema generation correctly handles recursive sealed hierarchies and self-referencing types; subtypes  
+  routed through cycle-safe path with idempotent discriminator injection (#307)
+- **Inline value class schemas**: generation now matches kotlinx-serialization format; descriptions propagated to flattened
+  primitive schema with correct property-level override precedence; TypeRef caching added
+
+### Dependencies
+- Bump `kotest` from 6.1.7 to 6.1.11
+- Bump `dokka-gradle-plugin` from 2.1.0 to 2.2.0
+- Bump `kotlinx.kover` from 0.9.7 to 0.9.8
+- Bump `gradle-wrapper` from 9.4.0 to 9.4.1
+- Bump `mcp` from 0.9.0 to 0.11.0 (examples)
+- Bump `ai.koog:agents-tools` from 0.6.4 to 0.7.3 (examples)
+
 ## 0.4.4
 > Published 2026-03-18
 
