@@ -571,7 +571,7 @@ public class TypeGraphToJsonSchemaTransformer
             graph: TypeGraph,
             definitions: MutableMap<String, PropertyDefinition>,
         ): PropertyDefinition {
-            // Convert each subtype and add to $defs, collect $ref for oneOf
+            // Convert each subtype via ensureNodeInDefinitions, then inject discriminator
             val subtypeRefs =
                 node.subtypes.map { subtypeRef ->
                     val typeName = subtypeRef.id.value
@@ -580,43 +580,29 @@ public class TypeGraphToJsonSchemaTransformer
                             "Subtype '$typeName' not found in type graph"
                         }
 
-                    val subtypeDefinition =
-                        when (val definition = convertNode(subtypeNode, nullable = false, graph, definitions)) {
-                            is ObjectPropertyDefinition -> {
-                                // Append discriminator property to the definition if enabled
-                                if (config.includePolymorphicDiscriminator) {
-                                    val discriminatorProperty =
-                                        StringPropertyDefinition(
-                                            constValue = JsonPrimitive(typeName),
-                                        )
+                    // Register subtype through the shared cycle-safe path
+                    ensureNodeInDefinitions(subtypeRef.id, subtypeNode, graph, definitions)
 
-                                    definition.copy(
-                                        properties =
-                                            mapOf(node.discriminator.name to discriminatorProperty) +
-                                                definition.properties.orEmpty(),
-                                        required = listOf(node.discriminator.name) + definition.required.orEmpty(),
-                                    )
-                                } else {
-                                    definition
-                                }
-                            }
+                    // Inject discriminator property into the registered definition if not already present
+                    val registered = definitions[typeName]
+                    if (
+                        registered is ObjectPropertyDefinition &&
+                        config.includePolymorphicDiscriminator &&
+                        node.discriminator.name !in registered.properties.orEmpty()
+                    ) {
+                        val discriminatorProperty =
+                            StringPropertyDefinition(
+                                constValue = JsonPrimitive(typeName),
+                            )
 
-                            // Nested sealed hierarchy: intermediate sealed subtype is itself polymorphic.
-                            // No discriminator injection — the leaf subtypes carry the const.
-                            is OneOfPropertyDefinition -> {
-                                definition
-                            }
-
-                            else -> {
-                                error(
-                                    "All subtypes of a polymorphic type must be objects or sealed hierarchies. " +
-                                        "Found subtype '$typeName' with type '${definition::class.simpleName}'.",
-                                )
-                            }
-                        }
-
-                    // Add to definitions map for $defs section
-                    definitions[typeName] = subtypeDefinition
+                        definitions[typeName] =
+                            registered.copy(
+                                properties =
+                                    mapOf(node.discriminator.name to discriminatorProperty) +
+                                        registered.properties.orEmpty(),
+                                required = listOf(node.discriminator.name) + registered.required.orEmpty(),
+                            )
+                    }
 
                     // Return a reference to this definition
                     ReferencePropertyDefinition(ref = $$"#/$defs/$$typeName")
