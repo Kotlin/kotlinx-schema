@@ -312,3 +312,7 @@ public final class kotlinx/schema/generator/reflect/ReflectionFunctionIntrospect
 	public fun introspect (Lkotlin/reflect/KCallable;)Lkotlinx/schema/generator/core/ir/TypeGraph;
 }
 
+public final class kotlinx/schema/generator/reflect/ReflectionUtilsKt {
+	public static final fun extractNameOverride (Ljava/util/List;)Ljava/lang/String;
+}
+

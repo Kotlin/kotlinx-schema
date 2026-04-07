@@ -61,7 +61,11 @@ internal fun isSchemaIgnored(annotations: List<Annotation>): Boolean =
 internal fun extractDescription(annotations: List<Annotation>): String? =
     annotations.firstNotNullOfOrNull { annotation ->
         val javaClass = annotation.annotationClass.java
-        Introspections.getDescriptionFromAnnotation(javaClass.simpleName, javaClass.name, buildAnnotationArgs(annotation))
+        Introspections.getDescriptionFromAnnotation(
+            javaClass.simpleName,
+            javaClass.name,
+            buildAnnotationArgs(annotation),
+        )
     }
 
 /**
