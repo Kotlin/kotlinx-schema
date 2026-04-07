@@ -2,6 +2,7 @@ package kotlinx.schema.generator.json
 
 import kotlinx.schema.generator.core.AbstractSchemaGenerator
 import kotlinx.schema.generator.reflect.ReflectionClassIntrospector
+import kotlinx.schema.generator.reflect.extractNameOverride
 import kotlinx.schema.json.JsonSchema
 import kotlinx.serialization.json.Json
 import kotlin.reflect.KClass
@@ -33,7 +34,11 @@ public class ReflectionClassJsonSchemaGenerator(
         config = JsonSchemaConfig.Strict,
     )
 
-    override fun getRootName(target: KClass<out Any>): String = target.qualifiedName ?: target.simpleName ?: "Anonymous"
+    override fun getRootName(target: KClass<out Any>): String =
+        extractNameOverride(target.java.annotations.toList())
+            ?: target.qualifiedName
+            ?: target.simpleName
+            ?: "Anonymous"
 
     override fun targetType(): KClass<KClass<out Any>> = KClass::class
 

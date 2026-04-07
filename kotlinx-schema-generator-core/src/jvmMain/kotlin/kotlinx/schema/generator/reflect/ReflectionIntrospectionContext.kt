@@ -214,20 +214,32 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
     //region Create methods
 
     /**
-     * Creates a [TypeId] from a [KClass], using qualified name or simple name as fallback.
+     * Creates a [TypeId] from a [KClass], using `@SerialName` override if present,
+     * or qualified name / simple name as fallback.
      */
-    private fun createTypeId(klass: KClass<*>): TypeId = TypeId(klass.qualifiedName ?: klass.simpleName ?: "Anonymous")
+    private fun createTypeId(klass: KClass<*>): TypeId {
+        val nameOverride = extractNameOverride(klass.java.annotations.toList())
+        return TypeId(nameOverride ?: klass.qualifiedName ?: klass.simpleName ?: "Anonymous")
+    }
 
     /**
      * Creates an [EnumNode] from an enum [KClass].
+     *
+     * Respects `@SerialName` on the enum class (overrides the class name)
+     * and on individual enum entries (overrides the entry name in the schema).
      */
     private fun createEnumNode(klass: KClass<*>): EnumNode {
         @Suppress("UNCHECKED_CAST")
         val enumConstants = (klass.java as Class<out Enum<*>>).enumConstants
+        val entries = enumConstants.map { constant ->
+            val field = klass.java.getField(constant.name)
+            extractNameOverride(field.annotations.toList()) ?: constant.name
+        }
+        val nameOverride = extractNameOverride(klass.java.annotations.toList())
         return EnumNode(
-            name = klass.simpleName ?: "UnknownEnum",
-            entries = enumConstants.map { it.name },
-            description = extractDescription(klass.annotations),
+            name = nameOverride ?: klass.simpleName ?: "UnknownEnum",
+            entries = entries,
+            description = extractDescription(klass.java.annotations.toList()),
         )
     }
 
@@ -338,11 +350,12 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
                 }
         }
 
+        val nameOverride = extractNameOverride(klass.java.annotations.toList())
         return ObjectNode(
-            name = klass.simpleName ?: "UnknownClass",
+            name = nameOverride ?: klass.simpleName ?: "UnknownClass",
             properties = properties,
             required = requiredProperties,
-            description = extractDescription(klass.annotations),
+            description = extractDescription(klass.java.annotations.toList()),
         )
     }
 
@@ -354,7 +367,8 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
         klass: KClass<*>,
         sealedSubclasses: List<KClass<*>>,
     ): PolymorphicNode {
-        val baseName = klass.simpleName ?: "UnknownSealed"
+        val nameOverride = extractNameOverride(klass.java.annotations.toList())
+        val baseName = nameOverride ?: klass.simpleName ?: "UnknownSealed"
 
         val subtypes =
             sealedSubclasses.map { subclass ->
@@ -378,7 +392,7 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
                     name = "type",
                     mapping = discriminatorMapping,
                 ),
-            description = extractDescription(klass.annotations),
+            description = extractDescription(klass.java.annotations.toList()),
         )
     }
 
@@ -410,17 +424,20 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
         val constructor = findPrimaryConstructor(klass)
 
         constructor?.parameters?.forEach { param ->
-            val propertyName = param.name ?: return@forEach
+            val kotlinName = param.name ?: return@forEach
             val hasDefault = param.isOptional
 
             // Get annotations both on the constructor parameter and property associated with it
-            val annotations = param.annotations + findPropertyByName(klass, propertyName)?.annotations.orEmpty()
+            val annotations = param.annotations + findPropertyByName(klass, kotlinName)?.annotations.orEmpty()
+
+            // Use @SerialName override if present, otherwise use Kotlin property name
+            val propertyName = extractNameOverride(annotations) ?: kotlinName
 
             val propertyType = param.type
             val typeRef = toRef(propertyType)
 
             // Get the actual default value if available
-            val defaultValue = if (hasDefault) defaultValues[propertyName] else null
+            val defaultValue = if (hasDefault) defaultValues[kotlinName] else null
 
             properties +=
                 Property(

@@ -6,6 +6,9 @@
 * [Overview](#overview)
 * [Setup](#setup)
 * [Basic Usage](#basic-usage)
+* [@SerialName support](#@serialname-support)
+  * [Renaming properties](#renaming-properties)
+  * [Renaming enum entries](#renaming-enum-entries)
 * [Configuration](#configuration)
   * [Introspector configuration](#introspector-configuration)
   * [@SerialDescription support](#@serialdescription-support)
@@ -105,6 +108,110 @@ This code prints:
 
 For custom behavior, construct the generator directly with explicit `introspectorConfig` or `jsonSchemaConfig`.
 
+## @SerialName support
+
+The generator respects `@SerialName` at every level — classes, properties, and enum entries.
+Use it to control the exact names that appear in the generated schema.
+
+### Renaming properties
+
+`@SerialName` on a constructor parameter changes the property key in the schema's `properties` object
+and `required` array:
+
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGenerator
+import io.kotest.assertions.json.shouldEqualJson
+-->
+```kotlin
+@Serializable
+@SerialName("ApiRequest")
+data class ApiRequest(
+    @SerialName("request_id") val requestId: String,
+    @SerialName("client") val userAgent: String = "unknown",
+    val payload: String,
+)
+```
+
+<!--- INCLUDE
+fun main() {
+-->
+```kotlin
+val schema = SerializationClassJsonSchemaGenerator.Default
+    .generateSchemaString(ApiRequest.serializer().descriptor)
+
+schema shouldEqualJson $$"""
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "ApiRequest",
+      "type": "object",
+      "properties": {
+        "request_id": { "type": "string" },
+        "client": { "type": "string" },
+        "payload": { "type": "string" }
+      },
+      "required": ["request_id", "payload"],
+      "additionalProperties": false
+    }
+""".trimIndent()
+```
+<!--- SUFFIX
+}
+-->
+<!--- KNIT example-knit-serializable-02.kt -->
+
+The Kotlin property names (`requestId`, `userAgent`) become `request_id` and `user_agent` in the schema.
+Properties with default values (`userAgent`) remain optional.
+
+### Renaming enum entries
+
+`@SerialName` on enum entries changes the values in the schema's `enum` array:
+
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGenerator
+import io.kotest.assertions.json.shouldEqualJson
+-->
+```kotlin
+@Serializable
+@SerialName("Priority")
+enum class Priority {
+    @SerialName("p0_critical") CRITICAL,
+    @SerialName("p1_high") HIGH,
+    @SerialName("p2_medium") MEDIUM,
+    @SerialName("p3_low") LOW,
+}
+```
+
+<!--- INCLUDE
+fun main() {
+-->
+```kotlin
+val schema = SerializationClassJsonSchemaGenerator.Default
+    .generateSchemaString(Priority.serializer().descriptor)
+
+schema shouldEqualJson $$"""
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "Priority",
+      "type": "string",
+      "enum": ["p0_critical", "p1_high", "p2_medium", "p3_low"]
+    }
+""".trimIndent()
+```
+<!--- SUFFIX
+}
+-->
+<!--- KNIT example-knit-serializable-03.kt -->
+
+> [!TIP]
+> The reflection-based generator (`ReflectionClassJsonSchemaGenerator`) also respects `@SerialName`
+> on classes, properties, and enum entries — no extra configuration needed.
+
 ## Configuration
 
 `SerializationClassJsonSchemaGenerator` accepts three optional constructor parameters:
@@ -168,7 +275,7 @@ println(schema)
 <!--- SUFFIX
 }
 -->
-<!--- KNIT example-knit-serializable-02.kt -->
+<!--- KNIT example-knit-serializable-04.kt -->
 
 This code prints:
 ```json
@@ -257,7 +364,7 @@ println(schemaString)
 <!--- SUFFIX
 }
 -->
-<!--- KNIT example-knit-serializable-03.kt -->
+<!--- KNIT example-knit-serializable-05.kt -->
 
 This code prints:
 ```json
@@ -335,7 +442,7 @@ println(schemaString)
 <!--- SUFFIX
 }
 -->
-<!--- KNIT example-knit-serializable-04.kt -->
+<!--- KNIT example-knit-serializable-06.kt -->
 
 This code generates:
 ```json
@@ -425,7 +532,7 @@ println(schemaString)
 <!--- SUFFIX
 }
 -->
-<!--- KNIT example-knit-serializable-05.kt -->
+<!--- KNIT example-knit-serializable-07.kt -->
 
 Each subtype gets a required discriminator property containing the subtype's serial name as a constant:
 
@@ -571,7 +678,7 @@ println(schema)
 <!--- SUFFIX
 }
 -->
-<!--- KNIT example-knit-serializable-06.kt -->
+<!--- KNIT example-knit-serializable-08.kt -->
 
 The output follows the same `oneOf` / `$defs` structure as sealed classes. Register only a subset
 of subtypes to produce a schema limited to those types.

@@ -10,12 +10,16 @@ import kotlinx.schema.generator.core.ir.TypeId
  * Generates a stable identifier for a type definition.
  *
  * The method constructs a `TypeId` for the given `KSClassDeclaration`, which is used
- * for deduplication and $ref linking in type schemas. If the class has a qualified name,
- * it is used; otherwise, the simple name is used as a fallback.
+ * for deduplication and $ref linking in type schemas. If the class has a `@SerialName`
+ * annotation, its value is used. Otherwise, the qualified name is used, or the simple
+ * name as a fallback.
  *
  * @return A `TypeId` representing the identifier of the type.
  */
-internal fun KSClassDeclaration.typeId(): TypeId = TypeId(qualifiedName?.asString() ?: simpleName.asString())
+internal fun KSClassDeclaration.typeId(): TypeId {
+    val nameOverride = extractNameOverride(this)
+    return TypeId(nameOverride ?: qualifiedName?.asString() ?: simpleName.asString())
+}
 
 /**
  * Checks if a KSType represents a sealed class and returns the declaration if so.

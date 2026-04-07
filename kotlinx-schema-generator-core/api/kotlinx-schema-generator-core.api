@@ -88,8 +88,10 @@ public final class kotlinx/schema/generator/core/ir/EnumNode : kotlinx/schema/ge
 
 public final class kotlinx/schema/generator/core/ir/Introspections {
 	public static final field INSTANCE Lkotlinx/schema/generator/core/ir/Introspections;
-	public static final fun getDescriptionFromAnnotation (Ljava/lang/String;Ljava/util/List;)Ljava/lang/String;
-	public static final fun isIgnoreAnnotation (Ljava/lang/String;)Z
+	public static final fun getDescriptionFromAnnotation (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)Ljava/lang/String;
+	public static final fun getNameOverride (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)Ljava/lang/String;
+	public static final fun isIgnoreAnnotation (Ljava/lang/String;Ljava/lang/String;)Z
+	public static synthetic fun isIgnoreAnnotation$default (Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Z
 }
 
 public final class kotlinx/schema/generator/core/ir/ListNode : kotlinx/schema/generator/core/ir/TypeNode {
@@ -308,5 +310,9 @@ public final class kotlinx/schema/generator/reflect/ReflectionFunctionIntrospect
 	public fun getConfig ()Lkotlin/Unit;
 	public synthetic fun introspect (Ljava/lang/Object;)Lkotlinx/schema/generator/core/ir/TypeGraph;
 	public fun introspect (Lkotlin/reflect/KCallable;)Lkotlinx/schema/generator/core/ir/TypeGraph;
+}
+
+public final class kotlinx/schema/generator/reflect/ReflectionUtilsKt {
+	public static final fun extractNameOverride (Ljava/util/List;)Ljava/lang/String;
 }
 
