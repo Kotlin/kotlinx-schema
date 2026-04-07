@@ -14,11 +14,14 @@ import kotlinx.schema.generator.core.ir.Property
 import kotlinx.schema.generator.core.ir.SubtypeRef
 import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeRef
+import kotlinx.serialization.descriptors.SerialKind
+import kotlinx.serialization.serializerOrNull
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 import kotlin.reflect.KType
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.createType
+import kotlinx.serialization.descriptors.PrimitiveKind as SerialPrimitiveKind
 
 /**
  * Reflection-based introspection context based on [KType].
@@ -43,7 +46,7 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
      * - Objects/Classes (referenced via TypeId)
      * - Polymorphic types (referenced via TypeId)
      */
-    @Suppress("ReturnCount")
+    @Suppress("ReturnCount", "CyclomaticComplexMethod")
     override fun toRef(type: KType): TypeRef {
         val klass = type.klass
         val nullable = type.isMarkedNullable
@@ -69,6 +72,26 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
             return ref
         }
 
+        // If kotlinx-serialization can resolve a serializer for this type whose descriptor
+        // describes a primitive (e.g. the built-in `kotlin.uuid.Uuid` serializer, or any
+        // user-defined `@Serializable(with = X)` typealias attached to a custom string/long/
+        // etc. serializer), trust that and emit the matching primitive node. This keeps the
+        // reflection-side schema in agreement with the actual wire format used by
+        // kotlinx-serialization at runtime, which previously diverged for types like
+        // `Uuid` (string at the wire, structural object in the reflection schema).
+        serializerPrimitiveFor(type)?.let { primitiveKind ->
+            val ref = TypeRef.Inline(PrimitiveNode(primitiveKind), nullable)
+            if (!nullable) typeRefCache[type] = ref
+            return ref
+        }
+
+        // Inline value classes (`@JvmInline value class Wrapper(val inner: T)`) serialize
+        // as their inner value, not as a `{inner: …}` object. Mirror the inline-class
+        // flattening already implemented in the serialization-based introspector by
+        // recursing into the wrapped element's KType — which crucially still carries any
+        // typealias-expanded annotations on it.
+        if (klass.isValue) return handleInlineValueClass(type)
+
         // Handle different kinds
         return when {
             isListLike(klass) -> handleListType(type)
@@ -77,6 +100,58 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
             klass.isSealed -> handleSealedType(type)
             else -> handleObjectType(type)
         }
+    }
+
+    /**
+     * If [type] has an associated kotlinx-serialization serializer whose descriptor is a
+     * primitive kind, returns the matching kotlinx-schema [PrimitiveKind]. Otherwise null.
+     *
+     * Uses [serializerOrNull] (not `serializer`) so unknown types fall through cleanly to
+     * the existing structural handling instead of throwing.
+     *
+     * The lookup respects:
+     * - The `@Serializable(with = X::class)` annotation expanded from a typealias used at
+     *   the call site (the annotation is preserved on `KType.annotations` after expansion).
+     * - Built-in serializers shipped by `kotlinx-serialization` for stdlib types like
+     *   `kotlin.uuid.Uuid`, which are correctly described as `PrimitiveKind.STRING`.
+     * - Contextual serializers registered in the current module — kotlinx-serialization's
+     *   resolution rules apply uniformly.
+     */
+    private fun serializerPrimitiveFor(type: KType): PrimitiveKind? {
+        val serializer = serializerOrNull(type) ?: return null
+        return serialKindToPrimitive(serializer.descriptor.kind)
+    }
+
+    /**
+     * Maps a kotlinx-serialization [SerialKind] to a kotlinx-schema [PrimitiveKind] when
+     * the kind describes a primitive. Returns null for any structural / enum / polymorphic
+     * kind so the caller falls through to existing handling.
+     */
+    private fun serialKindToPrimitive(kind: SerialKind): PrimitiveKind? = when (kind) {
+        SerialPrimitiveKind.STRING, SerialPrimitiveKind.CHAR -> PrimitiveKind.STRING
+        SerialPrimitiveKind.BOOLEAN -> PrimitiveKind.BOOLEAN
+        SerialPrimitiveKind.BYTE, SerialPrimitiveKind.SHORT, SerialPrimitiveKind.INT -> PrimitiveKind.INT
+        SerialPrimitiveKind.LONG -> PrimitiveKind.LONG
+        SerialPrimitiveKind.FLOAT -> PrimitiveKind.FLOAT
+        SerialPrimitiveKind.DOUBLE -> PrimitiveKind.DOUBLE
+        else -> null
+    }
+
+    /**
+     * Flattens an `@JvmInline value class` to its wrapped element, preserving any
+     * annotations carried on the inner [KType] (e.g. typealias-expanded `@Serializable`).
+     * Mirrors the equivalent fix in `SerializationIntrospectionContext` so the two
+     * introspector paths agree about what an inline value class looks like.
+     */
+    private fun handleInlineValueClass(type: KType): TypeRef {
+        val klass = type.klass
+        val innerParam = findPrimaryConstructor(klass)?.parameters?.firstOrNull()
+            ?: return handleObjectType(type)
+        val innerRef = toRef(innerParam.type)
+        val nullable = type.isMarkedNullable
+        val ref = if (nullable && !innerRef.nullable) innerRef.withNullable(true) else innerRef
+        if (!nullable) typeRefCache[type] = ref
+        return ref
     }
 
     //region KClass type matchers

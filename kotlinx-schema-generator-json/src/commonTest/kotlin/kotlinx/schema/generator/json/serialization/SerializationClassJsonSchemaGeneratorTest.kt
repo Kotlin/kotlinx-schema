@@ -343,6 +343,43 @@ class SerializationClassJsonSchemaGeneratorTest {
     }
 
     @Test
+    fun `inline value class wrapping typealias-with-string-serializer produces a string schema`() {
+        // Repro for: downstream consumers (e.g. Koog tool descriptors) generate broken
+        // schemas with `leastSignificantBits` / `mostSignificantBits` integer fields when
+        // a tool parameter is typed as an inline value class wrapping `kotlin.uuid.Uuid`
+        // via a typealias annotated with `@Serializable(with = ...)`. The string
+        // serializer attached via the typealias should win — this test pins the expected
+        // JSON output of the FULL generator pipeline (not just the introspector).
+        val schema = generator.generateSchemaString(WithInlineValueClassWrappingUuid.serializer().descriptor)
+
+        schema shouldEqualJson
+            // language=JSON
+            $$"""
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "kotlinx.schema.generator.json.serialization.WithInlineValueClassWrappingUuid",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "optionalId": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "optionalId"
+              ],
+              "additionalProperties": false
+            }
+            """.trimIndent()
+    }
+
+    @Test
     fun `property-level description overrides inline value class description in schema`() {
         val schema = generator.generateSchemaString(WithPropertyOverridesInlineDescription.serializer().descriptor)
 
