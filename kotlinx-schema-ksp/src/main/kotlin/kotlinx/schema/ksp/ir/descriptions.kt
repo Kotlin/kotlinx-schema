@@ -13,11 +13,9 @@ import kotlinx.schema.generator.core.ir.Introspections
  * @return The description extracted from the annotation or null if no description is found.
  */
 internal fun KSAnnotation.descriptionOrNull(): String? {
-    val annotationName =
-        annotationType
-            .resolve()
-            .declaration.simpleName
-            .asString()
+    val declaration = annotationType.resolve().declaration
+    val simpleName = declaration.simpleName.asString()
+    val qualifiedName = declaration.qualifiedName?.asString()
 
     val args: List<Pair<String, Any?>> =
         arguments.mapNotNull {
@@ -26,7 +24,33 @@ internal fun KSAnnotation.descriptionOrNull(): String? {
         }
 
     return Introspections.getDescriptionFromAnnotation(
-        annotationName = annotationName,
+        simpleName = simpleName,
+        qualifiedName = qualifiedName,
+        annotationArguments = args,
+    )
+}
+
+/**
+ * Retrieves the name-override value from the annotation, if available.
+ *
+ * Used to extract custom names from annotations like `@SerialName`.
+ *
+ * @return The name override extracted from the annotation or null if not a name-override annotation.
+ */
+internal fun KSAnnotation.nameOverrideOrNull(): String? {
+    val declaration = annotationType.resolve().declaration
+    val simpleName = declaration.simpleName.asString()
+    val qualifiedName = declaration.qualifiedName?.asString()
+
+    val args: List<Pair<String, Any?>> =
+        arguments.mapNotNull {
+            val name = it.name?.asString() ?: return@mapNotNull null
+            name to it.value
+        }
+
+    return Introspections.getNameOverride(
+        simpleName = simpleName,
+        qualifiedName = qualifiedName,
         annotationArguments = args,
     )
 }

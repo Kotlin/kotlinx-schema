@@ -24,7 +24,7 @@ package kotlinx.schema.generator.core
  */
 internal expect object Config {
     /**
-     * Set of lowercase annotation simple names recognized as description providers.
+     * Ordered list of lowercase annotation simple names recognized as description providers.
      *
      * Annotations are matched case-insensitively by their simple name only (not fully qualified name).
      * This allows recognition of description annotations from multiple frameworks (kotlinx-schema,
@@ -35,14 +35,15 @@ internal expect object Config {
      *
      * Default value: Description, LLMDescription, JsonPropertyDescription, JsonClassDescription, P
      */
-    val descriptionAnnotationNames: Set<String>
+    val descriptionAnnotationNames: List<String>
 
     /**
-     * Set of lowercase parameter names to check for description text.
+     * Ordered list of lowercase parameter names to check for description text.
      *
      * When an annotation matches [descriptionAnnotationNames], its parameters are inspected
      * for these attribute names to extract the description value. The first matching parameter
-     * with a non-null String value is returned.
+     * with a non-null String value is returned. Order determines priority — earlier entries
+     * take precedence.
      *
      * Loaded lazily from the `introspector.annotations.description.attributes` property in
      * `kotlinx-schema.properties`. If loading fails, falls back to built-in defaults.
@@ -53,10 +54,10 @@ internal expect object Config {
      * - For `@Description("User name")`, the "value" parameter contains "User name"
      * - For `@JsonPropertyDescription(description = "User email")`, the "description" parameter contains "User email"
      */
-    val descriptionValueAttributes: Set<String>
+    val descriptionValueAttributes: List<String>
 
     /**
-     * Set of lowercase annotation simple names recognized as ignore markers.
+     * Ordered list of lowercase annotation simple names recognized as ignore markers.
      *
      * Classes annotated with any of these annotations are excluded from schema generation
      * (e.g., sealed subtypes omitted from polymorphic `oneOf` schemas).
@@ -66,5 +67,33 @@ internal expect object Config {
      *
      * Default value: SchemaIgnore, SerialSchemaIgnore, JsonIgnoreType
      */
-    val ignoreAnnotationNames: Set<String>
+    val ignoreAnnotationNames: List<String>
+
+    /**
+     * Ordered list of annotation names recognized as name-override providers (e.g., `@SerialName`).
+     *
+     * Names containing a dot (`.`) are treated as fully qualified names and matched
+     * **case-sensitively** against the annotation's qualified name. Names without a dot
+     * are matched **case-insensitively** against the annotation's simple name.
+     *
+     * Loaded lazily from the `introspector.annotations.name.names` property in
+     * `kotlinx-schema.properties`. If loading fails, falls back to built-in defaults.
+     *
+     * Default value: kotlinx.serialization.SerialName
+     */
+    val nameAnnotationNames: List<String>
+
+    /**
+     * Ordered list of lowercase parameter names to check for name-override text.
+     *
+     * When an annotation matches [nameAnnotationNames], its parameters are inspected
+     * for these attribute names to extract the override name value. Order determines
+     * priority — earlier entries take precedence.
+     *
+     * Loaded lazily from the `introspector.annotations.name.attributes` property in
+     * `kotlinx-schema.properties`. If loading fails, falls back to built-in defaults.
+     *
+     * Default value: "value"
+     */
+    val nameValueAttributes: List<String>
 }

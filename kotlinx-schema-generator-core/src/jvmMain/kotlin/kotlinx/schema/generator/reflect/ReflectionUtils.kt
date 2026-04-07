@@ -1,14 +1,13 @@
 package kotlinx.schema.generator.reflect
 
+import kotlinx.schema.generator.core.InternalSchemaGeneratorApi
 import kotlinx.schema.generator.core.ir.Introspections
 import kotlinx.schema.generator.core.ir.TypeRef
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KProperty
-import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
 import kotlin.reflect.KVisibility
-import kotlin.reflect.full.IllegalCallableAccessException
 import kotlin.reflect.full.allSuperclasses
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.javaMethod
@@ -50,8 +49,8 @@ internal fun findPropertyByName(
  */
 internal fun isSchemaIgnored(annotations: List<Annotation>): Boolean =
     annotations.any { annotation ->
-        val name = annotation.annotationClass.simpleName ?: return@any false
-        Introspections.isIgnoreAnnotation(name)
+        val javaClass = annotation.annotationClass.java
+        Introspections.isIgnoreAnnotation(javaClass.simpleName, javaClass.name)
     }
 
 /**
@@ -61,47 +60,44 @@ internal fun isSchemaIgnored(annotations: List<Annotation>): Boolean =
  */
 internal fun extractDescription(annotations: List<Annotation>): String? =
     annotations.firstNotNullOfOrNull { annotation ->
-        val annotationName = annotation.annotationClass.simpleName ?: return@firstNotNullOfOrNull null
-        val annotationArguments =
-            buildList {
-                annotation.annotationClass.members
-                    .filterIsInstance<KProperty1<Annotation, *>>()
-                    .forEach { property ->
-                        val value =
-                            try {
-                                property.get(annotation)
-                            } catch (_: IllegalCallableAccessException) {
-                                fallbackViaJavaReflection(annotation, property) ?: return@forEach
-                            } catch (_: IllegalAccessException) {
-                                fallbackViaJavaReflection(annotation, property) ?: return@forEach
-                            }
-                        add(property.name to value)
-                    }
-            }
-        Introspections.getDescriptionFromAnnotation(annotationName, annotationArguments)
+        val javaClass = annotation.annotationClass.java
+        Introspections.getDescriptionFromAnnotation(javaClass.simpleName, javaClass.name, buildAnnotationArgs(annotation))
     }
 
 /**
- * KProperty1.get() wraps java.lang.IllegalAccessException in
- * kotlin.reflect.full.IllegalCallableAccessException when the annotation
- * interface is non-public (e.g. package-private for Kotlin `internal`
- * annotations from external modules). Fall back to Java reflection on
- * the proxy class, which is always accessible.
- * Returns null when the fallback itself fails; null is safe here because
- * Java annotation elements cannot return null values.
+ * Extracts a name override from annotations (e.g., from `@SerialName`).
+ *
+ * @see [Introspections.getNameOverride]
  */
-private fun fallbackViaJavaReflection(
-    annotation: Annotation,
-    property: KProperty1<Annotation, *>,
-): Any? =
-    try {
-        val javaMethod = annotation.javaClass.getDeclaredMethod(property.name)
-        javaMethod.isAccessible = true
-        javaMethod.invoke(annotation)
-    } catch (_: ReflectiveOperationException) {
-        null
-    } catch (_: SecurityException) {
-        null
+@InternalSchemaGeneratorApi
+public fun extractNameOverride(annotations: List<Annotation>): String? =
+    annotations.firstNotNullOfOrNull { annotation ->
+        val javaClass = annotation.annotationClass.java
+        Introspections.getNameOverride(javaClass.simpleName, javaClass.name, buildAnnotationArgs(annotation))
+    }
+
+/**
+ * Builds key-value pairs from an annotation's elements for use with [Introspections] methods.
+ *
+ * Uses Java reflection via [Class.getDeclaredMethods] to reliably access annotation elements,
+ * including annotations from external modules where Kotlin reflection metadata may be unavailable.
+ */
+private fun buildAnnotationArgs(annotation: Annotation): List<Pair<String, Any?>> =
+    buildList {
+        annotation.annotationClass.java.declaredMethods
+            .filter { it.parameterCount == 0 }
+            .forEach { method ->
+                val value =
+                    try {
+                        method.isAccessible = true
+                        method.invoke(annotation)
+                    } catch (_: ReflectiveOperationException) {
+                        return@forEach
+                    } catch (_: SecurityException) {
+                        return@forEach
+                    }
+                add(method.name to value)
+            }
     }
 
 /**

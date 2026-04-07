@@ -8,17 +8,16 @@ import kotlinx.schema.generator.core.ir.Introspections
  * (e.g., `@SchemaIgnore`, `@SerialSchemaIgnore`, `@JsonIgnoreType`).
  *
  * Recognition is delegated to [Introspections.isIgnoreAnnotation], which performs
- * case-insensitive matching by simple name against a configurable set loaded
- * from `kotlinx-schema.properties`.
+ * matching against a configurable set loaded from `kotlinx-schema.properties`.
+ * Simple names are matched case-insensitively; fully qualified names are matched
+ * case-sensitively.
  *
  * @return `true` if any annotation on this symbol is recognized as an ignore marker
  */
 internal fun KSAnnotated.isSchemaIgnored(): Boolean =
     annotations.any { annotation ->
-        val name =
-            annotation.annotationType
-                .resolve()
-                .declaration.simpleName
-                .asString()
-        Introspections.isIgnoreAnnotation(name)
+        val declaration = annotation.annotationType.resolve().declaration
+        val simpleName = declaration.simpleName.asString()
+        val qualifiedName = declaration.qualifiedName?.asString()
+        Introspections.isIgnoreAnnotation(simpleName, qualifiedName)
     }

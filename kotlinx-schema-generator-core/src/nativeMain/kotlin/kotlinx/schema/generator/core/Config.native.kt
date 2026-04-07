@@ -1,10 +1,14 @@
 package kotlinx.schema.generator.core
 
 internal actual object Config {
-    actual val descriptionAnnotationNames: Set<String>
-        get() = setOf("Description")
-    actual val descriptionValueAttributes: Set<String>
-        get() = setOf("value", "description")
-    actual val ignoreAnnotationNames: Set<String>
-        get() = setOf("schemaignore")
+    actual val descriptionAnnotationNames: List<String>
+        get() = listOf("Description")
+    actual val descriptionValueAttributes: List<String>
+        get() = listOf("value", "description")
+    actual val ignoreAnnotationNames: List<String>
+        get() = listOf("schemaignore")
+    actual val nameAnnotationNames: List<String>
+        get() = listOf("kotlinx.serialization.SerialName")
+    actual val nameValueAttributes: List<String>
+        get() = listOf("value")
 }

@@ -134,8 +134,9 @@ internal class KspIntrospectionContext : BaseIntrospectionContext<KSType>() {
             // Process each sealed subclass
             sealedSubclasses.forEach { toRef(it.asType(emptyList())) }
 
+            val sealedNameOverride = extractNameOverride(decl)
             kotlinx.schema.generator.core.ir.PolymorphicNode(
-                baseName = decl.simpleName.asString(),
+                baseName = sealedNameOverride ?: decl.simpleName.asString(),
                 subtypes = subtypes,
                 discriminator =
                     kotlinx.schema.generator.core.ir.Discriminator(
@@ -172,11 +173,12 @@ internal class KspIntrospectionContext : BaseIntrospectionContext<KSType>() {
                 decl.declarations
                     .filterIsInstance<KSClassDeclaration>()
                     .filter { it.classKind == com.google.devtools.ksp.symbol.ClassKind.ENUM_ENTRY }
-                    .map { it.simpleName.asString() }
+                    .map { entry -> extractNameOverride(entry) ?: entry.simpleName.asString() }
                     .toList()
 
+            val nameOverride = extractNameOverride(decl)
             kotlinx.schema.generator.core.ir.EnumNode(
-                name = decl.qualifiedName?.asString() ?: decl.simpleName.asString(),
+                name = nameOverride ?: decl.qualifiedName?.asString() ?: decl.simpleName.asString(),
                 entries = entries,
                 description = extractDescription(decl) { decl.descriptionFromKdoc() },
             )
@@ -240,8 +242,9 @@ internal class KspIntrospectionContext : BaseIntrospectionContext<KSType>() {
             extractConstructorOrProperties(decl, ::addProperty)
             extractInheritedSealedProperties(decl, processedProperties, ::addProperty)
 
+            val nameOverride = extractNameOverride(decl)
             ObjectNode(
-                name = decl.qualifiedName?.asString() ?: decl.simpleName.asString(),
+                name = nameOverride ?: decl.qualifiedName?.asString() ?: decl.simpleName.asString(),
                 properties = props,
                 required = required,
                 description = extractDescription(decl) { decl.descriptionFromKdoc() },
@@ -259,22 +262,24 @@ internal class KspIntrospectionContext : BaseIntrospectionContext<KSType>() {
         val params = decl.primaryConstructor?.parameters.orEmpty()
         if (params.isNotEmpty()) {
             params.forEach { p ->
-                val name = p.name?.asString() ?: return@forEach
-                val description = extractConstructorParamDescription(p, name, decl.docString)
-                addProperty(name, p.type.resolve(), description, p.hasDefault)
+                val kotlinName = p.name?.asString() ?: return@forEach
+                val propertyName = extractNameOverride(p) ?: kotlinName
+                val description = extractConstructorParamDescription(p, kotlinName, decl.docString)
+                addProperty(propertyName, p.type.resolve(), description, p.hasDefault)
             }
         } else {
             decl.getDeclaredProperties().filter { it.isPublic() }.forEach { prop ->
-                val name = prop.simpleName.asString()
+                val kotlinName = prop.simpleName.asString()
+                val propertyName = extractNameOverride(prop) ?: kotlinName
                 val description =
                     extractPropertyDescription(
                         annotated = prop,
-                        propertyName = name,
+                        propertyName = kotlinName,
                         parentKdoc = decl.docString,
                         kdocTagName = "property",
                         elementKdocFallback = { prop.descriptionFromKdoc() },
                     )
-                addProperty(name, prop.type.resolve(), description, false)
+                addProperty(propertyName, prop.type.resolve(), description, false)
             }
         }
     }

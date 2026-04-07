@@ -6,6 +6,18 @@ import kotlinx.schema.generator.core.ir.Property
 import kotlinx.schema.generator.core.ir.TypeRef
 
 /**
+ * Extracts a name override from an annotated element's annotations.
+ *
+ * Used to support annotations like `@SerialName` that override the default name
+ * of classes, properties, or enum entries in the generated schema.
+ *
+ * @param annotated The annotated element to inspect
+ * @return The override name if found, or null if no name-override annotation is present
+ */
+internal fun extractNameOverride(annotated: KSAnnotated): String? =
+    annotated.annotations.firstNotNullOfOrNull { it.nameOverrideOrNull() }
+
+/**
  * Extracts description from annotations with KDoc fallback.
  *
  * Unifies the description extraction pattern used across introspectors:

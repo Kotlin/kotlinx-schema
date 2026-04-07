@@ -1,6 +1,5 @@
 package kotlinx.schema.generator.core
 
-import kotlinx.schema.generator.core.Config.descriptionAnnotationNames
 import java.io.IOException
 import java.util.Properties
 import kotlin.io.bufferedReader
@@ -10,12 +9,14 @@ private const val CONFIG_FILE_NAME = "kotlinx-schema.properties"
 private const val DESCRIPTION_NAMES_KEY = "introspector.annotations.description.names"
 private const val DESCRIPTION_ATTRIBUTES_KEY = "introspector.annotations.description.attributes"
 private const val IGNORE_NAMES_KEY = "introspector.annotations.ignore.names"
+private const val NAME_NAMES_KEY = "introspector.annotations.name.names"
+private const val NAME_ATTRIBUTES_KEY = "introspector.annotations.name.attributes"
 
 /**
  * Default fallback values if configuration loading fails
  */
 private val DEFAULT_ANNOTATION_NAMES =
-    setOf(
+    listOf(
         "description",
         "llmdescription",
         "jsonpropertydescription",
@@ -27,7 +28,7 @@ private val DEFAULT_ANNOTATION_NAMES =
  * Default fallback values if configuration loading fails
  */
 private val DEFAULT_VALUE_ATTRIBUTES =
-    setOf(
+    listOf(
         "value",
         "description",
     )
@@ -36,15 +37,31 @@ private val DEFAULT_VALUE_ATTRIBUTES =
  * Default fallback values if configuration loading fails
  */
 private val DEFAULT_IGNORE_NAMES =
-    setOf(
+    listOf(
         "schemaignore",
         "serialschemaignore",
         "jsonignoretype",
     )
 
+/**
+ * Default fallback values if configuration loading fails
+ */
+private val DEFAULT_NAME_ANNOTATION_NAMES =
+    listOf(
+        "kotlinx.serialization.SerialName",
+    )
+
+/**
+ * Default fallback values if configuration loading fails
+ */
+private val DEFAULT_NAME_VALUE_ATTRIBUTES =
+    listOf(
+        "value",
+    )
+
 internal actual object Config {
     /**
-     * Set of lowercase annotation simple names recognized as description providers.
+     * Ordered list of lowercase annotation simple names recognized as description providers.
      *
      * Annotations are matched case-insensitively by their simple name only (not fully qualified name).
      * This allows recognition of description annotations from multiple frameworks (kotlinx-schema,
@@ -55,14 +72,14 @@ internal actual object Config {
      *
      * Default value: Description, LLMDescription, JsonPropertyDescription, JsonClassDescription, P
      */
-    actual val descriptionAnnotationNames: Set<String> by lazy {
+    actual val descriptionAnnotationNames: List<String> by lazy {
         loadConfiguration { properties ->
             parseListProperty(properties, DESCRIPTION_NAMES_KEY)
         } ?: DEFAULT_ANNOTATION_NAMES
     }
 
     /**
-     * Set of lowercase parameter names to check for description text.
+     * Ordered list of lowercase parameter names to check for description text.
      *
      * When an annotation matches [descriptionAnnotationNames], its parameters are inspected
      * for these attribute names to extract the description value. The first matching parameter
@@ -77,16 +94,28 @@ internal actual object Config {
      * - For `@Description("User name")`, the "value" parameter contains "User name"
      * - For `@JsonPropertyDescription(description = "User email")`, the "description" parameter contains "User email"
      */
-    actual val descriptionValueAttributes: Set<String> by lazy {
+    actual val descriptionValueAttributes: List<String> by lazy {
         loadConfiguration { properties ->
             parseListProperty(properties, DESCRIPTION_ATTRIBUTES_KEY)
         } ?: DEFAULT_VALUE_ATTRIBUTES
     }
 
-    actual val ignoreAnnotationNames: Set<String> by lazy {
+    actual val ignoreAnnotationNames: List<String> by lazy {
         loadConfiguration { properties ->
             parseListProperty(properties, IGNORE_NAMES_KEY)
         } ?: DEFAULT_IGNORE_NAMES
+    }
+
+    actual val nameAnnotationNames: List<String> by lazy {
+        loadConfiguration { properties ->
+            parseListPropertyPreservingFqnCase(properties, NAME_NAMES_KEY)
+        } ?: DEFAULT_NAME_ANNOTATION_NAMES
+    }
+
+    actual val nameValueAttributes: List<String> by lazy {
+        loadConfiguration { properties ->
+            parseListProperty(properties, NAME_ATTRIBUTES_KEY)
+        } ?: DEFAULT_NAME_VALUE_ATTRIBUTES
     }
 
     private fun <T> loadConfiguration(extractor: (Properties) -> T): T? =
@@ -103,7 +132,7 @@ internal actual object Config {
     private fun parseListProperty(
         properties: Properties,
         key: String,
-    ): Set<String> {
+    ): List<String> {
         val value = properties.getProperty(key)
         require(!value.isNullOrBlank()) {
             "Required property '$key' is missing or empty in $CONFIG_FILE_NAME"
@@ -113,10 +142,36 @@ internal actual object Config {
             .split(',')
             .map { it.trim().lowercase() }
             .filter { it.isNotEmpty() }
-            .toSet()
-            .also { set ->
-                require(set.isNotEmpty()) {
-                    "Property '$key' in $CONFIG_FILE_NAME resulted in empty set after parsing"
+            .distinct()
+            .also { list ->
+                require(list.isNotEmpty()) {
+                    "Property '$key' in $CONFIG_FILE_NAME resulted in empty list after parsing"
+                }
+            }
+    }
+
+    /**
+     * Parses a comma-separated list property, preserving original case for FQN entries
+     * (names containing dots) and lowercasing simple names.
+     */
+    private fun parseListPropertyPreservingFqnCase(
+        properties: Properties,
+        key: String,
+    ): List<String> {
+        val value = properties.getProperty(key)
+        require(!value.isNullOrBlank()) {
+            "Required property '$key' is missing or empty in $CONFIG_FILE_NAME"
+        }
+
+        return value
+            .split(',')
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .map { name -> if ('.' in name) name else name.lowercase() }
+            .distinct()
+            .also { list ->
+                require(list.isNotEmpty()) {
+                    "Property '$key' in $CONFIG_FILE_NAME resulted in empty list after parsing"
                 }
             }
     }
