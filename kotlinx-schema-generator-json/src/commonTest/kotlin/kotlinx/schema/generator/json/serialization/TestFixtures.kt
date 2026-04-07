@@ -1,12 +1,22 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 package kotlinx.schema.generator.json.serialization
 
 import kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.NestedProperty
 import kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestClosedPolymorphism
 import kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestEnum
 import kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGeneratorTest.TestObject
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialInfo
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlin.jvm.JvmInline
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 @SerialInfo
 annotation class CustomDescription(
@@ -67,4 +77,41 @@ value class InlineValueClass(
 @Serializable
 value class DescribedInlineValueClass(
     val value: Double,
+)
+
+// --- Inline value class wrapping a typealias-with-serializer ---------------------------
+//
+// This mirrors the pattern used in real downstream projects: a custom string serializer
+// for kotlin.uuid.Uuid attached via a typealias, then wrapped in a @JvmInline value class
+// that acts as a typed identifier (e.g. UserId, DocumentId). The kotlinx-serialization
+// runtime resolves this to a string at the wire level — the schema introspector should
+// produce a STRING primitive node, not an object with `leastSignificantBits` /
+// `mostSignificantBits` fields drilled out of `kotlin.uuid.Uuid`.
+
+object TestUuidStringSerializer : KSerializer<Uuid> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor(serialName = "TestUuid", kind = PrimitiveKind.STRING)
+
+    override fun serialize(
+        encoder: Encoder,
+        value: Uuid,
+    ) = encoder.encodeString(value.toString())
+
+    override fun deserialize(decoder: Decoder): Uuid = Uuid.parse(decoder.decodeString())
+}
+
+typealias TestSerializableUuid =
+    @Serializable(with = TestUuidStringSerializer::class)
+    Uuid
+
+@JvmInline
+@Serializable
+value class TestUserId(
+    val value: TestSerializableUuid,
+)
+
+@Serializable
+data class WithInlineValueClassWrappingUuid(
+    val id: TestUserId,
+    val optionalId: TestUserId?,
 )
