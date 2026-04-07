@@ -39,8 +39,8 @@ apidocs:
 .PHONY: knit
 knit:
 	@echo "🪡🧶 Running Knit check ..."
-	@./gradlew :docs:clean knit knitCheck :docs:test --no-configuration-cache
-	@./gradlew :docs:test
+	@./gradlew :docs:clean knit knitCheck --no-configuration-cache
+	@./gradlew :docs:test --rerun-tasks
 	@echo "✅ Knit check completed!"
 
 .PHONY: clean

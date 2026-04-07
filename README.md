@@ -1204,8 +1204,16 @@ The configuration file is **optional** — if not provided or fails to load, the
 
 By default, the library recognizes:
 
-**Annotation names**: Description, LLMDescription, JsonPropertyDescription, JsonClassDescription, P
-**Attribute names**: value, description
+**Description annotations**: Description, LLMDescription, JsonPropertyDescription, JsonClassDescription, P
+**Description attributes**: value, description
+**Ignore annotations**: SchemaIgnore, SerialSchemaIgnore, JsonIgnoreType
+**Name-override annotations**: kotlinx.serialization.SerialName (matched by fully qualified name)
+**Name-override attributes**: value
+
+> [!NOTE]
+> Annotation names containing a dot (e.g., `kotlinx.serialization.SerialName`) are matched
+> **case-sensitively** against the annotation's fully qualified name. Names without a dot
+> are matched **case-insensitively** by simple name.
 
 #### Adding Custom Annotations
 
@@ -1215,6 +1223,10 @@ To customize, place `kotlinx-schema.properties` in your project's resources:
 # Add your custom annotations to the defaults
 introspector.annotations.description.names=Description,MyCustomAnnotation,DocString
 introspector.annotations.description.attributes=value,description,text
+
+# Name-override annotations (use FQN for precise matching)
+introspector.annotations.name.names=kotlinx.serialization.SerialName
+introspector.annotations.name.attributes=value
 ```
 
 **Note**: The library falls back to built-in defaults if the configuration file is missing or cannot be loaded.
