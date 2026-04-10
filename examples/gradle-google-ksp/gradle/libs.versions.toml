@@ -2,7 +2,7 @@
 koog = "0.7.3"
 kotest = "6.1.11"
 kotlin = "2.3.0"
-kotlinxSerialization = "1.10.0"
+kotlinxSerialization = "1.11.0"
 ksp = "2.3.6"
 ktor = "3.4.1"
 mcp = "0.11.0"
