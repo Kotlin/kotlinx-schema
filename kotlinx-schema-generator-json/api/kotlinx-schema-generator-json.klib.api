@@ -132,3 +132,5 @@ open class kotlinx.schema.generator.json/JsonSchemaConfig { // kotlinx.schema.ge
             final fun <get-Strict>(): kotlinx.schema.generator.json/JsonSchemaConfig // kotlinx.schema.generator.json/JsonSchemaConfig.Companion.Strict.<get-Strict>|<get-Strict>(){}[0]
     }
 }
+
+final inline fun <#A: reified kotlin/Any?> kotlinx.schema.generator.json/jsonSchemaOf(kotlinx.schema.generator.json.serialization/SerializationClassJsonSchemaGenerator = ...): kotlinx.schema.json/JsonSchema // kotlinx.schema.generator.json/jsonSchemaOf|jsonSchemaOf(kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGenerator){0§<kotlin.Any?>}[0]
