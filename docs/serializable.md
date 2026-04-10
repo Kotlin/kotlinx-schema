@@ -69,7 +69,7 @@ import kotlinx.serialization.json.Json
 data class User(val name: String, val age: Int)
 ```
 
-Then generate the schema using the `Default` singleton:
+Then generate the schema using either the `Default` singleton directly:
 
 <!--- INCLUDE
 fun main() {
@@ -84,7 +84,34 @@ println(schema.encodeToString(Json { prettyPrint = true }))
 -->
 <!--- KNIT example-knit-serializable-01.kt -->
 
-This code prints:
+Or using the `jsonSchemaOf` convenience function,
+which takes a `SerializationClassJsonSchemaGenerator` parameter,
+defaulting to `SerializationClassJsonSchemaGenerator.Default`:
+<!--- CLEAR -->
+<!--- INCLUDE
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGenerator
+import kotlinx.schema.json.encodeToString
+import kotlinx.schema.generator.json.jsonSchemaOf
+import kotlinx.serialization.json.Json
+
+@Serializable
+@SerialName("com.example.User")
+data class User(val name: String, val age: Int)
+
+fun main() {
+-->
+```kotlin
+val schema = jsonSchemaOf<User>()
+println(schema.encodeToString(Json { prettyPrint = true }))
+```
+<!--- SUFFIX
+}
+-->
+<!--- KNIT example-knit-serializable-01-convenience-01.kt -->
+
+Both of these code print:
 ```json
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
