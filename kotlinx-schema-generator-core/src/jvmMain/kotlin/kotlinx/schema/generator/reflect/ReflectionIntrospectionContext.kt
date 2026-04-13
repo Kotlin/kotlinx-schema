@@ -10,18 +10,17 @@ import kotlinx.schema.generator.core.ir.ObjectNode
 import kotlinx.schema.generator.core.ir.PolymorphicNode
 import kotlinx.schema.generator.core.ir.PrimitiveKind
 import kotlinx.schema.generator.core.ir.PrimitiveNode
+import kotlinx.schema.generator.core.ir.serialKindToPrimitiveKind
 import kotlinx.schema.generator.core.ir.Property
 import kotlinx.schema.generator.core.ir.SubtypeRef
 import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeRef
-import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.serializerOrNull
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 import kotlin.reflect.KType
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.createType
-import kotlinx.serialization.descriptors.PrimitiveKind as SerialPrimitiveKind
 
 /**
  * Reflection-based introspection context based on [KType].
@@ -119,22 +118,7 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
      */
     private fun serializerPrimitiveFor(type: KType): PrimitiveKind? {
         val serializer = serializerOrNull(type) ?: return null
-        return serialKindToPrimitive(serializer.descriptor.kind)
-    }
-
-    /**
-     * Maps a kotlinx-serialization [SerialKind] to a kotlinx-schema [PrimitiveKind] when
-     * the kind describes a primitive. Returns null for any structural / enum / polymorphic
-     * kind so the caller falls through to existing handling.
-     */
-    private fun serialKindToPrimitive(kind: SerialKind): PrimitiveKind? = when (kind) {
-        SerialPrimitiveKind.STRING, SerialPrimitiveKind.CHAR -> PrimitiveKind.STRING
-        SerialPrimitiveKind.BOOLEAN -> PrimitiveKind.BOOLEAN
-        SerialPrimitiveKind.BYTE, SerialPrimitiveKind.SHORT, SerialPrimitiveKind.INT -> PrimitiveKind.INT
-        SerialPrimitiveKind.LONG -> PrimitiveKind.LONG
-        SerialPrimitiveKind.FLOAT -> PrimitiveKind.FLOAT
-        SerialPrimitiveKind.DOUBLE -> PrimitiveKind.DOUBLE
-        else -> null
+        return serialKindToPrimitiveKind(serializer.descriptor.kind)
     }
 
     /**
