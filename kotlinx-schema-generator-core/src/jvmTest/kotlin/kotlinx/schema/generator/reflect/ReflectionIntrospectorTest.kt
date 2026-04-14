@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 package kotlinx.schema.generator.reflect
 
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -16,7 +18,17 @@ import kotlinx.schema.generator.core.ir.PrimitiveKind
 import kotlinx.schema.generator.core.ir.PrimitiveNode
 import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeRef
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind as SerialPrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlin.jvm.JvmInline
 import kotlin.test.Test
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 class ReflectionIntrospectorTest {
     @Description("A user model")
@@ -280,5 +292,140 @@ class ReflectionIntrospectorTest {
 
         // kotlin.Any does not create a named node in the graph
         graph.nodes.keys.none { it.value == "kotlin.Any" } shouldBe true
+    }
+
+    // ---- Inline value classes & serializer-aware primitive resolution -----------------
+
+    @JvmInline
+    @Serializable
+    value class Meters(val value: Double)
+
+    data class WithInlineValueClass(
+        val distance: Meters,
+        val optionalDistance: Meters?,
+    )
+
+    @Test
+    fun `introspects inline value class as its inner primitive type`() {
+        val graph = introspector.introspect(WithInlineValueClass::class)
+
+        val rootRef = graph.root.shouldBeInstanceOf<TypeRef.Ref>()
+        val objNode = graph.nodes[rootRef.id].shouldNotBeNull().shouldBeInstanceOf<ObjectNode>()
+        val props = objNode.properties.associateBy { it.name }
+
+        // Non-nullable inline value class wrapping a Double should resolve to a flat
+        // double primitive — no `{value: …}` wrapper, no `Meters` node in the graph.
+        props.getValue("distance").type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
+            inline.node.shouldBeInstanceOf<PrimitiveNode> { prim ->
+                prim.kind shouldBe PrimitiveKind.DOUBLE
+            }
+            inline.nullable shouldBe false
+        }
+
+        // Nullable variant should propagate the nullability through the flattening.
+        props.getValue("optionalDistance").type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
+            inline.node.shouldBeInstanceOf<PrimitiveNode> { prim ->
+                prim.kind shouldBe PrimitiveKind.DOUBLE
+            }
+            inline.nullable shouldBe true
+        }
+
+        // The inline class itself must NOT appear as a separate node in the graph.
+        graph.nodes.keys.none { it.value.endsWith("Meters") } shouldBe true
+    }
+
+    /**
+     * Custom string-shaped serializer for `kotlin.uuid.Uuid`. Together with the typealias
+     * below, this mirrors the standard kotlinx-serialization pattern for serializing a
+     * third-party class whose declaration you can't modify.
+     *
+     * (Real downstream code can also rely on the built-in `Uuid.Companion.serializer()`
+     * shipped by kotlinx-serialization 1.10+, which is also primitive-string. We define
+     * our own here so the test pins the *resolution mechanism* — `serializerOrNull` →
+     * descriptor.kind → primitive — independently of which serializer happens to be
+     * picked up.)
+     */
+    object TestUuidStringSerializer : KSerializer<Uuid> {
+        override val descriptor: SerialDescriptor =
+            PrimitiveSerialDescriptor(serialName = "TestUuid", kind = SerialPrimitiveKind.STRING)
+
+        override fun serialize(
+            encoder: Encoder,
+            value: Uuid,
+        ) = encoder.encodeString(value.toString())
+
+        override fun deserialize(decoder: Decoder): Uuid = Uuid.parse(decoder.decodeString())
+    }
+
+    @JvmInline
+    @Serializable
+    value class TestUserId(
+        val value: @Serializable(with = TestUuidStringSerializer::class) Uuid,
+    )
+
+    data class WithInlineValueClassWrappingUuid(
+        val id: TestUserId,
+        val optionalId: TestUserId?,
+    )
+
+    @Test
+    fun `inline value class wrapping a typealias-string-serializer Uuid resolves to STRING`() {
+        // Repro for the bug observed downstream when Koog generated a tool descriptor for
+        // a method taking a `DocumentId` parameter (an `@JvmInline value class` wrapping a
+        // typealias-annotated `Uuid`). Without the inline-class flattening + serializer-
+        // aware primitive resolution, the reflection introspector would produce an
+        // ObjectNode like `{value: {leastSignificantBits, mostSignificantBits}}` because
+        // it would walk Uuid's class structure via reflection.
+        val graph = introspector.introspect(WithInlineValueClassWrappingUuid::class)
+
+        val rootRef = graph.root.shouldBeInstanceOf<TypeRef.Ref>()
+        val objNode = graph.nodes[rootRef.id].shouldNotBeNull().shouldBeInstanceOf<ObjectNode>()
+        val props = objNode.properties.associateBy { it.name }
+
+        props.getValue("id").type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
+            inline.node.shouldBeInstanceOf<PrimitiveNode> { prim ->
+                prim.kind shouldBe PrimitiveKind.STRING
+            }
+            inline.nullable shouldBe false
+        }
+
+        props.getValue("optionalId").type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
+            inline.node.shouldBeInstanceOf<PrimitiveNode> { prim ->
+                prim.kind shouldBe PrimitiveKind.STRING
+            }
+            inline.nullable shouldBe true
+        }
+
+        // Neither the inline class nor the underlying Uuid should appear as named nodes.
+        graph.nodes.keys.none { it.value.endsWith("TestUserId") } shouldBe true
+        graph.nodes.keys.none { it.value == "kotlin.uuid.Uuid" } shouldBe true
+    }
+
+    data class WithBuiltinUuid(
+        val id: Uuid,
+        val optionalId: Uuid?,
+    )
+
+    @Test
+    fun `bare kotlin uuid Uuid resolves to STRING via built-in serializer`() {
+        // kotlinx-serialization 1.10+ ships a built-in Uuid serializer that's
+        // PrimitiveKind.STRING. The reflection introspector should pick it up via
+        // `serializerOrNull(typeOf<Uuid>())` without needing any user annotation.
+        val graph = introspector.introspect(WithBuiltinUuid::class)
+
+        val rootRef = graph.root.shouldBeInstanceOf<TypeRef.Ref>()
+        val objNode = graph.nodes[rootRef.id].shouldNotBeNull().shouldBeInstanceOf<ObjectNode>()
+        val props = objNode.properties.associateBy { it.name }
+
+        props.getValue("id").type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
+            inline.node.shouldBeInstanceOf<PrimitiveNode> { prim -> prim.kind shouldBe PrimitiveKind.STRING }
+            inline.nullable shouldBe false
+        }
+        props.getValue("optionalId").type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
+            inline.node.shouldBeInstanceOf<PrimitiveNode> { prim -> prim.kind shouldBe PrimitiveKind.STRING }
+            inline.nullable shouldBe true
+        }
+
+        graph.nodes.keys.none { it.value == "kotlin.uuid.Uuid" } shouldBe true
     }
 }

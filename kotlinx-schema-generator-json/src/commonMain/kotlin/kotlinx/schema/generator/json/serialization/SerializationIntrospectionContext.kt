@@ -8,8 +8,8 @@ import kotlinx.schema.generator.core.ir.ListNode
 import kotlinx.schema.generator.core.ir.MapNode
 import kotlinx.schema.generator.core.ir.ObjectNode
 import kotlinx.schema.generator.core.ir.PolymorphicNode
-import kotlinx.schema.generator.core.ir.PrimitiveKind
 import kotlinx.schema.generator.core.ir.PrimitiveNode
+import kotlinx.schema.generator.core.ir.serialKindToPrimitiveKind
 import kotlinx.schema.generator.core.ir.Property
 import kotlinx.schema.generator.core.ir.SubtypeRef
 import kotlinx.schema.generator.core.ir.TypeId
@@ -23,7 +23,6 @@ import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModuleCollector
 import kotlin.reflect.KClass
-import kotlinx.serialization.descriptors.PrimitiveKind as SerialPrimitiveKind
 
 /**
  * Context for introspecting kotlinx.serialization descriptors into Schema IR.
@@ -113,39 +112,7 @@ internal class SerializationIntrospectionContext(
      * Returns null if the descriptor is not a primitive.
      */
     private fun primitiveFor(descriptor: SerialDescriptor): PrimitiveNode? =
-        when (descriptor.kind) {
-            SerialPrimitiveKind.STRING -> {
-                PrimitiveNode(PrimitiveKind.STRING)
-            }
-
-            SerialPrimitiveKind.BOOLEAN -> {
-                PrimitiveNode(PrimitiveKind.BOOLEAN)
-            }
-
-            SerialPrimitiveKind.BYTE, SerialPrimitiveKind.SHORT, SerialPrimitiveKind.INT -> {
-                PrimitiveNode(PrimitiveKind.INT)
-            }
-
-            SerialPrimitiveKind.LONG -> {
-                PrimitiveNode(PrimitiveKind.LONG)
-            }
-
-            SerialPrimitiveKind.FLOAT -> {
-                PrimitiveNode(PrimitiveKind.FLOAT)
-            }
-
-            SerialPrimitiveKind.DOUBLE -> {
-                PrimitiveNode(PrimitiveKind.DOUBLE)
-            }
-
-            SerialPrimitiveKind.CHAR -> {
-                PrimitiveNode(PrimitiveKind.STRING)
-            }
-
-            else -> {
-                null
-            }
-        }
+        serialKindToPrimitiveKind(descriptor.kind)?.let { PrimitiveNode(it) }
 
     /**
      * Handles enum types by creating an [EnumNode] with entries extracted from descriptor elements.
