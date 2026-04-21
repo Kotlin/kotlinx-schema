@@ -21,6 +21,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonClassDiscriminator
 import kotlinx.serialization.modules.SerializersModuleCollector
 import kotlin.reflect.KClass
 import kotlinx.serialization.descriptors.PrimitiveKind as SerialPrimitiveKind
@@ -312,8 +313,8 @@ internal class SerializationIntrospectionContext(
                     .sortedBy { it.serialName }
                     .map { SubtypeRef(TypeId(it.serialName)) }
 
-            // Get discriminator configuration from Json
-            val discriminatorName = json.configuration.classDiscriminator
+            // Get discriminator configuration from Json or JsonClassDiscriminator annotation
+            val discriminatorName = descriptor.polymorphicDiscriminatorName()
 
             val discriminator =
                 Discriminator(
@@ -490,6 +491,12 @@ internal class SerializationIntrospectionContext(
         descriptor: SerialDescriptor,
         index: Int,
     ): String? = config.descriptionExtractor.extract(descriptor.getElementAnnotations(index))
+
+    private fun SerialDescriptor.polymorphicDiscriminatorName(): String =
+        annotations
+            .filterIsInstance<JsonClassDiscriminator>()
+            .firstOrNull()
+            ?.discriminator ?: json.configuration.classDiscriminator
 
     /**
      * Returns a new [TypeRef] with the specified nullable flag.
