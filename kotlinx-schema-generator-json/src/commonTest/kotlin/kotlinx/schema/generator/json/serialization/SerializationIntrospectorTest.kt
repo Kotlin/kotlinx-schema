@@ -15,6 +15,7 @@ import kotlinx.schema.generator.core.ir.PrimitiveNode
 import kotlinx.schema.generator.core.ir.TypeId
 import kotlinx.schema.generator.core.ir.TypeRef
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonClassDiscriminator
 import kotlinx.serialization.serializer
 import kotlin.test.Test
 import kotlinx.schema.generator.json.serialization.SerializationClassSchemaIntrospector as SerializationIntrospector
@@ -67,6 +68,20 @@ class SerializationIntrospectorTest {
             val width: Double,
             val height: Double,
         ) : Shape()
+    }
+
+    @Serializable
+    @JsonClassDiscriminator("buttonType")
+    sealed class DiscriminatedButton {
+        @Serializable
+        data class BigButton(
+            val title: String,
+        ) : DiscriminatedButton()
+
+        @Serializable
+        data class SmallButton(
+            val icon: String,
+        ) : DiscriminatedButton()
     }
 
     @Serializable
@@ -204,6 +219,18 @@ class SerializationIntrospectorTest {
 
         subtypeIds.forEach { id ->
             graph.nodes[TypeId(id)].shouldNotBeNull().shouldBeInstanceOf<ObjectNode>()
+        }
+    }
+
+    @Test
+    fun `introspects JsonClassDiscriminator annotation for sealed polymorphic`() {
+        val graph = introspector.introspect(DiscriminatedButton.serializer().descriptor)
+
+        val rootRef = graph.root.shouldBeInstanceOf<TypeRef.Ref>()
+        val polyNode = graph.nodes[rootRef.id].shouldNotBeNull().shouldBeInstanceOf<PolymorphicNode>()
+
+        polyNode.discriminator shouldNotBeNull {
+            name shouldBe "buttonType"
         }
     }
 

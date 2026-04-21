@@ -3,11 +3,13 @@
 package kotlinx.schema.generator.json.serialization
 
 import io.kotest.assertions.json.shouldEqualJson
+import kotlinx.schema.generator.json.JsonSchemaConfig
 import kotlinx.schema.generator.json.SerialDescription
 import kotlinx.schema.generator.json.SerialSchemaIgnore
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonClassDiscriminator
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
@@ -31,6 +33,23 @@ class SealedPolymorphismSchemaGeneratorTest {
         data class Rect(
             @property:SerialDescription("Rectangle width") val w: Double,
         ) : Shape()
+    }
+
+    @Serializable
+    @SerialName("Button")
+    @JsonClassDiscriminator("buttonType")
+    sealed class Button {
+        @Serializable
+        @SerialName("BIG")
+        data class BigButton(
+            val title: String,
+        ) : Button()
+
+        @Serializable
+        @SerialName("SMALL")
+        data class SmallButton(
+            val icon: String,
+        ) : Button()
     }
 
     @Test
@@ -141,6 +160,54 @@ class SealedPolymorphismSchemaGeneratorTest {
                     "w": { "type": "number", "description": "Rectangle width" }
                   },
                   "required": ["type", "w"],
+                  "additionalProperties": false
+                }
+              }
+            }
+            """.trimIndent()
+    }
+
+    @Test
+    fun `sealed class uses JsonClassDiscriminator annotation in schema`() {
+        val generator =
+            SerializationClassJsonSchemaGenerator(
+                jsonSchemaConfig = JsonSchemaConfig.OpenAPI,
+            )
+
+        val schema = generator.generateSchemaString(Button.serializer().descriptor)
+
+        schema shouldEqualJson
+            // language=JSON
+            $$"""
+            {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$id": "Button",
+              "type": "object",
+              "additionalProperties": false,
+              "oneOf": [
+                { "$ref": "#/$defs/BIG" },
+                { "$ref": "#/$defs/SMALL" }
+              ],
+              "discriminator": {
+                "propertyName": "buttonType"
+              },
+              "$defs": {
+                "BIG": {
+                  "type": "object",
+                  "properties": {
+                    "buttonType": { "type": "string", "const": "BIG" },
+                    "title": { "type": "string" }
+                  },
+                  "required": ["buttonType", "title"],
+                  "additionalProperties": false
+                },
+                "SMALL": {
+                  "type": "object",
+                  "properties": {
+                    "buttonType": { "type": "string", "const": "SMALL" },
+                    "icon": { "type": "string" }
+                  },
+                  "required": ["buttonType", "icon"],
                   "additionalProperties": false
                 }
               }
