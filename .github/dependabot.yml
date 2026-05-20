@@ -1,35 +1,74 @@
-# Configuration options:
-# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#about-the-dependabotyml-file
-
 version: 2
 updates:
   - package-ecosystem: "gradle"
-    directories: 
-    - "/"
-    - "/gradle-plugin-integration-tests"
-    - "/examples/gradle-google-ksp"
+    directories:
+      - "/"
+      - "/gradle-plugin-integration-tests"
+      - "/examples/gradle-google-ksp"
     schedule:
-      interval: "daily"
+      interval: "monthly"
+    open-pull-requests-limit: 5
     # Ignoring
     ignore:
       # Kotlin majority updates
       - dependency-name: "org.jetbrains.kotlin*"
-        update-types: [ "version-update:semver-major" ]
+        update-types: ["version-update:semver-major"]
     labels:
       - "dependencies"
-
-  - package-ecosystem: "maven"
-    directories:
-      - "/examples/maven-ksp"
-    schedule:
-      interval: "daily"
-    labels:
-      - "dependencies"
+    groups:
+      kotlin:
+        patterns:
+          - "org.jetbrains.kotlin:*"
+          - "org.jetbrains.kotlinx:kotlinx-serialization*"
+        update-types:
+          - "minor"
+          - "patch"
+      ksp:
+        patterns:
+          - "com.google.devtools.ksp*"
+        update-types:
+          - "minor"
+          - "patch"
+      kotest:
+        patterns:
+          - "io.kotest:*"
+        update-types:
+          - "minor"
+          - "patch"
+      junit:
+        patterns:
+          - "org.junit.jupiter:*"
+          - "org.junit-pioneer:*"
+        update-types:
+          - "minor"
+          - "patch"
+      dokka:
+        patterns:
+          - "org.jetbrains.dokka*"
+        update-types:
+          - "minor"
+          - "patch"
+      llm-annotations:
+        patterns:
+          - "ai.koog:*"
+          - "dev.langchain4j:*"
+          - "com.fasterxml.jackson*"
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "monthly"
+    open-pull-requests-limit: 5
     labels:
       - "dependencies"
       - "github-actions"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"

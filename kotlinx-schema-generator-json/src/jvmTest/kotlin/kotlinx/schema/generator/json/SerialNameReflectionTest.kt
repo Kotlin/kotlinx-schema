@@ -19,7 +19,6 @@ class SerialNameReflectionTest {
 
     @Serializable
     @SerialName("Priority")
-    @Suppress("unused")
     enum class PriorityWithRenamedEntries {
         @SerialName("p0_critical")
         CRITICAL,

@@ -110,7 +110,6 @@ internal class PolymorphicPropertyDefinitionTest {
     }
 
     @Test
-    @Suppress("LongMethod")
     fun `oneOf with inline object options serialization round-trip`() {
         val definition =
             OneOfPropertyDefinition(
@@ -226,7 +225,6 @@ internal class PolymorphicPropertyDefinitionTest {
     }
 
     @Test
-    @Suppress("LongMethod")
     fun `allOf with composition serialization round-trip`() {
         val definition =
             AllOfPropertyDefinition(

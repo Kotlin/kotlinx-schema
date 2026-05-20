@@ -21,18 +21,11 @@ kotlin {
     compilerOptions {
         allWarningsAsErrors = true
         extraWarnings = true
-        freeCompilerArgs =
-            listOf(
-                "-Wextra",
-                "-Xmulti-dollar-interpolation",
-                "-Xexpect-actual-classes",
-            )
+        freeCompilerArgs = listOf("-Xexpect-actual-classes")
     }
 
     withSourcesJar(publish = true)
-    jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-    }
+    jvmToolchain(17)
     explicitApi()
 
     jvm {
@@ -40,11 +33,8 @@ kotlin {
             jvmTarget = JvmTarget.JVM_17
             javaParameters = true
             jvmDefault = JvmDefaultMode.ENABLE
-            freeCompilerArgs.addAll(
-                "-Xdebug",
-            )
         }
-        testRuns["test"].executionTask.configure {
+        tasks.withType<Test>().configureEach {
             useJUnitPlatform()
 
             testLogging {
@@ -52,11 +42,6 @@ kotlin {
                 events("failed")
             }
             systemProperty("kotest.output.ansi", "true")
-            reports {
-                junitXml.required.set(true)
-                junitXml.includeSystemOutLog.set(true)
-                junitXml.includeSystemErrLog.set(true)
-            }
         }
     }
 
@@ -68,7 +53,7 @@ kotlin {
         }
     }
 
-    js(IR) {
+    js {
         browser {
             configureJsTesting()
         }
@@ -79,8 +64,8 @@ kotlin {
 
     wasmJs {
         browser()
-        binaries.library()
         nodejs()
+        binaries.library()
     }
 
     // https://kotlinlang.org/docs/native-target-support.html
@@ -96,23 +81,12 @@ kotlin {
     watchosSimulatorArm64()
     watchosArm32()
     watchosArm64()
-    watchosX64()
     tvosSimulatorArm64()
     tvosArm64()
 
     // Tier 3
     mingwX64()
-    // androidNativeArm32()
-    // androidNativeArm64()
-    // androidNativeX86()
-    // androidNativeX64()
-    macosX64()
     iosX64()
-    tvosX64()
-}
-
-tasks.named("detekt").configure {
-    dependsOn("detektMainJvm", "detektTestJvm")
 }
 
 tasks.withType<JavaCompile> {

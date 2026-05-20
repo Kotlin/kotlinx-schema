@@ -239,7 +239,6 @@ class AdditionalPropertiesConstraintTest {
     }
 
     @Test
-    @Suppress("LongMethod")
     fun `nested object with different additionalProperties constraints`() {
         val schema =
             jsonSchema {

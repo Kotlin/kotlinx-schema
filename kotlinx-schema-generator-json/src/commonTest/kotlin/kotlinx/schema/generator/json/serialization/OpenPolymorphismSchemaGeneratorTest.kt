@@ -1,5 +1,3 @@
-@file:Suppress("RUNTIME_ANNOTATION_NOT_SUPPORTED")
-
 package kotlinx.schema.generator.json.serialization
 
 import io.kotest.assertions.json.shouldEqualJson
@@ -15,9 +13,7 @@ import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 import kotlin.test.Test
 
-@Suppress("ANNOTATION_TARGETS_IN_JS")
 class OpenPolymorphismSchemaGeneratorTest {
-    @Suppress("AbstractClassCanBeInterface")
     @Serializable
     @SerialName("Flying")
     @SerialDescription("Something that flies")

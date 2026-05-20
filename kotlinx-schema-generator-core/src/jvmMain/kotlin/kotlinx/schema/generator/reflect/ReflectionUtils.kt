@@ -156,7 +156,6 @@ internal fun KFunction<*>.findImplementedMethods(): List<KFunction<*>> {
         .toList()
         .mapNotNull { superclass ->
             try {
-                @Suppress("SpreadOperator")
                 superclass.java
                     .getDeclaredMethod(methodName, *parameterTypes)
                     .kotlinFunction

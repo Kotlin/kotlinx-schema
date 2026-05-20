@@ -8,7 +8,6 @@ import kotlin.test.Test
 
 class JsonSchemaHierarchyTest {
     @Description("Represents an animal")
-    @Suppress("unused")
     sealed class Animal {
         @Description("Animal's name")
         abstract val name: String
@@ -43,7 +42,6 @@ class JsonSchemaHierarchyTest {
         }
 
     @Test
-    @Suppress("LongMethod")
     fun `Should generate schema for sealed hierarchy`() {
         val schema = generator.generateSchema(Animal::class)
 
@@ -136,7 +134,6 @@ class JsonSchemaHierarchyTest {
     )
 
     @Test
-    @Suppress("LongMethod")
     fun `Should generate schema for nullable sealed hierarchy`() {
         val schema = generator.generateSchema(AnimalContainer::class)
 
@@ -205,7 +202,6 @@ class JsonSchemaHierarchyTest {
     }
 
     @Test
-    @Suppress("LongMethod")
     fun `Should generate schema with discriminator when includeDiscriminator is true`() {
         val json = kotlinx.serialization.json.Json { encodeDefaults = false }
         val generatorWithDiscriminator =

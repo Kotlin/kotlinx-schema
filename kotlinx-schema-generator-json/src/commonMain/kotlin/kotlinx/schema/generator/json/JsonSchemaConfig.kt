@@ -28,7 +28,6 @@ import kotlinx.schema.generator.json.JsonSchemaConfig.Companion.Strict
  * | false | false | `{"type": "string"}` (no nullable indication) |
  *
  * @see [JSON Schema Draft 2020-12](https://json-schema.org/draft/2020-12/json-schema-core.html)
- * @author Konstantin Pavlov
  */
 public open class JsonSchemaConfig(
     /**

@@ -113,15 +113,17 @@ with [MCP inspector](https://modelcontextprotocol.io/docs/tools/inspector):
 
 ## Build & Run
 
+Run from this directory (the example is a standalone Gradle build, not a subproject of the root build):
+
 ```bash
 # Generate schemas and build
 ./gradlew build
 
 # Run MCP server example
-./gradlew :examples:gradle-google-ksp:jvmRun
+./gradlew jvmRun
 
 # Run tests
-./gradlew :examples:gradle-google-ksp:test
+./gradlew test
 ```
 
 ## Key Files

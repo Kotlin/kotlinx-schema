@@ -86,7 +86,6 @@ internal class SymbolFilter(
             .filter { filterByRootPackage(it, rootPackage, logger) }
             .filter { matchesPatterns(it.qualifiedName?.asString()) }
 
-    @Suppress("ReturnCount")
     private fun matchesPatterns(name: String?): Boolean {
         if (includeRegexes.isEmpty() && excludeRegexes.isEmpty()) return true
         if (name == null) return includeRegexes.isEmpty()

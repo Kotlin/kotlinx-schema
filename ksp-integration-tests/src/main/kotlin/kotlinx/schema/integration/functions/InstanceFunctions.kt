@@ -1,5 +1,3 @@
-@file:Suppress("FunctionOnlyReturningConstant", "unused")
-
 package kotlinx.schema.integration.functions
 
 import kotlinx.coroutines.delay
@@ -141,7 +139,6 @@ class ProductRepository {
         product: Product,
     ): Long {
         delay(1)
-        @Suppress("MagicNumber")
         return 12345L
     }
 }

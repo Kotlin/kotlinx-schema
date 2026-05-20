@@ -1,10 +1,3 @@
-/**
- * Convention plugin to enable and configure publishing with Maven Publish.
- * - Configures Maven Central publishing with automatic release
- * - Sets up POM metadata for all publications
- * - Enables signing when GPG keys are available
- * - Automatically publishes sources and documentation (KDoc)
- */
 plugins {
     id("com.vanniktech.maven.publish")
     signing
@@ -47,16 +40,6 @@ mavenPublishing {
         organization {
             name = "JetBrains"
             url = "https://www.jetbrains.com"
-        }
-
-        developers {
-            developer {
-                id = "kpavlov"
-                name = "Konstantin Pavlov"
-                email = "k.pavlov@jetbrains.com"
-                organization = "JetBrains"
-                organizationUrl = "https://jetbrains.com/"
-            }
         }
 
         scm {

@@ -1,6 +1,6 @@
-# Module KotlinX-Schema
+# Module Kotlinx-Schema
 
-The `KotlinX-Schema` library provides a powerful, multi-platform framework for generating JSON schemas and LLM function calling schemas directly from Kotlin classes and functions.
+The `Kotlinx-Schema` library provides a powerful, multi-platform framework for generating JSON schemas and LLM function calling schemas directly from Kotlin classes and functions.
 
 **Platform Support:** Multiplatform (Common, JVM, JS, Native, Wasm) • Kotlin 2.2+
 

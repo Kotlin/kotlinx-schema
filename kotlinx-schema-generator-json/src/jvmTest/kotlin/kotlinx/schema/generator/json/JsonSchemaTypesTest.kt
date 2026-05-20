@@ -664,7 +664,6 @@ class JsonSchemaTypesTest {
     }
 
     @Schema
-    @Suppress("MayBeConstant")
     data object ObjectWithProps {
         val foo = "bar"
         val num = 42

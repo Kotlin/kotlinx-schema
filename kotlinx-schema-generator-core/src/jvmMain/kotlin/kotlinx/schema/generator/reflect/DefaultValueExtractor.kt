@@ -36,7 +36,6 @@ internal object DefaultValueExtractor {
                     }
             }.filterValues { it != null }
 
-    @Suppress("ReturnCount")
     private fun doExtractDefaultValues(klass: KClass<*>): Map<String, Any?> {
         // For object instances (singletons), get the instance directly
         klass.objectInstance?.let { return klass.extractInstanceProperties(it) }
@@ -69,7 +68,6 @@ internal object DefaultValueExtractor {
         return klass.extractInstanceProperties(instance)
     }
 
-    @Suppress("CyclomaticComplexMethod")
     private fun getDefaultValueForParameter(param: KParameter): Any? {
         val classifier = param.type.classifier
         return when {

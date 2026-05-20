@@ -55,7 +55,6 @@ class SealedHierarchyTest {
     }
 }
 
-@Suppress("unused")
 sealed class ExampleA(
     val someProp: String,
 ) {

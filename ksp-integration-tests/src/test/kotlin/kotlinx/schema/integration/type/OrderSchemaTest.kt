@@ -7,7 +7,6 @@ import kotlin.test.Test
  * Tests for Order schema generation - complex nested structures.
  */
 class OrderSchemaTest {
-    @Suppress("LongMethod")
     @Test
     fun `generates complete nested schema with all types`() {
         val schema = Order::class.jsonSchemaString

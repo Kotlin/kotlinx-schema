@@ -201,7 +201,6 @@ internal class KspIntrospectionContext : BaseIntrospectionContext<KSType>() {
      * @param nullable Whether the type reference should be nullable
      * @return TypeRef.Ref to the object node if this is a class/object, null otherwise
      */
-    @Suppress("ReturnCount")
     private fun handleObjectOrClass(
         type: KSType,
         nullable: Boolean,

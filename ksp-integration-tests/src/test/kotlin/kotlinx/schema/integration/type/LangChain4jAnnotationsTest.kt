@@ -1,5 +1,3 @@
-@file:Suppress("JsonStandardCompliance")
-
 package kotlinx.schema.integration.type
 
 import io.kotest.assertions.json.shouldEqualJson
@@ -9,7 +7,6 @@ import kotlin.test.Test
  * Integration tests that verify KSP-generated extension properties work correctly
  * with LangChain4j @P annotations
  */
-@Suppress("LongMethod")
 class LangChain4jAnnotationsTest {
     @Test
     fun `Should generate jsonSchema form LangChain4jModel`() {

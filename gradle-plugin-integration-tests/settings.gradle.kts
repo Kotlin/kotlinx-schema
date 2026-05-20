@@ -1,5 +1,3 @@
-@file:Suppress("UnstableApiUsage")
-
 val kotlinxSchemaVersion: String = providers.gradleProperty("kotlinxSchemaVersion").get()
 
 println("ℹ️ Testing with kotlinx.schema version: $kotlinxSchemaVersion")
@@ -15,9 +13,9 @@ pluginManagement {
     }
 
     plugins {
-        kotlin("jvm") version "2.2.21"
-        kotlin("multiplatform") version "2.2.21"
-        kotlin("plugin.serialization") version "2.2.21"
+        kotlin("jvm") version "2.3.21"
+        kotlin("multiplatform") version "2.3.21"
+        kotlin("plugin.serialization") version "2.3.21"
     }
 
     resolutionStrategy {

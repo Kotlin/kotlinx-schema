@@ -3,13 +3,7 @@
 
 [![Maven Central](https://img.shields.io/maven-central/v/org.jetbrains.kotlinx/kotlinx-schema-ksp.svg?label=Maven%20Central)](https://central.sonatype.com/search?q=org.jetbrains.kotlinx%2Fkotlinx-schema-*)
 [![Build with Gradle](https://github.com/Kotlin/kotlinx-schema/actions/workflows/build.yml/badge.svg)](https://github.com/Kotlin/kotlinx-schema/actions/workflows/build.yml)
-[![CodeQL](https://github.com/Kotlin/kotlinx-schema/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Kotlin/kotlinx-schema/actions/workflows/github-code-scanning/codeql)
-[![Docs](https://img.shields.io/badge/Docs-Live-blue?logo=kotlin)](https://kotlin.github.io/kotlinx-schema/)
-[![Examples](https://img.shields.io/badge/Examples-blue?logo=github)](https://github.com/Kotlin/kotlinx-schema/tree/main/examples)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Kotlin/kotlinx-schema)
 [![Slack channel](https://img.shields.io/badge/chat-slack-blue.svg?logo=slack)](https://kotlinlang.slack.com/messages/kotlinx-schema/)
-
-[![Kotlin](https://img.shields.io/badge/kotlin-2.2+-blueviolet.svg?logo=kotlin)](http://kotlinlang.org)
 [![Kotlin Multiplatform](https://img.shields.io/badge/Platforms-%20JVM%20%7C%20Wasm%2FJS%20%7C%20Native%20-blueviolet?logo=kotlin)](https://kotlinlang.org/docs/multiplatform.html)
 [![JVM](https://img.shields.io/badge/JVM-17+-red.svg?logo=jvm)](http://java.com)
 [![License](https://img.shields.io/badge/License-Apache_2.0-yellow.svg)](LICENSE)
@@ -18,7 +12,7 @@
 <!--- TOC -->
 
 * [Key Features](#key-features)
-* [Why kotlinx-schema?](#why-kotlinx-schema?)
+* [Why kotlinx-schema?](#why-kotlinx-schema)
   * [When to Use](#when-to-use)
 * [Choosing Your Approach](#choosing-your-approach)
 * [Quick Start](#quick-start)
@@ -26,7 +20,7 @@
   * [Configuration](#configuration)
     * [Quick Setup](#quick-setup)
 * [Runtime schema generation](#runtime-schema-generation)
-  * [Why Runtime Generation?](#why-runtime-generation?)
+  * [Why Runtime Generation?](#why-runtime-generation)
   * [Usage](#usage)
 * [What Gets Generated](#what-gets-generated)
 * [Examples](#examples)
@@ -35,12 +29,12 @@
   * [Nested objects](#nested-objects)
   * [Generic types](#generic-types)
   * [Sealed class polymorphism](#sealed-class-polymorphism)
-    * [Excluding subtypes with @SchemaIgnore](#excluding-subtypes-with-@schemaignore)
-* [Using @Schema and @Description annotations](#using-@schema-and-@description-annotations)
-  * [@Schema annotation](#@schema-annotation)
-  * [@Description annotation](#@description-annotation)
+    * [Excluding subtypes with @SchemaIgnore](#excluding-subtypes-with-schemaignore)
+* [Using @Schema and @Description annotations](#using-schema-and-description-annotations)
+  * [@Schema annotation](#schema-annotation)
+  * [@Description annotation](#description-annotation)
 * [Function calling schema generation for LLMs](#function-calling-schema-generation-for-llms)
-  * [Why This Format?](#why-this-format?)
+  * [Why This Format?](#why-this-format)
   * [Basic Usage](#basic-usage)
   * [Generated Schema](#generated-schema)
   * [Key Features](#key-features)
@@ -226,8 +220,8 @@ kotlin {
 }
 ```
 
-For JVM-only projects, the Kotlinx-Schema Gradle plugin, Maven, and full configuration options, see *
-*[KSP Configuration Guide](docs/ksp.md)**.
+For JVM-only projects, the Kotlinx-Schema Gradle plugin, and full configuration options, see
+**[KSP Configuration Guide](docs/ksp.md)**.
 
 ## Runtime schema generation
 
@@ -236,10 +230,8 @@ For JVM-only projects, the Kotlinx-Schema Gradle plugin, Maven, and full configu
 > on all platforms without reflection.
 
 For JVM-only scenarios with classes you don't own or can't annotate, use
-[
-`ReflectionClassJsonSchemaGenerator`](kotlinx-schema-generator-json/src/main/kotlin/kotlinx/schema/generator/json/ReflectionClassJsonSchemaGenerator.kt)
-and [
-`ReflectionFunctionCallingSchemaGenerator`](kotlinx-schema-generator-json/src/main/kotlin/kotlinx/schema/generator/json/ReflectionFunctionCallingSchemaGenerator.kt)
+[`ReflectionClassJsonSchemaGenerator`](kotlinx-schema-generator-json/src/main/kotlin/kotlinx/schema/generator/json/ReflectionClassJsonSchemaGenerator.kt)
+and [`ReflectionFunctionCallingSchemaGenerator`](kotlinx-schema-generator-json/src/main/kotlin/kotlinx/schema/generator/json/ReflectionFunctionCallingSchemaGenerator.kt)
 with Kotlin reflection.
 
 ### Why Runtime Generation?
@@ -726,8 +718,7 @@ data class Person(val name: String, val age: Int)
 **@Schema parameters:**
 
 - `value = "json"`: Schema type (only JSON currently supported)
-- `withSchemaObject = false`: Generate `jsonSchema: JsonObject` property (
-  see [Advanced Configuration](#advanced-configuration))
+- `withSchemaObject = false`: Generate `jsonSchema: JsonObject` property (see [Configuration](#configuration))
 
 **Note**: `jsonSchemaString` is always generated. `jsonSchema` requires `withSchemaObject = true`.
 

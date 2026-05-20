@@ -154,13 +154,7 @@ internal class ClassSchemaStrategy : SchemaGenerationStrategy<KSClassDeclaration
         context: CodeGenerationContext,
     ): String =
         buildString {
-            // File header with suppressions
-            append(
-                SourceCodeGeneratorHelpers.generateFileHeader(
-                    packageName = packageName,
-                    additionalSuppressions = listOf("UnusedReceiverParameter"),
-                ),
-            )
+            append(SourceCodeGeneratorHelpers.generateFileHeader(packageName))
 
             // Determine visibility modifier based on context
             val visibilityPrefix = SourceCodeGeneratorHelpers.visibilityPrefix(context)

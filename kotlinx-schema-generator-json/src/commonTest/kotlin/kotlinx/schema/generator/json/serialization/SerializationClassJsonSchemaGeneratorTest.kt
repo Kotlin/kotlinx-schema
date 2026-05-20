@@ -23,7 +23,6 @@ class SerializationClassJsonSchemaGeneratorTest {
 
         @Serializable
         @CustomDescription("First subclass")
-        @Suppress("unused")
         data class SubClass1(
             @property:CustomDescription("Subclass identifier")
             override val id: String,
@@ -33,7 +32,6 @@ class SerializationClassJsonSchemaGeneratorTest {
 
         @Serializable
         @CustomDescription("Second subclass")
-        @Suppress("unused")
         data class SubClass2(
             @property:CustomDescription("Subclass identifier")
             override val id: String,
@@ -44,7 +42,6 @@ class SerializationClassJsonSchemaGeneratorTest {
 
     @Serializable
     @CustomDescription("A test enum")
-    @Suppress("unused")
     enum class TestEnum {
         One,
         Two,

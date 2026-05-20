@@ -8,7 +8,6 @@ import java.util.Map;
 /**
  * Test class to verify that schema generation also works for Java classes based on their primary constructors
  */
-@SuppressWarnings("unused")
 @Description("Class Description")
 public class JavaTestClass {
     public JavaTestClass(

@@ -1,5 +1,3 @@
-@file:Suppress("JsonStandardCompliance")
-
 package kotlinx.schema.integration.type
 
 import io.kotest.assertions.json.shouldEqualJson
@@ -8,7 +6,6 @@ import kotlin.test.Test
 /**
  * Integration tests that verify KSP-generated extension properties work correctly
  */
-@Suppress("LongMethod")
 class DescriptionAnnotationsTest {
     @Test
     fun `Product class should have generated jsonSchemaString extension`() {

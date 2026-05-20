@@ -33,7 +33,6 @@ import kotlinx.serialization.descriptors.PrimitiveKind as SerialPrimitiveKind
  *
  * @property json The [Json] configuration used to extract discriminator settings for polymorphic types
  */
-@Suppress("TooManyFunctions")
 internal class SerializationIntrospectionContext(
     private val json: Json,
     private val config: SerializationClassSchemaIntrospector.Config,
@@ -50,7 +49,6 @@ internal class SerializationIntrospectionContext(
      * - Objects/Classes (referenced via TypeId)
      * - Polymorphic types (referenced via TypeId)
      */
-    @Suppress("ReturnCount")
     override fun toRef(type: SerialDescriptor): TypeRef {
         // Check cache first
         typeRefCache[type]?.let { cachedRef ->

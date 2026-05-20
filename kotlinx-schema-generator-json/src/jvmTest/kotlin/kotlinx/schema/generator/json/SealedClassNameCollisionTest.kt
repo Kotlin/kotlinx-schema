@@ -19,7 +19,6 @@ import kotlin.test.Test
 @Issue("https://github.com/Kotlin/kotlinx-schema/issues/113")
 class SealedClassNameCollisionTest {
     @Description("Result type A")
-    @Suppress("unused")
     sealed class ResultA {
         @Description("Success result for A")
         data class Success(
@@ -33,7 +32,6 @@ class SealedClassNameCollisionTest {
     }
 
     @Description("Result type B")
-    @Suppress("unused")
     sealed class ResultB {
         @Description("Success result for B")
         data class Success(
@@ -66,7 +64,6 @@ class SealedClassNameCollisionTest {
         }
 
     @Test
-    @Suppress("LongMethod")
     fun `Should use qualified names to avoid name collisions in sealed hierarchies`() {
         // When - generate schema for ApiResponse which uses two sealed hierarchies
         //        where both have "Success" and "Unknown" inner classes

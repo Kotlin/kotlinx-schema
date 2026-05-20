@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 
 plugins {
     kotlin("jvm")
@@ -7,10 +8,9 @@ plugins {
 
 kotlin {
 
-    @OptIn(org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation::class)
+    @OptIn(ExperimentalAbiValidation::class)
     abiValidation {
-        // Use the set() function to ensure compatibility with older Gradle versions
-        enabled.set(true)
+        enabled = true
     }
 
     jvmToolchain(17)
@@ -21,17 +21,10 @@ kotlin {
         jvmTarget = JvmTarget.JVM_17
         javaParameters = true
         jvmDefault = JvmDefaultMode.ENABLE
-        freeCompilerArgs.addAll(
-            "-Xdebug",
-        )
+        freeCompilerArgs.addAll("-Xdebug")
     }
 }
 
 tasks.test {
     useJUnitPlatform()
-}
-
-tasks.withType<JavaCompile> {
-    // Preserve constructor parameter names in Java
-    options.compilerArgs.add("-parameters")
 }

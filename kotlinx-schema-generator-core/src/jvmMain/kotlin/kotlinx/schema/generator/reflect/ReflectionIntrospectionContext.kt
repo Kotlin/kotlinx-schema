@@ -24,7 +24,6 @@ import kotlin.reflect.full.createType
  * Reflection-based introspection context based on [KType].
  * Only supports [KClass] classifiers for introspection, generics are not supported.
  */
-@Suppress("TooManyFunctions")
 internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>() {
     /**
      * This is a shared instance, so different schema generation runs would reuse the same class metadata cache.
@@ -43,7 +42,6 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
      * - Objects/Classes (referenced via TypeId)
      * - Polymorphic types (referenced via TypeId)
      */
-    @Suppress("ReturnCount")
     override fun toRef(type: KType): TypeRef {
         val klass = type.klass
         val nullable = type.isMarkedNullable
@@ -246,7 +244,6 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
     /**
      * Creates an [ObjectNode] from a [KClass].
      */
-    @Suppress("LongMethod", "CyclomaticComplexMethod")
     private fun createObjectNode(klass: KClass<*>): ObjectNode {
         val properties = mutableListOf<Property>()
         val requiredProperties = mutableSetOf<String>()

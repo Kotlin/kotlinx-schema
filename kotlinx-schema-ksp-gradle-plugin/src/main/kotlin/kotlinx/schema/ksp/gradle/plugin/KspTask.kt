@@ -59,7 +59,6 @@ internal abstract class KspTask : DefaultTask() {
     @get:Nested
     internal abstract val compilerConfig: Property<CompilerConfig>
 
-    @Suppress("LongMethod", "ThrowsCount")
     @TaskAction
     internal fun execute() {
         logger.info("kotlinx-schema: Executing KSP for ${moduleName.get()}")

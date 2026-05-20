@@ -26,5 +26,4 @@ data class JacksonModel(
 )
 
 @Schema
-@Suppress("FunctionOnlyReturningConstant")
 fun createJacksonModel(): JacksonModel? = null

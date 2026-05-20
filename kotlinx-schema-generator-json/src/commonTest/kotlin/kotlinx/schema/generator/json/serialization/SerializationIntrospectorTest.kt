@@ -30,7 +30,6 @@ class SerializationIntrospectorTest {
     )
 
     @Serializable
-    @Suppress("unused")
     enum class Color { RED, GREEN, BLUE }
 
     @Serializable
@@ -82,7 +81,6 @@ class SerializationIntrospectorTest {
     private val introspector = SerializationIntrospector()
 
     @Test
-    @Suppress("LongMethod")
     fun `introspects object with primitives list map nullability and defaults`() {
         val descriptor = serializer<User>().descriptor
         val graph = introspector.introspect(descriptor)

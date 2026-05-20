@@ -1,5 +1,3 @@
-@file:Suppress("unused")
-
 package kotlinx.schema.generator.json
 
 import kotlinx.schema.Description

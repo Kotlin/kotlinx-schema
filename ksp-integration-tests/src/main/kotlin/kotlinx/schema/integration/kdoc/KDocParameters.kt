@@ -1,5 +1,3 @@
-@file:Suppress("unused", "UnusedParameter")
-
 package kotlinx.schema.integration.kdoc
 
 import kotlinx.coroutines.delay
@@ -128,6 +126,5 @@ class FieldsExample {
 
     val name: String = "default-name"
 
-    @Suppress("MagicNumber")
     val computed: Int = 42
 }

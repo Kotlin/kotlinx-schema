@@ -6,7 +6,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlin.test.Test
 
-@Suppress("LongMethod")
 class FunctionSchemaTest {
     @Test
     fun `should generate function schema`() {

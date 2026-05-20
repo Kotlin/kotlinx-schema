@@ -9,7 +9,6 @@ import io.kotest.matchers.shouldBe
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 
-@Suppress("LongMethod")
 internal class JsonSchemaSerializationTest {
     private val jsonParser =
         Json {
@@ -113,7 +112,6 @@ internal class JsonSchemaSerializationTest {
     }
 
     @Test
-    @Suppress("LongMethod")
     fun `Should deserialize complex JsonSchema`() {
         // language=json
         val json =

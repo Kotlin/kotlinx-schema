@@ -55,7 +55,6 @@ import kotlin.jvm.JvmOverloads
  *
  * @param json JSON encoder for schema elements
  */
-@Suppress("TooManyFunctions")
 public class TypeGraphToJsonSchemaTransformer
     @JvmOverloads
     public constructor(
@@ -430,7 +429,6 @@ public class TypeGraphToJsonSchemaTransformer
          * Converts object nodes (classes, data classes) to object property definitions.
          * Handles property mapping, required fields, and nullable optional properties based on config.
          */
-        @Suppress("CyclomaticComplexMethod")
         private fun convertObject(
             node: ObjectNode,
             nullable: Boolean,
@@ -564,7 +562,6 @@ public class TypeGraphToJsonSchemaTransformer
          * @param definitions Map to collect type definitions for $defs
          * @return [OneOfPropertyDefinition] with `$ref` entries for each subtype
          */
-        @Suppress("LongMethod", "UnusedParameter")
         private fun convertPolymorphic(
             node: PolymorphicNode,
             nullable: Boolean,

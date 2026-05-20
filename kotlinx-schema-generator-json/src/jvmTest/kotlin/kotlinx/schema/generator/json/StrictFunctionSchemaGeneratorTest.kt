@@ -1,5 +1,3 @@
-@file:Suppress("FunctionOnlyReturningConstant", "UnusedParameter", "unused")
-
 package kotlinx.schema.generator.json
 
 import io.kotest.assertions.json.shouldEqualJson
@@ -24,7 +22,6 @@ class StrictFunctionSchemaGeneratorTest {
     //region Test fixtures
 
     object MixedParamsObject {
-        @Suppress("LongParameterList")
         @Description("Mixed required and optional parameters")
         fun mixedParams(
             @Description("Required string")
