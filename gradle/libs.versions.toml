@@ -1,7 +1,7 @@
 [versions]
 dokka = "2.2.0"
 jackson = "2.18.5" # pin it
-junit = "6.0.3"
+junit = "6.1.0"
 junit-pioneer = "2.3.0"
 koog = "0.6.4"
 kotest = "6.1.11"
