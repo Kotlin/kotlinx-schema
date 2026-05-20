@@ -5,7 +5,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     kotlin("plugin.serialization")
     kotlin("jvm") apply true
-    alias(libs.plugins.kover) apply false
     `dokka-convention`
     alias(libs.plugins.knit)
 }
@@ -24,12 +23,8 @@ dependencies {
     dokka(project(":kotlinx-schema-ksp-gradle-plugin"))
 }
 
-detekt {
-    ignoreFailures = true
-}
-
 dokka {
-    moduleName.set("KotlinX-Schema")
+    moduleName.set("Kotlinx-Schema")
 
     pluginsConfiguration.html {
         footerMessage = "Copyright © 2025 JetBrains s.r.o."

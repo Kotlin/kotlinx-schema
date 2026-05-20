@@ -65,7 +65,6 @@ import kotlinx.schema.generator.json.FunctionCallingSchemaConfig.Companion.Defau
  * Nullable/optional fields are represented using union types that include "null"
  * (e.g., ["string", "null"]) instead of using the "nullable" flag.
  */
-@Suppress("TooManyFunctions")
 public class TypeGraphToFunctionCallingSchemaTransformer
     @JvmOverloads
     public constructor(
@@ -103,7 +102,6 @@ public class TypeGraphToFunctionCallingSchemaTransformer
                 }
             }
 
-        @Suppress("CyclomaticComplexMethod")
         private fun convertObjectNodeToToolSchema(
             node: ObjectNode,
             graph: TypeGraph,
@@ -294,7 +292,6 @@ public class TypeGraphToFunctionCallingSchemaTransformer
                 }
             }
 
-        @Suppress("CyclomaticComplexMethod")
         private fun convertObject(
             node: ObjectNode,
             nullable: Boolean,
@@ -408,7 +405,6 @@ public class TypeGraphToFunctionCallingSchemaTransformer
 
                     convertTypeRef(subtypeRef.ref, graph)
                         .let { definition ->
-                            @Suppress("UseCheckOrError")
                             definition as? ObjectPropertyDefinition
                                 ?: throw IllegalStateException(
                                     "All subtypes of a polymorphic type must be objects. " +

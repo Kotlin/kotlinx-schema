@@ -25,42 +25,8 @@ internal object SourceCodeGeneratorHelpers {
         return "\"\"\"" + escaped + "\"\"\""
     }
 
-    /**
-     * Generates common file header with suppressions.
-     *
-     * @param additionalSuppressions Optional list of additional @Suppress annotations
-     * @return File header as string
-     */
-    fun generateFileHeader(
-        packageName: String,
-        additionalSuppressions: List<String> = emptyList(),
-    ): String {
-        val baseSuppressions =
-            listOf(
-                "LongMethod",
-                "MaxLineLength",
-                "RedundantVisibilityModifier",
-                "RemoveRedundantQualifierName",
-            )
-
-        val allSuppressions = (baseSuppressions + additionalSuppressions).distinct()
-
-        val suppressionsString = allSuppressions.joinToString(",\n") { "    \"$it\"" }
-
-        return buildString {
-            appendLine(
-                """                                                                                                                              
-              |@file:Suppress(                                                                                                                    
-              |$suppressionsString,                                                                                                               
-              |)                                                                                                                                  
-                """.trimMargin(),
-            )
-
-            if (packageName.isNotEmpty()) {
-                appendLine("package $packageName")
-            }
-        }
-    }
+    fun generateFileHeader(packageName: String): String =
+        if (packageName.isNotEmpty()) "package $packageName\n" else ""
 
     /**
      * Generates KDoc comment for generated code.
@@ -92,7 +58,6 @@ internal object SourceCodeGeneratorHelpers {
      * @param context Generation context for determining what to generate
      * @return Complete Kotlin source code as a string
      */
-    @Suppress("LongParameterList")
     fun buildKClassExtensions(
         packageName: String,
         classNameWithGenerics: String,
@@ -101,13 +66,7 @@ internal object SourceCodeGeneratorHelpers {
         context: CodeGenerationContext,
     ): String =
         buildString {
-            // File header with suppressions
-            append(
-                generateFileHeader(
-                    packageName = packageName,
-                    additionalSuppressions = listOf("FunctionOnlyReturningConstant", "UnusedReceiverParameter"),
-                ),
-            )
+            append(generateFileHeader(packageName))
 
             // Generate schema string extension function (always)
             append(

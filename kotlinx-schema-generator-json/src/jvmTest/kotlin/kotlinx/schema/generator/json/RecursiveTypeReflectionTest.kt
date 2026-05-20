@@ -7,7 +7,6 @@ import kotlin.test.Test
 class RecursiveTypeReflectionTest {
     //region Test models
 
-    @Suppress("unused")
     sealed class TreeNode {
         abstract val id: String
 

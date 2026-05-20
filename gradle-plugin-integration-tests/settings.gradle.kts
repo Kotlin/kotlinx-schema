@@ -1,5 +1,3 @@
-@file:Suppress("UnstableApiUsage")
-
 val kotlinxSchemaVersion: String = providers.gradleProperty("kotlinxSchemaVersion").get()
 
 println("ℹ️ Testing with kotlinx.schema version: $kotlinxSchemaVersion")

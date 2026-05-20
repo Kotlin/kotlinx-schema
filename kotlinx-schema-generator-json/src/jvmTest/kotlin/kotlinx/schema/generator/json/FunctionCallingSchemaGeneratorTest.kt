@@ -1,5 +1,3 @@
-@file:Suppress("FunctionOnlyReturningConstant", "LongMethod", "LongParameterList", "UnusedParameter", "unused")
-
 package kotlinx.schema.generator.json
 
 import io.kotest.assertions.json.shouldEqualJson
@@ -166,7 +164,6 @@ class FunctionCallingSchemaGeneratorTest {
     }
 
     object EnumParameter {
-        @Suppress("unused")
         enum class LogLevel { DEBUG, INFO, WARN, ERROR }
 
         @Description("Log a message")
@@ -238,20 +235,17 @@ class FunctionCallingSchemaGeneratorTest {
     sealed class TestClosedPolymorphism {
         abstract val id: String
 
-        @Suppress("unused")
         data class SubClass1(
             override val id: String,
             val property1: String,
         ) : TestClosedPolymorphism()
 
-        @Suppress("unused")
         data class SubClass2(
             override val id: String,
             val property2: Int,
         ) : TestClosedPolymorphism()
     }
 
-    @Suppress("unused")
     enum class TestEnum {
         One,
         Two,
@@ -263,7 +257,6 @@ class FunctionCallingSchemaGeneratorTest {
      * Suspendable complex
      */
     object SuspendableComplexTypes {
-        @Suppress("RedundantSuspendModifier")
         @Description("Sample function")
         suspend fun sampleFunction(
             @Description("Sample parameter")

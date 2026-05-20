@@ -1,16 +1,13 @@
 [versions]
-agp = "8.10.1"
-detekt = "2.0.0-alpha.2"
 dokka = "2.2.0"
 jackson = "2.18.5" # pin it
 junit = "6.0.3"
 junit-pioneer = "2.3.0"
 koog = "0.6.4"
 kotest = "6.1.11"
-kotlin = "2.2.21"
+kotlin = "2.3.21"
 knit = "0.5.1"
 kotlinxSerialization = "1.8.1"
-kover = "0.9.8"
 ksp = "2.3.6"
 langchain4j = "1.13.0"
 logging = "8.0.01"
@@ -42,8 +39,5 @@ ksp-symbol-processing-aa-embeddable = { module = "com.google.devtools.ksp:symbol
 ksp-symbol-processing-common-deps = { module = "com.google.devtools.ksp:symbol-processing-common-deps", version.ref = "ksp" }
 
 [plugins]
-androidLibrary = { id = "com.android.library", version.ref = "agp" }
-detekt = { id = "dev.detekt", version.ref = "detekt" }
 google-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 knit = { id = "org.jetbrains.kotlinx.knit", version.ref = "knit" }

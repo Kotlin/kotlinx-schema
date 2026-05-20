@@ -56,14 +56,14 @@ For JVM-only projects:
 
 gradle.properties:
 ```properties
-kotlinxSchemaVersion=0.0.4
+kotlinxSchemaVersion=<version>
 ```
 
 build.gradle.kts:
 ```kotlin
 plugins {
-    kotlin("jvm") version "2.2.21"
-    kotlin("plugin.serialization") version "2.2.21"
+    kotlin("jvm") version "<kotlin-version>"
+    kotlin("plugin.serialization") version "<kotlin-version>"
     id("org.jetbrains.kotlinx.schema.ksp")
 }
 
@@ -96,13 +96,13 @@ pluginManagement {
 
 gradle.properties:
 ```properties
-kotlinxSchemaVersion=0.0.4
+kotlinxSchemaVersion=<version>
 ```
 
 ```kotlin
 plugins {
-    kotlin("multiplatform") version "2.2.21"
-    kotlin("plugin.serialization") version "2.2.21" 
+    kotlin("multiplatform") version "<kotlin-version>"
+    kotlin("plugin.serialization") version "<kotlin-version>" 
     id("org.jetbrains.kotlinx.schema.ksp")
 }
 

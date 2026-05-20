@@ -5,7 +5,6 @@ import kotlinx.schema.generator.json.SerialDescription
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
 
-@Suppress("RUNTIME_ANNOTATION_NOT_SUPPORTED") // Warning on JS
 class SerialDescriptionAnnotationTest {
     @Serializable
     @SerialDescription("A described class")

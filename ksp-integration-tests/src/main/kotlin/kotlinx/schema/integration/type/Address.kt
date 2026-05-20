@@ -6,7 +6,6 @@ import kotlinx.schema.Schema
 /**
  * A postal address for deliveries and billing.
  *
- * @author Konstantin Pavlov
  * @see [String]
  * @since 1.0
  * @param street This `@param` description should be ignored

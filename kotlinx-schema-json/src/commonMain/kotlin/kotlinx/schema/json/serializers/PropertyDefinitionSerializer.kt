@@ -30,7 +30,6 @@ import kotlinx.serialization.json.JsonPrimitive
 /**
  * Serializer for [PropertyDefinition] that handles polymorphic serialization.
  *
- * @author Konstantin Pavlov
  */
 internal class PropertyDefinitionSerializer : KSerializer<PropertyDefinition> {
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("PropertyDefinition")

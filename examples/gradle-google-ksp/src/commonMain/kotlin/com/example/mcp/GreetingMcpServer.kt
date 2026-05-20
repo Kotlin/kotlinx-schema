@@ -1,5 +1,3 @@
-@file:Suppress("MatchingDeclarationName")
-
 package com.example.mcp
 
 import io.ktor.server.cio.CIO

@@ -405,10 +405,8 @@ public interface ApplicatorContainer {
  * Supports object, array, string, number, and compositional schemas with validation rules,
  * type constraints, conditional logic, and metadata.
  *
- * @author Konstantin Pavlov
  */
 @Serializable
-@Suppress("LongParameterList")
 @JsonIgnoreUnknownKeys
 public data class JsonSchema(
     @EncodeDefault(EncodeDefault.Mode.NEVER)

@@ -1,5 +1,3 @@
-@file:Suppress("FunctionOnlyReturningConstant", "unused")
-
 package kotlinx.schema.integration.functions
 
 import kotlinx.schema.Description

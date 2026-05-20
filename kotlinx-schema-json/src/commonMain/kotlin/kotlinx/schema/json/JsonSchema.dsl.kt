@@ -1,5 +1,3 @@
-@file:Suppress("TooManyFunctions")
-
 package kotlinx.schema.json
 
 import kotlinx.schema.json.JsonSchemaConstants.Keys.TYPE
@@ -29,7 +27,6 @@ import kotlinx.serialization.json.booleanOrNull
  *
  * @see DslMarker
  *
- * @author Konstantin Pavlov
  */
 @DslMarker
 public annotation class JsonSchemaDsl

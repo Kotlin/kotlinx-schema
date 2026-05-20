@@ -1,5 +1,3 @@
-@file:Suppress("unused", "MatchingDeclarationName")
-
 package com.example.shapes
 
 import kotlinx.schema.Description

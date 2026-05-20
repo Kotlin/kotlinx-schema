@@ -138,7 +138,6 @@ class SourceCodeGeneratorHelpersTest {
 
         // Then
         result shouldContain "internal fun kotlin.reflect.KClass<MyClass>.myFunctionJsonSchemaString(): String ="
-        @Suppress("MaxLineLength")
         result shouldContain
             "internal fun kotlin.reflect.KClass<MyClass>.myFunctionJsonSchema(): kotlinx.serialization.json.JsonObject ="
     }

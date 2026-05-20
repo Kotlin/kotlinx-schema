@@ -30,14 +30,12 @@ class ReflectionIntrospectorTest {
     )
 
     @Description("Available colors")
-    @Suppress("unused")
     enum class Color { RED, GREEN, BLUE }
 
     data class WithEnum(
         val color: Color,
     )
 
-    @Suppress("unused")
     sealed class Shape {
         @Description("Circle shape")
         data class Circle(
@@ -51,7 +49,6 @@ class ReflectionIntrospectorTest {
         ) : Shape()
     }
 
-    @Suppress("unused")
     sealed class Vehicle {
         sealed class Motorized : Vehicle() {
             data class Car(val doors: Int) : Motorized()
@@ -61,7 +58,6 @@ class ReflectionIntrospectorTest {
         data class Bicycle(val gears: Int) : Vehicle()
     }
 
-    @Suppress("unused")
     sealed class Event {
         data class Click(val x: Int, val y: Int) : Event()
         data class PageView(val url: String) : Event()
@@ -79,7 +75,6 @@ class ReflectionIntrospectorTest {
     private val introspector = ReflectionClassIntrospector
 
     @Test
-    @Suppress("LongMethod")
     fun `introspects object with primitives list map nullability and defaults`() {
         val graph = introspector.introspect(User::class)
 

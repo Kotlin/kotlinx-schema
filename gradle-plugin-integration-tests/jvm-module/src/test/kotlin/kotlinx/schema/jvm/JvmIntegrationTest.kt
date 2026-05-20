@@ -1,5 +1,3 @@
-@file:Suppress("JsonStandardCompliance")
-
 package kotlinx.schema.jvm
 
 import io.kotest.assertions.json.shouldEqualJson

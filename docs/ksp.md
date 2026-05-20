@@ -10,13 +10,11 @@
   * [Kotlinx-Schema gradle plugin](#kotlinx-schema-gradle-plugin)
     * [Multiplatform projects](#multiplatform-projects)
     * [JVM-only projects](#jvm-only-projects)
-  * [Maven Plugin](#maven-plugin)
 * [Configuration options](#configuration-options)
   * [Options reference](#options-reference)
   * [Filtering by class/function name](#filtering-by-classfunction-name)
     * [Kotlinx-Schema Gradle plugin](#kotlinx-schema-gradle-plugin)
     * [Google KSP plugin](#google-ksp-plugin)
-    * [Maven plugin](#maven-plugin)
   * [Option priority](#option-priority)
 * [Generated Code](#generated-code)
 * [See Also](#see-also)
@@ -27,7 +25,7 @@ Generate JSON schemas at compile time with zero runtime overhead using the `kotl
 
 ## Setup
 
-Configure the KSP processor directly in your Gradle build script, Maven pom.xml, or use the dedicated Gradle plugin.
+Configure the KSP processor directly in your Gradle build script, or use the dedicated Gradle plugin.
 
 ### Google KSP gradle plugin
 
@@ -147,51 +145,6 @@ kotlinxSchema {
 - You do NOT need to add generated source directories — the plugin does it.
 - For an example project, see [gradle-plugin-integration-tests](https://github.com/Kotlin/kotlinx-schema/tree/main/gradle-plugin-integration-tests).
 
-### Maven Plugin
-
-You may also run schema generation with KSP in your Maven projects.
-
-Add the [`ksp-maven-plugin`](https://github.com/kpavlov/ksp-maven-plugin) with the processor dependency
-and include the annotations library in your project.
-
-```xml
-
-<plugin>
-    <groupId>me.kpavlov.ksp.maven</groupId>
-    <artifactId>ksp-maven-plugin</artifactId>
-    <version>0.3.0</version>
-    <extensions>true</extensions>
-    <dependencies>
-        <dependency>
-            <groupId>org.jetbrains.kotlinx</groupId>
-            <artifactId>kotlinx-schema-ksp</artifactId>
-            <version>${kotlinx-schema.version}</version>
-        </dependency>
-    </dependencies>
-    <configuration>
-        <options>
-            <kotlinx.schema.rootPackage>com.example</kotlinx.schema.rootPackage>
-        </options>
-    </configuration>
-</plugin>
-
-<!-- In <dependencies> -->
-<dependencies>
-    <dependency>
-        <groupId>org.jetbrains.kotlinx</groupId>
-        <artifactId>kotlinx-schema-annotations-jvm</artifactId>
-        <version>${kotlinx-schema.version}</version>
-    </dependency>
-</dependencies>
-
-<properties>
-<!-- check latest version: https://central.sonatype.com/artifact/org.jetbrains.kotlinx/kotlinx-schema-ksp -->
-<kotlinx-schema.version>0.0.5</kotlinx-schema.version>
-</properties>
-```
-
-Check out an [example project](https://github.com/Kotlin/kotlinx-schema/tree/main/examples/maven-ksp).
-
 ## Configuration options
 
 Options can be set globally in your build configuration or overridden per-class via `@Schema`.
@@ -248,17 +201,6 @@ ksp {
 }
 ```
 
-#### Maven plugin
-
-```xml
-<configuration>
-    <options>
-        <kotlinx.schema.include>com.example.api.**, com.example.dto.**</kotlinx.schema.include>
-        <kotlinx.schema.exclude>**.internal.**, **.*Internal</kotlinx.schema.exclude>
-    </options>
-</configuration>
-```
-
 > [!TIP]
 > For large projects, combine `rootPackage` with `include` for maximum build performance:
 > `rootPackage` narrows the KSP symbol scan, then `include` filters the remaining candidates.
@@ -266,7 +208,7 @@ ksp {
 ### Option priority
 
 1. **Annotation Parameter** (highest) — `@Schema(withSchemaObject = true)`
-2. **KSP Argument** — Global processor options (e.g., `arg()` in Gradle or `<options>` in Maven)
+2. **KSP Argument** — Global processor options (e.g., `arg()` in Gradle)
 3. **Gradle Option** (Plugin only) — `kotlinxSchema { withSchemaObject.set(true) }`
 4. **Default Value** (lowest)
 

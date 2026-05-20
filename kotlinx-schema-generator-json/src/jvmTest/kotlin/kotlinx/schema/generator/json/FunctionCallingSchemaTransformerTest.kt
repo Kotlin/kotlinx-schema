@@ -19,7 +19,6 @@ import kotlin.test.Test
  * Comprehensive tests for TypeGraphToFunctionCallingSchemaTransformer.
  * Focuses on coverage of all code paths, nullable handling, and error cases.
  */
-@Suppress("unused")
 class FunctionCallingSchemaTransformerTest {
     private val generator =
         requireNotNull(
@@ -33,7 +32,6 @@ class FunctionCallingSchemaTransformerTest {
 
     object NullablePrimitives {
         @Description("Test nullable primitives")
-        @Suppress("LongParameterList")
         fun testNullables(
             nullableString: String?,
             nullableInt: Int?,
@@ -81,7 +79,6 @@ class FunctionCallingSchemaTransformerTest {
 
     object NonNullablePrimitives {
         @Description("Test non-nullable primitives")
-        @Suppress("LongParameterList")
         fun testNonNullables(
             string: String,
             int: Int,

@@ -4,7 +4,6 @@ import io.kotest.assertions.json.shouldEqualJson
 import io.kotest.assertions.json.shouldEqualSpecifiedJson
 import kotlin.test.Test
 
-@Suppress("LongMethod")
 class ShapeSchemaTest {
     @Test
     fun `Circle demonstrates KDoc and Description annotation`() {

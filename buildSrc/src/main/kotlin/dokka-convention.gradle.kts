@@ -1,6 +1,3 @@
-/**
- * Common conventions for generating documentation with Dokka.
- */
 plugins {
     id("org.jetbrains.dokka") apply true
 }

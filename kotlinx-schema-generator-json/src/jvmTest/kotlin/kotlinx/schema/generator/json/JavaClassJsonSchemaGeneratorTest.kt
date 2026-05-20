@@ -1,5 +1,3 @@
-@file:Suppress("LongMethod")
-
 package kotlinx.schema.generator.json
 
 import io.kotest.assertions.json.shouldEqualJson

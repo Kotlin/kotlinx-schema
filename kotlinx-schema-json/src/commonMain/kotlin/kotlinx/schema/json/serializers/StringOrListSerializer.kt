@@ -37,7 +37,6 @@ import kotlinx.serialization.json.contentOrNull
  * - `SerializationException` if the input during deserialization is neither a string
  *   nor an array of strings.
  *
- * @author Konstantin Pavlov
  */
 public class StringOrListSerializer : KSerializer<List<String>> {
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("StringOrList")

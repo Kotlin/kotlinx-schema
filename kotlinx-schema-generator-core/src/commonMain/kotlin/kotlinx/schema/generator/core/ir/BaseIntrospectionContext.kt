@@ -15,7 +15,6 @@ import kotlinx.schema.generator.core.InternalSchemaGeneratorApi
  * @suppress Not part of public API - used internally by introspector implementations.
  */
 @InternalSchemaGeneratorApi
-@Suppress("AbstractClassCanBeConcreteClass")
 public abstract class BaseIntrospectionContext<TType : Any> {
     /**
      * Map of discovered type nodes indexed by their type ID.

@@ -168,7 +168,6 @@ internal class SchemaExtensionProcessor(
                 return@forEach
             }
 
-            @Suppress("TooGenericExceptionCaught")
             try {
                 generateFunctionSchemaExtension(functionDeclaration)
             } catch (e: Exception) {
@@ -199,7 +198,6 @@ internal class SchemaExtensionProcessor(
                 return@forEach
             }
 
-            @Suppress("TooGenericExceptionCaught")
             try {
                 generateSchemaExtension(classDeclaration)
             } catch (e: Exception) {

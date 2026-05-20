@@ -14,7 +14,6 @@ import org.intellij.lang.annotations.Language
  * @param payload The JSON string to be deserialized and re-serialized.
  * @return The deserialized object of type [T].
  *
- * @author Konstantin Pavlov
  */
 inline fun <reified T : Any> deserializeAndSerialize(
     @Language("JSON")

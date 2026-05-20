@@ -3,16 +3,15 @@ root = true
 [*]
 charset = utf-8
 end_of_line = lf
-indent_size = 4
 indent_style = space
-insert_final_newline = false
+indent_size = 4
+insert_final_newline = true
 max_line_length = 120
-tab_width = 4
 
-[{*.har,*.jsb2,*.jsb3,*.json,*.jsonc,*.postman_collection,*.postman_collection.json,*.postman_environment,*.postman_environment.json,*.swift-format,.babelrc,.eslintrc,.prettierrc,.stylelintrc,.ws-context,jest.config}]
+[*.{json,jsonc}]
 indent_size = 2
 
-[{*.yaml,*.yml}]
+[*.{yaml,yml}]
 indent_size = 2
 
 [*.{kt,kts}]
@@ -22,4 +21,3 @@ ij_kotlin_code_style_defaults = KOTLIN_OFFICIAL
 ij_kotlin_name_count_to_use_star_import = 2147483647
 ij_kotlin_name_count_to_use_star_import_for_members = 2147483647
 ij_kotlin_packages_to_use_import_on_demand = unset
-insert_final_newline = true

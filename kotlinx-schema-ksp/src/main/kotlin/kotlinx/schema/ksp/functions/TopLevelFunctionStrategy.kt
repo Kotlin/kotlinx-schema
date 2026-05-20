@@ -141,13 +141,7 @@ internal class TopLevelFunctionStrategy : SchemaGenerationStrategy<KSFunctionDec
         context: CodeGenerationContext,
     ): String =
         buildString {
-            // File header with suppressions
-            append(
-                SourceCodeGeneratorHelpers.generateFileHeader(
-                    packageName = packageName,
-                    additionalSuppressions = listOf("FunctionOnlyReturningConstant"),
-                ),
-            )
+            append(SourceCodeGeneratorHelpers.generateFileHeader(packageName))
 
             // Generate schema string function (always)
             append(

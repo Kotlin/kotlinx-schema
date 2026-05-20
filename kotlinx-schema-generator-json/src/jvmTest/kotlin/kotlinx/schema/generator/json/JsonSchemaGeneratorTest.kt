@@ -1,5 +1,3 @@
-@file:Suppress("FunctionOnlyReturningConstant", "LongMethod", "LongParameterList", "UnusedParameter", "unused")
-
 package kotlinx.schema.generator.json
 
 import io.kotest.assertions.json.shouldEqualJson
