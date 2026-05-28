@@ -486,8 +486,11 @@ This code generates:
 
 ## Polymorphic types
 
-Both sealed and open polymorphic hierarchies are supported. The generator reads the discriminator
-name from `Json.classDiscriminator` and produces `oneOf` schemas with `$defs` for each subtype.
+Both sealed and open polymorphic hierarchies are supported. By default, the generator reads the
+discriminator name from `Json.classDiscriminator` and produces `oneOf` schemas with `$defs` for
+each subtype. If a polymorphic base class is annotated with `@JsonClassDiscriminator("...")`,
+that class-level annotation takes precedence over the global `Json.classDiscriminator` value for
+that specific sealed or polymorphic base.
 
 ### Sealed polymorphism
 
