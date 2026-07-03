@@ -64,7 +64,7 @@ build.gradle.kts:
 plugins {
     kotlin("jvm") version "<kotlin-version>"
     kotlin("plugin.serialization") version "<kotlin-version>"
-    id("org.jetbrains.kotlinx.schema.ksp")
+    id("org.jetbrains.kotlinx.schema.ksp") version "<version>"
 }
 
 dependencies {
@@ -82,12 +82,9 @@ kotlinxSchema {
 settings.gradle.kts:
 ```kotlin
 pluginManagement {
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.id == "org.jetbrains.kotlinx.schema.ksp") {
-                useModule("org.jetbrains.kotlinx:kotlinx-schema-gradle-plugin:${providers.gradleProperty("kotlinxSchemaVersion").get()}")
-            }
-        }
+    repositories {
+        google()
+        mavenCentral()
     }
 }
 ```
@@ -103,7 +100,7 @@ kotlinxSchemaVersion=<version>
 plugins {
     kotlin("multiplatform") version "<kotlin-version>"
     kotlin("plugin.serialization") version "<kotlin-version>" 
-    id("org.jetbrains.kotlinx.schema.ksp")
+    id("org.jetbrains.kotlinx.schema.ksp") version "<version>"
 }
 
 kotlin {

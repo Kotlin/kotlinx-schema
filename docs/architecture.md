@@ -105,7 +105,7 @@ C4Context
         System(kxsGenJson, "kotlinx-schema-generator-json")
         System(kxsJsn, "kotlinx-schema-json")
         System(kxsKsp, "kotlinx-schema-ksp")
-        System(kxsGradle, "kotlinx-schema-gradle-plugin")
+        System(kxsGradle, "kotlinx-schema-ksp-gradle-plugin")
     }
 
     Rel(kxsGenJson, kxsGenCore, "uses")
@@ -135,7 +135,7 @@ Top-level modules you might interact with:
 - **kotlinx-schema-ksp** — KSP processor that scans your code and generates the extension properties:
     - `KClass<T>.jsonSchema: JsonObject`
     - `KClass<T>.jsonSchemaString: String`
-- **kotlinx-schema-gradle-plugin** — Gradle plugin (id: "org.jetbrains.kotlinx.schema.ksp") that:
+- **kotlinx-schema-ksp-gradle-plugin** — Gradle plugin (id: "org.jetbrains.kotlinx.schema.ksp") that:
     - Applies KSP automatically
     - Adds the KSP processor dependency
     - Wires generated sources into your source sets

@@ -81,21 +81,16 @@ sourceSets.main.kotlin.srcDir("build/generated/ksp/main/kotlin")
 The plugin automatically handles KSP configuration, source set registration, and task dependencies,
 and provides additional configuration options (DSL) for schema generation.
 
-1. Register the plugin in `settings.gradle.kts`:
+The plugin is published to Maven Central (not the Gradle Plugin Portal), so `mavenCentral()`
+must be available for plugin resolution.
+
+1. Add `mavenCentral()` to `settings.gradle.kts`:
 
     ```kotlin
     pluginManagement {
         repositories {
             google()
             mavenCentral()
-        }
-        
-        resolutionStrategy {
-            eachPlugin {
-                if (requested.id.id == "org.jetbrains.kotlinx.schema.ksp") {
-                    useModule("org.jetbrains.kotlinx:kotlinx-schema-gradle-plugin:<version>")
-                }
-            }
         }
     }
     ```
@@ -107,7 +102,7 @@ and provides additional configuration options (DSL) for schema generation.
 ```kotlin
 plugins {
     kotlin("multiplatform")
-    id("org.jetbrains.kotlinx.schema.ksp")
+    id("org.jetbrains.kotlinx.schema.ksp") version "<version>"
 }
 
 kotlin {
@@ -127,7 +122,7 @@ kotlinxSchema {
 ```kotlin
 plugins {
     kotlin("jvm")
-    id("org.jetbrains.kotlinx.schema.ksp")
+    id("org.jetbrains.kotlinx.schema.ksp") version "<version>"
 }
 
 dependencies {
