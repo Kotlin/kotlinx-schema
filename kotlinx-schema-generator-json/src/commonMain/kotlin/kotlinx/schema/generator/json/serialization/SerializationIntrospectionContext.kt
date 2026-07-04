@@ -62,7 +62,7 @@ internal class SerializationIntrospectionContext(
 
         val nullable = type.isNullable
 
-        // kotlin.Any / java.lang.Object: any value — emit empty schema {}
+        // Any value (kotlin.Any, JSON element types, …) — emit empty schema {}
         if (type.serialName.removeSuffix("?") in ANY_SERIAL_NAMES) {
             return TypeRef.Inline(AnyNode(), nullable)
         }
@@ -364,14 +364,23 @@ internal class SerializationIntrospectionContext(
         }
 
     private fun extractSealedSubtypes(descriptor: SerialDescriptor): List<SerialDescriptor> {
-        require(descriptor.elementsCount >= 2 && descriptor.getElementName(1) == "value") {
-            "Unexpected sealed descriptor structure: expected 'value' element at index 1, " +
-                "but found '${descriptor.getElementName(1)}'"
+        // The compiler emits sealed classes as a ['type', 'value'] wrapper with subtypes under 'value'.
+        // Any other SEALED shape is a hand-written serializer we can't map to a discriminated `oneOf`.
+        require(descriptor.isStandardSealedWrapper()) {
+            "Cannot derive a polymorphic schema for sealed descriptor '${descriptor.serialName}': " +
+                "not the standard ['type', 'value'] wrapper (elements: ${descriptor.elementNames()})."
         }
 
         val valueDescriptor = descriptor.getElementDescriptor(1)
         return (0 until valueDescriptor.elementsCount).map { valueDescriptor.getElementDescriptor(it) }
     }
+
+    /** The compiler's sealed wrapper: element[0] `type` (discriminator) + element[1] `value`. */
+    private fun SerialDescriptor.isStandardSealedWrapper(): Boolean =
+        elementsCount >= 2 && getElementName(0) == "type" && getElementName(1) == "value"
+
+    private fun SerialDescriptor.elementNames(): List<String> =
+        (0 until elementsCount).map { getElementName(it) }
 
     /**
      * Extracts subtype descriptors for open polymorphic types by querying the
@@ -465,8 +474,18 @@ internal class SerializationIntrospectionContext(
         TypeId(descriptor.unwrapSerialName().removeSuffix("?"))
 
     private companion object {
-        /** Serial names that represent "any value" — mapped to [AnyNode] (empty schema `{}`). */
-        val ANY_SERIAL_NAMES = setOf("kotlin.Any", "java.lang.Object")
+        /**
+         * Serial names mapped to [AnyNode] (empty schema `{}`): `kotlin.Any`/`java.lang.Object` and the
+         * kotlinx.serialization.json "any value" types. `JsonObject`/`JsonArray` are intentionally
+         * excluded — their MAP/LIST handlers already emit precise `object`/`array` schemas.
+         */
+        val ANY_SERIAL_NAMES = setOf(
+            "kotlin.Any",
+            "java.lang.Object",
+            "kotlinx.serialization.json.JsonElement",
+            "kotlinx.serialization.json.JsonPrimitive",
+            "kotlinx.serialization.json.JsonNull",
+        )
     }
 
     /**

@@ -63,6 +63,10 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
             return TypeRef.Inline(AnyNode(), nullable)
         }
 
+        // Intercept kotlinx.serialization.json types before primitive/serializer/collection handling,
+        // so JsonPrimitive isn't coerced to a string and JsonObject/JsonArray get any-typed elements.
+        jsonBuiltinRefFor(klass, nullable)?.let { return it }
+
         // Try to convert to primitive type
         primitiveNodeFor(klass)?.let { primitiveNode ->
             val ref = TypeRef.Inline(primitiveNode, nullable)
@@ -141,6 +145,36 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
         SerialPrimitiveKind.DOUBLE -> PrimitiveKind.DOUBLE
         else -> null
     }
+
+    /**
+     * kotlinx.serialization.json built-in types → schema, or null otherwise. Matched by FQN so core
+     * needs no dependency on serialization-json. `JsonElement`/`JsonPrimitive`/`JsonNull` → [AnyNode];
+     * `JsonObject` → `Map<String, any>`; `JsonArray` → `List<any>`.
+     */
+    private fun jsonBuiltinRefFor(
+        klass: KClass<*>,
+        nullable: Boolean,
+    ): TypeRef? =
+        when (klass.qualifiedName) {
+            "kotlinx.serialization.json.JsonElement",
+            "kotlinx.serialization.json.JsonPrimitive",
+            "kotlinx.serialization.json.JsonNull",
+            -> TypeRef.Inline(AnyNode(), nullable)
+
+            "kotlinx.serialization.json.JsonObject" ->
+                TypeRef.Inline(
+                    MapNode(
+                        key = TypeRef.Inline(PrimitiveNode(PrimitiveKind.STRING), false),
+                        value = TypeRef.Inline(AnyNode(), false),
+                    ),
+                    nullable,
+                )
+
+            "kotlinx.serialization.json.JsonArray" ->
+                TypeRef.Inline(ListNode(TypeRef.Inline(AnyNode(), false)), nullable)
+
+            else -> null
+        }
 
     /**
      * Set of value-class [KType]s currently being flattened, used to break the recursion for a

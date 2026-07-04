@@ -9,7 +9,11 @@ import com.google.devtools.ksp.symbol.Nullability
 
 import kotlinx.schema.generator.core.ir.AnyNode
 import kotlinx.schema.generator.core.ir.BaseIntrospectionContext
+import kotlinx.schema.generator.core.ir.ListNode
+import kotlinx.schema.generator.core.ir.MapNode
 import kotlinx.schema.generator.core.ir.ObjectNode
+import kotlinx.schema.generator.core.ir.PrimitiveKind
+import kotlinx.schema.generator.core.ir.PrimitiveNode
 import kotlinx.schema.generator.core.ir.Property
 import kotlinx.schema.generator.core.ir.TypeRef
 
@@ -24,10 +28,12 @@ import kotlinx.schema.generator.core.ir.TypeRef
  *
  * Resolution strategy (applied in order):
  * 1. Basic types (primitives and collections) via [resolveBasicTypeOrNull]
- * 2. Generic type parameters and unknowns -> kotlin.Any via [handleAnyFallback]
- * 3. Sealed class hierarchies -> PolymorphicNode via [handleSealedClass]
- * 4. Enum classes -> EnumNode via [handleEnum]
- * 5. Regular objects/classes -> ObjectNode via [handleObjectOrClass]
+ * 2. `kotlinx.serialization.json` DOM collections (`JsonObject`/`JsonArray`) via [resolveJsonCollectionTypeOrNull]
+ * 3. Opaque JSON values (`JsonElement`/`JsonPrimitive`/`JsonNull`) -> AnyNode via [resolveOpaqueTypeOrNull]
+ * 4. Generic type parameters and unknowns -> kotlin.Any via [handleAnyFallback]
+ * 5. Sealed class hierarchies -> PolymorphicNode via [handleSealedClass]
+ * 6. Enum classes -> EnumNode via [handleEnum]
+ * 7. Regular objects/classes -> ObjectNode via [handleObjectOrClass]
  */
 internal class KspIntrospectionContext : BaseIntrospectionContext<KSType>() {
     /**
@@ -50,6 +56,8 @@ internal class KspIntrospectionContext : BaseIntrospectionContext<KSType>() {
         // Try each handler in order, using elvis operator chain for single return
         return requireNotNull(
             resolveBasicTypeOrNull(type)
+                ?: resolveJsonCollectionTypeOrNull(type)
+                ?: resolveOpaqueTypeOrNull(type)
                 ?: handleAnyFallback(type)
                 ?: handleSealedClass(type, nullable)
                 ?: handleEnum(type, nullable)
@@ -76,6 +84,36 @@ internal class KspIntrospectionContext : BaseIntrospectionContext<KSType>() {
         // Try primitive types first, then collections, using elvis operator chain
         return KspTypeMappers.primitiveFor(type)?.let { TypeRef.Inline(it, nullable) }
             ?: KspTypeMappers.collectionTypeRefOrNull(type, ::toRef)
+    }
+
+    /**
+     * `JsonObject` → [MapNode] of `String` → any; `JsonArray` → [ListNode] of any. Built directly
+     * (matched by FQN) because KSP can't resolve external supertype type-arguments. Null otherwise.
+     */
+    private fun resolveJsonCollectionTypeOrNull(type: KSType): TypeRef? {
+        val nullable = type.nullability == Nullability.NULLABLE
+        return when (type.declaration.qualifiedName?.asString()) {
+            "kotlinx.serialization.json.JsonObject" ->
+                TypeRef.Inline(
+                    MapNode(
+                        key = TypeRef.Inline(PrimitiveNode(PrimitiveKind.STRING)),
+                        value = TypeRef.Inline(AnyNode()),
+                    ),
+                    nullable,
+                )
+
+            "kotlinx.serialization.json.JsonArray" ->
+                TypeRef.Inline(ListNode(element = TypeRef.Inline(AnyNode())), nullable)
+
+            else -> null
+        }
+    }
+
+    /** [OPAQUE_JSON_SERIAL_NAMES] (`JsonElement`/`JsonPrimitive`/`JsonNull`) → [AnyNode] (`{}`); null otherwise. */
+    private fun resolveOpaqueTypeOrNull(type: KSType): TypeRef? {
+        val nullable = type.nullability == Nullability.NULLABLE
+        val qualifiedName = type.declaration.qualifiedName?.asString() ?: return null
+        return if (qualifiedName in OPAQUE_JSON_SERIAL_NAMES) TypeRef.Inline(AnyNode(), nullable) else null
     }
 
     /**
@@ -317,5 +355,15 @@ internal class KspIntrospectionContext : BaseIntrospectionContext<KSType>() {
                 }
             }
         }
+    }
+
+    private companion object {
+        /** JSON value types → [AnyNode] (`{}`); kept in sync with the other introspectors (#338). */
+        val OPAQUE_JSON_SERIAL_NAMES: Set<String> =
+            setOf(
+                "kotlinx.serialization.json.JsonElement",
+                "kotlinx.serialization.json.JsonPrimitive",
+                "kotlinx.serialization.json.JsonNull",
+            )
     }
 }
