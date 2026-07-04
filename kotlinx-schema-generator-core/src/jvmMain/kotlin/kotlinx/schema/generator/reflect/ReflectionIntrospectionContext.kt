@@ -86,8 +86,7 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
         // Inline value classes (`@JvmInline value class Wrapper(val inner: T)`) serialize
         // as their inner value, not as a `{inner: …}` object. Mirror the inline-class
         // flattening already implemented in the serialization-based introspector by
-        // recursing into the wrapped element's KType — which crucially still carries any
-        // typealias-expanded annotations on it.
+        // recursing into the wrapped element's type.
         if (klass.isValue) return handleInlineValueClass(type)
 
         // Handle different kinds
@@ -104,19 +103,27 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
      * If [type] has an associated kotlinx-serialization serializer whose descriptor is a
      * primitive kind, returns the matching kotlinx-schema [PrimitiveKind]. Otherwise null.
      *
-     * Uses [serializerOrNull] (not `serializer`) so unknown types fall through cleanly to
-     * the existing structural handling instead of throwing.
+     * This resolves the *default* serializer for the type's classifier (built-in,
+     * `@Serializable`-generated, or contextual). It is what makes stdlib types that serialize
+     * as a single scalar resolve to a primitive instead of being walked structurally — most
+     * notably the built-in `kotlin.uuid.Uuid` serializer (`PrimitiveKind.STRING`) and
+     * `kotlin.time.Duration` — keeping the reflection schema in agreement with the wire format.
      *
-     * The lookup respects:
-     * - The `@Serializable(with = X::class)` annotation expanded from a typealias used at
-     *   the call site (the annotation is preserved on `KType.annotations` after expansion).
-     * - Built-in serializers shipped by `kotlinx-serialization` for stdlib types like
-     *   `kotlin.uuid.Uuid`, which are correctly described as `PrimitiveKind.STRING`.
-     * - Contextual serializers registered in the current module — kotlinx-serialization's
-     *   resolution rules apply uniformly.
+     * Note: this is a classifier-level lookup. A use-site `@Serializable(with = X)` annotation
+     * (e.g. one carried on a value class's inner property type) is NOT honored here — the
+     * default serializer for the classifier is used.
+     *
+     * [serializerOrNull] *throws* (rather than returning null) for types it cannot reflectively
+     * resolve — notably star projections such as `List<*>`, `Map<K, *>`, or `Class<*>`. Any such
+     * failure is treated as "no serializer" so the type falls through to the structural handlers.
      */
     private fun serializerPrimitiveFor(type: KType): PrimitiveKind? {
-        val serializer = serializerOrNull(type) ?: return null
+        val serializer =
+            try {
+                serializerOrNull(type)
+            } catch (_: Exception) {
+                null
+            } ?: return null
         return serialKindToPrimitive(serializer.descriptor.kind)
     }
 
@@ -136,18 +143,53 @@ internal class ReflectionIntrospectionContext : BaseIntrospectionContext<KType>(
     }
 
     /**
-     * Flattens an `@JvmInline value class` to its wrapped element, preserving any
-     * annotations carried on the inner [KType] (e.g. typealias-expanded `@Serializable`).
-     * Mirrors the equivalent fix in `SerializationIntrospectionContext` so the two
-     * introspector paths agree about what an inline value class looks like.
+     * Set of value-class [KType]s currently being flattened, used to break the recursion for a
+     * value class that (transitively) wraps itself.
+     */
+    private val flatteningValueClasses: MutableSet<KType> = mutableSetOf()
+
+    /**
+     * Flattens an `@JvmInline value class` to its wrapped element, so it serializes as the inner
+     * value rather than a `{inner: …}` object. Mirrors the equivalent handling in
+     * `SerializationIntrospectionContext`, including propagating a class-level `@Description`
+     * onto the flattened primitive.
      */
     private fun handleInlineValueClass(type: KType): TypeRef {
         val klass = type.klass
         val innerParam = findPrimaryConstructor(klass)?.parameters?.firstOrNull()
             ?: return handleObjectType(type)
-        val innerRef = toRef(innerParam.type)
+
+        // A value class that (transitively) wraps itself cannot be flattened without recursing
+        // forever; fall back to the structural object form, which breaks the cycle via
+        // withCycleDetection in handleObjectType.
+        if (type in flatteningValueClasses) return handleObjectType(type)
+
         val nullable = type.isMarkedNullable
-        val ref = if (nullable && !innerRef.nullable) innerRef.withNullable(true) else innerRef
+        flatteningValueClasses += type
+        val innerRef =
+            try {
+                toRef(innerParam.type)
+            } finally {
+                flatteningValueClasses -= type
+            }
+
+        // Propagate a class-level @Description onto the flattened primitive (matching the
+        // serialization introspector). A property-level description on the field that holds the
+        // value class is applied separately by extractConstructorProperties.
+        val description = extractDescription(klass.java.annotations.toList())
+        val describedRef =
+            if (description != null && innerRef is TypeRef.Inline) {
+                val node = innerRef.node
+                if (node is PrimitiveNode) {
+                    TypeRef.Inline(node.copy(description = description), innerRef.nullable)
+                } else {
+                    innerRef
+                }
+            } else {
+                innerRef
+            }
+
+        val ref = if (nullable && !describedRef.nullable) describedRef.withNullable(true) else describedRef
         if (!nullable) typeRefCache[type] = ref
         return ref
     }

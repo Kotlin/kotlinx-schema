@@ -64,6 +64,13 @@ class SerializationIntrospectorTest {
     )
 
     @Serializable
+    data class WithSmallPrimitives(
+        val flag: Char,
+        val tiny: Byte,
+        val small: Short,
+    )
+
+    @Serializable
     sealed class Shape {
         @Serializable
         data class Circle(
@@ -230,6 +237,26 @@ class SerializationIntrospectorTest {
                 prim.unsigned shouldBe true
             }
             inline.nullable shouldBe true
+        }
+    }
+
+    @Test
+    fun `introspects char byte and short primitives`() {
+        val graph = introspector.introspect(WithSmallPrimitives.serializer().descriptor)
+
+        val rootRef = graph.root.shouldBeInstanceOf<TypeRef.Ref>()
+        val node = graph.nodes[rootRef.id].shouldNotBeNull().shouldBeInstanceOf<ObjectNode>()
+        val properties = node.properties.associateBy { it.name }
+
+        // Char maps to STRING; Byte and Short map to INT.
+        properties.getValue("flag").type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
+            inline.node.shouldBeInstanceOf<PrimitiveNode> { prim -> prim.kind shouldBe PrimitiveKind.STRING }
+        }
+        properties.getValue("tiny").type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
+            inline.node.shouldBeInstanceOf<PrimitiveNode> { prim -> prim.kind shouldBe PrimitiveKind.INT }
+        }
+        properties.getValue("small").type.shouldBeInstanceOf<TypeRef.Inline> { inline ->
+            inline.node.shouldBeInstanceOf<PrimitiveNode> { prim -> prim.kind shouldBe PrimitiveKind.INT }
         }
     }
 
