@@ -37,6 +37,15 @@ mavenPublishing {
             }
         }
 
+        developers {
+            developer {
+                id = "JetBrains"
+                name = "JetBrains Team"
+                organization = "JetBrains"
+                organizationUrl = "https://www.jetbrains.com"
+            }
+        }
+
         organization {
             name = "JetBrains"
             url = "https://www.jetbrains.com"
