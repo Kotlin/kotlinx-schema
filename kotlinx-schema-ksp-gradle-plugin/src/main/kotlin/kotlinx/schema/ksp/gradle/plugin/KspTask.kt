@@ -121,6 +121,7 @@ internal abstract class KspTask : DefaultTask() {
                 friends = emptyList(),
                 allWarningsAsErrors = config.allWarningsAsErrors,
                 mapAnnotationArgumentsInJava = true,
+                experimentalPsiResolution = false,
             )
 
         // Execute KSP
