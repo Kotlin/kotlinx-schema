@@ -94,7 +94,6 @@ defaulting to `SerializationClassJsonSchemaGenerator.Default`:
 <!--- INCLUDE
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
-import kotlinx.schema.generator.json.serialization.SerializationClassJsonSchemaGenerator
 import kotlinx.schema.json.encodeToString
 import kotlinx.schema.generator.json.jsonSchemaOf
 import kotlinx.serialization.json.Json
@@ -114,7 +113,7 @@ println(schema.encodeToString(Json { prettyPrint = true }))
 -->
 <!--- KNIT example-knit-serializable-01-convenience-01.kt -->
 
-Both of these code print:
+Both of these print:
 ```json
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
