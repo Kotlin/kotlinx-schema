@@ -36,7 +36,7 @@ jobs:
           distribution: ${{ env.JAVA_DISTRIBUTION }}
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@v6.2.0
         with:
           add-job-summary-as-pr-comment: on-failure
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
@@ -97,7 +97,7 @@ jobs:
           distribution: ${{ env.JAVA_DISTRIBUTION }}
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@v6.2.0
         with:
           add-job-summary-as-pr-comment: on-failure
           cache-read-only: true
